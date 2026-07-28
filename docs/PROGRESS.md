@@ -5,7 +5,7 @@ Appended to, never rewritten. The repository is the authority on build state.
 ## Current state
 
 **Phase 0 in progress.** Checkpoints 0.1 and 0.2 built. 0.3 onward not started.
-The documentation corpus is at v1.9.5.
+The documentation corpus is at v1.9.6.
 
 ## Log
 
@@ -166,3 +166,10 @@ rather than a snapshot per entry. Per-entry snapshots meant four of five
 described a state no longer true. What was asked and what was delivered cannot
 age, so they stay in the entries; state is current or it is wrong, so it lives
 in one place.
+
+### 2026-07-28 — corpus v1.9.6
+The spent-prompt archive carries one prompt per checkpoint rather than one per
+ask, with corrections folded back into the checkpoint's prompt. Replaying the
+prompts reproduces the state without replaying the mistakes. What was asked at
+the time is no longer recoverable from the archive; that history stays in the
+commit log and the pull request thread.

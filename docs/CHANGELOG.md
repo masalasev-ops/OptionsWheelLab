@@ -1,5 +1,26 @@
 # CHANGELOG
 
+## [1.9.6] — 2026-07-28
+
+### Changed
+- `prompts/spent/phase-0.md` carries one prompt per checkpoint rather than one
+  per ask. Corrections found while building are folded back into the
+  checkpoint's prompt.
+- `BUILD_PLAN.md` restates the prompts rule to match.
+
+### Notes
+- The archive had accumulated an entry per conversational exchange: a review
+  pass, a document split, and two entries about the archive's own design. None
+  of them is a checkpoint, and reading them in order described how the work
+  wandered rather than how to reach the result.
+- Replaying one prompt per checkpoint reproduces the state without replaying
+  the mistakes, which is what the archive is for.
+- The cost, recorded rather than hidden: the file no longer shows what was
+  actually asked at the time, so it cannot answer whether a checkpoint was built
+  as first specified or as later corrected. That history stays in the commit log
+  and the pull request thread. The archive is now a reproduction instrument
+  rather than a record of the conversation.
+
 ## [1.9.5] — 2026-07-28
 
 ### Changed
