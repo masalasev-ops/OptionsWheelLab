@@ -1,0 +1,10 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/OptionsWheelLab.Api/OptionsWheelLab.Api.csproj" />
+    <Project Path="src/OptionsWheelLab.Core/OptionsWheelLab.Core.csproj" />
+    <Project Path="src/OptionsWheelLab.Worker/OptionsWheelLab.Worker.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/OptionsWheelLab.Tests/OptionsWheelLab.Tests.csproj" />
+  </Folder>
+</Solution>

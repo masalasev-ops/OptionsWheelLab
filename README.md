@@ -43,6 +43,12 @@ These track state and are appended to, never rewritten:
 - `PROGRESS.md`
 - `CHANGELOG.md`
 
+## Where these files live
+
+The repository root holds `README.md` and `CLAUDE.md` only. Every other
+document in this corpus lives in `docs/`. One rule, so anything resolving a
+corpus path needs to know one thing rather than a list of exceptions.
+
 ## Corpus rules
 
 Four rules govern every document here. They exist because the AlphaLab corpus

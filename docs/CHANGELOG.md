@@ -1,5 +1,140 @@
 # CHANGELOG
 
+## [1.9.6] — 2026-07-28
+
+### Changed
+- `prompts/spent/phase-0.md` carries one prompt per checkpoint rather than one
+  per ask. Corrections found while building are folded back into the
+  checkpoint's prompt.
+- `BUILD_PLAN.md` restates the prompts rule to match.
+
+### Notes
+- The archive had accumulated an entry per conversational exchange: a review
+  pass, a document split, and two entries about the archive's own design. None
+  of them is a checkpoint, and reading them in order described how the work
+  wandered rather than how to reach the result.
+- Replaying one prompt per checkpoint reproduces the state without replaying
+  the mistakes, which is what the archive is for.
+- The cost, recorded rather than hidden: the file no longer shows what was
+  actually asked at the time, so it cannot answer whether a checkpoint was built
+  as first specified or as later corrected. That history stays in the commit log
+  and the pull request thread. The archive is now a reproduction instrument
+  rather than a record of the conversation.
+
+## [1.9.5] — 2026-07-28
+
+### Changed
+- `prompts/spent/phase-0.md` replaces its per-entry state snapshots with one
+  **Current state** section, overwritten by every prompt. Entries keep what was
+  asked and what was delivered.
+- `BUILD_PLAN.md` restates the prompts rule to match.
+
+### Notes
+- 1.9.4 gave each entry its own snapshot so the state could be read in one take.
+  That worked for the last entry and made every earlier one a description of a
+  state no longer true, which is hard to navigate and invites the stale-state
+  findings `CLAUDE.md` §1 exists to prevent. A reader landing mid-file met
+  correct-looking numbers that were a version out of date.
+- The fix is to separate what ages from what does not. What was asked and what
+  was delivered are statements about a moment that has passed and stay true
+  forever. State is current or it is wrong, so it lives in exactly one place and
+  is overwritten.
+- The shape mirrors `PROGRESS.md`, which already carries an overwritten Current
+  state above an appended Log, so it is the corpus's own pattern rather than a
+  new one.
+
+## [1.9.4] — 2026-07-28
+
+### Added
+- `prompts/spent/phase-0.md`, the first spent-prompt archive. Five entries
+  covering every prompt spent while Phase 0 has been in flight.
+
+### Changed
+- `BUILD_PLAN.md` restates how prompts are archived. One file per phase,
+  appended to, rather than one file per prompt. An entry carries what was
+  asked, what was delivered including every deviation, an absolute snapshot of
+  the repository after it, and what it left open.
+
+### Notes
+- One file per phase because a directory of forty single-prompt files buries
+  the thing being looked for.
+- Each entry carries an absolute snapshot rather than a change list, so the
+  current state is derived from the last entry in a single read rather than by
+  reconstructing it from a chain of deltas across several documents. The cost
+  is that every earlier entry describes a state that is no longer true, so the
+  file states plainly that only the last entry describes the present and
+  `PROGRESS.md` is the authority on now. Without that line the archive would
+  manufacture the stale-state findings `CLAUDE.md` §1 exists to prevent.
+- Deviations are recorded per entry because a prompt alone cannot answer
+  whether it was followed, which was the back-and-forth the archive removes.
+
+## [1.9.3] — 2026-07-28
+
+### Changed
+- `BUILD_PLAN.md` build state moves from Phase 0 not started to Phase 0 in
+  progress, with 0.1 and 0.2 built.
+- `BUILD_PLAN.md` 0.1 records the shared configuration file and the deliberate
+  absence of a `Logging` section, both of which existed only in commit
+  messages.
+- `BUILD_PLAN.md` 0.2's first definition of done covers every committed
+  configuration file rather than `appsettings.json` alone, matching the check
+  that ships.
+- `BUILD_PLAN.md` 0.2's Consumer definition of done asks for `component via
+  TypeName`, matching the convention 1.9.1 introduced.
+
+### Added
+- `BUILD_PLAN.md` 0.2 notes that the test suite parses `CONFIG_REFERENCE.md`
+  and `FIXTURES.md`, so both are load-bearing rather than descriptive.
+
+### Notes
+- Found reviewing 0.1 and 0.2 against what shipped. The checkpoint text was
+  substantially accurate and no built thing contradicted it; the divergences
+  were one false build-state marker and four places where the plan described
+  less than what was built. A definition of done that understates the check is
+  the more dangerous of the two, because it reads as satisfied while leaving
+  the extra coverage undefended by any stated requirement.
+
+## [1.9.2] — 2026-07-28
+
+### Changed
+- `CONFIG_REFERENCE.md` splits its four shared rows so every row names one
+  key, and states the rule.
+
+### Notes
+- Found verifying PR #1. The parser reads the first backticked token per key
+  cell, so `Gate:MaxDte` and three Policy suffixes were undocumented as far
+  as any check could tell. Latent while only `Eodhd` binds; at Phase 2 it
+  would have made FX-EveryBoundKeyIsDocumented fire against a key the
+  document contains, and the usual answer to a fixture that fires wrongly is
+  to weaken it.
+
+## [1.9.1] — 2026-07-28
+
+### Added
+- FX-EveryBoundKeyIsDocumented at 0.2: every settable key on a bound options
+  type must have a row in `CONFIG_REFERENCE.md`.
+- `BUILD_PLAN.md` **Carried obligations**, holding work deferred out of a
+  checkpoint. First entry: re-adding `Microsoft.AspNetCore.OpenApi` at
+  Phase 11.
+- `CLAUDE.md` 4a: never suppress a vulnerability advisory to keep a
+  dependency.
+
+### Changed
+- `FIXTURES.md` rule 2 restated. As written it required every registered
+  entry to have a file, which cannot hold while most entries belong to
+  unbuilt checkpoints, so nothing could enforce it. Split by direction.
+- FX-RegistryMatchesDisk moved from 0.6 to 0.2.
+- `CONFIG_REFERENCE.md` defines the Consumer column as `component via
+  TypeName` once verified.
+- `CLAUDE.md` 10: `CONFIG_REFERENCE.md` and `PROGRESS.md` have two authors
+  and are never delivered as whole files.
+- `README.md` states the corpus layout.
+
+### Notes
+- The registry gap is the original defect inverted: 0.2 was built to catch a
+  configuration section nobody reads; FX-EveryBoundKeyIsDocumented catches a
+  configuration key nobody writes.
+
 ## [1.8.3] — 2026-07-27
 
 ### Fixed

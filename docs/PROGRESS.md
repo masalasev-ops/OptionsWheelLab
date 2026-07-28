@@ -4,7 +4,8 @@ Appended to, never rewritten. The repository is the authority on build state.
 
 ## Current state
 
-**Phase 0 not started.** No code exists. The documentation corpus is at v1.8.3.
+**Phase 0 in progress.** Checkpoints 0.1 and 0.2 built. 0.3 onward not started.
+The documentation corpus is at v1.9.6.
 
 ## Log
 
@@ -108,3 +109,67 @@ and all corrected here: the Phase 0 definition of done contradicted D-W27, the
 build-state line asserted nothing was verified.
 
 Checkpoint 0.1 + 0.2 approved to build against v1.8.3.
+
+### 2026-07-27 — checkpoints 0.1 and 0.2 built
+Repository created at `masalasev-ops/OptionsWheelLab`, public. .NET 10 solution
+with `OptionsWheelLab.Core`, `.Worker`, `.Api` and `.Tests`. CI runs restore,
+build and test on push to `main` and on every pull request. 23 tests green,
+build clean under warnings as errors.
+
+One section binds: `Eodhd`, to `EodhdOptions`, verified by reading the
+composition root. It is the only section `CONFIG_REFERENCE.md` classes as `app`.
+No `rows`-classed section is bound, and FX-ConfigStoreClassHonoured fails the
+build if one ever is. The three `Eodhd` Consumer entries are now verified; the
+other nineteen rows carry **Unverified** until their checkpoints land.
+
+Configuration lives in one shared `src/appsettings.json` linked into both hosts
+and the tests, rather than one file per host, so the Worker and the Api cannot
+disagree about it. `appsettings.Secrets.json` is gitignored with a committed
+`.example` and loads optionally, so a fresh clone builds without it.
+
+The two cross-key invariants are pure predicates in `Core` over supplied values,
+with no host, store, startup wiring or clock. Enforcement at config-write time
+is owed by 0.8.
+
+`Microsoft.AspNetCore.OpenApi` was left out. Version 10.0.9 pulls
+`Microsoft.OpenApi` 2.0.0, which carries a high severity advisory that the
+build's vulnerability audit failed on. The API surface is Phase 11 and has no
+endpoint to describe, so the package is added back there against a patched
+version rather than the audit being suppressed now.
+
+### 2026-07-28 — corpus v1.9.1
+Three findings from the PR #1 build answered in the corpus. The OpenApi
+removal was a decision rather than a defect and is now a Phase 11 carried
+obligation. FIXTURES.md rule 2 was unenforceable as written and is split by
+direction, moving FX-RegistryMatchesDisk to 0.2. A third configuration
+direction is registered as FX-EveryBoundKeyIsDocumented.
+
+### 2026-07-28 — corpus v1.9.2
+CONFIG_REFERENCE.md now carries one key per row. Checkpoints 0.1 and 0.2
+verified complete against corpus v1.9.1.
+
+### 2026-07-28 — corpus v1.9.3
+BUILD_PLAN.md 0.1 and 0.2 reviewed against what shipped. The checkpoint text
+was substantially accurate; the build-state marker was false and four passages
+described less than what was built. Both checkpoints now match the repository.
+
+### 2026-07-28 — corpus v1.9.4
+`prompts/spent/phase-0.md` created, closing the gap where BUILD_PLAN described
+an archive the repository did not have. One file per phase rather than one per
+prompt, and each entry carries an absolute state snapshot so the current state
+is read in one take rather than reconstructed from deltas. Five prompts spent
+against Phase 0 so far, all recorded.
+
+### 2026-07-28 — corpus v1.9.5
+The spent-prompt archive now carries one overwritten Current state section
+rather than a snapshot per entry. Per-entry snapshots meant four of five
+described a state no longer true. What was asked and what was delivered cannot
+age, so they stay in the entries; state is current or it is wrong, so it lives
+in one place.
+
+### 2026-07-28 — corpus v1.9.6
+The spent-prompt archive carries one prompt per checkpoint rather than one per
+ask, with corrections folded back into the checkpoint's prompt. Replaying the
+prompts reproduces the state without replaying the mistakes. What was asked at
+the time is no longer recoverable from the archive; that history stays in the
+commit log and the pull request thread.

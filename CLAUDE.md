@@ -105,6 +105,19 @@ blocks turned out never to bind at all, so editing them did nothing.
 
 ---
 
+## 4a. Dependencies
+
+**Never suppress a vulnerability advisory to keep a dependency.** Drop the
+package, or upgrade to a version that clears the audit. A suppression is
+repository-wide in effect even when it reads as local, so keeping one unused
+package costs detection everywhere.
+
+When a package is dropped for this reason, record why at the reference site and
+add the re-adding to carried obligations in `BUILD_PLAN.md`, so the phase that
+needs it inherits the reason rather than rediscovering the advisory.
+
+---
+
 ## 5. Documentation
 
 - **Prose states the rule; the decision number is a trailing bracket.** Test by
@@ -214,6 +227,14 @@ recording what was actually built. Correct these directly.
 
 The test is whether the statement is a decision or an observation. A decision is
 authored; an observation is measured.
+
+**Two documents have both authors, so neither is ever delivered as a whole
+file.** `CONFIG_REFERENCE.md` carries an authored table and a Consumer column
+written by the build. `PROGRESS.md` carries authored corpus entries and build
+entries recording what shipped. A corpus sync for either arrives as a described
+edit to apply, never as a replacement, because a replacement silently reverts
+whichever author did not produce it. Every other document has one author and
+syncs as a file.
 
 **Before reporting a corpus entry as absent or contradictory, confirm the
 working copy is current.** Sound reasoning against a stale tree produces
