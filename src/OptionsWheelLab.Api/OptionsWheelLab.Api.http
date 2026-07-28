@@ -1,0 +1,6 @@
+@OptionsWheelLab.Api_HostAddress = http://localhost:5103
+
+GET {{OptionsWheelLab.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

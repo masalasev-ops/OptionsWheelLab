@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <IncludeLabConfiguration>true</IncludeLabConfiguration>
+  </PropertyGroup>
+
+  <!--
+    Microsoft.AspNetCore.OpenApi is deliberately absent. It is the stated API
+    convention, but the API surface arrives at Phase 11 and there is no endpoint
+    to describe yet, while version 10.0.9 pulls Microsoft.OpenApi 2.0.0, which
+    carries a high severity advisory (GHSA-v5pm-xwqc-g5wc). Suppressing the
+    audit to keep an unused package would disable vulnerability detection for
+    the whole repository. Added back at Phase 11 against a patched version.
+  -->
+
+  <ItemGroup>
+    <ProjectReference Include="../OptionsWheelLab.Core/OptionsWheelLab.Core.csproj" />
+  </ItemGroup>
+
+</Project>

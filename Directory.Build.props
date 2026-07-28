@@ -1,0 +1,32 @@
+<Project>
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    <InvariantGlobalization>true</InvariantGlobalization>
+  </PropertyGroup>
+
+  <!--
+    One shared configuration file, linked into every host and the test project.
+    A Worker and an Api disagreeing about the lab's configuration is a defect,
+    and two files is how that happens. Projects opt in with
+    IncludeLabConfiguration so the pairing is stated once rather than per host.
+
+    appsettings.Secrets.json is conditional because it is gitignored and absent
+    on a fresh clone, which must still build.
+  -->
+  <ItemGroup Condition="'$(IncludeLabConfiguration)' == 'true'">
+    <Content Include="$(MSBuildThisFileDirectory)src/appsettings.json"
+             Link="appsettings.json"
+             CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="$(MSBuildThisFileDirectory)src/appsettings.Secrets.json"
+             Link="appsettings.Secrets.json"
+             CopyToOutputDirectory="PreserveNewest"
+             Condition="Exists('$(MSBuildThisFileDirectory)src/appsettings.Secrets.json')" />
+  </ItemGroup>
+
+</Project>
