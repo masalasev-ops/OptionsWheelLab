@@ -223,6 +223,14 @@ string, so D-W29's write-side rule is a convention with no enforcement behind it
   parameter-binding seam, when the first real decimal column exists. Also decide
   what an adjusted strike does when division makes it non-terminating, since
   identity takes the refusing path.
+- **Phase 1**: resolve aliases in the decimal-ordering detector, or adopt and
+  check a convention that a decimal column is never aliased.
+  `SELECT strike AS s FROM contracts ORDER BY s` orders a decimal and the
+  ordered token is not in the vocabulary, so it passes. Harmless at 0.4, which
+  has one table, one column, no aliases and no joins, and live at Phase 1, where
+  queries over bars and quotes alias and join as a matter of course and the
+  columns being ordered are the ones that matter. Deleting
+  FX-NoDecimalOrderingInSql's known-miss test is part of closing it.
 
 ---
 
