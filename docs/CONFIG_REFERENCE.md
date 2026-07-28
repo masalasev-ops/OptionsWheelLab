@@ -9,6 +9,13 @@ checkpoint lands and is specified-only until then; unverified rows carry
 **Unverified**. A row whose consumer cannot be verified once its checkpoint has
 landed is a defect, not a documentation gap.
 
+The Consumer column names the component that READS the value, and once verified
+also names the type it binds through, as `component via TypeName`. Both are
+wanted and they are different facts: the type is where the value enters the
+process, the component is what the value does. Naming only the type would lose
+the second, and a column meaning one thing on verified rows and another on
+unverified ones is not a column.
+
 Every key carries a **Store** class [D-W27]. `rows` means a config row,
 resolved as-of a simulated date [D-W26]. `app` means bound from `appsettings`,
 which is not as-of resolvable and is therefore reserved for values that never
@@ -79,6 +86,6 @@ would leave every later version unguarded; it survives only as a backstop.
 
 | Key | Store | Meaning | Consumer | Notes |
 |---|---|---|---|---|
-| `Eodhd:BaseUrl` | app | API root | `EodhdOptions` | **Unset.** Set at Phase 8 [D-W7] |
-| `Eodhd:ApiKey` | app | credential | `EodhdOptions` | Lives in `appsettings.Secrets.json`, never committed |
-| `Eodhd:OptionsAddOnEnabled` | app | whether the options add-on is purchased | `EodhdOptions` | False until Phase 8 [D-W7] |
+| `Eodhd:BaseUrl` | app | API root | Ingest via `EodhdOptions` | **Unset.** Set at Phase 8 [D-W7] |
+| `Eodhd:ApiKey` | app | credential | Ingest via `EodhdOptions` | Lives in `appsettings.Secrets.json`, never committed |
+| `Eodhd:OptionsAddOnEnabled` | app | whether the options add-on is purchased | Ingest via `EodhdOptions` | False until Phase 8 [D-W7] |

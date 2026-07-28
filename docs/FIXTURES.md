@@ -15,8 +15,15 @@ fixtures in one place and pointing at it removes that failure by construction.
 ## Rules
 
 1. Every fixture appears here exactly once, registered against one checkpoint.
-2. A fixture file on disk with no entry here fails the build, and an entry here
-   with no file fails the build (FX-RegistryMatchesDisk).
+2. Enforcement runs in two directions and they land at different times,
+   because most entries here belong to checkpoints not yet built.
+   - **File to entry, always enforced.** A fixture file on disk with no
+     entry here fails the build. Safe from the first fixture onward, so
+     FX-RegistryMatchesDisk is registered at 0.2 rather than 0.6.
+   - **Entry to file, per checkpoint.** An entry whose checkpoint has
+     landed must have a file. This cannot be a standing assertion without
+     the suite knowing which checkpoints are complete, so it is a
+     definition of done on each checkpoint instead.
 3. Fixture data is synthetic unless explicitly marked otherwise. Synthetic is
    preferred because assignment, early exercise, and roll-cap cases can be
    constructed deliberately rather than waited for.
@@ -32,7 +39,8 @@ fixtures in one place and pointing at it removes that failure by construction.
 | FX-MoneyRoundTrip | 0.4 | adversarial decimals survive storage | authored |
 | FX-TickerDashForm | 0.4 | dot and dash ticker forms normalise together | authored |
 | FX-NoAmbientClock | 0.5 | no ambient DateTime call outside the clock | authored |
-| FX-RegistryMatchesDisk | 0.6 | this registry and the fixture directory agree | authored |
+| FX-RegistryMatchesDisk | 0.2 | every fixture file on disk has an entry here and is named for it | authored |
+| FX-EveryBoundKeyIsDocumented | 0.2 | every settable key on a bound options type has a row in CONFIG_REFERENCE.md | authored |
 | FX-ConfigStoreClassHonoured | 0.2 | parses the Store column from CONFIG_REFERENCE.md and asserts no appsettings section has a root classed `rows` | authored |
 | FX-ConfigWriteRefusesInvariantBreach | 0.8 | a config version violating a cross-key invariant is refused and no row is written | authored |
 | FX-ConfigResolvesAsOf | 0.3 | a key resolves to the version in force on the simulated date | authored |

@@ -5,7 +5,7 @@ Appended to, never rewritten. The repository is the authority on build state.
 ## Current state
 
 **Phase 0 in progress.** Checkpoints 0.1 and 0.2 built. 0.3 onward not started.
-The documentation corpus is at v1.8.3.
+The documentation corpus is at v1.9.1.
 
 ## Log
 
@@ -136,3 +136,10 @@ is owed by 0.8.
 build's vulnerability audit failed on. The API surface is Phase 11 and has no
 endpoint to describe, so the package is added back there against a patched
 version rather than the audit being suppressed now.
+
+### 2026-07-28 — corpus v1.9.1
+Three findings from the PR #1 build answered in the corpus. The OpenApi
+removal was a decision rather than a defect and is now a Phase 11 carried
+obligation. FIXTURES.md rule 2 was unenforceable as written and is split by
+direction, moving FX-RegistryMatchesDisk to 0.2. A third configuration
+direction is registered as FX-EveryBoundKeyIsDocumented.

@@ -73,6 +73,9 @@ assertions from that file.
   `appsettings.json` and passes when it is removed. Demonstrate both.
 - **DoD**: `CONFIG_REFERENCE.md`'s Consumer column names the verified consuming
   type for every key bound in this checkpoint.
+- **DoD**: every fixture registered against 0.2 in `FIXTURES.md` exists and
+  is named for it. This is the entry-to-file direction of rule 2 and applies
+  to every checkpoint from here on.
 - **Why this checkpoint exists at all**: a sibling project shipped two
   configuration blocks that were never bound, so editing them silently did
   nothing. The test is cheap now and expensive to retrofit.
@@ -146,6 +149,18 @@ window [D-W20]. These are policy choices, deliberately not fixed in the design.
 - **Note**: these values are expected to be revised. Because config rows are
   append-only and versioned, a revision inserts version + 1 and the old value
   stays readable, which is what lets a later behaviour change be explained.
+
+---
+
+## Carried obligations
+
+Work deferred out of a checkpoint that a later phase must claim. An entry
+leaves this list only when the phase that owns it has done it, never because it
+has aged.
+
+| Owed at | Obligation | Raised |
+|---|---|---|
+| Phase 11 | Re-add `Microsoft.AspNetCore.OpenApi` against a version whose `Microsoft.OpenApi` dependency clears the audit. Removed at 0.1 rather than suppressing the advisory; the reason is in the Api project file. | PR #1 |
 
 ---
 

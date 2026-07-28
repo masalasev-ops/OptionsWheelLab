@@ -1,5 +1,32 @@
 # CHANGELOG
 
+## [1.9.1] — 2026-07-28
+
+### Added
+- FX-EveryBoundKeyIsDocumented at 0.2: every settable key on a bound options
+  type must have a row in `CONFIG_REFERENCE.md`.
+- `BUILD_PLAN.md` **Carried obligations**, holding work deferred out of a
+  checkpoint. First entry: re-adding `Microsoft.AspNetCore.OpenApi` at
+  Phase 11.
+- `CLAUDE.md` 4a: never suppress a vulnerability advisory to keep a
+  dependency.
+
+### Changed
+- `FIXTURES.md` rule 2 restated. As written it required every registered
+  entry to have a file, which cannot hold while most entries belong to
+  unbuilt checkpoints, so nothing could enforce it. Split by direction.
+- FX-RegistryMatchesDisk moved from 0.6 to 0.2.
+- `CONFIG_REFERENCE.md` defines the Consumer column as `component via
+  TypeName` once verified.
+- `CLAUDE.md` 10: `CONFIG_REFERENCE.md` and `PROGRESS.md` have two authors
+  and are never delivered as whole files.
+- `README.md` states the corpus layout.
+
+### Notes
+- The registry gap is the original defect inverted: 0.2 was built to catch a
+  configuration section nobody reads; FX-EveryBoundKeyIsDocumented catches a
+  configuration key nobody writes.
+
 ## [1.8.3] — 2026-07-27
 
 ### Fixed
