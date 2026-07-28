@@ -10,15 +10,29 @@ namespace OptionsWheelLab.Tests;
 /// </remarks>
 internal static class RepoRoot
 {
-    private const string SolutionFileName = "OptionsWheelLab.slnx";
+    /// <summary>
+    /// Both solution filenames, so converting between the two formats does not
+    /// break test discovery at runtime rather than at build.
+    /// </summary>
+    private static readonly string[] SolutionFileNames =
+        ["OptionsWheelLab.sln", "OptionsWheelLab.slnx"];
 
     internal static string Location { get; } = Find();
 
     internal static string AppSettingsPath =>
         Path.Combine(Location, "src", "appsettings.json");
 
+    internal static string SecretsExamplePath =>
+        Path.Combine(Location, "src", "appsettings.Secrets.example.json");
+
     internal static string ConfigReferencePath =>
         Path.Combine(Location, "docs", "CONFIG_REFERENCE.md");
+
+    internal static string FixturesRegistryPath =>
+        Path.Combine(Location, "docs", "FIXTURES.md");
+
+    internal static string TestProjectPath =>
+        Path.Combine(Location, "tests", "OptionsWheelLab.Tests");
 
     private static string Find()
     {
@@ -26,7 +40,7 @@ internal static class RepoRoot
 
         while (directory is not null)
         {
-            if (File.Exists(Path.Combine(directory.FullName, SolutionFileName)))
+            if (SolutionFileNames.Any(name => File.Exists(Path.Combine(directory.FullName, name))))
             {
                 return directory.FullName;
             }
@@ -35,6 +49,7 @@ internal static class RepoRoot
         }
 
         throw new InvalidOperationException(
-            $"Could not find {SolutionFileName} in any directory above {AppContext.BaseDirectory}.");
+            $"Could not find any of {string.Join(" or ", SolutionFileNames)} in any directory "
+            + $"above {AppContext.BaseDirectory}.");
     }
 }
