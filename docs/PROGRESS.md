@@ -5,7 +5,7 @@ Appended to, never rewritten. The repository is the authority on build state.
 ## Current state
 
 **Phase 0 in progress.** Checkpoints 0.1, 0.2, 0.3 and 0.4 built. 0.5 onward not
-started. The documentation corpus is at v1.9.9.
+started. The documentation corpus is at v1.9.10.
 
 ## Log
 
@@ -224,3 +224,16 @@ and archiving bound to the single moment a checkpoint is determined fully built.
 That second rule replaced a weaker one written the same day, and it also closed a
 defect the checkpoint had hit four times: Current state kept going stale because
 it was written mid-build rather than after the last change.
+
+### 2026-07-28 — corpus v1.9.10
+The three-state rule refined twice by trying to apply it. It now says when a
+checkpoint is determined fully built, which is after review closes rather than
+when the code is written, because at 0.4 review changed the deliverable four
+times after the prompt had been archived.
+
+Current state stops recording the branch and the merged pull requests. Git holds
+both, a fact kept in two places drifts, and they were the only fields that could
+not be known at the moment the rule says to write them. Removing them closed the
+timing gap instead of adding a step to work around it, which is the fifth
+instance of one pattern at this corpus version: the fix for a duplicated fact is
+to delete the copy, not to synchronise it.

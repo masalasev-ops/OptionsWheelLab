@@ -28,13 +28,20 @@ describes the result, and a third description that kept moving would be the leas
 authoritative of the three.
 
 **Determined fully built**, which is the transition between them and happens
-once. At that point, and only then, the detail is reconciled against what
-shipped, and the checkpoint's prompt is appended to `prompts/spent/phase-N.md`
-with Current state overwritten. Both halves belong to the same moment: the
-reconciled detail says what the checkpoint turned out to be, and the archive says
-how to reproduce it. Doing this at sign-off rather than during the build is what
-keeps Current state true, because it is then written after the last change rather
-than before it.
+once. That moment is **after review has closed and before the merge**, not when
+the last line is written. Review is part of determining a checkpoint fully built
+because it changes what shipped: at 0.4 it changed the deliverable four times,
+and the prompt had been archived before any of it, so replaying that prompt would
+not have reproduced the tree. Reading "fully built" as "I have finished writing
+it" reproduces exactly the staleness this rule exists to prevent.
+
+At that point, and only then, the detail is reconciled against what shipped, and
+the checkpoint's prompt is appended to `prompts/spent/phase-N.md` with Current
+state overwritten. Both halves belong to the same moment: the reconciled detail
+says what the checkpoint turned out to be, and the archive says how to reproduce
+it. Doing this at sign-off rather than during the build is what keeps Current
+state true, because it is then written after the last change rather than before
+it.
 
 The build-state marker above says which sections are frozen and which are still
 intent. Three things stay live regardless of it, because each is read before work

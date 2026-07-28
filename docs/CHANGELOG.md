@@ -1,5 +1,30 @@
 # CHANGELOG
 
+## [1.9.10] — 2026-07-28
+
+### Changed
+- `BUILD_PLAN.md` says when a checkpoint is determined fully built: after review
+  has closed and before the merge, not when the last line is written. Review is
+  part of the determination because it changes what shipped. At 0.4 it changed
+  the deliverable four times and the prompt had been archived before any of it,
+  so replaying that prompt would not have reproduced the tree. Without this the
+  rule reproduces the staleness it was written to prevent, because "fully built"
+  reads as "I have finished writing it".
+- The archive's Current state no longer records which branch the work sits on or
+  which pull requests have merged. Git holds both exactly, and a fact kept in two
+  places drifts, which is the same defect corrected four other times at 1.9.9.
+  They were also the only fields that could not be known at the moment a
+  checkpoint is determined fully built, since a merge commit does not exist until
+  after it, so removing them closes the one timing gap in the new rule rather
+  than adding a step to work around it.
+- The no-squash policy moves from that table to Working rules in force, beside
+  the two workflow rules it belongs with, since it is a policy rather than an
+  observation.
+- Working rules records that a pull request description describes the change as
+  it stands rather than accumulating a section per review round. An appended
+  section cannot retract an earlier one, so PR #3 ended up asserting a superseded
+  rule alongside the rule that replaced it.
+
 ## [1.9.9] — 2026-07-28
 
 ### Added

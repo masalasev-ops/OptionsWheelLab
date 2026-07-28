@@ -15,14 +15,18 @@ One file per phase. It closes when Phase 0 signs off; Phase 1 opens its own.
 
 # Current state
 
-Corpus v1.9.9.
+Corpus v1.9.10.
 
 | | |
 |---|---|
 | Phase 0 | 0.1, 0.2, 0.3 and 0.4 built; 0.5 onward not started |
-| Branch | `phase-0/checkpoint-0.4`, off `main` |
-| Merged | PR #1 as `53cc0b4` and PR #2 as `a2b8c28`, both merge commits, neither squashed |
 | CI | green, 156 tests, guards then restore then build then test, on push to `main` and every pull request |
+
+Which branch the work sits on and which pull requests have merged are not
+recorded here. Git holds both exactly, and a fact kept in two places drifts:
+these two rows were the only thing in this section that could not be known at the
+moment a checkpoint is determined fully built, because a merge commit does not
+exist until after it.
 
 ## Build
 
@@ -206,9 +210,14 @@ Every document is in `docs/`. Spent prompts are in `prompts/spent/`.
 ## Working rules in force
 
 - Commit subjects are prefixed with the phase name and stage, as
-  `Phase 0 Foundations / 0.4 - <type>: <subject>`.
-- The pull request description is updated on every check-in.
+  `Phase 0 Foundations / 0.5 - <type>: <subject>`.
+- The pull request description is updated on every check-in, and describes the
+  change as it stands rather than accumulating a section per review round. An
+  appended section cannot retract an earlier one, so a superseded decision ends
+  up asserted alongside the one that replaced it. The commit log is the log.
 - Code reaches GitHub as a pull request with CI, never by committing to `main`.
+- A checkpoint's pull request is merged as a merge commit, never squashed, so
+  the phase-prefixed commits stay legible on `main`.
 
 ## Not built
 
