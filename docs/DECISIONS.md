@@ -16,7 +16,7 @@ predates this file and cannot be relied on.
 
 **Purpose and measurement**: D-W2, D-W3, D-W5, D-W17, D-W18, D-W20, D-W21
 **Isolation and controls**: D-W1, D-W4, D-W6, D-W13
-**Data and identity**: D-W7, D-W8, D-W9, D-W15, D-W26, D-W27, D-W28
+**Data and identity**: D-W7, D-W8, D-W9, D-W15, D-W26, D-W27, D-W28, D-W29
 **Risk**: D-W10, D-W11, D-W14, D-W19, D-W23, D-W25
 **Gate constraints**: D-W10, D-W22, D-W23, D-W24, D-W25
 **Scope**: D-W12, D-W16
@@ -251,11 +251,16 @@ absent from watchlist membership as of that date.
 `active` · 2026-07-26
 
 The outcome of a decision is return on capital committed at the strike, being
-strike times one hundred times contracts, measured from trial open through to
-return to cash, with assigned shares marked into the same number.
+strike times the contract multiplier times contracts, measured from trial open
+through to return to cash, with assigned shares marked into the same number.
 
 Consequence: assignment is inside the metric rather than outside it, so the
 strategy's downside cannot leave the measurement.
+
+One hundred is the standard multiplier and not a constant of the metric. An
+adjusted contract carries its own deliverable in `contracts.multiplier`, so a
+metric hardcoding one hundred would misprice every position in a name that has
+split.
 
 Test: `WORKED_EXAMPLE.md` reproduces the figure to the cent.
 
@@ -330,9 +335,10 @@ in the money carries a large excursion on a positive outcome.
 ### D-W22 Contract-level liquidity filter
 `active` · 2026-07-27
 
-The gate rejects a candidate whose quoted spread exceeds `Gate:MaxSpreadPctOfMid`
-of the mid, or whose bid falls below `Gate:MinPremium`. Proposed defaults are 12
-percent and 0.30, both Phase 0.8 config.
+The gate rejects a candidate whose quoted spread exceeds
+`Gate:MaxSpreadFractionOfMid` of the mid, or whose bid falls below
+`Gate:MinPremium`. Proposed defaults are 0.12, being twelve percent of mid, and
+0.30, both Phase 0.8 config.
 
 Rationale, and the first reason matters more than the second. **The filter
 protects the measurement, not only the trade.** The scorer computes an outcome
@@ -576,3 +582,44 @@ from the snapshot resolves the same values it did before the mutation.
 Test: a snapshot taken while a reader holds the store succeeds.
 Test: a snapshot taken while a writer holds the store succeeds, and the snapshot
 contains the committed state and not the uncommitted.
+
+---
+
+### D-W29 Stored decimals are canonical and are not ordered in SQL
+`active` · 2026-07-28
+
+A decimal stored in a `TEXT` column is written in one canonical fixed-scale
+form, so a given number has exactly one stored representation. No query orders,
+ranges over, or aggregates a decimal column; comparison and arithmetic happen in
+code after parsing.
+
+Canonical because identity depends on it. An option contract's identity is the
+tuple of underlying, expiry, right and strike, and strike is a decimal. `50` and
+`50.00` round-trip to the same value and are different `TEXT`, so a
+non-canonical form would give one contract two identities and split its history
+without failing.
+
+Not ordered in SQL because the form is not order-preserving. Lexicographic
+comparison puts `"9.50"` above `"10.00"`, and negatives invert again. An
+order-preserving encoding is possible but costs readability in every column for
+a property only some queries want.
+
+The scale is a fidelity requirement for vendor-supplied values and a rounding
+policy for computed ones. A vendor value refuses rather than rounds, because a
+scale below the vendor's precision must fail ingestion rather than lose a digit
+quietly. A computed value rounds explicitly, because division is non-terminating
+in general and no finite scale is sufficient for a ratio. One entry point could
+not be both, so there are two and the caller chooses.
+
+Every decimal reaching a `TEXT` column passes through the canonical form. No
+call site formats a decimal itself.
+
+Consequence, recorded so it is inherited rather than rediscovered. Phase 5 ranks
+candidates and Phase 6 aggregates outcomes. Neither may do so in SQL over a
+decimal column. If SQL-side ranking is wanted then, it is a schema decision
+taken with the need visible, not a property assumed now.
+
+Test FX-MoneyRoundTrip: adversarial decimals survive storage, and equal values
+written differently store identically.
+Test FX-NoDecimalOrderingInSql: a static check that no SQL in the codebase
+orders, ranges over, or aggregates a decimal column.

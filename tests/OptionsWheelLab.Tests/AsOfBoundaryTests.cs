@@ -66,6 +66,16 @@ public sealed class AsOfBoundaryTests
 
         Assert.True(fractionalDigits > 0, "the stored format should carry fractional seconds");
 
-        return TimeSpan.TicksPerSecond / (long)Math.Pow(10, fractionalDigits);
+        // Integer arithmetic throughout. This was Math.Pow, which computes an
+        // exact power of ten as a double and casts the result back, and the
+        // floating-point guard caught it on the day it landed.
+        var ticksPerRenderedUnit = 1L;
+
+        for (var digit = 0; digit < fractionalDigits; digit++)
+        {
+            ticksPerRenderedUnit *= 10;
+        }
+
+        return TimeSpan.TicksPerSecond / ticksPerRenderedUnit;
     }
 }

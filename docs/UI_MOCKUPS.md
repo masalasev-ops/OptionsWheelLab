@@ -239,6 +239,9 @@ trades anywhere in the interface.
 
 Six screens produced as a single bundled HTML prototype, React over a design
 system, one section per screen behind a nav. Source kept as `WheelLab.html`, which predates the rename.
+It also predates the `Pct` to `Fraction` key rename. It is a historical artefact
+whose contents are fixed at the moment it was produced, not a document that
+tracks the corpus, so it is neither regenerated nor corrected in place.
 
 **Held.** All six screens present. Read-only framing intact, with no execution
 control anywhere: the only interactive elements in the whole prototype are a date

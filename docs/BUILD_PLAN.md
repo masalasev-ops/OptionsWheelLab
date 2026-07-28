@@ -1,7 +1,7 @@
 # BUILD_PLAN
 
-Build state: **Phase 0 in progress**. 0.1, 0.2 and 0.3 built; 0.4 onward not
-started.
+Build state: **Phase 0 in progress**. 0.1, 0.2, 0.3 and 0.4 built; 0.5 onward
+not started.
 
 ## How this document works
 
@@ -14,6 +14,36 @@ is not duplicated here.
 **Checkpoint detail** is written one phase ahead, never further. Writing it eight
 phases ahead is what made the equivalent AlphaLab document go stale, because a
 checkpoint's acceptance criteria depend on decisions that have not landed yet.
+
+A checkpoint's detail passes through three states, and the middle one is a single
+event rather than a period.
+
+**Not built.** The detail is live intent. It is corrected freely, and must be,
+whenever something that has landed changes what the checkpoint should build. A
+correction here is the propagation rule doing its job.
+
+**Signed off.** The detail is frozen. It is not revisited, because the archive
+now holds the prompt that reproduces the checkpoint and the Current state that
+describes the result, and a third description that kept moving would be the least
+authoritative of the three.
+
+**Determined fully built**, which is the transition between them and happens
+once. At that point, and only then, the detail is reconciled against what
+shipped, and the checkpoint's prompt is appended to `prompts/spent/phase-N.md`
+with Current state overwritten. Both halves belong to the same moment: the
+reconciled detail says what the checkpoint turned out to be, and the archive says
+how to reproduce it. Doing this at sign-off rather than during the build is what
+keeps Current state true, because it is then written after the last change rather
+than before it.
+
+The build-state marker above says which sections are frozen and which are still
+intent. Three things stay live regardless of it, because each is read before work
+rather than after: the phase definition of done, the carried obligations, and the
+detail for checkpoints not yet built.
+
+A frozen section may still be corrected by a landed decision, on the authority of
+the decision rather than of the code [`CLAUDE.md` §10]. That is the only thing
+that reaches one.
 
 **Prompts** are written immediately before they are spent. Once a checkpoint is
 built, `prompts/spent/phase-N.md` carries one prompt for it, being the prompt
@@ -108,8 +138,9 @@ assertions from that file.
 
 ### 0.3 Store bootstrap and migrations
 
-SQLite store, snapshot-first migration runner, `migrate.ps1` calling the snapshot
-tool internally first. Worker is the sole writer; Api opens read-only.
+SQLite store, snapshot-first migration runner, `migrate.ps1` as the operator
+entry point invoking the runner so a hand-run cannot skip the snapshot. Worker is
+the sole writer; Api opens read-only.
 
 - **Test** FX-MigrateFromEmpty: migrating an empty database produces the expected
   schema version and is idempotent on a second run.
@@ -134,21 +165,56 @@ Decimal-as-TEXT storage helpers with round-trip tests. Ticker normalisation to
 the EODHD dash form. Contract identity as the underlying, expiry, right, strike
 tuple.
 
-- **Test** FX-MoneyRoundTrip: a set of adversarial decimals round-trips through
-  storage without loss, including values that lose precision as doubles.
-- **Test** FX-TickerDashForm: `BRK.B` and `BRK-B` normalise to the same key.
-- **DoD**: no `double` or `float` appears in any monetary path; a CI grep
-  enforces it.
+Reconciled at sign-off against what shipped. Three things were larger than the
+scope above.
+
+The decimal form needed **two entry points, not one** [D-W29]. The scale is a
+fidelity requirement for a vendor-supplied value, which must refuse rather than
+lose a digit quietly, and a rounding policy for a computed one. Decimal division
+is non-terminating in general, so a single refusing function could not store the
+worked example's own first return.
+
+Two further stored forms came with it, for one reason: the obvious rendering is
+culture-independent, plausible and wrong. A bare `ToString()` on a date gives
+`MM/dd/yyyy` under `InvariantGlobalization`, and on the contract right gives
+`Put` where the schema says `put`.
+
+The configuration surfaces gained typed decimal and integer accessors, so the
+canonical form is validated where it is read rather than assumed, and so
+changing the scale is one edit.
+
+Contract identity gained a total order, because three makers receiving
+byte-identical candidate sets [D-W4] cannot depend on the order candidates
+arrive in.
+
+Implement the fixtures registered against 0.4 in `FIXTURES.md`.
+
+- **DoD**: no `double` or `float` appears in any monetary path; a source guard
+  enforces it. Shipped as `guards.ps1`, called by CI before the build so it
+  fails even when the build does not, scanning the whole tree with no exemption
+  mechanism. Its catch-list is wider than the two keywords, because
+  `Random.NextDouble`, `Convert.ToDouble` and the `Math` functions carry
+  neither.
+- **DoD**: `50`, `50.0` and `50.00` produce one stored string. This is the
+  identity property rather than formatting: strike participates in contract
+  identity, so two spellings would give one contract two identities.
 
 ### 0.5 Deterministic clock
 
 An `IClock` abstraction injected everywhere. No call to `DateTime.Now` or
 `DateTime.UtcNow` outside the clock implementation.
 
-- **Test** FX-NoAmbientClock: a CI grep fails the build on `DateTime.Now` or
-  `DateTime.UtcNow` outside the permitted file.
+The ambient-clock check extends the source guards 0.4 established rather than
+introducing a second mechanism. Whether those guards stay a text scan is open
+until 0.7, so this checkpoint states the rule and adds a check to whatever they
+are, rather than committing to an implementation a later checkpoint may replace.
+
+Implement the fixtures registered against 0.5 in `FIXTURES.md`.
+
 - **DoD**: a simulated run with a fixed clock produces byte-identical output
   across two invocations.
+- **DoD**: introducing an ambient clock call outside the permitted file fails
+  locally and in CI. Demonstrate, revert.
 
 ### 0.6 Fixture harness
 
@@ -156,18 +222,40 @@ The loader that reads synthetic chain fixtures, plus `FIXTURES.md` as the single
 registry. Fixtures are declared against a checkpoint, and the harness discovers
 them from the registry rather than from a hardcoded list.
 
-- **Test** FX-RegistryMatchesDisk: every fixture in `FIXTURES.md` exists on disk
-  and every fixture on disk is registered, failing on either mismatch.
+The registry checks are not this checkpoint's to build. FX-RegistryMatchesDisk
+is registered at 0.2 and shipped there, because the file-to-entry direction is
+safe from the first fixture onward. The entry-to-file direction does not become
+a standing assertion here either: most entries belong to checkpoints not yet
+built, so it stays a definition of done on each checkpoint [`FIXTURES.md` rule
+2]. What 0.6 adds is the loader.
+
+Implement the fixtures registered against 0.6 in `FIXTURES.md`.
+
 - **DoD**: adding a fixture file without registering it fails the build.
 
 ### 0.7 Append-only guards
 
-CI greps asserting no `DELETE FROM` or `UPDATE` against snapshot tables
-[D-W8], and none against `decisions` or `candidates` [D-W3].
+Assertions that no `DELETE FROM` or `UPDATE` reaches a snapshot table [D-W8],
+and none reaches `decisions` or `candidates` [D-W3]. They extend the source
+guards 0.4 established rather than introducing a second mechanism.
 
-- **Test**: the grep fails the build when a violating statement is introduced in
-  a scratch file, verified by a test that adds and removes one.
+Also in 0.7: decide whether the source guards stay a text scan or move to a
+Roslyn analyser. 0.4 raised it and deferred it here deliberately, because this
+is the first checkpoint where three guards exist and one mechanism serving all
+of them can be compared against three separate scans concretely rather than
+argued in the abstract. The argument is that a text scan sees declared intent
+and not inferred types, and it was recorded before the comparison rather than
+after.
+
+- **Test**: the guard fails when a violating statement is introduced, verified
+  by a test that adds and removes one.
 - **DoD**: guard runs in CI, not only locally.
+- **Constraint**: five statements already in the tree are the banned text and
+  must not be reported. One is the trigger DDL that enforces append-only, and
+  three are the tests asserting those triggers reject an `UPDATE` or a `DELETE`.
+  Distinguishing them is a design problem for the check, not a case for an
+  exemption list: 0.4's guard has none by decision, and adding one here would
+  reopen that.
 
 ### 0.8 Configuration values for the open parameters
 
@@ -194,6 +282,10 @@ has aged.
 | Owed at | Obligation | Raised |
 |---|---|---|
 | Phase 11 | Re-add `Microsoft.AspNetCore.OpenApi` against a version whose `Microsoft.OpenApi` dependency clears the audit. Removed at 0.1 rather than suppressing the advisory; the reason is in the Api project file. | PR #1 |
+| 0.7 | Decide whether the source guards stay a text scan or move to a Roslyn analyser. A text scan sees declared intent and not inferred types, so `Math.Sqrt`, `Convert.ToDouble` and `Random.NextDouble` are caught only by naming each one. Scoped into 0.7 above. | PR #3 |
+| Phase 1 | Give D-W29's write-side rule teeth. Every decimal reaching a `TEXT` column should pass through the canonical form, and nothing enforces that: `ConfigWriter.Append` takes a string. A decimal-typed parameter-binding seam is the likely mechanism, when the first real decimal column exists. | PR #3 |
+| Phase 1 | Decide what an adjusted strike does when a corporate action makes it non-terminating. Identity canonicalises through the refusing path, so a 3-for-2 split forces a choice between rounding a value that is part of a contract's identity and carrying the ratio. | PR #3 |
+| Phase 1 | Resolve aliases in the decimal-ordering detector, or adopt and check a convention that a decimal column is never aliased. `SELECT strike AS s FROM contracts ORDER BY s` orders a decimal and passes. Deleting FX-NoDecimalOrderingInSql's known-miss test is part of closing it. | PR #3 |
 
 ---
 

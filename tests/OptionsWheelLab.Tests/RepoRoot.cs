@@ -34,6 +34,36 @@ internal static class RepoRoot
     internal static string TestProjectPath =>
         Path.Combine(Location, "tests", "OptionsWheelLab.Tests");
 
+    internal static string SourcePath => Path.Combine(Location, "src");
+
+    internal static string SchemaDocumentPath =>
+        Path.Combine(Location, "docs", "DATA_AND_SCHEMA.md");
+
+    /// <summary>
+    /// Every committed C# file under a directory, with build output excluded.
+    /// </summary>
+    /// <remarks>
+    /// <c>bin</c> and <c>obj</c> hold generated sources such as
+    /// <c>*.AssemblyInfo.cs</c> and <c>*.GlobalUsings.g.cs</c>. Scanning those
+    /// would assert over code nobody wrote.
+    /// </remarks>
+    internal static IReadOnlyList<string> SourceFilesUnder(string directory) =>
+        [.. Directory
+            .EnumerateFiles(directory, "*.cs", SearchOption.AllDirectories)
+            .Where(path => !IsBuildOutput(path))
+            .OrderBy(path => path, StringComparer.Ordinal)];
+
+    private static bool IsBuildOutput(string path)
+    {
+        var relative = Path.GetRelativePath(Location, path);
+
+        return relative
+            .Split(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)
+            .Any(segment =>
+                segment.Equals("bin", StringComparison.OrdinalIgnoreCase)
+                || segment.Equals("obj", StringComparison.OrdinalIgnoreCase));
+    }
+
     private static string Find()
     {
         var directory = new DirectoryInfo(AppContext.BaseDirectory);

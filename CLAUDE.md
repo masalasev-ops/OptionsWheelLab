@@ -28,6 +28,12 @@ drafted in conversation does not exist until it is committed to a file in this
 repository. Before citing a rule, a clause, or a prior decision, confirm it is
 actually in the corpus.
 
+**A code comment is not a corpus record either.** This one is harder to spot
+because it is committed, permanent, and in the repository. What makes a record
+is where it will be read, not whether it survives. An obligation noted beside
+the code that has it, and nowhere the planning for that work will look, is not
+recorded. State it where it will be found, then read it back off disk.
+
 **When a claim is challenged with cited sources, treat the citation as probably
 right and re-read.** In the sibling project the challenger with a line number
 was right nearly every time.
@@ -257,6 +263,13 @@ entries recording what shipped. A corpus sync for either arrives as a described
 edit to apply, never as a replacement, because a replacement silently reverts
 whichever author did not produce it. Every other document has one author and
 syncs as a file.
+
+Authored prose that a landed decision has already superseded is corrected, not
+reported. The test is whether the decision determines what the text should say.
+If it does, correct it and cite the decision. If the correction still needs a
+judgement about the wording, it is a finding. This is not licence to overrule a
+document by building something else: the authority is the decision, never the
+code.
 
 **Before reporting a corpus entry as absent or contradictory, confirm the
 working copy is current.** Sound reasoning against a stale tree produces

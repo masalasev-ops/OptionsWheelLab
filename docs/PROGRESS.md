@@ -4,8 +4,8 @@ Appended to, never rewritten. The repository is the authority on build state.
 
 ## Current state
 
-**Phase 0 in progress.** Checkpoints 0.1, 0.2 and 0.3 built. 0.4 onward not
-started. The documentation corpus is at v1.9.8.
+**Phase 0 in progress.** Checkpoints 0.1, 0.2, 0.3 and 0.4 built. 0.5 onward not
+started. The documentation corpus is at v1.9.9.
 
 ## Log
 
@@ -192,3 +192,35 @@ shape a snapshot has on disk.
 The test project now references both hosts and carries tests that use them, so
 a broken host fails `dotnet test` rather than only the separate build step, and
 the provider-ordering fix is asserted rather than demonstrated.
+
+### 2026-07-28 — corpus v1.9.9
+Checkpoint 0.4 scoped. D-W29 makes the stored decimal form canonical, because
+strike participates in contract identity and two spellings of one strike would
+give one contract two identities and split its history without failing. The same
+decision separates the scale's two meanings: a fidelity requirement for
+vendor-supplied values, which refuse rather than round, and a rounding policy for
+computed ones, which round explicitly.
+
+The `Pct` keys are renamed to `Fraction`. The suffix named a percentage while
+every description said fraction, and `Gate:MaxSpreadPctOfMid` was proposed as 12,
+which is only meaningful as a percent. Every affected key is unset and
+unconsumed, so the rename was free and could not have been free again.
+
+Three documents carried prose that D-W28 had already superseded or that stated a
+version long past. `CLAUDE.md` §10 gains the rule that distinguishes correcting
+such prose from a build overruling a document: the authority is the landed
+decision, never the code.
+
+Checkpoint 0.4 built and signed off. The stored decimal form, the stored date and
+contract-right forms, typed configuration accessors, ticker normalisation,
+contract identity with a total order, the decimal-ordering check, and the first
+source guard that is not a unit test. 156 tests.
+
+Two rules came out of building it rather than out of planning it. `CLAUDE.md` §1
+gains that a code comment is not a corpus record, written after a report claimed
+an obligation was recorded when it sat in a fixture comment. `BUILD_PLAN.md`
+gains the three states a checkpoint's detail passes through, with reconciliation
+and archiving bound to the single moment a checkpoint is determined fully built.
+That second rule replaced a weaker one written the same day, and it also closed a
+defect the checkpoint had hit four times: Current state kept going stale because
+it was written mid-build rather than after the last change.

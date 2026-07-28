@@ -20,6 +20,13 @@ namespace OptionsWheelLab.Core.Configuration;
 /// date is in force on it. The date is widened to its last instant in
 /// <see cref="AsOfBoundary"/> before it meets the timestamp column.
 /// </para>
+/// <para>
+/// The typed accessors are public instance methods and must stay that way. An
+/// extension method or a static would be a natural way to add one, and
+/// FX-NoCurrentConfigReadOnSimulatedPath reflects over this type's declared
+/// instance members, so either would be invisible to it: the guard would read
+/// green while covering nothing.
+/// </para>
 /// </remarks>
 public sealed class AsOfConfiguration
 {
@@ -41,4 +48,18 @@ public sealed class AsOfConfiguration
 
         return ConfigRowQuery.ResolveAtOrBefore(_connection, key, AsOfBoundary.LastInstantOf(asOf));
     }
+
+    /// <summary>
+    /// The decimal in force on <paramref name="asOf"/>, or null when the key had
+    /// no value by then. See <see cref="ConfigValue"/> for why this exists.
+    /// </summary>
+    public decimal? ResolveDecimal(string key, DateOnly asOf) =>
+        ConfigValue.AsDecimal(Resolve(key, asOf), key);
+
+    /// <summary>
+    /// The integer in force on <paramref name="asOf"/>, or null when the key had
+    /// no value by then.
+    /// </summary>
+    public int? ResolveInt(string key, DateOnly asOf) =>
+        ConfigValue.AsInt(Resolve(key, asOf), key);
 }

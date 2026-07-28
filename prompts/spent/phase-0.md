@@ -15,23 +15,23 @@ One file per phase. It closes when Phase 0 signs off; Phase 1 opens its own.
 
 # Current state
 
-Corpus v1.9.8.
+Corpus v1.9.9.
 
 | | |
 |---|---|
-| Phase 0 | 0.1, 0.2 and 0.3 built; 0.4 onward not started |
-| Branch | `phase-0/checkpoint-0.3`, off `main` |
-| Merged | PR #1 into `main` as `53cc0b4`, 24 commits preserved, not squashed |
-| CI | green, 92 tests, restore and build and test on push to `main` and every pull request |
+| Phase 0 | 0.1, 0.2, 0.3 and 0.4 built; 0.5 onward not started |
+| Branch | `phase-0/checkpoint-0.4`, off `main` |
+| Merged | PR #1 as `53cc0b4` and PR #2 as `a2b8c28`, both merge commits, neither squashed |
+| CI | green, 156 tests, guards then restore then build then test, on push to `main` and every pull request |
 
 ## Build
 
 .NET 10 solution, nullable enabled, warnings as errors, central package
 management with transitive pinning: `OptionsWheelLab.Core` holding the
-composition root, options types and the storage layer, `.Worker` and `.Api` as
-thin hosts both calling it, and `.Tests`, which references both hosts and
-carries tests that use them, so a broken host fails `dotnet test` and not only
-the separate build step.
+composition root, options types, the storage layer and the identity primitives,
+`.Worker` and `.Api` as thin hosts both calling it, and `.Tests`, which
+references both hosts and carries tests that use them, so a broken host fails
+`dotnet test` and not only the separate build step.
 
 One shared `src/appsettings.json` linked into both hosts and the test project,
 loaded from `AppContext.BaseDirectory` because the generic host and the web host
@@ -95,23 +95,86 @@ from the other. `AsOfConfiguration` takes a date on every member and resolves
 transaction, with `set_at` supplied rather than read from a clock and refused if
 it predates the newest version of that key.
 
+Both read surfaces carry decimal and integer accessors alongside the string one,
+as public instance methods rather than extensions, since the as-of guard reflects
+over declared instance members and anything else would be invisible to it. They
+exist so the canonical form is validated at the point of reading rather than
+assumed, and so changing the scale is one edit; not to close an ambient-culture
+trap, which `InvariantGlobalization` already closes. An integer is stored plainly
+and not in the decimal form.
+
 The two cross-key invariants remain pure predicates over supplied values, with
 no host, no config store, no startup wiring and no clock.
 
-## Time
+## Stored forms
+
+Every value with a stored representation has one place that renders and parses
+it, because in each case the obvious call is culture-independent, plausible and
+wrong.
 
 Dates are `yyyy-MM-dd` and timestamps `yyyy-MM-ddTHH:mm:ss.fffZ`, both UTC and
 fixed width. A date is widened to its last instant in one place before meeting a
 timestamp column. Filenames use `yyyyMMddTHHmmssfffZ`, because a colon is
-illegal in a Windows path.
+illegal in a Windows path. A bare `ToString()` on a date gives `MM/dd/yyyy` under
+`InvariantGlobalization`, which cannot vary by machine and still sorts by month.
+
+Decimals are fixed-scale at 8 places, so one number has one stored string
+[D-W29]. Two entry points: one refuses a value it cannot hold exactly, for vendor
+quotes and strikes and ledger amounts, and one rounds away from zero, for
+computed values, since decimal division is non-terminating in general. Both
+refuse on magnitude. The bound is computed from the scale rather than written
+down. Parsing is lenient about padding, so a hand-written `0.35` reads, and
+strict about precision, counted on the string, because `decimal.Parse` silently
+rounds beyond 29 significant digits.
+
+The form is not order-preserving, so no SQL orders, ranges over or aggregates a
+decimal column. `config_rows.value` is the first entry in that vocabulary.
+
+A contract right stores as `put` or `call`, declared rather than derived from the
+enum's spelling.
+
+## Identity
+
+A ticker is the bare dash form, `BRK-B`, constructible only through
+normalisation, so one carrying an exchange suffix cannot exist. The suffix is
+stripped before dots become dashes, or `BRK-B.US` would become `BRK-B-US`. A
+one-letter dot-suffix is a share class and a two-to-five-letter one is an
+exchange code, stripped if known and refused if not: `GSPC.INDX` is refused
+rather than silently becoming `GSPC-INDX`. Characters are checked before the case
+fold, so a homoglyph cannot become a second key.
+
+A contract's identity is underlying, expiry, right and strike, with the strike
+canonicalised. That buys rendering stability and validation, not equality:
+`decimal` equality and hashing already ignore scale. The vendor symbol lives on
+`Contract` rather than on the identity, because record equality covers every
+declared member. Identity carries a total order, since three makers receiving
+byte-identical candidate sets requires one.
+
+## Guards
+
+`guards.ps1` at the root holds the checks that are not unit tests, and `ci.yml`
+calls it before the build, because a source guard must fail even when the build
+does not. Today it bans floating point across `src` and `tests` with no exemption
+mechanism of any kind. The catch-list covers the two keywords plus
+`Random.NextDouble`, `Convert.ToDouble`, `GetDouble`, the `Math` functions and
+exponent literals, none of which carry a `double` token. It self-tests on three
+samples before scanning, one of which exists because a literal stripper that
+desyncs still scans every file and still reports success.
+
+It catches declared intent, not inferred types, and says so.
 
 ## Tests
 
-92 across eleven fixtures plus the 0.1 smoke test and eight unregistered suites.
+156: 97 across fourteen fixtures, and 59 across twelve unregistered suites, one
+of which is the 0.1 smoke test and one of which checks the phase definition of
+done.
 
 | Fixture | Tests |
 |---|---|
+| FX-MoneyRoundTrip | 17 |
+| FX-TickerDashForm | 12 |
 | FX-ConfigStoreClassHonoured | 12 |
+| FX-NoDecimalOrderingInSql | 12 |
 | FX-CeilingNotInsidePolicyBand | 7 |
 | FX-ConfigResolvesAsOf | 6 |
 | FX-EveryConfigSectionBinds | 6 |
@@ -123,9 +186,10 @@ illegal in a Windows path.
 | FX-SnapshotRestoresIdentically | 3 |
 | FX-RegistryMatchesDisk | 1 |
 
-All eleven fixtures registered against 0.2 and 0.3 are implemented and named for
-their registry entry. The suite parses `CONFIG_REFERENCE.md` and `FIXTURES.md`,
-so both are load-bearing rather than descriptive.
+All fourteen fixtures registered against 0.2, 0.3 and 0.4 are implemented and
+named for their registry entry. The suite parses `CONFIG_REFERENCE.md`,
+`FIXTURES.md` and `DATA_AND_SCHEMA.md`, so all three are load-bearing rather than
+descriptive.
 
 Every store test creates its own database in a temp directory, because the
 append-only triggers make `config_rows` impossible to clean between cases. No
@@ -134,29 +198,39 @@ path does not exist.
 
 ## Layout
 
-Repository root holds `README.md`, `CLAUDE.md` and `migrate.ps1`. Every document
-is in `docs/`. Spent prompts are in `prompts/spent/`.
+Repository root holds `README.md`, `CLAUDE.md`, `migrate.ps1` and `guards.ps1`.
+Every document is in `docs/`. Spent prompts are in `prompts/spent/`.
+
+`Core` has three folders: `Configuration`, `Storage` and `Identity`.
 
 ## Working rules in force
 
 - Commit subjects are prefixed with the phase name and stage, as
-  `Phase 0 Foundations / 0.3 - <type>: <subject>`.
+  `Phase 0 Foundations / 0.4 - <type>: <subject>`.
 - The pull request description is updated on every check-in.
 - Code reaches GitHub as a pull request with CI, never by committing to `main`.
 
 ## Not built
 
-Market data tables and every other table. The deterministic clock. Money and
-ticker primitives. The fixture loader. The append-only CI greps. Every
-checkpoint from 0.4 onward.
+Market data tables and every other table. The deterministic clock. The fixture
+loader. The append-only CI greps. Every checkpoint from 0.5 onward.
+
+Nothing writes a decimal through a typed path yet: `ConfigWriter.Append` takes a
+string, so D-W29's write-side rule is a convention with no enforcement behind it.
 
 ## Owed
 
-- **Phase 11**: re-add `Microsoft.AspNetCore.OpenApi` against a version whose
-  `Microsoft.OpenApi` dependency clears the audit. In `BUILD_PLAN.md` carried
-  obligations.
+Work deferred out of a checkpoint is registered in `BUILD_PLAN.md` carried
+obligations, which is where planning for the phase that owns it will look, and
+which outlives this file. It is not copied here: two registers of one list is
+how an obligation comes to exist in the one nobody reads.
+
+Five entries stand, owed at 0.7, Phase 1 and Phase 11.
+
+Scoped work that is not deferred, and so is not a carried obligation:
+
 - **0.8**: wire the two cross-key invariants to the config write path, and
-  FX-ConfigWriteRefusesInvariantBreach.
+  FX-ConfigWriteRefusesInvariantBreach. Already in `BUILD_PLAN.md` 0.8.
 
 ---
 
@@ -427,3 +501,202 @@ No `DateTime.Now` or `DateTime.UtcNow`. No `double` or `float`. Money as decimal
 in TEXT. Nothing here reads or writes market data. Never suppress a
 vulnerability advisory to keep a dependency: drop it or lift it to a patched
 version, and record the reason [`CLAUDE.md` 4a].
+
+## 0.4 Money and identity primitives
+
+Read `CLAUDE.md`, `BUILD_PLAN.md` §0.4 and its phase definition of done,
+`DATA_AND_SCHEMA.md` §2 and §4, D-W29, the `FIXTURES.md` rows at 0.4, and
+Current state above.
+
+Two things every later phase indexes on: what a number means when it is written
+down, and what makes two option contracts the same contract. They are joined.
+Strike participates in contract identity and strike is a decimal, so `50` and
+`50.00` being the same number and different `TEXT` would give one contract two
+identities and split its history without ever failing.
+
+### The canonical decimal form
+
+In `Core/Storage`, beside `StoreTimestamp` and the same shape: a declared format,
+`ToStored` and `ParseStored`. Not a wrapper type; money is decimal.
+
+- **One declared scale.** Choose it from the widest precision any column in
+  `DATA_AND_SCHEMA.md` needs, report which column drove it, and say whether that
+  figure is measured or assumed.
+- **Two entry points, and this is the part a single function cannot do.** For a
+  vendor-supplied value the scale is a fidelity requirement, so `ToStored`
+  refuses rather than rounds: losing a digit quietly is the failure. For a
+  computed value it is a rounding policy, so a second entry point rounds and is
+  the only one that does. Decimal division is non-terminating in general, and
+  `29.35m / 4500.00m` carries 28 fractional digits, so a single refusing function
+  could not store the worked example's own first candidate. Name the midpoint
+  rule; the default disagrees with away-from-zero on exactly the values a
+  ranking sits on.
+- **Both refuse on magnitude, differing only on precision.** Rounding bounds
+  precision and not magnitude, so otherwise a large computed value rounds
+  cleanly and then renders a string the parser cannot read back.
+- **Derive the magnitude bound from the scale, never write it down.** The
+  mantissa is fixed and the shift is the scale.
+- **Pin the scale inside the range a decimal admits**, and let that assertion
+  touch the scale constant and nothing else. Above 28 the bound's initialiser
+  throws, which surfaces as a type-initialiser error naming whichever caller got
+  there first rather than the constant that is wrong. A `const` is inlined and
+  does not run the initialiser, so the assertion still reports cleanly while
+  every other test in the file is failing for the wrong reason.
+- **Parse lenient about padding, strict about precision.** A hand-written config
+  row carries `0.35`. But `decimal.Parse` silently rounds beyond 29 significant
+  digits, so count places on the string, not on the parsed value: a row that
+  reads back as a different number than it states defeats the point of the store.
+  Say in the remarks that "lenient on padding" means shorter than the stored
+  form and not longer: `0.350000000` is refused though its zeros carry nothing,
+  so the same value is admitted from a decimal and refused from a string. At most
+  scale PLACES is a simpler contract than at most scale SIGNIFICANT places.
+- **Test** FX-MoneyRoundTrip: values that lose precision as doubles, the worked
+  example's figures, both scale boundaries, a midpoint, the magnitude bounds,
+  negatives, and a non-terminating ratio through both entry points.
+- **Negative zero is an equality between two stored strings**, not a case in a
+  list. A listed case is satisfied by whatever the runtime happens to do.
+- **DoD**: `50`, `50.0` and `50.00` produce one stored string.
+
+**The fixture is the first test of the guard's own no-exemption policy.** The
+build plan asks for values that lose precision as doubles and the guard bans the
+type from the tree. Both hold at once: those values are exactly the ones binary
+cannot represent, and the property under test is that they round-trip exactly, so
+no floating-point value is constructed. If one genuinely turns out to be needed,
+take that as a recorded decision rather than reaching for an exemption.
+
+### The other two stored forms
+
+The same shape, for the same reason: in each case the obvious call is
+culture-independent, plausible and wrong.
+
+- A date is `yyyy-MM-dd`. A bare `ToString()` gives `MM/dd/yyyy` under
+  `InvariantGlobalization`, which cannot vary by machine and still sorts by
+  month, so no culture test would catch it. **Test**: the two differ.
+- A contract right is `put` or `call`, lower case. `Enum.ToString()` gives the
+  wrong case. Declare the permitted values rather than deriving them from the
+  enum's spelling, so renaming a member cannot change the stored form of every
+  existing row. **Test**: an unrecognised value is refused rather than defaulted.
+
+### Typed accessors on both configuration surfaces
+
+Decimal and integer, built on the parser above, neither reimplementing it.
+
+Record the real reasoning where they are defined. `InvariantGlobalization` is on
+repository-wide, so the ambient-culture trap is already closed; the decimal
+accessor exists because it is where the canonical form is validated rather than
+assumed and where changing the scale stays one edit. The int case is weaker and
+is about completeness of the surface: a surface that types one and returns
+strings for the other teaches callers to parse at the call site. An integer is
+not stored in the canonical decimal form, and the tests should say so.
+
+Public instance methods, never extensions or statics. The as-of guard reflects
+over declared instance members, so anything else is invisible to it and the guard
+reads green while covering nothing. Confirm by running it.
+
+### Identity
+
+A new `Core/Identity` folder.
+
+- **Ticker**, the bare dash form, constructible only through normalisation so one
+  carrying an exchange suffix cannot exist. Strip the suffix **before** dots
+  become dashes, or `BRK-B.US` becomes `BRK-B-US`. `BRK.B` is genuinely ambiguous
+  between a share class and an exchange, so decide by suffix length: one letter
+  is a class, two to five is an exchange code, stripped if known and **refused if
+  not**. That refusal is the load-bearing choice: `GSPC.INDX` silently becoming
+  `GSPC-INDX` mints a ticker that matches nothing and never fails. Check
+  characters before the case fold, since `ToUpperInvariant` folds some non-ASCII
+  letters into ASCII and a homoglyph would become a valid-looking second key.
+  Report the edge cases you find.
+- **Test** FX-TickerDashForm, with the injectivity and refusal sides too. The
+  registered assertion alone is satisfied by a constant function.
+- **ContractIdentity**, the tuple of underlying, expiry, right and strike. A
+  reference type with a private constructor and get-only members: a struct admits
+  `default` and `init` lets `with` reach the copy constructor, and both bypass the
+  factory. The vendor symbol lives on a separate type, because record equality
+  covers every declared member and the schema forbids it being part of the key.
+- Canonicalise the strike, and be accurate about why. It buys nothing for
+  equality, since `decimal` already ignores scale; it buys rendering stability,
+  which byte-identical output needs, and validation at construction.
+- **A total order**, since three makers receiving byte-identical candidate sets
+  requires one. Name `StringComparer.Ordinal` with its reason.
+- Out of scope: corporate-action adjustment and the predecessor link.
+
+### The guards, as a script
+
+The first check that is not a unit test, so write it as a place rather than as
+one check: 0.5 and 0.7 both owe greps.
+
+- One script at the root, called by `ci.yml` before the build, because a source
+  guard must fail even when the build does not.
+- Whole tree, no exemption mechanism of any kind. "Monetary path" is not a set
+  anything can enumerate, and a guard that can be argued with is not a guard. The
+  first legitimate floating-point value should cost a recorded decision about
+  where statistics end and money begins.
+- **Widen the catch-list past the two keywords.** `Random.NextDouble`,
+  `Convert.ToDouble`, `GetDouble`, the `Math` functions and exponent literals
+  carry no `double` token, and the random-within-band maker is the likeliest
+  first violator. Record that this is a catch-list and not an exemption list:
+  an incomplete catch-list still catches what is on it.
+- **Say what it cannot catch**, so a green run is not read as proof. Tokens are
+  declared intent, not inferred types.
+- **Self-test before scanning.** A scan matching nothing reports success while
+  testing nothing. If you strip literals, add a leg for the desync failure mode:
+  a stripper that loses its place still scans every file and still passes.
+- **DoD**: demonstrate a `double` in a decimal path failing, and a
+  `Random.NextDouble` failing. Revert both.
+- **Expect it to find something real on its first run, and fix rather than
+  exempt.** `AsOfBoundaryTests` computes an exact power of ten with `Math.Pow`
+  and casts the result back. That is arithmetic that should never have left the
+  integers, not a case for the exemption mechanism this guard deliberately does
+  not have. It will also fire on a token inside a string literal, which is a
+  defect in the guard rather than a violation: strip literals, and add the
+  desync leg to the self-test when you do.
+
+### FX-NoDecimalOrderingInSql
+
+A test, not a grep, and say why you chose that. The stored form is not
+order-preserving, so no SQL may order, range over or aggregate a decimal column.
+
+- A pure detector over `(sql, columns)`, exercised on synthetic SQL.
+- Declare the column vocabulary beside the migrations. `config_rows.value` is its
+  first entry: it carries decimals for four key families and is only sometimes a
+  decimal, and classing it decimal is conservative on purpose. Write that down,
+  or the first false positive reads as a defect and the column gets removed.
+- Scan string literals holding a statement keyword, not whole source text. A C#
+  parameter named `value` compared with `>=` reads exactly like a range
+  comparison over the `value` column.
+- Assert the two negative controls already in the tree: `ORDER BY version` and
+  `MAX(set_at)`, whose string order is its time order by construction.
+- **Record that an alias defeats it**, beside the over-reach note rather than
+  apart from it. `SELECT strike AS s FROM contracts ORDER BY s` orders a decimal
+  and the ordered token is not in the vocabulary. The over-reach note defends the
+  false-positive direction; this is the false-negative one, and it is the
+  direction that fails quietly. Pin it as a test so the gap is in the suite
+  rather than only in prose, named so its eventual failure is the signal to
+  delete it. Put the obligation in `BUILD_PLAN.md` carried obligations, not in a
+  comment: a comment is committed and permanent and still not where the planning
+  for Phase 1 will look.
+
+### The phase definition of done, made checkable
+
+Phase 0 requires every `app`-classed key in `CONFIG_REFERENCE.md` proven to bind,
+and nothing enforces it, so it passes by coincidence. The reverse direction is
+deliberately not standing for `rows`-classed keys, because most are unbound until
+their own phase; that reasoning does not reach `app`, where a key is bound from
+`appsettings` by definition.
+
+- Make it a standing check, in a suite that is not a registered fixture.
+- **Test**: an `app`-classed key with no bound property is reported by name.
+  Demonstrate, revert.
+
+### Definitions of done carried from 0.2
+
+- Every fixture registered against 0.4 exists and is named for it.
+- Every key the sections this checkpoint introduces carry is bound and verified.
+  This checkpoint introduces none, so the obligation is discharged empty rather
+  than skipped.
+
+### Constraints
+
+No `DateTime.Now` or `DateTime.UtcNow`; the clock is 0.5. Nothing here reads or
+writes market data.
