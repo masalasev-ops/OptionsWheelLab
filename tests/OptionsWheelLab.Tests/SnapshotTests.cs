@@ -1,0 +1,101 @@
+using OptionsWheelLab.Core.Storage;
+
+namespace OptionsWheelLab.Tests;
+
+/// <summary>
+/// Snapshot behaviour. Not a registered fixture, so not named <c>FX-*</c>.
+/// </summary>
+public sealed class SnapshotTests
+{
+    private static readonly DateTimeOffset Instant =
+        new(2026, 7, 28, 9, 15, 30, 250, TimeSpan.Zero);
+
+    [Fact]
+    public void A_snapshot_copies_the_database_and_its_wal_and_shm()
+    {
+        using var store = TempStore.Empty();
+
+        // Leave uncheckpointed state behind, so -wal and -shm exist and are the
+        // reason the copy has to be three files rather than one.
+        using (var connection = store.Connections.Open(StoreAccess.Write))
+        {
+            using var command = connection.CreateCommand();
+            command.CommandText = "CREATE TABLE probe (value TEXT); INSERT INTO probe VALUES ('x');";
+            command.ExecuteNonQuery();
+        }
+
+        var result = StoreSnapshot.Take(store.Location, Instant);
+
+        Assert.True(result.Taken);
+
+        var copied = Directory.GetFiles(result.Directory!).Select(Path.GetFileName).ToList();
+        Assert.Contains(StoreLocation.DatabaseFileName, copied);
+    }
+
+    [Fact]
+    public void The_snapshot_directory_is_named_for_the_instant_it_was_taken()
+    {
+        using var store = TempStore.Created();
+
+        var result = StoreSnapshot.Take(store.Location, Instant);
+
+        var name = Path.GetFileName(result.Directory!);
+        var stamp = name[StoreSnapshot.DirectoryPrefix.Length..];
+
+        Assert.StartsWith(StoreSnapshot.DirectoryPrefix, name, StringComparison.Ordinal);
+        Assert.Equal(Instant, StoreTimestamp.ParseFileName(stamp));
+    }
+
+    /// <summary>
+    /// One instant, two renderings. The filename form exists because the stored
+    /// form contains colons, which are illegal in a Windows path.
+    /// </summary>
+    [Fact]
+    public void A_snapshot_filename_round_trips_to_the_same_instant_as_the_stored_form()
+    {
+        var stored = StoreTimestamp.ToStored(Instant);
+        var fileName = StoreTimestamp.ToFileName(Instant);
+
+        Assert.Equal(StoreTimestamp.ParseStored(stored), StoreTimestamp.ParseFileName(fileName));
+        Assert.DoesNotContain(':', fileName);
+        Assert.Contains(':', stored);
+    }
+
+    [Fact]
+    public void A_snapshot_of_a_store_that_does_not_exist_is_skipped_with_a_reason()
+    {
+        using var store = TempStore.Empty();
+
+        var result = StoreSnapshot.Take(store.Location, Instant);
+
+        Assert.False(result.Taken);
+        Assert.NotNull(result.Reason);
+        Assert.Empty(Directory.GetDirectories(store.Directory));
+    }
+
+    /// <summary>
+    /// A torn three-file copy looks intact until someone restores from it, so
+    /// the snapshot refuses loudly instead.
+    /// </summary>
+    [Fact]
+    public void A_snapshot_is_refused_while_something_else_holds_the_database()
+    {
+        using var store = TempStore.Created();
+
+        using var holder = store.Connections.Open(StoreAccess.Write);
+        using var writing = holder.BeginTransaction();
+
+        using (var command = holder.CreateCommand())
+        {
+            command.Transaction = writing;
+            command.CommandText = "CREATE TABLE held (value TEXT);";
+            command.ExecuteNonQuery();
+        }
+
+        var thrown = Assert.Throws<InvalidOperationException>(
+            () => StoreSnapshot.Take(store.Location, Instant));
+
+        Assert.Contains("Worker", thrown.Message, StringComparison.Ordinal);
+        Assert.Empty(Directory.GetDirectories(store.Directory));
+    }
+}
