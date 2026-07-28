@@ -22,7 +22,7 @@ Corpus v1.9.7.
 | Phase 0 | 0.1, 0.2 and 0.3 built; 0.4 onward not started |
 | Branch | `phase-0/checkpoint-0.3`, off `main` |
 | Merged | PR #1 into `main` as `53cc0b4`, 24 commits preserved, not squashed |
-| CI | green, 72 tests, restore and build and test on push to `main` and every pull request |
+| CI | green, 81 tests, restore and build and test on push to `main` and every pull request |
 
 ## Build
 
@@ -58,12 +58,16 @@ WAL journal mode, set on the write connection and persisted with the database.
 The Worker opens read-write as the sole writer; the Api opens
 `SqliteOpenMode.ReadOnly`, set on the connection rather than by convention.
 
-Snapshot-first migrations. The snapshot copies the `.db` with its `-wal` and
-`-shm`, takes an exclusive lock first and refuses naming the Worker if it cannot
-get one, and runs before any connection is opened so the runner cannot detect
-itself. The first run has no file and records that it skipped and why. Applied
-migrations are rows in `schema_migrations`, not `PRAGMA user_version`. One
-migration exists: `config_rows`, with triggers raising on UPDATE and DELETE.
+Snapshot-first migrations. The snapshot copies the `.db` and its `-wal`, holds
+an exclusive write lock for the whole copy and refuses naming the Worker if it
+cannot take one, and runs before any connection is opened so the runner cannot
+detect itself. Readers are not refused, because in WAL mode a reader cannot tear
+a copy. `-shm` is deliberately not copied: holding the lock makes it unreadable,
+and it is a transient wal-index SQLite rebuilds from the write-ahead log. The
+first run has no file and records that it skipped and why. Applied migrations
+are rows in `schema_migrations`, not `PRAGMA user_version`. Two migrations
+exist: `config_rows` with its append-only triggers, and a trigger holding
+`set_at` monotonic per key.
 
 `migrate.ps1` supplies the instant and refuses when `Storage__Path` is unset.
 The Worker carries the `migrate` verb, because the Worker is the sole writer.
@@ -86,7 +90,8 @@ from the other. `AsOfConfiguration` takes a date on every member and resolves
 `MAX(version)` among rows at or before that date's last instant.
 `CurrentConfiguration` returns the newest and is for operational paths only.
 `ConfigWriter` appends `MAX(version) + 1` computed inside the insert's own
-transaction, with `set_at` supplied rather than read from a clock.
+transaction, with `set_at` supplied rather than read from a clock and refused if
+it predates the newest version of that key.
 
 The two cross-key invariants remain pure predicates over supplied values, with
 no host, no config store, no startup wiring and no clock.
@@ -100,7 +105,7 @@ illegal in a Windows path.
 
 ## Tests
 
-72 across ten fixtures plus the 0.1 smoke test and five unregistered suites.
+81 across ten fixtures plus the 0.1 smoke test and six unregistered suites.
 
 | Fixture | Tests |
 |---|---|
@@ -302,12 +307,20 @@ is current before reporting any corpus entry as absent.
 
 - The runner snapshots before applying, so a hand-run migration cannot skip it,
   and `migrate.ps1` is the operator entry point.
-- The snapshot copies the `.db` **and its `-wal` and `-shm`**. The database
-  alone loses whatever has not yet checkpointed.
-- Take an exclusive lock before copying and refuse, naming the Worker, if it
-  cannot be taken. Sole-writer makes the precondition satisfiable but does not
-  enforce it, and a torn three-file copy looks intact until it is needed. Use a
-  short busy timeout, or the refusal becomes a thirty-second hang.
+- The snapshot copies the `.db` **and its `-wal`**. The database alone loses
+  whatever has not yet checkpointed.
+- **Hold** an exclusive write lock for the whole copy, not merely test it
+  beforehand, and refuse naming the Worker if it cannot be taken. Releasing it
+  first proves only that nothing was writing at check time, and a writer
+  starting immediately after tears the copy anyway. Use a short busy timeout, or
+  the refusal becomes a thirty-second hang.
+- Do **not** copy `-shm`. Holding the lock byte-range locks it and makes it
+  unreadable, so the lock and the three-file copy cannot both be had. `-shm` is
+  a transient wal-index SQLite rebuilds from the write-ahead log, so `.db` plus
+  `-wal` restores identically. Omit it unconditionally rather than skipping it
+  on failure, so the snapshot is the same on every platform.
+- Do not refuse readers. In WAL mode a reader cannot tear a copy, and refusing
+  one would make a snapshot impossible while the Api is merely running.
 - **Snapshot before opening any connection.** The lock cannot tell the runner's
   own connection from another process's, so reading `schema_migrations` first
   makes the runner refuse itself with a message naming a Worker that is not
@@ -316,8 +329,17 @@ is current before reporting any corpus entry as absent.
   skipped and why, rather than passing over it silently.
 - Record applied migrations in a table, not `PRAGMA user_version`. Schema
   version is the highest applied id.
-- One migration: `config_rows` per `DATA_AND_SCHEMA.md` section 4.5, with
-  triggers raising on UPDATE and DELETE so append-only holds against any writer.
+- Migration 1: `config_rows` per `DATA_AND_SCHEMA.md` section 4.5, with triggers
+  raising on UPDATE and DELETE so append-only holds against any writer.
+- Migration 2: a BEFORE INSERT trigger refusing a row whose `set_at` predates the
+  newest for that key. `version` always increases but `set_at` is supplied and
+  otherwise unconstrained, and resolution filters on `set_at` then orders by
+  `version`, so an out-of-order timestamp makes the value in force on a date
+  depend on insertion order rather than on time. Equal is allowed: two versions
+  can share an instant and `version` breaks the tie. Per key.
+- A new migration rather than amending migration 1, because the
+  definition-of-done demonstration already ran migration 1 against the real
+  store, and an amended migration never re-runs.
 - One instant, two renderings. `applied_at` and `set_at` take the stored form;
   the snapshot directory takes the colon-free filename form, because a colon is
   illegal in a Windows path. Render at the point of use, never convert between.
@@ -328,14 +350,22 @@ is current before reporting any corpus entry as absent.
   behave differently: a first run against **no file** applies every migration
   and takes no snapshot; a second run against **a file with nothing pending**
   applies nothing and does take one.
-- **Test**: a snapshot attempted while something else holds the database is
-  refused rather than producing files.
+- **Test**: a snapshot attempted while something else is writing is refused
+  rather than producing files, and a snapshot while a reader holds the store is
+  allowed.
+- **Test**: appending with a `set_at` earlier than the newest for that key is
+  refused naming both instants; an equal `set_at` is accepted and resolves by
+  version; a different key is unaffected.
 - **Test**: the WAL copy, with automatic checkpointing turned off and the
   connection held open. SQLite checkpoints and deletes the write-ahead log when
   the last connection closes cleanly, so without both there is no `-wal` at
   snapshot time and a one-file copy would pass while losing data.
 - **Test**: a snapshot filename round-trips to the same instant as the stored
   form.
+- **Test**: the widened as-of boundary is the greatest value the stored format
+  can render for that date, derived from the format's fractional digits rather
+  than restated, so adding precision to the format fails here instead of quietly
+  excluding the end of every day.
 - **DoD**: `migrate.ps1` leaves a timestamped snapshot beside the store.
 
 ### Config read service, two surfaces
