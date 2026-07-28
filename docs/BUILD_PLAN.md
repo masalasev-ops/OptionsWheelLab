@@ -16,12 +16,12 @@ checkpoint's acceptance criteria depend on decisions that have not landed yet.
 
 **Prompts** are written immediately before they are spent. Once spent, a prompt
 is appended to the spent-prompt file for the phase in flight,
-`prompts/spent/phase-N.md`, with what it delivered, the state of the repository
-after it, and what it left open. An entry is written to be read on its own: a
-reader derives the state at that point without consulting another document.
-Only the last entry describes the present. The file is appended to and never
-rewritten, an entry once written is never edited, and only unspent prompts are
-subject to propagation.
+`prompts/spent/phase-N.md`, recording what was asked and what it delivered
+including every deviation from the ask. That file carries one **Current state**
+section, overwritten by each prompt, holding the whole state of the repository,
+so the current state is read there in a single pass without consulting another
+document. No entry describes the present, so no entry goes stale and none is
+ever edited. Only unspent prompts are subject to propagation.
 
 ### The propagation rule
 

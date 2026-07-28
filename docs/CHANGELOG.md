@@ -1,5 +1,27 @@
 # CHANGELOG
 
+## [1.9.5] — 2026-07-28
+
+### Changed
+- `prompts/spent/phase-0.md` replaces its per-entry state snapshots with one
+  **Current state** section, overwritten by every prompt. Entries keep what was
+  asked and what was delivered.
+- `BUILD_PLAN.md` restates the prompts rule to match.
+
+### Notes
+- 1.9.4 gave each entry its own snapshot so the state could be read in one take.
+  That worked for the last entry and made every earlier one a description of a
+  state no longer true, which is hard to navigate and invites the stale-state
+  findings `CLAUDE.md` §1 exists to prevent. A reader landing mid-file met
+  correct-looking numbers that were a version out of date.
+- The fix is to separate what ages from what does not. What was asked and what
+  was delivered are statements about a moment that has passed and stay true
+  forever. State is current or it is wrong, so it lives in exactly one place and
+  is overwritten.
+- The shape mirrors `PROGRESS.md`, which already carries an overwritten Current
+  state above an appended Log, so it is the corpus's own pattern rather than a
+  new one.
+
 ## [1.9.4] — 2026-07-28
 
 ### Added

@@ -5,7 +5,7 @@ Appended to, never rewritten. The repository is the authority on build state.
 ## Current state
 
 **Phase 0 in progress.** Checkpoints 0.1 and 0.2 built. 0.3 onward not started.
-The documentation corpus is at v1.9.4.
+The documentation corpus is at v1.9.5.
 
 ## Log
 
@@ -159,3 +159,10 @@ an archive the repository did not have. One file per phase rather than one per
 prompt, and each entry carries an absolute state snapshot so the current state
 is read in one take rather than reconstructed from deltas. Five prompts spent
 against Phase 0 so far, all recorded.
+
+### 2026-07-28 — corpus v1.9.5
+The spent-prompt archive now carries one overwritten Current state section
+rather than a snapshot per entry. Per-entry snapshots meant four of five
+described a state no longer true. What was asked and what was delivered cannot
+age, so they stay in the entries; state is current or it is wrong, so it lives
+in one place.
