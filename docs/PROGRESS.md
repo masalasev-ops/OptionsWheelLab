@@ -5,7 +5,7 @@ Appended to, never rewritten. The repository is the authority on build state.
 ## Current state
 
 **Phase 0 in progress.** Checkpoints 0.1 and 0.2 built. 0.3 onward not started.
-The documentation corpus is at v1.9.7.
+The documentation corpus is at v1.9.8.
 
 ## Log
 
@@ -180,3 +180,15 @@ so D-W26 holds by construction. The reverse binding direction is recorded as a
 per-checkpoint definition of done. Time formats are pinned, WAL journal mode is
 stated, and D-W27 gains the bootstrap clause that puts `Storage:Path` in
 `appsettings` by necessity rather than by the read-path criterion.
+
+### 2026-07-28 — corpus v1.9.8
+Snapshots move to `VACUUM INTO` and the mechanism becomes D-W28 rather than
+prose in one document contradicted by the code and justified in a doc comment.
+The build had rejected `VACUUM INTO` because the three-file copy was what the
+corpus specified; holding the lock that copy needs turned out to make `-shm`
+unreadable, so the specification was never satisfiable. D-W28 also states the
+shape a snapshot has on disk.
+
+The test project now references both hosts and carries tests that use them, so
+a broken host fails `dotnet test` rather than only the separate build step, and
+the provider-ordering fix is asserted rather than demonstrated.

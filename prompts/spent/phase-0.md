@@ -22,14 +22,16 @@ Corpus v1.9.8.
 | Phase 0 | 0.1, 0.2 and 0.3 built; 0.4 onward not started |
 | Branch | `phase-0/checkpoint-0.3`, off `main` |
 | Merged | PR #1 into `main` as `53cc0b4`, 24 commits preserved, not squashed |
-| CI | green, 84 tests, restore and build and test on push to `main` and every pull request |
+| CI | green, 92 tests, restore and build and test on push to `main` and every pull request |
 
 ## Build
 
 .NET 10 solution, nullable enabled, warnings as errors, central package
 management with transitive pinning: `OptionsWheelLab.Core` holding the
 composition root, options types and the storage layer, `.Worker` and `.Api` as
-thin hosts both calling it, and `.Tests`.
+thin hosts both calling it, and `.Tests`, which references both hosts and
+carries tests that use them, so a broken host fails `dotnet test` and not only
+the separate build step.
 
 One shared `src/appsettings.json` linked into both hosts and the test project,
 loaded from `AppContext.BaseDirectory` because the generic host and the web host
@@ -61,7 +63,9 @@ The Worker opens read-write as the sole writer; the Api opens
 Snapshot-first migrations. A snapshot is one file written with `VACUUM INTO`
 [D-W28]: atomic, no lock, no writer blocked, and a database in its own right
 that can be opened directly rather than restored before it can be read. It
-carries whatever has not yet checkpointed. The first run has no store and
+carries whatever has not yet checkpointed, and is named
+`snapshot-<filename-form timestamp>.db` beside the store so a restore knows what
+to look for. The first run has no store and
 records that it skipped and why. Applied migrations are rows in
 `schema_migrations`, not `PRAGMA user_version`. Two migrations exist:
 `config_rows` with its append-only triggers, and a trigger holding `set_at`
@@ -103,7 +107,7 @@ illegal in a Windows path.
 
 ## Tests
 
-84 across eleven fixtures plus the 0.1 smoke test and six unregistered suites.
+92 across eleven fixtures plus the 0.1 smoke test and eight unregistered suites.
 
 | Fixture | Tests |
 |---|---|
@@ -295,6 +299,15 @@ is current before reporting any corpus entry as absent.
   absolute path from different working directories.
 - **Test**: an empty value and a relative value each fail with that message; an
   absolute value binds.
+- Reference both hosts from the test project, and give the references real
+  tests. Otherwise nothing in the suite touches a host builder, the
+  provider-ordering fix is only ever demonstrated, and `dotnet test` passes
+  while a host does not compile.
+- **Test**: a host builder configured through the extension resolves
+  `Storage:Path` from the environment and not from the committed empty value,
+  for the generic host and the web host alike.
+- **Test**: with the variable absent, binding succeeds and only opening the
+  store fails.
 - **Test**: an opened store reports WAL.
 - **Report, do not decide**: a read-only connection needs the file to exist, so
   the Api cannot start against a store that has never migrated. Report the
@@ -316,6 +329,8 @@ is current before reporting any corpus entry as absent.
   assert what a restored store resolves rather than comparing bytes.
 - The first run has no store yet. Skip the snapshot and record that it was
   skipped and why: a base case rather than an exception.
+- A snapshot is one file named `snapshot-<filename-form timestamp>.db` beside
+  the store, so a restore knows what to look for and what to ignore.
 - Record applied migrations in a table, not `PRAGMA user_version`. Schema
   version is the highest applied id.
 - Migration 1: `config_rows` per `DATA_AND_SCHEMA.md` section 4.5, with triggers

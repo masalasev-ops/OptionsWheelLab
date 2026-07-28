@@ -4,8 +4,11 @@
 
 ### Added
 - D-W28: snapshots are taken with `VACUUM INTO` rather than by copying the
-  database and its write-ahead log.
+  database and its write-ahead log. It also states the shape a snapshot has on
+  disk, being one file named `snapshot-<filename-form timestamp>.db` beside the
+  store, so a restore knows what to look for and what to ignore.
 - FX-SnapshotRestoresIdentically at 0.3.
+- D-W28 added to the Data and identity line of the topical index.
 
 ### Changed
 - `DATA_AND_SCHEMA.md` states the `VACUUM INTO` mechanism, that no lock is
