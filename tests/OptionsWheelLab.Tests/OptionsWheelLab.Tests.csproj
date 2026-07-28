@@ -23,8 +23,16 @@
     <ProjectReference Include="../../src/OptionsWheelLab.Api/OptionsWheelLab.Api.csproj" />
   </ItemGroup>
 
-  <!-- WebApplication.CreateBuilder, so the web host's configuration path is
-       exercised and not only the generic host's. -->
+  <!--
+    For HostConfigurationTests.The_web_host_resolves_the_same_store_path_as_the
+    _generic_host, which needs WebApplication.CreateBuilder. The two host kinds
+    default their content roots differently, which is the trap the shared
+    configuration loader avoids, so the web path is worth exercising rather
+    than assuming it matches the generic one.
+
+    Revisit if the Api stops being a web host: this is a heavy reference on an
+    otherwise framework-light test project and it exists for that one test.
+  -->
   <ItemGroup>
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>

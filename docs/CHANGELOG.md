@@ -9,6 +9,8 @@
   store, so a restore knows what to look for and what to ignore.
 - FX-SnapshotRestoresIdentically at 0.3.
 - D-W28 added to the Data and identity line of the topical index.
+- `CLAUDE.md` 4b: test seams. `InternalsVisibleTo` where the public alternative
+  would be worse, recorded at the reference site.
 
 ### Changed
 - `DATA_AND_SCHEMA.md` states the `VACUUM INTO` mechanism, that no lock is
