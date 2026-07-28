@@ -1,0 +1,9 @@
+# Line endings are fixed at LF in the repository so a Windows checkout never
+# produces a whitespace-only diff. Line-ending churn is a separate commit from
+# content by rule, and this file removes the occasion for one.
+* text=auto eol=lf
+
+*.png binary
+*.jpg binary
+*.zip binary
+*.db binary

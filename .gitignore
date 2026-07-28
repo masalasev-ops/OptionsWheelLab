@@ -1,0 +1,26 @@
+# Secrets. Never committed. The committed .example alongside carries empty
+# values and no credential.
+appsettings.Secrets.json
+**/appsettings.Secrets.json
+
+# Build output
+bin/
+obj/
+artifacts/
+*.user
+*.suo
+
+# The store and its snapshots. Phase 0.3 onward.
+*.db
+*.db-shm
+*.db-wal
+snapshots/
+
+# IDE
+.vs/
+.idea/
+.vscode/
+
+# OS
+Thumbs.db
+.DS_Store
