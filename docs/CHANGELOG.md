@@ -1,5 +1,30 @@
 # CHANGELOG
 
+## [1.9.4] — 2026-07-28
+
+### Added
+- `prompts/spent/phase-0.md`, the first spent-prompt archive. Five entries
+  covering every prompt spent while Phase 0 has been in flight.
+
+### Changed
+- `BUILD_PLAN.md` restates how prompts are archived. One file per phase,
+  appended to, rather than one file per prompt. An entry carries what was
+  asked, what was delivered including every deviation, an absolute snapshot of
+  the repository after it, and what it left open.
+
+### Notes
+- One file per phase because a directory of forty single-prompt files buries
+  the thing being looked for.
+- Each entry carries an absolute snapshot rather than a change list, so the
+  current state is derived from the last entry in a single read rather than by
+  reconstructing it from a chain of deltas across several documents. The cost
+  is that every earlier entry describes a state that is no longer true, so the
+  file states plainly that only the last entry describes the present and
+  `PROGRESS.md` is the authority on now. Without that line the archive would
+  manufacture the stale-state findings `CLAUDE.md` §1 exists to prevent.
+- Deviations are recorded per entry because a prompt alone cannot answer
+  whether it was followed, which was the back-and-forth the archive removes.
+
 ## [1.9.3] — 2026-07-28
 
 ### Changed

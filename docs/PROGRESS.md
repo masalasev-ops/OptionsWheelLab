@@ -5,7 +5,7 @@ Appended to, never rewritten. The repository is the authority on build state.
 ## Current state
 
 **Phase 0 in progress.** Checkpoints 0.1 and 0.2 built. 0.3 onward not started.
-The documentation corpus is at v1.9.3.
+The documentation corpus is at v1.9.4.
 
 ## Log
 
@@ -152,3 +152,10 @@ verified complete against corpus v1.9.1.
 BUILD_PLAN.md 0.1 and 0.2 reviewed against what shipped. The checkpoint text
 was substantially accurate; the build-state marker was false and four passages
 described less than what was built. Both checkpoints now match the repository.
+
+### 2026-07-28 — corpus v1.9.4
+`prompts/spent/phase-0.md` created, closing the gap where BUILD_PLAN described
+an archive the repository did not have. One file per phase rather than one per
+prompt, and each entry carries an absolute state snapshot so the current state
+is read in one take rather than reconstructed from deltas. Five prompts spent
+against Phase 0 so far, all recorded.

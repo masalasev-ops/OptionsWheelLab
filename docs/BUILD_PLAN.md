@@ -14,10 +14,14 @@ is not duplicated here.
 phases ahead is what made the equivalent AlphaLab document go stale, because a
 checkpoint's acceptance criteria depend on decisions that have not landed yet.
 
-**Prompts** are written immediately before they are spent. Once a checkpoint is
-built, its prompt is a historical record of what was asked and is archived under
-`prompts/spent/`. It is never updated. Only unspent prompts are subject to
-propagation.
+**Prompts** are written immediately before they are spent. Once spent, a prompt
+is appended to the spent-prompt file for the phase in flight,
+`prompts/spent/phase-N.md`, with what it delivered, the state of the repository
+after it, and what it left open. An entry is written to be read on its own: a
+reader derives the state at that point without consulting another document.
+Only the last entry describes the present. The file is appended to and never
+rewritten, an entry once written is never edited, and only unspent prompts are
+subject to propagation.
 
 ### The propagation rule
 
