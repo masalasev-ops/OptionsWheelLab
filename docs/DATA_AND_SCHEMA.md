@@ -1,6 +1,9 @@
 # DATA_AND_SCHEMA
 
-Build state: **not built**.
+Build state: **partly built**. The Time section and §4.5 are implemented at 0.3,
+along with the point-in-time config rule of §3. Every other table is
+specification: market data is Phase 1, decisions and trials Phase 4, scores
+Phase 5, pre-registration Phase 9.
 
 ## 1. Sources
 
@@ -51,10 +54,41 @@ query about a past date resolves membership as of that date [D-W9].
 as a parameter and filters on `observed_at <= as_of`. There is no read path that
 returns "current" data to a simulated date.
 
+## Time
+
+Two forms, both UTC, both fixed width, because every as-of read is a string
+comparison and a variable-width or local-time value misorders silently rather
+than failing.
+
+**Dates**: `yyyy-MM-dd`. Session dates, expiries, ex-dates, report dates.
+**Timestamps**: `yyyy-MM-ddTHH:mm:ss.fffZ`. Every column ending `_at`.
+
+A date and a timestamp never appear on opposite sides of a comparison. A
+timestamp for any instant on a day sorts after that day's bare date, so
+`set_at <= as_of` with a timestamp column and a date parameter excludes
+everything written on the as-of date itself. Where a simulated date must be
+compared against a timestamp column it is widened to that date's last instant
+first, and the widening happens in exactly one place.
+
+Filenames cannot carry the stored timestamp form, because `:` is illegal in a
+Windows path. A timestamp used in a filename is written `yyyyMMddTHHmmssfffZ`,
+the same instant with the separators removed. The two forms are never mixed:
+stored columns take the first, filenames the second.
+
 ## 4. Schema
 
 Snapshot-first migrations: the migration runner takes a database snapshot before
 applying, and `migrate.ps1` calls the snapshot tool internally first.
+
+The store runs in WAL journal mode, set once and persisted with the database. A
+snapshot is taken with `VACUUM INTO` [D-W28], producing one consistent file from
+the committed state including whatever has not yet checkpointed. No lock is
+required and no writer is blocked.
+
+Migrations snapshot before applying, whenever there is something to protect. The
+first run against a store that does not exist yet has nothing to copy, which is
+a base case rather than an exception, and the runner records that it was
+skipped.
 
 Money is stored as decimal in `TEXT` columns, never as floating point.
 

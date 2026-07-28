@@ -118,6 +118,28 @@ needs it inherits the reason rather than rediscovering the advisory.
 
 ---
 
+## 4b. Test seams
+
+**Prefer testing through the public surface.** Much of this codebase is
+deliberately internal, and internal usually means a bypass someone should not
+have: `ConfigRowQuery` is internal so neither configuration surface can be
+reached around.
+
+`InternalsVisibleTo` is permitted where the alternative is widening the public
+API purely for tests, which is worse. A CLI verb is the clear case: it is an
+entry point, and making it public to test it would put it in the API surface
+permanently.
+
+The bar is that the public alternative would be worse, not that it would be less
+convenient. The failure mode is quiet: once the seam exists, testing internals
+becomes the easier path, the public surface stops being what is under test, and
+refactoring internals starts breaking tests that should not care.
+
+Record each use at the reference site, so a reader finds the reason before the
+precedent.
+
+---
+
 ## 5. Documentation
 
 - **Prose states the rule; the decision number is a trailing bracket.** Test by

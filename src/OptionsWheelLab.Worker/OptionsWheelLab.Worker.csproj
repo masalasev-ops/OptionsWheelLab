@@ -8,6 +8,16 @@
     <PackageReference Include="Microsoft.Extensions.Hosting" />
   </ItemGroup>
 
+  <!--
+    For MigrateCommand [CLAUDE.md 4b]. It is a CLI entry point, so the public
+    alternative would put the verb in this project's API surface permanently
+    purely to let a test call it, which is worse than the seam. Nothing else
+    here is reached through it.
+  -->
+  <ItemGroup>
+    <InternalsVisibleTo Include="OptionsWheelLab.Tests" />
+  </ItemGroup>
+
   <ItemGroup>
     <ProjectReference Include="../OptionsWheelLab.Core/OptionsWheelLab.Core.csproj" />
   </ItemGroup>

@@ -25,6 +25,13 @@ One key per row. A row naming two keys leaves the second unreadable to
 anything parsing this document, and a suffix-only second token is not a key
 path at all. Keys that constrain each other say so in their Notes instead.
 
+The reverse direction, a documented key that nothing binds, is not a standing
+check. Most keys here are documented and deliberately unbound until their own
+phase, so a standing assertion would fire on all of them. It is a definition of
+done on each checkpoint instead: a checkpoint is not done until every key its
+sections introduce is bound and verified. Same shape as the two directions of
+`FIXTURES.md` rule 2, and for the same reason.
+
 Config rows are append-only and versioned; current is `MAX(version)` for a key. A revision inserts version + 1 and the old value stays readable, which is
 what lets a later behaviour change be explained after the fact.
 
@@ -89,6 +96,12 @@ would leave every later version unguarded; it survives only as a backstop.
 | `Policy:Random:DeltaMin` | rows | random control band, lower bound | Random maker **Unverified** | [D-W4] |
 | `Policy:Random:DeltaMax` | rows | random control band, upper bound | Random maker **Unverified** | Proposed 0.35 sits exactly at the gate's delta ceiling; see [D-W23] |
 | `Policy:Random:Seed` | rows | seed for the random maker | Random maker **Unverified** | Fixed so runs reproduce |
+
+## Storage
+
+| Key | Store | Meaning | Consumer | Notes |
+|---|---|---|---|---|
+| `Storage:Path` | app | absolute directory holding the store and its snapshots | Storage via `StorageOptions` | **Unset.** Supplied per machine through `Storage__Path` |
 
 ## Data
 

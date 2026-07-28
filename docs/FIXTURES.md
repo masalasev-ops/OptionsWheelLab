@@ -3,7 +3,8 @@
 The single registry of test fixtures. Prompts and checkpoints reference the
 fixtures registered against them here; they never enumerate fixture names inline.
 
-Build state: **none built**.
+Build state: **partly built**. The eleven fixtures registered against 0.2 and
+0.3 are implemented; the rest belong to checkpoints not yet reached.
 
 ## Why this file exists
 
@@ -45,6 +46,7 @@ fixtures in one place and pointing at it removes that failure by construction.
 | FX-ConfigWriteRefusesInvariantBreach | 0.8 | a config version violating a cross-key invariant is refused and no row is written | authored |
 | FX-ConfigResolvesAsOf | 0.3 | a key resolves to the version in force on the simulated date | authored |
 | FX-NoCurrentConfigReadOnSimulatedPath | 0.3 | no simulated-date component reads current config | authored |
+| FX-SnapshotRestoresIdentically | 0.3 | a store restored from its snapshot resolves the values it did before the mutation | authored |
 | FX-PitMembershipExcludesLaterJoiner | 1 | as-of membership excludes later joiners | authored |
 | FX-SnapshotNeverRewritten | 1 | a vendor correction appends rather than updates | authored |
 | FX-GateRejectsAboveHeadroom | 2 | candidates breaching per-name headroom are rejected with a reason | WORKED_EXAMPLE §3 |

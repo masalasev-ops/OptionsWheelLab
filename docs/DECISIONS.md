@@ -16,7 +16,7 @@ predates this file and cannot be relied on.
 
 **Purpose and measurement**: D-W2, D-W3, D-W5, D-W17, D-W18, D-W20, D-W21
 **Isolation and controls**: D-W1, D-W4, D-W6, D-W13
-**Data and identity**: D-W7, D-W8, D-W9, D-W15, D-W26, D-W27
+**Data and identity**: D-W7, D-W8, D-W9, D-W15, D-W26, D-W27, D-W28
 **Risk**: D-W10, D-W11, D-W14, D-W19, D-W23, D-W25
 **Gate constraints**: D-W10, D-W22, D-W23, D-W24, D-W25
 **Scope**: D-W12, D-W16
@@ -463,9 +463,9 @@ within the buffer is rejected with the earnings reason recorded.
 `active` · 2026-07-27
 
 Any component reading configuration on behalf of a simulated date resolves it as
-of that date, being `MAX(version)` among rows whose `set_at` precedes it, rather
-than reading the current value. There is no code path that serves a simulated
-date from current configuration.
+of that date, being `MAX(version)` among rows whose `set_at` is at or before it,
+rather than reading the current value. There is no code path that serves a
+simulated date from current configuration.
 
 Rationale, and it is structural rather than defensive. The lab's own workflow
 changes configuration: a policy revision inserts a new version [D-W4], and
@@ -486,6 +486,11 @@ store cannot verify. Any tool that reproduces prior sessions records the
 appsettings-bound values it ran under alongside its output, so a later parity
 failure can be checked against them instead of being routed into a store
 investigation.
+
+Resolution is inclusive of the as-of instant, matching `observed_at <= as_of`
+for every other as-of read. An earlier wording said "precedes", which read as
+strict inequality and would have made configuration written on a simulated date
+invisible to that date.
 
 Test FX-ConfigResolvesAsOf: a key with three versions resolves to the version in
 force on the simulated date, not the newest.
@@ -525,5 +530,49 @@ Consequence for enforcement: cross-key invariants over config rows are enforced
 when a version is written, not at startup. See the amendments to [D-W23] and
 [D-W24].
 
+**Bootstrap values are `app` by necessity, not by criterion.** A value the
+process needs in order to open the store cannot be stored in the store, so the
+store's own location, its journal mode, and anything else consumed before the
+first query are `app`-classed regardless of what reads them later. The read-path
+criterion does not reach them, and saying they participate in no decision is the
+weaker argument: the connection factory is on every path including simulated
+ones. The reason is circularity, not irrelevance.
+
 Test FX-ConfigStoreClassHonoured: no options type bound from `appsettings`
 exists for a section classified as a config row.
+
+---
+
+### D-W28 Snapshots are taken with VACUUM INTO
+`active` · 2026-07-28
+
+A store snapshot is produced by `VACUUM INTO` a timestamped file, not by copying
+the database and its write-ahead log.
+
+Rationale. The file-copy form required an exclusive lock held across the copy,
+to stop a writer tearing it. That lock byte-range locks the `-shm` file, so the
+lock and the three-file copy specified together were not jointly satisfiable,
+and the implementation had to drop `-shm` and record a departure. `VACUUM INTO`
+runs in a read transaction: it is atomic, blocks no writer, needs no lock, and
+produces one file rather than a set whose members can disagree.
+
+Cost, accepted. The result is a defragmented rebuild rather than a
+byte-identical copy, so a snapshot cannot be compared to its source by hash, and
+a corrupt source is rebuilt rather than preserved for forensics. Nothing in this
+corpus asks for either, and a rollback artefact needs logical identity rather
+than byte identity.
+
+Timing. Recorded at 0.3, when the store holds one migration and almost nothing
+else. The mechanism only becomes more expensive to change as data accumulates,
+and by Phase 8 the store carries forward data that cannot be reconstructed.
+
+A snapshot is a single file named `snapshot-<filename-form timestamp>.db`,
+sitting beside the store. It is a complete standalone database, so it can be
+opened and inspected directly rather than restored first, and a restore is a
+file copy.
+
+Test FX-SnapshotRestoresIdentically: a store snapshotted, mutated, and restored
+from the snapshot resolves the same values it did before the mutation.
+Test: a snapshot taken while a reader holds the store succeeds.
+Test: a snapshot taken while a writer holds the store succeeds, and the snapshot
+contains the committed state and not the uncommitted.
