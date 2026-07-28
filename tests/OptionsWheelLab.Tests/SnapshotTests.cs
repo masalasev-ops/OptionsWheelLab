@@ -10,26 +10,59 @@ public sealed class SnapshotTests
     private static readonly DateTimeOffset Instant =
         new(2026, 7, 28, 9, 15, 30, 250, TimeSpan.Zero);
 
+    /// <summary>
+    /// The case the three-file copy exists for.
+    /// </summary>
+    /// <remarks>
+    /// Automatic checkpointing is turned off and the connection is left open,
+    /// because SQLite checkpoints and deletes the write-ahead log when the last
+    /// connection closes cleanly. Without both, there is no <c>-wal</c> at
+    /// snapshot time and a one-file copy would pass this test while losing data
+    /// in the situation the snapshot is for.
+    /// <para>
+    /// The open connection holds no transaction, so it does not trip the
+    /// exclusive lock. That is the real shape: a writer between transactions
+    /// still has uncheckpointed frames on disk.
+    /// </para>
+    /// </remarks>
     [Fact]
-    public void A_snapshot_copies_the_database_and_its_wal_and_shm()
+    public void A_snapshot_copies_the_wal_and_shm_alongside_the_database()
     {
         using var store = TempStore.Empty();
 
-        // Leave uncheckpointed state behind, so -wal and -shm exist and are the
-        // reason the copy has to be three files rather than one.
-        using (var connection = store.Connections.Open(StoreAccess.Write))
+        using var connection = store.Connections.Open(StoreAccess.Write);
+
+        using (var command = connection.CreateCommand())
         {
-            using var command = connection.CreateCommand();
-            command.CommandText = "CREATE TABLE probe (value TEXT); INSERT INTO probe VALUES ('x');";
+            command.CommandText =
+                """
+                PRAGMA wal_autocheckpoint = 0;
+                CREATE TABLE probe (value TEXT);
+                INSERT INTO probe (value) VALUES ('uncheckpointed');
+                """;
             command.ExecuteNonQuery();
         }
+
+        Assert.True(
+            new FileInfo(store.DatabasePath + "-wal").Length > 0,
+            "the write-ahead log should hold uncheckpointed frames for this test to mean anything");
 
         var result = StoreSnapshot.Take(store.Location, Instant);
 
         Assert.True(result.Taken);
 
-        var copied = Directory.GetFiles(result.Directory!).Select(Path.GetFileName).ToList();
+        var copied = Directory.GetFiles(result.Directory!)
+            .Select(Path.GetFileName)
+            .ToList();
+
         Assert.Contains(StoreLocation.DatabaseFileName, copied);
+        Assert.Contains(StoreLocation.DatabaseFileName + "-wal", copied);
+        Assert.Contains(StoreLocation.DatabaseFileName + "-shm", copied);
+
+        Assert.True(
+            new FileInfo(Path.Combine(result.Directory!, StoreLocation.DatabaseFileName + "-wal"))
+                .Length > 0,
+            "the copied write-ahead log should carry the frames the database file does not");
     }
 
     [Fact]
