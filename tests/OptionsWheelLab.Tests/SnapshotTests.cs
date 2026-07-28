@@ -40,6 +40,28 @@ public sealed class SnapshotTests
     }
 
     /// <summary>
+    /// The shape a restore expects, per D-W28: one file named
+    /// <c>snapshot-&lt;filename-form timestamp&gt;.db</c> beside the store.
+    /// </summary>
+    /// <remarks>
+    /// Pinned because the superseded mechanism wrote a directory under the same
+    /// prefix, so anything scanning for snapshots could find something it
+    /// cannot restore from.
+    /// </remarks>
+    [Fact]
+    public void The_snapshot_path_matches_the_shape_a_restore_expects()
+    {
+        using var store = TempStore.Created();
+
+        var path = StoreSnapshot.PathFor(store.Location, Instant);
+
+        Assert.Equal(store.Directory, Path.GetDirectoryName(path));
+        Assert.Matches(
+            @"^snapshot-\d{8}T\d{9}Z\.db$",
+            Path.GetFileName(path));
+    }
+
+    /// <summary>
     /// One instant, two renderings. The filename form exists because the stored
     /// form contains colons, which are illegal in a Windows path.
     /// </summary>

@@ -16,7 +16,7 @@ predates this file and cannot be relied on.
 
 **Purpose and measurement**: D-W2, D-W3, D-W5, D-W17, D-W18, D-W20, D-W21
 **Isolation and controls**: D-W1, D-W4, D-W6, D-W13
-**Data and identity**: D-W7, D-W8, D-W9, D-W15, D-W26, D-W27
+**Data and identity**: D-W7, D-W8, D-W9, D-W15, D-W26, D-W27, D-W28
 **Risk**: D-W10, D-W11, D-W14, D-W19, D-W23, D-W25
 **Gate constraints**: D-W10, D-W22, D-W23, D-W24, D-W25
 **Scope**: D-W12, D-W16
@@ -565,6 +565,11 @@ than byte identity.
 Timing. Recorded at 0.3, when the store holds one migration and almost nothing
 else. The mechanism only becomes more expensive to change as data accumulates,
 and by Phase 8 the store carries forward data that cannot be reconstructed.
+
+A snapshot is a single file named `snapshot-<filename-form timestamp>.db`,
+sitting beside the store. It is a complete standalone database, so it can be
+opened and inspected directly rather than restored first, and a restore is a
+file copy.
 
 Test FX-SnapshotRestoresIdentically: a store snapshotted, mutated, and restored
 from the snapshot resolves the same values it did before the mutation.
