@@ -15,12 +15,9 @@ public sealed record MigrationResult(
 /// The guarantee lives here rather than in <c>migrate.ps1</c>, so running the
 /// migration by hand cannot skip the snapshot.
 /// <para>
-/// Order matters and is not incidental. The snapshot runs <b>before any
-/// connection is opened</b>, because its exclusive lock cannot distinguish this
-/// process's own connection from another's. Reading
-/// <c>schema_migrations</c> first would make the runner refuse itself with a
-/// message saying the Worker is running when nothing is, and a failure pointing
-/// at the wrong cause is worse than no message.
+/// The snapshot is taken before anything is applied, and against a store that
+/// does not exist yet there is nothing to protect, which the result records
+/// [D-W28].
 /// </para>
 /// </remarks>
 public sealed class MigrationRunner
@@ -35,11 +32,10 @@ public sealed class MigrationRunner
 
     public MigrationResult Run(DateTimeOffset instant)
     {
-        // 1. Snapshot, with nothing open. Skipped on the first run, which has
-        //    no file to copy.
+        // Snapshot first, so a failed migration is recoverable. Skipped on the
+        // first run, which has no store yet.
         var snapshot = StoreSnapshot.Take(_connections.Location, instant);
 
-        // 2. Only now open the store.
         using var connection = _connections.Open(StoreAccess.Write);
 
         EnsureMigrationsTable(connection);

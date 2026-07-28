@@ -36,7 +36,7 @@ internal static class MigrateCommand
         var result = runner.Run(instant);
 
         output.WriteLine(result.Snapshot.Taken
-            ? $"Snapshot: {result.Snapshot.Directory}"
+            ? $"Snapshot: {result.Snapshot.Path}"
             : $"Snapshot: skipped, {result.Snapshot.Reason}");
 
         if (result.Applied.Count == 0)

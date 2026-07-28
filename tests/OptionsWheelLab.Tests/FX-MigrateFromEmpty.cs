@@ -57,12 +57,10 @@ public sealed class FX_MigrateFromEmpty
     }
 
     /// <summary>
-    /// The second run has a file, so it snapshots. This is also the case that
-    /// would fail if the runner opened the store before snapshotting, because
-    /// the exclusive lock would find the runner's own connection.
+    /// The second run has a store, so it snapshots before applying.
     /// </summary>
     [Fact]
-    public void A_second_run_takes_a_snapshot_rather_than_refusing_itself()
+    public void A_second_run_takes_a_snapshot_before_applying()
     {
         using var store = TempStore.Empty();
         var runner = new MigrationRunner(store.Connections);
@@ -71,7 +69,7 @@ public sealed class FX_MigrateFromEmpty
         var second = runner.Run(Instant.AddMinutes(1));
 
         Assert.True(second.Snapshot.Taken);
-        Assert.True(Directory.Exists(second.Snapshot.Directory!));
+        Assert.True(File.Exists(second.Snapshot.Path!));
     }
 
     [Fact]
