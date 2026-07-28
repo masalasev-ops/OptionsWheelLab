@@ -28,7 +28,7 @@ drafted in conversation does not exist until it is committed to a file in this
 repository. Before citing a rule, a clause, or a prior decision, confirm it is
 actually in the corpus.
 
-A code comment is not a corpus record either, and this one is harder to spot
+**A code comment is not a corpus record either.** This one is harder to spot
 because it is committed, permanent, and in the repository. What makes a record
 is where it will be read, not whether it survives. An obligation noted beside
 the code that has it, and nowhere the planning for that work will look, is not
