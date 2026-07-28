@@ -22,7 +22,7 @@ Corpus v1.9.9.
 | Phase 0 | 0.1, 0.2, 0.3 and 0.4 built; 0.5 onward not started |
 | Branch | `phase-0/checkpoint-0.4`, off `main` |
 | Merged | PR #1 as `53cc0b4` and PR #2 as `a2b8c28`, both merge commits, neither squashed |
-| CI | green, 154 tests, guards then restore then build then test, on push to `main` and every pull request |
+| CI | green, 156 tests, guards then restore then build then test, on push to `main` and every pull request |
 
 ## Build
 
@@ -165,8 +165,9 @@ It catches declared intent, not inferred types, and says so.
 
 ## Tests
 
-154: 97 across fourteen fixtures, and 57 across eleven unregistered suites, one
-of which is the 0.1 smoke test.
+156: 97 across fourteen fixtures, and 59 across twelve unregistered suites, one
+of which is the 0.1 smoke test and one of which checks the phase definition of
+done.
 
 | Fixture | Tests |
 |---|---|
@@ -219,26 +220,17 @@ string, so D-W29's write-side rule is a convention with no enforcement behind it
 
 ## Owed
 
-- **Phase 11**: re-add `Microsoft.AspNetCore.OpenApi` against a version whose
-  `Microsoft.OpenApi` dependency clears the audit. In `BUILD_PLAN.md` carried
-  obligations.
+Work deferred out of a checkpoint is registered in `BUILD_PLAN.md` carried
+obligations, which is where planning for the phase that owns it will look, and
+which outlives this file. It is not copied here: two registers of one list is
+how an obligation comes to exist in the one nobody reads.
+
+Five entries stand, owed at 0.7, Phase 1 and Phase 11.
+
+Scoped work that is not deferred, and so is not a carried obligation:
+
 - **0.8**: wire the two cross-key invariants to the config write path, and
-  FX-ConfigWriteRefusesInvariantBreach.
-- **0.7**: decide whether the source guards move to a Roslyn analyser. A text
-  scan cannot see an inferred type, and 0.7 is where three guards exist and one
-  mechanism serving all of them can be compared concretely.
-- **Phase 1**: give D-W29's write-side rule teeth, most likely a decimal-typed
-  parameter-binding seam, when the first real decimal column exists. Also decide
-  what an adjusted strike does when division makes it non-terminating, since
-  identity takes the refusing path.
-- **Phase 1**: resolve aliases in the decimal-ordering detector, or adopt and
-  check a convention that a decimal column is never aliased.
-  `SELECT strike AS s FROM contracts ORDER BY s` orders a decimal and the
-  ordered token is not in the vocabulary, so it passes. Harmless at 0.4, which
-  has one table, one column, no aliases and no joins, and live at Phase 1, where
-  queries over bars and quotes alias and join as a matter of course and the
-  columns being ordered are the ones that matter. Deleting
-  FX-NoDecimalOrderingInSql's known-miss test is part of closing it.
+  FX-ConfigWriteRefusesInvariantBreach. Already in `BUILD_PLAN.md` 0.8.
 
 ---
 

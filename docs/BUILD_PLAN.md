@@ -15,6 +15,16 @@ is not duplicated here.
 phases ahead is what made the equivalent AlphaLab document go stale, because a
 checkpoint's acceptance criteria depend on decisions that have not landed yet.
 
+Once a checkpoint is built, its detail here is a record of what was asked and is
+not reconciled against what shipped. `prompts/spent/phase-N.md` holds the prompt
+that reproduces the checkpoint and the Current state that describes the result,
+so a third description here would be the least authoritative of three and would
+drift by construction. The build-state marker above says which sections are
+records and which are still intent. What stays live regardless of the marker is
+the phase definition of done, the carried obligations, and the detail for
+checkpoints not yet built, because each of those is read before work rather than
+after it.
+
 **Prompts** are written immediately before they are spent. Once a checkpoint is
 built, `prompts/spent/phase-N.md` carries one prompt for it, being the prompt
 that produces the checkpoint as it now stands rather than the sequence of asks
@@ -146,10 +156,17 @@ tuple.
 An `IClock` abstraction injected everywhere. No call to `DateTime.Now` or
 `DateTime.UtcNow` outside the clock implementation.
 
-- **Test** FX-NoAmbientClock: a CI grep fails the build on `DateTime.Now` or
-  `DateTime.UtcNow` outside the permitted file.
+The ambient-clock check extends the source guards 0.4 established rather than
+introducing a second mechanism. Whether those guards stay a text scan is open
+until 0.7, so this checkpoint states the rule and adds a check to whatever they
+are, rather than committing to an implementation a later checkpoint may replace.
+
+Implement the fixtures registered against 0.5 in `FIXTURES.md`.
+
 - **DoD**: a simulated run with a fixed clock produces byte-identical output
   across two invocations.
+- **DoD**: introducing an ambient clock call outside the permitted file fails
+  locally and in CI. Demonstrate, revert.
 
 ### 0.6 Fixture harness
 
@@ -157,18 +174,40 @@ The loader that reads synthetic chain fixtures, plus `FIXTURES.md` as the single
 registry. Fixtures are declared against a checkpoint, and the harness discovers
 them from the registry rather than from a hardcoded list.
 
-- **Test** FX-RegistryMatchesDisk: every fixture in `FIXTURES.md` exists on disk
-  and every fixture on disk is registered, failing on either mismatch.
+The registry checks are not this checkpoint's to build. FX-RegistryMatchesDisk
+is registered at 0.2 and shipped there, because the file-to-entry direction is
+safe from the first fixture onward. The entry-to-file direction does not become
+a standing assertion here either: most entries belong to checkpoints not yet
+built, so it stays a definition of done on each checkpoint [`FIXTURES.md` rule
+2]. What 0.6 adds is the loader.
+
+Implement the fixtures registered against 0.6 in `FIXTURES.md`.
+
 - **DoD**: adding a fixture file without registering it fails the build.
 
 ### 0.7 Append-only guards
 
-CI greps asserting no `DELETE FROM` or `UPDATE` against snapshot tables
-[D-W8], and none against `decisions` or `candidates` [D-W3].
+Assertions that no `DELETE FROM` or `UPDATE` reaches a snapshot table [D-W8],
+and none reaches `decisions` or `candidates` [D-W3]. They extend the source
+guards 0.4 established rather than introducing a second mechanism.
 
-- **Test**: the grep fails the build when a violating statement is introduced in
-  a scratch file, verified by a test that adds and removes one.
+Also in 0.7: decide whether the source guards stay a text scan or move to a
+Roslyn analyser. 0.4 raised it and deferred it here deliberately, because this
+is the first checkpoint where three guards exist and one mechanism serving all
+of them can be compared against three separate scans concretely rather than
+argued in the abstract. The argument is that a text scan sees declared intent
+and not inferred types, and it was recorded before the comparison rather than
+after.
+
+- **Test**: the guard fails when a violating statement is introduced, verified
+  by a test that adds and removes one.
 - **DoD**: guard runs in CI, not only locally.
+- **Constraint**: five statements already in the tree are the banned text and
+  must not be reported. One is the trigger DDL that enforces append-only, and
+  three are the tests asserting those triggers reject an `UPDATE` or a `DELETE`.
+  Distinguishing them is a design problem for the check, not a case for an
+  exemption list: 0.4's guard has none by decision, and adding one here would
+  reopen that.
 
 ### 0.8 Configuration values for the open parameters
 
@@ -195,6 +234,10 @@ has aged.
 | Owed at | Obligation | Raised |
 |---|---|---|
 | Phase 11 | Re-add `Microsoft.AspNetCore.OpenApi` against a version whose `Microsoft.OpenApi` dependency clears the audit. Removed at 0.1 rather than suppressing the advisory; the reason is in the Api project file. | PR #1 |
+| 0.7 | Decide whether the source guards stay a text scan or move to a Roslyn analyser. A text scan sees declared intent and not inferred types, so `Math.Sqrt`, `Convert.ToDouble` and `Random.NextDouble` are caught only by naming each one. Scoped into 0.7 above. | PR #3 |
+| Phase 1 | Give D-W29's write-side rule teeth. Every decimal reaching a `TEXT` column should pass through the canonical form, and nothing enforces that: `ConfigWriter.Append` takes a string. A decimal-typed parameter-binding seam is the likely mechanism, when the first real decimal column exists. | PR #3 |
+| Phase 1 | Decide what an adjusted strike does when a corporate action makes it non-terminating. Identity canonicalises through the refusing path, so a 3-for-2 split forces a choice between rounding a value that is part of a contract's identity and carrying the ratio. | PR #3 |
+| Phase 1 | Resolve aliases in the decimal-ordering detector, or adopt and check a convention that a decimal column is never aliased. `SELECT strike AS s FROM contracts ORDER BY s` orders a decimal and passes. Deleting FX-NoDecimalOrderingInSql's known-miss test is part of closing it. | PR #3 |
 
 ---
 

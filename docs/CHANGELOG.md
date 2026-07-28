@@ -25,6 +25,11 @@
 - `CLAUDE.md` §10: authored prose that a landed decision has already superseded
   is corrected rather than reported, the authority being the decision and never
   the code.
+- A standing check that every `app`-classed key in `CONFIG_REFERENCE.md` binds.
+  Phase 0's definition of done requires it and nothing enforced it, so it passed
+  by coincidence. The reverse direction is not standing for `rows`-classed keys,
+  because most are deliberately unbound until their own phase, but that reasoning
+  does not reach `app`, where a key is bound from `appsettings` by definition.
 - `CLAUDE.md` §1: a code comment is not a corpus record. What makes a record is
   where it will be read, not whether it survives, so an obligation noted beside
   the code that has it and nowhere the planning for that work will look is not
@@ -43,6 +48,23 @@
   split.
 
 ### Fixed
+- `BUILD_PLAN.md` states that checkpoint detail for a built checkpoint is a
+  record and is not reconciled against what shipped, because the spent-prompt
+  archive already holds the prompt that reproduces it and the state it produced,
+  and a third description would be the least authoritative of three. What stays
+  live regardless is the phase definition of done, the carried obligations, and
+  the detail for checkpoints not yet built.
+- `BUILD_PLAN.md` 0.5 and 0.7 said their guards were CI greps, written before
+  any guard existed. Both now extend the source guards 0.4 established, stated
+  as the rule rather than the implementation, since 0.7 may replace it.
+- `BUILD_PLAN.md` 0.6 named FX-RegistryMatchesDisk, which `FIXTURES.md` rule 2
+  registers at 0.2 and which shipped there, and described it as failing on
+  either direction, which the same rule rejects. 0.6 delivers the loader.
+- `BUILD_PLAN.md` 0.5 and 0.6 gain the reference clause instead of naming
+  fixtures inline, which is what the enumeration rule already required of them.
+- Carried obligations gains the four items 0.4 deferred. They existed only in
+  the archive, which is not where planning for the phase that owns them looks,
+  and the archive's Owed list now points at the register rather than copying it.
 - The suffix `Pct` named a percentage while every description said fraction, and
   one proposed value was written as a percentage. Renamed to `Fraction` so the
   name states the unit: `Risk:PerNameCapFraction`, `Risk:TotalCapFraction`,
