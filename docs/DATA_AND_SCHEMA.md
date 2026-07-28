@@ -77,9 +77,15 @@ stored columns take the first, filenames the second.
 Snapshot-first migrations: the migration runner takes a database snapshot before
 applying, and `migrate.ps1` calls the snapshot tool internally first.
 
-The store runs in WAL journal mode, set once and persisted with the database.
-The snapshot therefore copies the `-wal` and `-shm` files alongside the `.db`;
-copying the database alone loses whatever has not yet checkpointed.
+The store runs in WAL journal mode, set once and persisted with the database. A
+snapshot is taken with `VACUUM INTO` [D-W28], producing one consistent file from
+the committed state including whatever has not yet checkpointed. No lock is
+required and no writer is blocked.
+
+Migrations snapshot before applying, whenever there is something to protect. The
+first run against a store that does not exist yet has nothing to copy, which is
+a base case rather than an exception, and the runner records that it was
+skipped.
 
 Money is stored as decimal in `TEXT` columns, never as floating point.
 

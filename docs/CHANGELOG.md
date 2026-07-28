@@ -1,5 +1,38 @@
 # CHANGELOG
 
+## [1.9.8] — 2026-07-28
+
+### Added
+- D-W28: snapshots are taken with `VACUUM INTO` rather than by copying the
+  database and its write-ahead log.
+- FX-SnapshotRestoresIdentically at 0.3.
+
+### Changed
+- `DATA_AND_SCHEMA.md` states the `VACUUM INTO` mechanism, that no lock is
+  required and no writer is blocked, and that the first run has nothing to copy
+  as a base case rather than an exception.
+
+### Reversed
+- **The 0.3 prompt specified copying the `.db`, `-wal` and `-shm`, and the build
+  rejected `VACUUM INTO` on the grounds that the three-file copy was what the
+  corpus specified. That reasoning is now overturned by what building it
+  showed.** Holding an exclusive lock across the copy, which the copy needs so a
+  writer cannot tear it, byte-range locks `-shm` and makes it unreadable. The
+  lock and the three-file copy were never jointly satisfiable, so the
+  implementation had to drop `-shm` and record a departure from this document.
+- The reversal is the point rather than an embarrassment. The original rejection
+  was correct given what was specified; the specification was wrong, and only
+  writing it revealed that.
+
+### Notes
+- Recorded as a decision rather than left in prose and a doc comment. The
+  mechanism was specified in `DATA_AND_SCHEMA.md`, contradicted by the code, and
+  justified in a C# remark, which is three homes and no owner for a choice this
+  consequential.
+- Taken at 0.3 deliberately. The store holds one migration and almost nothing
+  else, and the mechanism only becomes more expensive to change as data
+  accumulates.
+
 ## [1.9.7] — 2026-07-28
 
 ### Added

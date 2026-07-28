@@ -540,3 +540,34 @@ ones. The reason is circularity, not irrelevance.
 
 Test FX-ConfigStoreClassHonoured: no options type bound from `appsettings`
 exists for a section classified as a config row.
+
+---
+
+### D-W28 Snapshots are taken with VACUUM INTO
+`active` · 2026-07-28
+
+A store snapshot is produced by `VACUUM INTO` a timestamped file, not by copying
+the database and its write-ahead log.
+
+Rationale. The file-copy form required an exclusive lock held across the copy,
+to stop a writer tearing it. That lock byte-range locks the `-shm` file, so the
+lock and the three-file copy specified together were not jointly satisfiable,
+and the implementation had to drop `-shm` and record a departure. `VACUUM INTO`
+runs in a read transaction: it is atomic, blocks no writer, needs no lock, and
+produces one file rather than a set whose members can disagree.
+
+Cost, accepted. The result is a defragmented rebuild rather than a
+byte-identical copy, so a snapshot cannot be compared to its source by hash, and
+a corrupt source is rebuilt rather than preserved for forensics. Nothing in this
+corpus asks for either, and a rollback artefact needs logical identity rather
+than byte identity.
+
+Timing. Recorded at 0.3, when the store holds one migration and almost nothing
+else. The mechanism only becomes more expensive to change as data accumulates,
+and by Phase 8 the store carries forward data that cannot be reconstructed.
+
+Test FX-SnapshotRestoresIdentically: a store snapshotted, mutated, and restored
+from the snapshot resolves the same values it did before the mutation.
+Test: a snapshot taken while a reader holds the store succeeds.
+Test: a snapshot taken while a writer holds the store succeeds, and the snapshot
+contains the committed state and not the uncommitted.
