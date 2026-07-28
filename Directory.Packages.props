@@ -2,9 +2,25 @@
 
   <PropertyGroup>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+    <!--
+      Transitive pinning so a vulnerable dependency pulled in by a package we do
+      want can be lifted to a patched version. Suppressing the audit instead
+      would disable vulnerability detection repository-wide [CLAUDE.md 4a].
+    -->
+    <CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageVersion Include="Microsoft.Data.Sqlite" Version="10.0.9" />
+    <!--
+      Microsoft.Data.Sqlite 10.0.9 pulls SQLitePCLRaw 2.1.11, whose native
+      e_sqlite3 carries GHSA-2m69-gcr7-jv3q. Lifted to the patched build.
+    -->
+    <PackageVersion Include="SQLitePCLRaw.bundle_e_sqlite3" Version="2.1.12" />
+    <PackageVersion Include="SQLitePCLRaw.core" Version="2.1.12" />
+    <PackageVersion Include="SQLitePCLRaw.lib.e_sqlite3" Version="2.1.12" />
+    <PackageVersion Include="SQLitePCLRaw.provider.e_sqlite3" Version="2.1.12" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="10.0.9" />
     <PackageVersion Include="Microsoft.Extensions.Configuration.Json" Version="10.0.9" />
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="10.0.9" />
     <PackageVersion Include="Microsoft.Extensions.Hosting" Version="10.0.9" />
