@@ -25,6 +25,11 @@
 - `CLAUDE.md` §10: authored prose that a landed decision has already superseded
   is corrected rather than reported, the authority being the decision and never
   the code.
+- `CLAUDE.md` §1: a code comment is not a corpus record. What makes a record is
+  where it will be read, not whether it survives, so an obligation noted beside
+  the code that has it and nowhere the planning for that work will look is not
+  recorded. Written after a 0.4 report claimed an obligation was in the archive
+  when it was in a fixture comment.
 
 ### Changed
 - `DATA_AND_SCHEMA.md` §4 states that every decimal, not only money, is stored
