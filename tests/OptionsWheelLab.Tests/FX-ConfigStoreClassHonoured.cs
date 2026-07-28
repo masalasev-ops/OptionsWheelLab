@@ -90,6 +90,57 @@ public sealed class FX_ConfigStoreClassHonoured
         Assert.NotEmpty(ConfigReferenceParser.SectionRoots(keys, ConfigReferenceParser.AppClass));
     }
 
+    /// <summary>
+    /// Every key row must classify. A Store cell that is neither class, such as
+    /// a bolded <c>**rows**</c>, would otherwise drop that key out of the
+    /// contract without any test noticing.
+    /// </summary>
+    [Fact]
+    public void Every_key_row_carries_a_recognised_store_class()
+    {
+        var unclassified = Parsed().Unclassified;
+
+        Assert.True(
+            unclassified.Count == 0,
+            $"These rows in {RepoRoot.ConfigReferencePath} carry a key but their Store cell is "
+            + $"neither '{ConfigReferenceParser.RowsClass}' nor '{ConfigReferenceParser.AppClass}': "
+            + string.Join(
+                ", ",
+                unclassified.Select(row => $"{row.Key} has Store cell '{row.StoreCell}'"))
+            + ". An unclassified key is silently outside the storage-class contract.");
+    }
+
+    [Fact]
+    public void An_unclassified_store_cell_is_reported_with_its_key_and_cell()
+    {
+        const string Markdown = """
+            | `Gate:MaxDelta` | **rows** | reject above this delta | Risk gate | |
+            | `Eodhd:BaseUrl` | app | API root | Ingest | |
+            """;
+
+        var result = ConfigReferenceParser.Parse(Markdown);
+
+        Assert.Single(result.Keys);
+        var offender = Assert.Single(result.Unclassified);
+        Assert.Equal("Gate:MaxDelta", offender.Key);
+        Assert.Equal("**rows**", offender.StoreCell);
+    }
+
+    [Fact]
+    public void A_header_row_is_not_reported_as_unclassified()
+    {
+        const string Markdown = """
+            | Key | Store | Meaning | Consumer | Notes |
+            |---|---|---|---|---|
+            | `Eodhd:BaseUrl` | app | API root | Ingest | |
+            """;
+
+        var result = ConfigReferenceParser.Parse(Markdown);
+
+        Assert.Single(result.Keys);
+        Assert.Empty(result.Unclassified);
+    }
+
     [Fact]
     public void A_rows_classed_section_appearing_in_appsettings_is_reported()
     {
@@ -100,7 +151,7 @@ public sealed class FX_ConfigStoreClassHonoured
             | `Eodhd:BaseUrl` | app | API root | Ingest | |
             """;
 
-        var keys = ConfigReferenceParser.Parse(Markdown);
+        var keys = ConfigReferenceParser.Parse(Markdown).Keys;
         var rowsRoots = ConfigReferenceParser.SectionRoots(keys, ConfigReferenceParser.RowsClass);
 
         Assert.Equal(2, keys.Count);
@@ -119,13 +170,15 @@ public sealed class FX_ConfigStoreClassHonoured
             | `Gate:MinDte` / `Gate:MaxDte` | rows | admissible expiry window | Risk gate | |
             """;
 
-        var keys = ConfigReferenceParser.Parse(Markdown);
+        var keys = ConfigReferenceParser.Parse(Markdown).Keys;
 
         Assert.Single(keys);
         Assert.Equal("Gate:MinDte", keys[0].Key);
         Assert.Equal("Gate", keys[0].SectionRoot);
     }
 
-    private static IReadOnlyList<ConfigKeyClass> ParsedKeys() =>
+    private static ParseResult Parsed() =>
         ConfigReferenceParser.Parse(File.ReadAllText(RepoRoot.ConfigReferencePath));
+
+    private static IReadOnlyList<ConfigKeyClass> ParsedKeys() => Parsed().Keys;
 }

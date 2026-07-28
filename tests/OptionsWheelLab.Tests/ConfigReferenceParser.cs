@@ -2,6 +2,16 @@ using System.Text.RegularExpressions;
 
 namespace OptionsWheelLab.Tests;
 
+/// <summary>
+/// A row carrying a key whose Store cell is neither <c>rows</c> nor <c>app</c>.
+/// </summary>
+internal sealed record UnclassifiedRow(string Key, string StoreCell);
+
+/// <summary>Keys read from the document, and rows that could not be classified.</summary>
+internal sealed record ParseResult(
+    IReadOnlyList<ConfigKeyClass> Keys,
+    IReadOnlyList<UnclassifiedRow> Unclassified);
+
 /// <summary>A key's storage class as <c>CONFIG_REFERENCE.md</c> declares it.</summary>
 internal sealed record ConfigKeyClass(string Key, string Store)
 {
@@ -30,11 +40,12 @@ internal static class ConfigReferenceParser
     // and so carries the same section root as its partner.
     private static readonly Regex FirstBacktickedToken = new(@"`([^`]+)`", RegexOptions.Compiled);
 
-    internal static IReadOnlyList<ConfigKeyClass> Parse(string markdown)
+    internal static ParseResult Parse(string markdown)
     {
         ArgumentNullException.ThrowIfNull(markdown);
 
         var keys = new List<ConfigKeyClass>();
+        var unclassified = new List<UnclassifiedRow>();
 
         foreach (var line in markdown.Split('\n'))
         {
@@ -52,26 +63,33 @@ internal static class ConfigReferenceParser
                 continue;
             }
 
-            var store = cells[1].Trim();
-
-            // Skips header and separator rows without needing to recognise them:
-            // only rows whose second cell is a storage class are of interest.
-            if (store != RowsClass && store != AppClass)
-            {
-                continue;
-            }
-
             var match = FirstBacktickedToken.Match(cells[0]);
 
+            // A row with no backticked key in its first cell is a header or a
+            // separator, not a key row.
             if (!match.Success)
             {
                 continue;
             }
 
-            keys.Add(new ConfigKeyClass(match.Groups[1].Value.Trim(), store));
+            var key = match.Groups[1].Value.Trim();
+            var store = cells[1].Trim();
+
+            if (store == RowsClass || store == AppClass)
+            {
+                keys.Add(new ConfigKeyClass(key, store));
+                continue;
+            }
+
+            // A key row whose Store cell is neither class is recorded rather
+            // than skipped. Skipping it would drop the key out of the contract
+            // silently, and a malformed cell such as **rows** would then read
+            // as no key at all. The non-empty guard catches a total parse
+            // failure; it cannot catch a partial one.
+            unclassified.Add(new UnclassifiedRow(key, store));
         }
 
-        return keys;
+        return new ParseResult(keys, unclassified);
     }
 
     internal static IReadOnlySet<string> SectionRoots(
