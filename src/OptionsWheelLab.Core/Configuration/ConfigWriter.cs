@@ -48,6 +48,8 @@ public sealed class ConfigWriter
 
         using var transaction = _connection.BeginTransaction(deferred: false);
 
+        RefuseIfEarlierThanNewest(transaction, key, setAt);
+
         using (var insert = _connection.CreateCommand())
         {
             insert.Transaction = transaction;
@@ -81,5 +83,43 @@ public sealed class ConfigWriter
 
         transaction.Commit();
         return version;
+    }
+
+    /// <summary>
+    /// Refuses a version that predates the newest already stored for the key.
+    /// </summary>
+    /// <remarks>
+    /// The store enforces this with a trigger, which holds against any writer.
+    /// This check exists only so the refusal can name both instants: SQLite's
+    /// <c>RAISE</c> takes a string literal and cannot interpolate the values
+    /// that caused it. Inside the same transaction, so it cannot race the
+    /// insert it guards.
+    /// </remarks>
+    private void RefuseIfEarlierThanNewest(
+        SqliteTransaction transaction,
+        string key,
+        DateTimeOffset setAt)
+    {
+        using var newest = _connection.CreateCommand();
+        newest.Transaction = transaction;
+        newest.CommandText = "SELECT MAX(set_at) FROM config_rows WHERE key = $key;";
+        newest.Parameters.AddWithValue("$key", key);
+
+        if (newest.ExecuteScalar() is not string newestSetAt)
+        {
+            return;
+        }
+
+        var candidate = StoreTimestamp.ToStored(setAt);
+
+        if (string.CompareOrdinal(candidate, newestSetAt) < 0)
+        {
+            throw new InvalidOperationException(
+                $"Cannot append '{key}' at {candidate} because its newest version is already at "
+                + $"{newestSetAt}. set_at moves forward for a key: resolution filters on set_at "
+                + "and then orders by version, so an earlier timestamp would make the value in "
+                + "force on a date depend on insertion order rather than on time, and the "
+                + "append-only guards would make that permanent.");
+        }
     }
 }

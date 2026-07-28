@@ -40,5 +40,28 @@ public static class Migrations
                 SELECT RAISE(ABORT, 'config_rows is append-only: rows are never deleted');
             END;
             """),
+
+        new Migration(
+            2,
+            "config_rows_set_at_monotonic",
+            """
+            -- version is MAX + 1 and always increases; set_at is supplied and
+            -- was unconstrained. Resolution filters on set_at and then orders
+            -- by version, so an out-of-order timestamp makes "in force on date
+            -- T" depend on insertion order rather than on time, and the
+            -- append-only guards make that permanent.
+            --
+            -- Equal is allowed: two versions of one key can legitimately share
+            -- an instant, and version breaks the tie, which is what the as-of
+            -- resolution already does [D-W26].
+            --
+            -- Per key, because keys are versioned independently.
+            CREATE TRIGGER config_rows_set_at_not_earlier
+            BEFORE INSERT ON config_rows
+            WHEN NEW.set_at < (SELECT MAX(set_at) FROM config_rows WHERE key = NEW.key)
+            BEGIN
+                SELECT RAISE(ABORT, 'config_rows set_at moves forward: a new version cannot predate the newest version of the same key');
+            END;
+            """),
     ];
 }
