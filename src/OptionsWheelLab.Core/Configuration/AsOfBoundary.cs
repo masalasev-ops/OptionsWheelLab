@@ -20,6 +20,13 @@ public static class AsOfBoundary
     /// The stored-form timestamp that every instant on <paramref name="date"/>
     /// is at or before.
     /// </summary>
+    /// <remarks>
+    /// The 999 milliseconds is coupled to
+    /// <see cref="StoreTimestamp.StoredFormat"/> carrying three fractional
+    /// digits. If that format ever gains precision this value stops being the
+    /// last instant of the day and quietly excludes the end of it, so the
+    /// coupling is asserted by a test rather than trusted to this comment.
+    /// </remarks>
     public static string LastInstantOf(DateOnly date) =>
         StoreTimestamp.ToStored(
             new DateTimeOffset(date.Year, date.Month, date.Day, 23, 59, 59, 999, TimeSpan.Zero));
