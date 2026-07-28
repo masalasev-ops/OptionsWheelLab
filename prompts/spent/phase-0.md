@@ -22,7 +22,7 @@ Corpus v1.9.9.
 | Phase 0 | 0.1, 0.2, 0.3 and 0.4 built; 0.5 onward not started |
 | Branch | `phase-0/checkpoint-0.4`, off `main` |
 | Merged | PR #1 as `53cc0b4` and PR #2 as `a2b8c28`, both merge commits, neither squashed |
-| CI | green, 152 tests, guards then restore then build then test, on push to `main` and every pull request |
+| CI | green, 154 tests, guards then restore then build then test, on push to `main` and every pull request |
 
 ## Build
 
@@ -157,15 +157,15 @@ It catches declared intent, not inferred types, and says so.
 
 ## Tests
 
-152 across fourteen fixtures plus the 0.1 smoke test and eleven unregistered
-suites.
+154: 97 across fourteen fixtures, and 57 across eleven unregistered suites, one
+of which is the 0.1 smoke test.
 
 | Fixture | Tests |
 |---|---|
-| FX-MoneyRoundTrip | 16 |
+| FX-MoneyRoundTrip | 17 |
 | FX-TickerDashForm | 12 |
 | FX-ConfigStoreClassHonoured | 12 |
-| FX-NoDecimalOrderingInSql | 11 |
+| FX-NoDecimalOrderingInSql | 12 |
 | FX-CeilingNotInsidePolicyBand | 7 |
 | FX-ConfigResolvesAsOf | 6 |
 | FX-EveryConfigSectionBinds | 6 |
