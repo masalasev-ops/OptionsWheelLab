@@ -17,6 +17,13 @@ jobs:
         with:
           dotnet-version: '10.0.x'
 
+      # Before the build, because a source guard must fail even when the build
+      # does not. The checks live in the script rather than here, so there is one
+      # definition of each and a developer can run the same thing locally.
+      - name: Guards
+        shell: pwsh
+        run: ./guards.ps1
+
       - name: Restore
         run: dotnet restore
 
