@@ -1,0 +1,267 @@
+# WORKED_EXAMPLE
+
+Build state: **not built**. This is a specification expressed as arithmetic.
+
+One decision traced from chain snapshot to regret score, with every number
+computed. Prose specifications are ambiguous exactly where it matters; this
+document removes the ambiguity. Anyone who can reproduce these figures has
+understood the system, and any implementation that reproduces them is correct.
+
+The data is synthetic. `WDGT` is not a real ticker, deliberately, so that nobody
+mistakes this for a backtest.
+
+---
+
+## 1. Setup
+
+Account equity: `100,000.00`
+Per-name committed capital cap: 25% of equity, so `25,000.00`
+Total committed capital cap: 60% of equity, so `60,000.00`
+
+Existing state on 2026-03-02:
+
+- `WDGT` already has `19,900.00` committed from earlier positions.
+- Total committed across all names is `38,000.00`.
+
+Therefore the per-name headroom for `WDGT` is `25,000.00 - 19,900.00 = 5,100.00`,
+and the total headroom is `60,000.00 - 38,000.00 = 22,000.00`. The per-name cap
+binds; the total cap does not.
+
+Fill rule: sell at the bid, commission `0.65` per contract [D-W12].
+
+Policy bands. Frozen baseline targets delta 0.20 to 0.30 and 30 to 60 days to
+expiry, and prefers the highest credit inside that band. The random maker draws
+uniformly among candidates with delta 0.10 to 0.35 in the same expiry window.
+
+---
+
+## 2. The chain snapshot
+
+Snapshot date 2026-03-02. `WDGT` last close `52.40`.
+
+Puts expiring 2026-04-17, which is 46 days out:
+
+| Strike | Delta | Bid | Ask | Committed if 1 contract |
+|---|---|---|---|---|
+| 45.00 | -0.10 | 0.30 | 0.36 | 4,500.00 |
+| 47.50 | -0.16 | 0.55 | 0.62 | 4,750.00 |
+| 50.00 | -0.24 | 0.95 | 1.05 | 5,000.00 |
+| 52.50 | -0.44 | 2.05 | 2.20 | 5,250.00 |
+| 55.00 | -0.62 | 3.60 | 3.85 | 5,500.00 |
+
+Committed capital is `strike x 100 x contracts` [D-W17].
+
+---
+
+## 3. Enumeration and the risk gate
+
+> **Unresolved against [D-W22] to [D-W25], added 2026-07-27.** This example was
+> written before the contract-level gate constraints existed and has not been
+> reconciled with them. Under the proposed defaults the 45.00 strike fails the
+> spread cap at 18.18 percent of mid, which removes it from the feasible set and
+> from the random maker's choice; the 47.50 strike passes at 11.97 percent, by
+> three hundredths of a percentage point; and the 52.50 and 55.00 strikes fail
+> the delta ceiling in addition to the capital cap they already fail.
+>
+> The arithmetic below therefore describes a three-candidate feasible set that the
+> current design would render as two. Nothing here is safe to build from until
+> that is resolved, and seven registered fixtures depend on it.
+
+All five strikes are enumerated. The gate then evaluates each against the
+`5,100.00` per-name headroom [D-W10].
+
+| Strike | Committed | Headroom | Gate |
+|---|---|---|---|
+| 45.00 | 4,500.00 | 5,100.00 | feasible |
+| 47.50 | 4,750.00 | 5,100.00 | feasible |
+| 50.00 | 5,000.00 | 5,100.00 | feasible |
+| 52.50 | 5,250.00 | 5,100.00 | rejected, per-name cap |
+| 55.00 | 5,500.00 | 5,100.00 | rejected, per-name cap |
+
+**The feasible set is {45.00, 47.50, 50.00}.**
+
+Note what the gate did. It removed the two highest-premium candidates, which are
+also the two with the largest downside exposure. That is the gate working as
+designed rather than an accident of this example. Rejected candidates are stored
+with their reason so the gate's effect is auditable.
+
+All three makers now receive this identical set [D-W4].
+
+---
+
+## 4. The three decisions
+
+| Maker | Choice | Reason |
+|---|---|---|
+| Frozen baseline | 50.00 put | delta 0.24 is inside 0.20-0.30; highest credit in band |
+| Random within band | 45.00 put | uniform draw among {45.00, 47.50, 50.00} |
+| Learner | 47.50 put | current policy rows favour lower delta |
+
+Fills, at the bid less commission:
+
+| Strike | Bid | Gross credit | Commission | Net credit |
+|---|---|---|---|---|
+| 45.00 | 0.30 | 30.00 | 0.65 | 29.35 |
+| 47.50 | 0.55 | 55.00 | 0.65 | 54.35 |
+| 50.00 | 0.95 | 95.00 | 0.65 | 94.35 |
+
+---
+
+## 5. What the underlying did
+
+| Date | Close | Note |
+|---|---|---|
+| 2026-03-02 | 52.40 | trial opens |
+| 2026-04-08 | 45.80 | low of the trial window |
+| 2026-04-17 | 48.90 | first expiry |
+| 2026-04-20 | 48.95 | covered call sold |
+| 2026-05-15 | 51.20 | second expiry |
+| 2026-05-18 | 51.30 | second covered call sold |
+| 2026-06-19 | 53.40 | third expiry |
+
+---
+
+## 6. Resolving each candidate
+
+### 6.1 The 45.00 put
+
+At 2026-04-17 the underlying is `48.90`, above `45.00`, so the put expires
+worthless. The trial returns to cash.
+
+- Total: `+29.35`
+- Committed: `4,500.00`
+- Return on committed: `29.35 / 4,500.00 = 0.652%`
+- Duration: 2026-03-02 to 2026-04-17 = **46 days**
+- Maximum adverse excursion: the underlying low `45.80` never went below the
+  strike, so **0.00%**
+
+### 6.2 The 47.50 put
+
+At 2026-04-17 the underlying is `48.90`, above `47.50`, so the put expires
+worthless. The trial returns to cash.
+
+- Total: `+54.35`
+- Committed: `4,750.00`
+- Return on committed: `54.35 / 4,750.00 = 1.144%`
+- Duration: **46 days**
+- Maximum adverse excursion: `(47.50 - 45.80) / 47.50 = 3.58%`
+
+The excursion is non-zero even though the outcome was a clean win. The position
+was in the money during the window and the endpoint hides that [D-W21].
+
+### 6.3 The 50.00 put, which goes the distance
+
+At 2026-04-17 the underlying is `48.90`, below `50.00`, so the put is assigned.
+100 shares are bought at `50.00`.
+
+Gross basis is `50.00` per share. Net basis is `50.00 - 0.9435 = 49.0565`. The
+covered call constraint is evaluated against **gross** basis, so only strikes at
+or above `50.00` are eligible [D-W19]. Under net basis a `49.50` call would have
+looked admissible, which is the drift this rule prevents.
+
+Leg by leg:
+
+| Date | Event | Cash |
+|---|---|---|
+| 2026-03-02 | Sell 50.00 put, bid 0.95 less commission | +94.35 |
+| 2026-04-17 | Assigned, buy 100 shares at 50.00 | -5,000.00 |
+| 2026-04-20 | Sell 52.50 call exp 2026-05-15, bid 0.70 less commission | +69.35 |
+| 2026-05-15 | Underlying 51.20, call expires worthless | 0.00 |
+| 2026-05-18 | Sell 52.50 call exp 2026-06-19, bid 0.85 less commission | +84.35 |
+| 2026-06-19 | Underlying 53.40, shares called away at 52.50 | +5,250.00 |
+
+Total: `94.35 - 5,000.00 + 69.35 + 84.35 + 5,250.00 = 498.05`
+
+- Committed: `5,000.00`
+- Return on committed: `498.05 / 5,000.00 = 9.961%`
+- Duration: 2026-03-02 to 2026-06-19 = **109 days**
+- Maximum adverse excursion: `(50.00 - 45.80) / 50.00 = 8.40%`
+
+The trial is measured from open through to return to cash, with the assigned
+shares inside the number rather than treated as an exit [D-W17]. This is the
+clause that keeps the strategy's downside inside the measurement.
+
+---
+
+## 7. The two scores, which invert
+
+### 7.1 Fast score, marked at the first expiry
+
+Every candidate is marked at 2026-04-17 on a common horizon, so they are
+comparable across the chain.
+
+| Strike | Mark | Net | On committed | Fast rank |
+|---|---|---|---|---|
+| 45.00 | worthless | +29.35 | 0.652% | 2 |
+| 47.50 | worthless | +54.35 | 1.144% | **1** |
+| 50.00 | intrinsic 50.00 - 48.90 = 1.10, so -110.00 | 94.35 - 110.00 = -15.65 | -0.313% | 3 |
+
+### 7.2 Slow score, trial complete
+
+| Strike | Return on committed | Duration | Slow rank |
+|---|---|---|---|
+| 45.00 | 0.652% | 46 | 3 |
+| 47.50 | 1.144% | 46 | 2 |
+| 50.00 | 9.961% | 109 | **1** |
+
+**The two rankings are exactly inverted.** This is not a contrived edge case; it
+is what assignment does to a mark-at-expiry view. The learner's objective is the
+slow score [D-W20], and the divergence monitor fires here.
+
+---
+
+## 8. Ranks and regret
+
+Regret is computed under the governing slow score, as the best available outcome
+minus the outcome actually achieved.
+
+| Maker | Chose | Slow rank | Regret |
+|---|---|---|---|
+| Frozen baseline | 50.00 | 1 of 3 | 0.000 pp |
+| Random within band | 45.00 | 3 of 3 | 9.961 - 0.652 = **9.309 pp** |
+| Learner | 47.50 | 2 of 3 | 9.961 - 1.144 = **8.817 pp** |
+
+---
+
+## 9. What this example is here to teach
+
+Four things, and the fourth is the important one.
+
+**Annualization would not have rescued the ranking.** The 47.50 put returns
+1.144% over 46 days, which annualizes to about 9.1%. The 50.00 put returns 9.961%
+over 109 days, or about 33.4%. The 50.00 strike wins either way here. The reason
+the objective is not annualized is not that it changes this case; it is that
+across many cases it creates a systematic preference for short trades on
+arithmetic alone [D-W18].
+
+**The excursion field is doing work the outcome cannot.** The winning decision was
+exposed to an 8.40% adverse excursion against a 5,000.00 commitment. The losing
+decisions were exposed to 3.58% and 0.00%. Ranked on outcome alone, the riskiest
+choice looks best.
+
+**One sample teaches the wrong lesson.** If a learner updated from this trial, it
+would learn to sell higher delta, because the higher delta won. It won because
+the underlying recovered. A different path over the same 109 days produces the
+opposite result from the same decision, and nothing in the outcome distinguishes
+the two.
+
+**Which is why the risk drift check exists.** A learner that repeatedly draws this
+lesson will show falling regret and widening excursion at the same time. That
+pattern is not improvement, and the standing comparison against the frozen
+baseline is what surfaces it [D-W21, `VALIDITY.md` §3].
+
+---
+
+## 10. Fixtures derived from this example
+
+These are registered in `FIXTURES.md` against their checkpoints.
+
+| Fixture | Asserts |
+|---|---|
+| FX-GateRejectsAboveHeadroom | 52.50 and 55.00 are rejected with reason recorded |
+| FX-ThreeMakersSameFeasibleSet | all three receive {45.00, 47.50, 50.00} |
+| FX-GrossBasisBindsCallStrike | a 49.50 call is rejected though net basis admits it |
+| FX-TrialCompleteIncludesAssignment | the 50.00 trial totals 498.05 |
+| FX-ExcursionRecordedOnWin | the 47.50 trial carries 3.58% on a positive outcome |
+| FX-FastSlowDivergenceFires | the inverted rankings in §7 raise the monitor |
+| FX-RegretUsesSlowScore | learner regret is 8.817 pp, not a fast-score figure |
