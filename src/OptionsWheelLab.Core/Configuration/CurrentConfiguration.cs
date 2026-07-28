@@ -33,4 +33,17 @@ public sealed class CurrentConfiguration
 
         return ConfigRowQuery.ResolveCurrent(_connection, key);
     }
+
+    /// <summary>
+    /// The newest decimal for the key, or null when it has none. See
+    /// <see cref="ConfigValue"/> for why the typed accessors exist.
+    /// </summary>
+    public decimal? ResolveCurrentDecimal(string key) =>
+        ConfigValue.AsDecimal(ResolveCurrent(key), key);
+
+    /// <summary>
+    /// The newest integer for the key, or null when it has none.
+    /// </summary>
+    public int? ResolveCurrentInt(string key) =>
+        ConfigValue.AsInt(ResolveCurrent(key), key);
 }
