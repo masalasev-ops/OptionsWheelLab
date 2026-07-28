@@ -1,6 +1,7 @@
 # BUILD_PLAN
 
-Build state: **Phase 0 in progress**. 0.1 and 0.2 built; 0.3 onward not started.
+Build state: **Phase 0 in progress**. 0.1, 0.2 and 0.3 built; 0.4 onward not
+started.
 
 ## How this document works
 

@@ -3,7 +3,8 @@
 The single registry of test fixtures. Prompts and checkpoints reference the
 fixtures registered against them here; they never enumerate fixture names inline.
 
-Build state: **none built**.
+Build state: **partly built**. The eleven fixtures registered against 0.2 and
+0.3 are implemented; the rest belong to checkpoints not yet reached.
 
 ## Why this file exists
 

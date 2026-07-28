@@ -4,8 +4,8 @@ Appended to, never rewritten. The repository is the authority on build state.
 
 ## Current state
 
-**Phase 0 in progress.** Checkpoints 0.1 and 0.2 built. 0.3 onward not started.
-The documentation corpus is at v1.9.8.
+**Phase 0 in progress.** Checkpoints 0.1, 0.2 and 0.3 built. 0.4 onward not
+started. The documentation corpus is at v1.9.8.
 
 ## Log
 

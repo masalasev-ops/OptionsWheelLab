@@ -1,6 +1,9 @@
 # DATA_AND_SCHEMA
 
-Build state: **not built**.
+Build state: **partly built**. The Time section and §4.5 are implemented at 0.3,
+along with the point-in-time config rule of §3. Every other table is
+specification: market data is Phase 1, decisions and trials Phase 4, scores
+Phase 5, pre-registration Phase 9.
 
 ## 1. Sources
 
