@@ -160,21 +160,74 @@ public sealed class FX_ConfigStoreClassHonoured
     }
 
     /// <summary>
-    /// A row naming two keys must still yield its section root, or a whole
-    /// section could slip past unclassified.
+    /// One key per row. Only the first backticked token in a key cell is ever
+    /// read, so a row naming two keys leaves the second undocumented as far as
+    /// any check can tell.
     /// </summary>
+    /// <remarks>
+    /// This replaces a test that asserted a shared row yields its section root.
+    /// That test encoded the form the document now forbids, so it would have
+    /// kept passing while documenting the wrong contract.
+    /// </remarks>
     [Fact]
-    public void A_row_carrying_two_keys_yields_its_section_root()
+    public void Every_key_row_names_exactly_one_key()
+    {
+        var shared = Parsed().SharedRows;
+
+        Assert.True(
+            shared.Count == 0,
+            $"These rows in {RepoRoot.ConfigReferencePath} name more than one key, and only the "
+            + "first is ever read: "
+            + string.Join(
+                "; ",
+                shared.Select(row => $"'{row.KeyCell}' names {string.Join(", ", row.Tokens)}"))
+            + ". Split the row so every row names one key, and state any constraint between them "
+            + "in their Notes.");
+    }
+
+    [Fact]
+    public void A_row_naming_two_keys_is_reported_with_every_token_found()
     {
         const string Markdown = """
             | `Gate:MinDte` / `Gate:MaxDte` | rows | admissible expiry window | Risk gate | |
+            | `Eodhd:BaseUrl` | app | API root | Ingest | |
             """;
 
-        var keys = ConfigReferenceParser.Parse(Markdown).Keys;
+        var result = ConfigReferenceParser.Parse(Markdown);
 
-        Assert.Single(keys);
-        Assert.Equal("Gate:MinDte", keys[0].Key);
-        Assert.Equal("Gate", keys[0].SectionRoot);
+        var offender = Assert.Single(result.SharedRows);
+        Assert.Equal("`Gate:MinDte` / `Gate:MaxDte`", offender.KeyCell);
+        Assert.Equal(["Gate:MinDte", "Gate:MaxDte"], offender.Tokens);
+    }
+
+    /// <summary>
+    /// A suffix-only second token is the worse form: it is not a key path at
+    /// all, so nothing could resolve it even if the parser read it.
+    /// </summary>
+    [Fact]
+    public void A_row_naming_a_key_and_a_bare_suffix_is_reported()
+    {
+        const string Markdown = """
+            | `Policy:Baseline:DeltaMin` / `DeltaMax` | rows | delta band | Frozen baseline maker | |
+            """;
+
+        var offender = Assert.Single(ConfigReferenceParser.Parse(Markdown).SharedRows);
+
+        Assert.Equal(["Policy:Baseline:DeltaMin", "DeltaMax"], offender.Tokens);
+    }
+
+    [Fact]
+    public void A_row_naming_one_key_is_not_reported()
+    {
+        const string Markdown = """
+            | `Gate:MaxDte` | rows | latest admissible expiry | Risk gate | Must be less than `Trial:MaxTrialDays` |
+            """;
+
+        var result = ConfigReferenceParser.Parse(Markdown);
+
+        // A backticked token in the Notes cell is not a second key.
+        Assert.Empty(result.SharedRows);
+        Assert.Equal("Gate:MaxDte", Assert.Single(result.Keys).Key);
     }
 
     private static ParseResult Parsed() =>

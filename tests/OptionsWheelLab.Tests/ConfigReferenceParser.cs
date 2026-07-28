@@ -7,10 +7,17 @@ namespace OptionsWheelLab.Tests;
 /// </summary>
 internal sealed record UnclassifiedRow(string Key, string StoreCell);
 
-/// <summary>Keys read from the document, and rows that could not be classified.</summary>
+/// <summary>A row whose key cell names more than one key.</summary>
+internal sealed record SharedKeyRow(string KeyCell, IReadOnlyList<string> Tokens);
+
+/// <summary>
+/// Keys read from the document, rows that could not be classified, and rows
+/// naming more than one key.
+/// </summary>
 internal sealed record ParseResult(
     IReadOnlyList<ConfigKeyClass> Keys,
-    IReadOnlyList<UnclassifiedRow> Unclassified);
+    IReadOnlyList<UnclassifiedRow> Unclassified,
+    IReadOnlyList<SharedKeyRow> SharedRows);
 
 /// <summary>A key's storage class as <c>CONFIG_REFERENCE.md</c> declares it.</summary>
 internal sealed record ConfigKeyClass(string Key, string Store)
@@ -35,10 +42,11 @@ internal static class ConfigReferenceParser
     internal const string RowsClass = "rows";
     internal const string AppClass = "app";
 
-    // The first backticked token in the Key cell. Rows carrying two keys, such
-    // as `Gate:MinDte` / `Gate:MaxDte`, yield the first, which is a full key
-    // and so carries the same section root as its partner.
-    private static readonly Regex FirstBacktickedToken = new(@"`([^`]+)`", RegexOptions.Compiled);
+    // Backticked tokens in the Key cell. The document carries one key per row,
+    // so a cell yielding more than one token is a defect rather than a form to
+    // be interpreted: only the first would ever be read, leaving the rest
+    // undocumented as far as any check could tell.
+    private static readonly Regex BacktickedToken = new(@"`([^`]+)`", RegexOptions.Compiled);
 
     internal static ParseResult Parse(string markdown)
     {
@@ -46,6 +54,7 @@ internal static class ConfigReferenceParser
 
         var keys = new List<ConfigKeyClass>();
         var unclassified = new List<UnclassifiedRow>();
+        var sharedRows = new List<SharedKeyRow>();
 
         foreach (var line in markdown.Split('\n'))
         {
@@ -63,16 +72,23 @@ internal static class ConfigReferenceParser
                 continue;
             }
 
-            var match = FirstBacktickedToken.Match(cells[0]);
+            var tokens = BacktickedToken.Matches(cells[0])
+                .Select(token => token.Groups[1].Value.Trim())
+                .ToList();
 
             // A row with no backticked key in its first cell is a header or a
             // separator, not a key row.
-            if (!match.Success)
+            if (tokens.Count == 0)
             {
                 continue;
             }
 
-            var key = match.Groups[1].Value.Trim();
+            if (tokens.Count > 1)
+            {
+                sharedRows.Add(new SharedKeyRow(cells[0].Trim(), tokens));
+            }
+
+            var key = tokens[0];
             var store = cells[1].Trim();
 
             if (store == RowsClass || store == AppClass)
@@ -89,7 +105,7 @@ internal static class ConfigReferenceParser
             unclassified.Add(new UnclassifiedRow(key, store));
         }
 
-        return new ParseResult(keys, unclassified);
+        return new ParseResult(keys, unclassified, sharedRows);
     }
 
     internal static IReadOnlySet<string> SectionRoots(
