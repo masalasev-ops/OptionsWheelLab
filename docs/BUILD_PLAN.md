@@ -108,8 +108,9 @@ assertions from that file.
 
 ### 0.3 Store bootstrap and migrations
 
-SQLite store, snapshot-first migration runner, `migrate.ps1` calling the snapshot
-tool internally first. Worker is the sole writer; Api opens read-only.
+SQLite store, snapshot-first migration runner, `migrate.ps1` as the operator
+entry point invoking the runner so a hand-run cannot skip the snapshot. Worker is
+the sole writer; Api opens read-only.
 
 - **Test** FX-MigrateFromEmpty: migrating an empty database produces the expected
   schema version and is idempotent on a second run.

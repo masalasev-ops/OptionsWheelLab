@@ -1,5 +1,68 @@
 # CHANGELOG
 
+## [1.9.9] — 2026-07-28
+
+### Added
+- D-W29: stored decimals are canonical and are not ordered in SQL. It exists
+  because strike participates in contract identity, so canonicalisation is a
+  correctness requirement rather than tidiness: `50` and `50.00` are the same
+  number and different `TEXT`, and a non-canonical form would give one contract
+  two identities and split its history without failing.
+- D-W29 states that the scale is a fidelity requirement for vendor-supplied
+  values and a rounding policy for computed ones, so there are two entry points
+  and the caller chooses. One could not be both.
+- D-W29 states that every decimal reaching a `TEXT` column passes through the
+  canonical form and no call site formats a decimal itself.
+- D-W29 added to the Data and identity line of the topical index.
+- FX-NoDecimalOrderingInSql at 0.4.
+- `DATA_AND_SCHEMA.md` §2 states that a ticker has two forms, the bare dash form
+  for the store and the exchange-suffixed form for the vendor, and that the
+  suffix is added at the boundary and never stored.
+- `DATA_AND_SCHEMA.md` §2 states the stored date form and warns that
+  `InvariantGlobalization` makes the invariant short date `MM/dd/yyyy`, so a date
+  stringified without an explicit format is culture-independent and still wrong.
+- `DATA_AND_SCHEMA.md` §4.1 pins `right` as `put` or `call`, lower case.
+- `CLAUDE.md` §10: authored prose that a landed decision has already superseded
+  is corrected rather than reported, the authority being the decision and never
+  the code.
+
+### Changed
+- `DATA_AND_SCHEMA.md` §4 states that every decimal, not only money, is stored
+  in the canonical fixed-scale form, that the scale is a single declared
+  constant, and that decimal columns are not ordered, ranged over, or aggregated
+  in SQL.
+- D-W17 now reads "strike times the contract multiplier times contracts". One
+  hundred is the standard multiplier and not a constant of the metric: an
+  adjusted contract carries its own deliverable in `contracts.multiplier`, so a
+  metric hardcoding one hundred would misprice every position in a name that has
+  split.
+
+### Fixed
+- The suffix `Pct` named a percentage while every description said fraction, and
+  one proposed value was written as a percentage. Renamed to `Fraction` so the
+  name states the unit: `Risk:PerNameCapFraction`, `Risk:TotalCapFraction`,
+  `Risk:SimultaneousAssignmentLimitFraction`, and `Gate:MaxSpreadFractionOfMid`
+  proposed 0.12 rather than 12. D-W22 updated to match. Every one of these keys
+  is unset and unconsumed, so the rename cost nothing and could not have been
+  done free again.
+- `DATA_AND_SCHEMA.md` §4 and `BUILD_PLAN.md` 0.3 both said `migrate.ps1` calls
+  the snapshot tool internally first. The runner holds the guarantee and the
+  mechanism is `VACUUM INTO` [D-W28], which the same section of
+  `DATA_AND_SCHEMA.md` already said two paragraphs later. Corrected under the
+  decision that determines it.
+- `README.md` reported corpus version 1.0.0.
+
+### Notes
+- The three corrections above are reconciliations rather than a build overruling
+  a document. The test applied was whether a landed decision already determines
+  what the text should say; where it does, the text is corrected and the
+  decision cited. That rule is now in `CLAUDE.md` §10 so it does not have to be
+  re-derived each time a decision lands.
+- `docs/WheelLab.html` still carries the old key names. It is the rendered
+  mockup prototype from `UI_MOCKUPS.md` §10, a historical artefact fixed at the
+  moment it was produced rather than a document that tracks the corpus, so §10
+  records that it predates the rename and the file is left alone.
+
 ## [1.9.8] — 2026-07-28
 
 ### Added

@@ -1,9 +1,11 @@
 # DATA_AND_SCHEMA
 
 Build state: **partly built**. The Time section and §4.5 are implemented at 0.3,
-along with the point-in-time config rule of §3. Every other table is
-specification: market data is Phase 1, decisions and trials Phase 4, scores
-Phase 5, pre-registration Phase 9.
+along with the point-in-time config rule of §3. §2's ticker and identity
+paragraphs, its date-form paragraph, the money line of §4 and the permitted
+values of `right` are implemented at 0.4; §2's corporate-action paragraph is
+Phase 1. Every other table is specification: market data is Phase 1, decisions
+and trials Phase 4, scores Phase 5, pre-registration Phase 9.
 
 ## 1. Sources
 
@@ -27,6 +29,16 @@ synthetic fixtures.
 ## 2. Identity
 
 Tickers use the EODHD dash form, for example `BRK-B`.
+
+A ticker has two forms and they are not interchangeable. The store uses the bare
+EODHD dash form, `BRK-B`. Requests to the vendor take the exchange-suffixed
+form, `BRK-B.US`. The suffix is added at the boundary and never stored, so a
+stored ticker is always comparable to another stored ticker.
+
+The stored form of a date is `yyyy-MM-dd` and is rendered through the same kind
+of helper as a timestamp. `InvariantGlobalization` makes the invariant short-date
+form `MM/dd/yyyy`, so a date stringified without an explicit format is
+culture-independent and still wrong.
 
 An option contract's identity is the tuple of underlying, expiry, right, and
 strike. The vendor's contract symbol is stored but is not the key, because
@@ -78,7 +90,8 @@ stored columns take the first, filenames the second.
 ## 4. Schema
 
 Snapshot-first migrations: the migration runner takes a database snapshot before
-applying, and `migrate.ps1` calls the snapshot tool internally first.
+applying, and `migrate.ps1` is the operator entry point that invokes the runner,
+so a hand-run cannot skip the snapshot.
 
 The store runs in WAL journal mode, set once and persisted with the database. A
 snapshot is taken with `VACUUM INTO` [D-W28], producing one consistent file from
@@ -90,7 +103,10 @@ first run against a store that does not exist yet has nothing to copy, which is
 a base case rather than an exception, and the runner records that it was
 skipped.
 
-Money is stored as decimal in `TEXT` columns, never as floating point.
+Money and every other decimal is stored as decimal in `TEXT` columns, never as
+floating point, in the canonical fixed-scale form [D-W29]. The scale is a single
+declared constant, wide enough for the most precise value any column carries.
+Decimal columns are not ordered, ranged over, or aggregated in SQL.
 
 ### 4.1 Market data
 
@@ -120,6 +136,9 @@ contract_quotes
   theta TEXT, vega TEXT, observed_at TEXT
   PK (contract_id, snapshot_date)
 ```
+
+`right` is `put` or `call`, lower case, matching the house convention for
+enumerated text elsewhere in this schema.
 
 ### 4.2 Universe
 

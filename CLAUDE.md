@@ -258,6 +258,13 @@ edit to apply, never as a replacement, because a replacement silently reverts
 whichever author did not produce it. Every other document has one author and
 syncs as a file.
 
+Authored prose that a landed decision has already superseded is corrected, not
+reported. The test is whether the decision determines what the text should say.
+If it does, correct it and cite the decision. If the correction still needs a
+judgement about the wording, it is a finding. This is not licence to overrule a
+document by building something else: the authority is the decision, never the
+code.
+
 **Before reporting a corpus entry as absent or contradictory, confirm the
 working copy is current.** Sound reasoning against a stale tree produces
 confident, wrong findings, and this has happened repeatedly. Check the corpus

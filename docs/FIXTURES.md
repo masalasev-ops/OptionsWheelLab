@@ -3,8 +3,8 @@
 The single registry of test fixtures. Prompts and checkpoints reference the
 fixtures registered against them here; they never enumerate fixture names inline.
 
-Build state: **partly built**. The eleven fixtures registered against 0.2 and
-0.3 are implemented; the rest belong to checkpoints not yet reached.
+Build state: **partly built**. The fourteen fixtures registered against 0.2, 0.3
+and 0.4 are implemented; the rest belong to checkpoints not yet reached.
 
 ## Why this file exists
 
@@ -39,6 +39,7 @@ fixtures in one place and pointing at it removes that failure by construction.
 | FX-ApiCannotWrite | 0.3 | the Api connection is read-only | authored |
 | FX-MoneyRoundTrip | 0.4 | adversarial decimals survive storage | authored |
 | FX-TickerDashForm | 0.4 | dot and dash ticker forms normalise together | authored |
+| FX-NoDecimalOrderingInSql | 0.4 | no SQL orders, ranges over, or aggregates a decimal column | authored |
 | FX-NoAmbientClock | 0.5 | no ambient DateTime call outside the clock | authored |
 | FX-RegistryMatchesDisk | 0.2 | every fixture file on disk has an entry here and is named for it | authored |
 | FX-EveryBoundKeyIsDocumented | 0.2 | every settable key on a bound options type has a row in CONFIG_REFERENCE.md | authored |
