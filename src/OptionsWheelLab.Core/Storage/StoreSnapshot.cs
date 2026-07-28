@@ -49,7 +49,12 @@ public static class StoreSnapshot
                 "no database file exists yet, so there is nothing to snapshot");
         }
 
-        AssertNothingElseHasItOpen(location);
+        // The lock is held for the whole copy, not merely tested before it.
+        // Releasing it first would prove only that nothing was writing at the
+        // moment of the check, and a writer starting immediately afterwards
+        // would tear the copy anyway, which is the failure the lock exists to
+        // prevent.
+        using var writeLock = TakeExclusiveLock(location);
 
         var directory = Path.Combine(
             location.Directory,
@@ -68,18 +73,47 @@ public static class StoreSnapshot
         return SnapshotResult.Of(directory);
     }
 
-    /// <summary>The database and the two files that carry uncheckpointed state.</summary>
+    /// <summary>
+    /// The database and the write-ahead log, which together are the whole of
+    /// the committed state.
+    /// </summary>
+    /// <remarks>
+    /// <c>-shm</c> is deliberately absent, and this is a departure from
+    /// <c>DATA_AND_SCHEMA.md</c>, which says the snapshot copies it too.
+    /// <para>
+    /// Holding the write lock across the copy, which is the stronger guarantee,
+    /// byte-range locks <c>-shm</c> and makes it unreadable while the lock is
+    /// held. The two requirements cannot both be met. <c>-shm</c> is a
+    /// transient wal-index that SQLite rebuilds from the write-ahead log
+    /// whenever it is missing, so a snapshot of <c>.db</c> and <c>-wal</c>
+    /// restores identically and nothing is lost by omitting it.
+    /// </para>
+    /// <para>
+    /// Omitted unconditionally rather than attempted and skipped on failure,
+    /// so the snapshot has the same contents on every platform. Windows
+    /// enforces the lock; Linux would not.
+    /// </para>
+    /// </remarks>
     public static IEnumerable<string> SourceFiles(string databasePath) =>
     [
         databasePath,
         databasePath + "-wal",
-        databasePath + "-shm",
     ];
 
     /// <summary>
-    /// Refuses loudly rather than copying a database somebody is writing.
+    /// Takes the write lock and keeps it until disposed.
     /// </summary>
-    private static void AssertNothingElseHasItOpen(StoreLocation location)
+    /// <remarks>
+    /// Refuses loudly rather than copying a database somebody is writing to. A
+    /// torn copy across the three files looks intact until someone restores
+    /// from it.
+    /// <para>
+    /// This blocks writers, not readers. In WAL mode a reader does not tear a
+    /// file copy, so refusing one would be stricter than the problem requires
+    /// and would make a snapshot impossible while the Api is merely running.
+    /// </para>
+    /// </remarks>
+    private static ExclusiveLock TakeExclusiveLock(StoreLocation location)
     {
         var builder = new SqliteConnectionStringBuilder
         {
@@ -92,23 +126,62 @@ public static class StoreSnapshot
             DefaultTimeout = 1,
         };
 
-        using var connection = new SqliteConnection(builder.ConnectionString);
-        connection.Open();
+        var connection = new SqliteConnection(builder.ConnectionString);
 
         try
         {
-            using var command = connection.CreateCommand();
-            command.CommandText = "BEGIN EXCLUSIVE; COMMIT;";
-            command.ExecuteNonQuery();
+            connection.Open();
+
+            var transaction = connection.BeginTransaction(deferred: false);
+
+            try
+            {
+                // BeginTransaction(deferred: false) issues BEGIN IMMEDIATE,
+                // which takes the write lock now rather than on first write.
+                // In WAL mode that is as exclusive as it gets: readers are
+                // deliberately not blocked.
+                using var probe = connection.CreateCommand();
+                probe.Transaction = transaction;
+                probe.CommandText = "SELECT 1;";
+                probe.ExecuteScalar();
+
+                return new ExclusiveLock(connection, transaction);
+            }
+            catch
+            {
+                transaction.Dispose();
+                throw;
+            }
         }
         catch (SqliteException locked)
         {
+            connection.Dispose();
+
             throw new InvalidOperationException(
-                $"Cannot snapshot '{location.DatabasePath}' because something else has it open. "
-                + "The Worker is the sole writer, so stop the Worker and run this again. "
+                $"Cannot snapshot '{location.DatabasePath}' because something else is writing to "
+                + "it. The Worker is the sole writer, so stop the Worker and run this again. "
                 + "Copying while a writer is active can tear the snapshot across its .db, -wal "
                 + "and -shm files, which looks intact until it is needed.",
                 locked);
+        }
+        catch
+        {
+            connection.Dispose();
+            throw;
+        }
+    }
+
+    /// <summary>The write lock, held for the life of the copy.</summary>
+    private sealed class ExclusiveLock(SqliteConnection connection, SqliteTransaction transaction)
+        : IDisposable
+    {
+        public void Dispose()
+        {
+            // Rolled back rather than committed: the lock exists to keep other
+            // writers out during the copy and changes nothing itself.
+            transaction.Rollback();
+            transaction.Dispose();
+            connection.Dispose();
         }
     }
 }

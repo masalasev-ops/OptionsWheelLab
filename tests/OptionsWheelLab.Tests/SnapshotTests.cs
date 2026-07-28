@@ -57,12 +57,61 @@ public sealed class SnapshotTests
 
         Assert.Contains(StoreLocation.DatabaseFileName, copied);
         Assert.Contains(StoreLocation.DatabaseFileName + "-wal", copied);
-        Assert.Contains(StoreLocation.DatabaseFileName + "-shm", copied);
 
         Assert.True(
             new FileInfo(Path.Combine(result.Directory!, StoreLocation.DatabaseFileName + "-wal"))
                 .Length > 0,
             "the copied write-ahead log should carry the frames the database file does not");
+    }
+
+    /// <summary>
+    /// <c>-shm</c> is not copied, and that is deliberate. Holding the write
+    /// lock across the copy byte-range locks it, and it is a transient
+    /// wal-index SQLite rebuilds from the write-ahead log, so the snapshot
+    /// restores identically without it.
+    /// </summary>
+    [Fact]
+    public void The_snapshot_omits_the_shm_because_the_lock_makes_it_unreadable()
+    {
+        using var store = TempStore.Empty();
+
+        using var connection = store.Connections.Open(StoreAccess.Write);
+
+        using (var command = connection.CreateCommand())
+        {
+            command.CommandText =
+                "PRAGMA wal_autocheckpoint = 0; CREATE TABLE probe (value TEXT);";
+            command.ExecuteNonQuery();
+        }
+
+        var result = StoreSnapshot.Take(store.Location, Instant);
+
+        var copied = Directory.GetFiles(result.Directory!).Select(Path.GetFileName).ToList();
+
+        Assert.DoesNotContain(StoreLocation.DatabaseFileName + "-shm", copied);
+    }
+
+    /// <summary>
+    /// A reader is not refused. In WAL mode a reader cannot tear a file copy,
+    /// so refusing one would be stricter than the problem requires and would
+    /// make a snapshot impossible while the Api is merely running.
+    /// </summary>
+    [Fact]
+    public void A_snapshot_is_allowed_while_a_reader_holds_the_store()
+    {
+        using var store = TempStore.Created();
+
+        using var reader = store.Connections.Open(StoreAccess.ReadOnly);
+
+        using (var command = reader.CreateCommand())
+        {
+            command.CommandText = "SELECT 1;";
+            command.ExecuteScalar();
+        }
+
+        var result = StoreSnapshot.Take(store.Location, Instant);
+
+        Assert.True(result.Taken);
     }
 
     [Fact]
