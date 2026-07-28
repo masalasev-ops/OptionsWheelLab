@@ -4,7 +4,8 @@ Appended to, never rewritten. The repository is the authority on build state.
 
 ## Current state
 
-**Phase 0 not started.** No code exists. The documentation corpus is at v1.8.3.
+**Phase 0 in progress.** Checkpoints 0.1 and 0.2 built. 0.3 onward not started.
+The documentation corpus is at v1.8.3.
 
 ## Log
 
@@ -108,3 +109,30 @@ and all corrected here: the Phase 0 definition of done contradicted D-W27, the
 build-state line asserted nothing was verified.
 
 Checkpoint 0.1 + 0.2 approved to build against v1.8.3.
+
+### 2026-07-27 — checkpoints 0.1 and 0.2 built
+Repository created at `masalasev-ops/OptionsWheelLab`, public. .NET 10 solution
+with `OptionsWheelLab.Core`, `.Worker`, `.Api` and `.Tests`. CI runs restore,
+build and test on push to `main` and on every pull request. 23 tests green,
+build clean under warnings as errors.
+
+One section binds: `Eodhd`, to `EodhdOptions`, verified by reading the
+composition root. It is the only section `CONFIG_REFERENCE.md` classes as `app`.
+No `rows`-classed section is bound, and FX-ConfigStoreClassHonoured fails the
+build if one ever is. The three `Eodhd` Consumer entries are now verified; the
+other nineteen rows carry **Unverified** until their checkpoints land.
+
+Configuration lives in one shared `src/appsettings.json` linked into both hosts
+and the tests, rather than one file per host, so the Worker and the Api cannot
+disagree about it. `appsettings.Secrets.json` is gitignored with a committed
+`.example` and loads optionally, so a fresh clone builds without it.
+
+The two cross-key invariants are pure predicates in `Core` over supplied values,
+with no host, store, startup wiring or clock. Enforcement at config-write time
+is owed by 0.8.
+
+`Microsoft.AspNetCore.OpenApi` was left out. Version 10.0.9 pulls
+`Microsoft.OpenApi` 2.0.0, which carries a high severity advisory that the
+build's vulnerability audit failed on. The API surface is Phase 11 and has no
+endpoint to describe, so the package is added back there against a patched
+version rather than the audit being suppressed now.
