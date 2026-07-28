@@ -1,5 +1,19 @@
 # CHANGELOG
 
+## [1.9.2] — 2026-07-28
+
+### Changed
+- `CONFIG_REFERENCE.md` splits its four shared rows so every row names one
+  key, and states the rule.
+
+### Notes
+- Found verifying PR #1. The parser reads the first backticked token per key
+  cell, so `Gate:MaxDte` and three Policy suffixes were undocumented as far
+  as any check could tell. Latent while only `Eodhd` binds; at Phase 2 it
+  would have made FX-EveryBoundKeyIsDocumented fire against a key the
+  document contains, and the usual answer to a fixture that fires wrongly is
+  to weaken it.
+
 ## [1.9.1] — 2026-07-28
 
 ### Added

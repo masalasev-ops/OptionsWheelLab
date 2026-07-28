@@ -5,7 +5,7 @@ Appended to, never rewritten. The repository is the authority on build state.
 ## Current state
 
 **Phase 0 in progress.** Checkpoints 0.1 and 0.2 built. 0.3 onward not started.
-The documentation corpus is at v1.9.1.
+The documentation corpus is at v1.9.2.
 
 ## Log
 
@@ -143,3 +143,7 @@ removal was a decision rather than a defect and is now a Phase 11 carried
 obligation. FIXTURES.md rule 2 was unenforceable as written and is split by
 direction, moving FX-RegistryMatchesDisk to 0.2. A third configuration
 direction is registered as FX-EveryBoundKeyIsDocumented.
+
+### 2026-07-28 — corpus v1.9.2
+CONFIG_REFERENCE.md now carries one key per row. Checkpoints 0.1 and 0.2
+verified complete against corpus v1.9.1.
