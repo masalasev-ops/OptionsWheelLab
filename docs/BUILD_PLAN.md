@@ -1,6 +1,6 @@
 # BUILD_PLAN
 
-Build state: **Phase 0 not started**.
+Build state: **Phase 0 in progress**. 0.1 and 0.2 built; 0.3 onward not started.
 
 ## How this document works
 
@@ -52,6 +52,19 @@ Solution with `OptionsWheelLab.Worker`, `OptionsWheelLab.Api`, `OptionsWheelLab.
 `OptionsWheelLab.Tests`. .NET 10. `CLAUDE.md` at root. `appsettings.Secrets.json` in
 `.gitignore` with a committed `.example` alongside.
 
+Configuration is one shared `src/appsettings.json`, linked into both hosts and
+the test project rather than one file per host, because a Worker and an Api
+disagreeing about the lab's configuration is a defect and two files is how that
+happens. It loads from `AppContext.BaseDirectory` rather than the host default,
+because the generic host and the web host default their content roots
+differently.
+
+No `Logging` section is committed, so every top-level section in
+`appsettings.json` binds to one of the lab's own options types and the binding
+test needs no framework allowlist. An allowlist is where a stray section would
+hide. Adding logging configuration later fails that test until the section is
+given a declared home, which is the intended prompt rather than a defect.
+
 - **Test**: solution builds; a trivial test passes in `OptionsWheelLab.Tests`.
 - **DoD**: CI green on a fresh clone with no local state.
 
@@ -69,16 +82,24 @@ wiring. They are wired to the config write path when it lands at 0.8.
 Implement the fixtures registered against 0.2 in `FIXTURES.md`, reading their
 assertions from that file.
 
-- **DoD**: the binding test fails when a stray section is added to
-  `appsettings.json` and passes when it is removed. Demonstrate both.
-- **DoD**: `CONFIG_REFERENCE.md`'s Consumer column names the verified consuming
-  type for every key bound in this checkpoint.
+- **DoD**: the binding test fails when a stray section is added to any committed
+  configuration file, being `appsettings.json` and
+  `appsettings.Secrets.example.json`, and passes when it is removed. Demonstrate
+  both. The uncommitted `appsettings.Secrets.json` is out of scope, being absent
+  on a fresh clone.
+- **DoD**: `CONFIG_REFERENCE.md`'s Consumer column names the component and the
+  verified type, as `component via TypeName`, for every key bound in this
+  checkpoint.
 - **DoD**: every fixture registered against 0.2 in `FIXTURES.md` exists and
   is named for it. This is the entry-to-file direction of rule 2 and applies
   to every checkpoint from here on.
 - **Why this checkpoint exists at all**: a sibling project shipped two
   configuration blocks that were never bound, so editing them silently did
   nothing. The test is cheap now and expensive to retrofit.
+- **Note**: from this checkpoint the test suite parses `CONFIG_REFERENCE.md` and
+  `FIXTURES.md`, so both are load-bearing rather than descriptive. An edit that
+  breaks their table shape fails the build, which is the intended cost of making
+  them checked contracts.
 
 ### 0.3 Store bootstrap and migrations
 

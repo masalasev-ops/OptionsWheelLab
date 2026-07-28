@@ -1,5 +1,31 @@
 # CHANGELOG
 
+## [1.9.3] — 2026-07-28
+
+### Changed
+- `BUILD_PLAN.md` build state moves from Phase 0 not started to Phase 0 in
+  progress, with 0.1 and 0.2 built.
+- `BUILD_PLAN.md` 0.1 records the shared configuration file and the deliberate
+  absence of a `Logging` section, both of which existed only in commit
+  messages.
+- `BUILD_PLAN.md` 0.2's first definition of done covers every committed
+  configuration file rather than `appsettings.json` alone, matching the check
+  that ships.
+- `BUILD_PLAN.md` 0.2's Consumer definition of done asks for `component via
+  TypeName`, matching the convention 1.9.1 introduced.
+
+### Added
+- `BUILD_PLAN.md` 0.2 notes that the test suite parses `CONFIG_REFERENCE.md`
+  and `FIXTURES.md`, so both are load-bearing rather than descriptive.
+
+### Notes
+- Found reviewing 0.1 and 0.2 against what shipped. The checkpoint text was
+  substantially accurate and no built thing contradicted it; the divergences
+  were one false build-state marker and four places where the plan described
+  less than what was built. A definition of done that understates the check is
+  the more dangerous of the two, because it reads as satisfied while leaving
+  the extra coverage undefended by any stated requirement.
+
 ## [1.9.2] — 2026-07-28
 
 ### Changed
