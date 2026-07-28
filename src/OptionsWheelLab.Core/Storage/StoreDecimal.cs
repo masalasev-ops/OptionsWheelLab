@@ -143,6 +143,16 @@ public static class StoreDecimal
     /// with no error, in a store whose purpose is that a later behaviour change
     /// can be explained after the fact.
     /// <para>
+    /// <b>"Lenient on padding" means shorter than the stored form, not longer.</b>
+    /// <c>0.35</c> is accepted and <c>0.350000000</c> is refused, though the nine
+    /// zeros carry no information and the value is exactly representable. So the
+    /// same logical value is admitted from a <c>decimal</c>, whose own scale may
+    /// be 28 when the extra digits are zero, and refused from a string. The
+    /// asymmetry is deliberate: at most <see cref="Scale"/> PLACES is a simpler
+    /// contract to state and to check than at most <see cref="Scale"/>
+    /// SIGNIFICANT places, and nothing writes the padded form except this type.
+    /// </para>
+    /// <para>
     /// So <c>Parse(Render(x)) == x</c> holds for every x in the domain, while
     /// <c>Render(Parse(s)) == s</c> deliberately does not.
     /// </para>

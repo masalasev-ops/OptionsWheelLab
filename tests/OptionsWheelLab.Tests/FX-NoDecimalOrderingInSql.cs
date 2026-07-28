@@ -191,6 +191,24 @@ public sealed class FX_NoDecimalOrderingInSql
         Assert.Empty(DecimalOrderingInSql.Offences(Sql, Vocabulary("close")));
     }
 
+    /// <summary>
+    /// The known limit, pinned rather than left in a comment.
+    /// </summary>
+    /// <remarks>
+    /// An alias defeats the detector. This test asserts the miss so the gap is
+    /// visible in the suite rather than only in prose, and it is NOT an
+    /// endorsement: when Phase 1 resolves aliases, or adopts a convention that a
+    /// decimal column is never aliased, this test fails and that failure is the
+    /// signal to delete it.
+    /// </remarks>
+    [Fact]
+    public void An_aliased_decimal_column_is_a_known_miss()
+    {
+        const string Sql = "SELECT strike AS s FROM contracts ORDER BY s DESC;";
+
+        Assert.Empty(DecimalOrderingInSql.Offences(Sql, Vocabulary("strike")));
+    }
+
     private static IReadOnlyList<string> SourceFiles() =>
         RepoRoot.SourceFilesUnder(RepoRoot.SourcePath);
 
@@ -206,6 +224,24 @@ public sealed class FX_NoDecimalOrderingInSql
 /// against the tree. The tree currently yields nothing, which is the point: the
 /// constraint lands before the columns it guards, and the synthetic cases are
 /// what prove it would fire.
+/// <para>
+/// <b>Known limit: an alias defeats it, and this is the direction that fails
+/// quietly.</b> Column names are matched against the declared vocabulary and
+/// nothing resolves aliases, so
+/// <c>SELECT strike AS s FROM contracts ORDER BY s</c> passes: the ordering is
+/// over a decimal and the token being ordered is not in the list. The
+/// over-reach note on <see cref="DecimalColumns"/> defends the false-POSITIVE
+/// direction, where a flagged integer key is recoverable. This is the
+/// false-negative one, where a real ordering goes unreported.
+/// </para>
+/// <para>
+/// Not live at 0.4: one table, one column, no aliases and no joins. It becomes
+/// live at Phase 1, where queries over bars and quotes alias and join as a
+/// matter of course and the columns being ordered are the ones that matter.
+/// Phase 1 has to choose between resolving aliases, which is correct, and a
+/// convention that a decimal column is never aliased, which is cheaper and
+/// checkable. That choice is not 0.4's to make.
+/// </para>
 /// </remarks>
 internal static class DecimalOrderingInSql
 {

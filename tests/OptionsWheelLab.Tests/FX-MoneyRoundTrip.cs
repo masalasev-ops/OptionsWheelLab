@@ -193,6 +193,30 @@ public sealed class FX_MoneyRoundTrip
     }
 
     /// <summary>
+    /// The scale is within the range a decimal admits.
+    /// </summary>
+    /// <remarks>
+    /// <see cref="StoreDecimal.MaxRepresentable"/> passes the scale to the
+    /// decimal constructor, which throws above 28. In a static field initialiser
+    /// that surfaces as a <c>TypeInitializationException</c> on the first touch
+    /// of any member, pointing at whichever caller got there first rather than at
+    /// the constant that is wrong. Changing the scale is a migration rather than
+    /// an edit, so it is done deliberately, which is exactly when the message
+    /// should name the thing that was changed.
+    /// <para>
+    /// This assertion touches <see cref="StoreDecimal.Scale"/> and nothing else.
+    /// A <c>const</c> is inlined at the call site and does not run the static
+    /// initialiser, so this test still fails cleanly while every other test in
+    /// the file would be failing with the type-initialiser error instead.
+    /// </para>
+    /// </remarks>
+    [Fact]
+    public void The_scale_is_within_the_range_a_decimal_admits()
+    {
+        Assert.InRange(StoreDecimal.Scale, 0, 28);
+    }
+
+    /// <summary>
     /// The bound is derived from the scale, not written down.
     /// </summary>
     /// <remarks>
