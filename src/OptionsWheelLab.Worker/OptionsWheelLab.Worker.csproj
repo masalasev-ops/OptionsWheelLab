@@ -9,6 +9,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <InternalsVisibleTo Include="OptionsWheelLab.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="../OptionsWheelLab.Core/OptionsWheelLab.Core.csproj" />
   </ItemGroup>
 

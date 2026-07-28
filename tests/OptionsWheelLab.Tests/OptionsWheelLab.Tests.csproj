@@ -11,8 +11,22 @@
     <PackageReference Include="xunit.runner.visualstudio" />
   </ItemGroup>
 
+  <!--
+    Both hosts are referenced, and carry real tests rather than existing to
+    force a build. The side effect is that dotnet test now compiles them, so a
+    broken host fails the suite rather than only the separate build step that
+    CI runs.
+  -->
   <ItemGroup>
     <ProjectReference Include="../../src/OptionsWheelLab.Core/OptionsWheelLab.Core.csproj" />
+    <ProjectReference Include="../../src/OptionsWheelLab.Worker/OptionsWheelLab.Worker.csproj" />
+    <ProjectReference Include="../../src/OptionsWheelLab.Api/OptionsWheelLab.Api.csproj" />
+  </ItemGroup>
+
+  <!-- WebApplication.CreateBuilder, so the web host's configuration path is
+       exercised and not only the generic host's. -->
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
 
   <ItemGroup>
