@@ -48,12 +48,23 @@
   split.
 
 ### Fixed
-- `BUILD_PLAN.md` states that checkpoint detail for a built checkpoint is a
-  record and is not reconciled against what shipped, because the spent-prompt
-  archive already holds the prompt that reproduces it and the state it produced,
-  and a third description would be the least authoritative of three. What stays
-  live regardless is the phase definition of done, the carried obligations, and
-  the detail for checkpoints not yet built.
+- `BUILD_PLAN.md` states the three states a checkpoint's detail passes through.
+  Not built, it is live intent and is corrected whenever something that has
+  landed changes what must be built. Signed off, it is frozen. Between them sits
+  a single event, determining the checkpoint fully built, at which the detail is
+  reconciled against what shipped AND the prompt is appended to the archive with
+  Current state overwritten. Both halves belong to that moment, which is also
+  what keeps Current state true: it is then written after the last change rather
+  than before it.
+- **An earlier draft of this same version said built detail is a record and is
+  never reconciled.** That collapsed the last two states into one and would have
+  discarded the reconciliation v1.9.3 performed on 0.1 and 0.2. Struck rather
+  than quietly replaced, because the two rules give opposite instructions for
+  0.4.
+- 0.4's detail reconciled against what shipped, that being the two decimal entry
+  points, the date and contract-right stored forms, the typed configuration
+  accessors, the total order on contract identity, and the source guard as a
+  script rather than a bare grep.
 - `BUILD_PLAN.md` 0.5 and 0.7 said their guards were CI greps, written before
   any guard existed. Both now extend the source guards 0.4 established, stated
   as the rule rather than the implementation, since 0.7 may replace it.

@@ -15,15 +15,35 @@ is not duplicated here.
 phases ahead is what made the equivalent AlphaLab document go stale, because a
 checkpoint's acceptance criteria depend on decisions that have not landed yet.
 
-Once a checkpoint is built, its detail here is a record of what was asked and is
-not reconciled against what shipped. `prompts/spent/phase-N.md` holds the prompt
-that reproduces the checkpoint and the Current state that describes the result,
-so a third description here would be the least authoritative of three and would
-drift by construction. The build-state marker above says which sections are
-records and which are still intent. What stays live regardless of the marker is
-the phase definition of done, the carried obligations, and the detail for
-checkpoints not yet built, because each of those is read before work rather than
-after it.
+A checkpoint's detail passes through three states, and the middle one is a single
+event rather than a period.
+
+**Not built.** The detail is live intent. It is corrected freely, and must be,
+whenever something that has landed changes what the checkpoint should build. A
+correction here is the propagation rule doing its job.
+
+**Signed off.** The detail is frozen. It is not revisited, because the archive
+now holds the prompt that reproduces the checkpoint and the Current state that
+describes the result, and a third description that kept moving would be the least
+authoritative of the three.
+
+**Determined fully built**, which is the transition between them and happens
+once. At that point, and only then, the detail is reconciled against what
+shipped, and the checkpoint's prompt is appended to `prompts/spent/phase-N.md`
+with Current state overwritten. Both halves belong to the same moment: the
+reconciled detail says what the checkpoint turned out to be, and the archive says
+how to reproduce it. Doing this at sign-off rather than during the build is what
+keeps Current state true, because it is then written after the last change rather
+than before it.
+
+The build-state marker above says which sections are frozen and which are still
+intent. Three things stay live regardless of it, because each is read before work
+rather than after: the phase definition of done, the carried obligations, and the
+detail for checkpoints not yet built.
+
+A frozen section may still be corrected by a landed decision, on the authority of
+the decision rather than of the code [`CLAUDE.md` §10]. That is the only thing
+that reaches one.
 
 **Prompts** are written immediately before they are spent. Once a checkpoint is
 built, `prompts/spent/phase-N.md` carries one prompt for it, being the prompt
@@ -145,11 +165,39 @@ Decimal-as-TEXT storage helpers with round-trip tests. Ticker normalisation to
 the EODHD dash form. Contract identity as the underlying, expiry, right, strike
 tuple.
 
-- **Test** FX-MoneyRoundTrip: a set of adversarial decimals round-trips through
-  storage without loss, including values that lose precision as doubles.
-- **Test** FX-TickerDashForm: `BRK.B` and `BRK-B` normalise to the same key.
-- **DoD**: no `double` or `float` appears in any monetary path; a CI grep
-  enforces it.
+Reconciled at sign-off against what shipped. Three things were larger than the
+scope above.
+
+The decimal form needed **two entry points, not one** [D-W29]. The scale is a
+fidelity requirement for a vendor-supplied value, which must refuse rather than
+lose a digit quietly, and a rounding policy for a computed one. Decimal division
+is non-terminating in general, so a single refusing function could not store the
+worked example's own first return.
+
+Two further stored forms came with it, for one reason: the obvious rendering is
+culture-independent, plausible and wrong. A bare `ToString()` on a date gives
+`MM/dd/yyyy` under `InvariantGlobalization`, and on the contract right gives
+`Put` where the schema says `put`.
+
+The configuration surfaces gained typed decimal and integer accessors, so the
+canonical form is validated where it is read rather than assumed, and so
+changing the scale is one edit.
+
+Contract identity gained a total order, because three makers receiving
+byte-identical candidate sets [D-W4] cannot depend on the order candidates
+arrive in.
+
+Implement the fixtures registered against 0.4 in `FIXTURES.md`.
+
+- **DoD**: no `double` or `float` appears in any monetary path; a source guard
+  enforces it. Shipped as `guards.ps1`, called by CI before the build so it
+  fails even when the build does not, scanning the whole tree with no exemption
+  mechanism. Its catch-list is wider than the two keywords, because
+  `Random.NextDouble`, `Convert.ToDouble` and the `Math` functions carry
+  neither.
+- **DoD**: `50`, `50.0` and `50.00` produce one stored string. This is the
+  identity property rather than formatting: strike participates in contract
+  identity, so two spellings would give one contract two identities.
 
 ### 0.5 Deterministic clock
 
