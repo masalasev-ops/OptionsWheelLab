@@ -43,6 +43,30 @@ public sealed class FX_EveryConfigSectionBinds
     }
 
     /// <summary>
+    /// The same defect in the committed secrets example. It is a configuration
+    /// file the repository ships, so a section in it that nothing reads is
+    /// exactly as dead as one in appsettings.json.
+    /// </summary>
+    [Fact]
+    public void Every_section_in_the_committed_secrets_example_binds_to_a_registered_options_type()
+    {
+        var services = Composition.Services(Composition.Configuration());
+
+        var sectionsInExample = Composition.SectionsInFile(Composition.SecretsExample());
+        var bound = Composition.BoundSections(services);
+
+        Assert.NotEmpty(sectionsInExample);
+
+        var unbound = SectionBinding.Unbound(sectionsInExample, bound);
+
+        Assert.True(
+            unbound.Count == 0,
+            $"These sections are present in {RepoRoot.SecretsExamplePath} but bind to nothing: "
+            + $"{string.Join(", ", unbound)}. Either bind the section to an options type at "
+            + "composition, or remove it from the file.");
+    }
+
+    /// <summary>
     /// The same defect from the other side: a registration pointing at a
     /// section that is not there.
     /// </summary>

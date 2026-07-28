@@ -14,9 +14,22 @@ namespace OptionsWheelLab.Tests;
 /// </remarks>
 internal static class Composition
 {
-    internal static IConfigurationRoot Configuration() =>
+    internal static IConfigurationRoot Configuration() => Read(RepoRoot.AppSettingsPath);
+
+    /// <summary>
+    /// The committed secrets example, which is inside the binding check because
+    /// a section in it that binds to nothing is the same defect.
+    /// </summary>
+    /// <remarks>
+    /// The real <c>appsettings.Secrets.json</c> stays outside: it is gitignored
+    /// and absent on a fresh clone, so a test asserting against it would pass
+    /// or fail depending on the developer's machine.
+    /// </remarks>
+    internal static IConfigurationRoot SecretsExample() => Read(RepoRoot.SecretsExamplePath);
+
+    private static IConfigurationRoot Read(string path) =>
         new ConfigurationBuilder()
-            .AddJsonFile(RepoRoot.AppSettingsPath, optional: false, reloadOnChange: false)
+            .AddJsonFile(path, optional: false, reloadOnChange: false)
             .Build();
 
     internal static IServiceCollection Services(IConfiguration configuration)
