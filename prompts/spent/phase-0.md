@@ -15,14 +15,14 @@ One file per phase. It closes when Phase 0 signs off; Phase 1 opens its own.
 
 # Current state
 
-Corpus v1.9.7.
+Corpus v1.9.8.
 
 | | |
 |---|---|
 | Phase 0 | 0.1, 0.2 and 0.3 built; 0.4 onward not started |
 | Branch | `phase-0/checkpoint-0.3`, off `main` |
 | Merged | PR #1 into `main` as `53cc0b4`, 24 commits preserved, not squashed |
-| CI | green, 81 tests, restore and build and test on push to `main` and every pull request |
+| CI | green, 84 tests, restore and build and test on push to `main` and every pull request |
 
 ## Build
 
@@ -58,16 +58,14 @@ WAL journal mode, set on the write connection and persisted with the database.
 The Worker opens read-write as the sole writer; the Api opens
 `SqliteOpenMode.ReadOnly`, set on the connection rather than by convention.
 
-Snapshot-first migrations. The snapshot copies the `.db` and its `-wal`, holds
-an exclusive write lock for the whole copy and refuses naming the Worker if it
-cannot take one, and runs before any connection is opened so the runner cannot
-detect itself. Readers are not refused, because in WAL mode a reader cannot tear
-a copy. `-shm` is deliberately not copied: holding the lock makes it unreadable,
-and it is a transient wal-index SQLite rebuilds from the write-ahead log. The
-first run has no file and records that it skipped and why. Applied migrations
-are rows in `schema_migrations`, not `PRAGMA user_version`. Two migrations
-exist: `config_rows` with its append-only triggers, and a trigger holding
-`set_at` monotonic per key.
+Snapshot-first migrations. A snapshot is one file written with `VACUUM INTO`
+[D-W28]: atomic, no lock, no writer blocked, and a database in its own right
+that can be opened directly rather than restored before it can be read. It
+carries whatever has not yet checkpointed. The first run has no store and
+records that it skipped and why. Applied migrations are rows in
+`schema_migrations`, not `PRAGMA user_version`. Two migrations exist:
+`config_rows` with its append-only triggers, and a trigger holding `set_at`
+monotonic per key.
 
 `migrate.ps1` supplies the instant and refuses when `Storage__Path` is unset.
 The Worker carries the `migrate` verb, because the Worker is the sole writer.
@@ -105,7 +103,7 @@ illegal in a Windows path.
 
 ## Tests
 
-81 across ten fixtures plus the 0.1 smoke test and six unregistered suites.
+84 across eleven fixtures plus the 0.1 smoke test and six unregistered suites.
 
 | Fixture | Tests |
 |---|---|
@@ -118,9 +116,10 @@ illegal in a Windows path.
 | FX-MaxDteBelowTrialBound | 4 |
 | FX-ApiCannotWrite | 3 |
 | FX-NoCurrentConfigReadOnSimulatedPath | 3 |
+| FX-SnapshotRestoresIdentically | 3 |
 | FX-RegistryMatchesDisk | 1 |
 
-All ten fixtures registered against 0.2 and 0.3 are implemented and named for
+All eleven fixtures registered against 0.2 and 0.3 are implemented and named for
 their registry entry. The suite parses `CONFIG_REFERENCE.md` and `FIXTURES.md`,
 so both are load-bearing rather than descriptive.
 
@@ -307,26 +306,16 @@ is current before reporting any corpus entry as absent.
 
 - The runner snapshots before applying, so a hand-run migration cannot skip it,
   and `migrate.ps1` is the operator entry point.
-- The snapshot copies the `.db` **and its `-wal`**. The database alone loses
-  whatever has not yet checkpointed.
-- **Hold** an exclusive write lock for the whole copy, not merely test it
-  beforehand, and refuse naming the Worker if it cannot be taken. Releasing it
-  first proves only that nothing was writing at check time, and a writer
-  starting immediately after tears the copy anyway. Use a short busy timeout, or
-  the refusal becomes a thirty-second hang.
-- Do **not** copy `-shm`. Holding the lock byte-range locks it and makes it
-  unreadable, so the lock and the three-file copy cannot both be had. `-shm` is
-  a transient wal-index SQLite rebuilds from the write-ahead log, so `.db` plus
-  `-wal` restores identically. Omit it unconditionally rather than skipping it
-  on failure, so the snapshot is the same on every platform.
-- Do not refuse readers. In WAL mode a reader cannot tear a copy, and refusing
-  one would make a snapshot impossible while the Api is merely running.
-- **Snapshot before opening any connection.** The lock cannot tell the runner's
-  own connection from another process's, so reading `schema_migrations` first
-  makes the runner refuse itself with a message naming a Worker that is not
-  running. A failure pointing at the wrong cause is worse than no message.
-- The first run has no file to copy. Skip the snapshot and record that it was
-  skipped and why, rather than passing over it silently.
+- Take the snapshot with `VACUUM INTO` a timestamped file [D-W28]. It runs in a
+  read transaction: atomic, blocks no writer, needs no lock, and produces one
+  file rather than a set whose members can disagree. Do not copy the database
+  and its write-ahead log; that form needs an exclusive lock held across the
+  copy, and that lock byte-range locks `-shm` and makes it unreadable, so the
+  lock and the three-file copy are not jointly satisfiable.
+- The result is a defragmented rebuild rather than a byte-identical copy, so
+  assert what a restored store resolves rather than comparing bytes.
+- The first run has no store yet. Skip the snapshot and record that it was
+  skipped and why: a base case rather than an exception.
 - Record applied migrations in a table, not `PRAGMA user_version`. Schema
   version is the highest applied id.
 - Migration 1: `config_rows` per `DATA_AND_SCHEMA.md` section 4.5, with triggers
@@ -350,9 +339,12 @@ is current before reporting any corpus entry as absent.
   behave differently: a first run against **no file** applies every migration
   and takes no snapshot; a second run against **a file with nothing pending**
   applies nothing and does take one.
-- **Test**: a snapshot attempted while something else is writing is refused
-  rather than producing files, and a snapshot while a reader holds the store is
-  allowed.
+- **Test** FX-SnapshotRestoresIdentically: a store snapshotted, mutated and
+  restored from the snapshot resolves what it did before the mutation, and keeps
+  its append-only triggers.
+- **Test**: a snapshot succeeds while a reader holds the store, and while a
+  writer holds an uncommitted transaction, capturing the committed state and not
+  the uncommitted.
 - **Test**: appending with a `set_at` earlier than the newest for that key is
   refused naming both instants; an equal `set_at` is accepted and resolves by
   version; a different key is unaffected.
