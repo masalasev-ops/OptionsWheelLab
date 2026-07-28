@@ -20,8 +20,8 @@ Corpus v1.9.6.
 | | |
 |---|---|
 | Phase 0 | 0.1 and 0.2 built; 0.3 onward not started |
-| Branch | `phase-0/checkpoint-0.1-0.2` |
-| PR | #1 open, not merged; `main` holds the documentation corpus only |
+| Branch | `phase-0/checkpoint-0.3`, off `main` |
+| Merged | PR #1 into `main` as `53cc0b4`, 24 commits preserved, not squashed |
 | CI | green, 36 tests, restore and build and test on push to `main` and every pull request |
 
 ## Build
