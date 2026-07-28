@@ -504,8 +504,9 @@ version, and record the reason [`CLAUDE.md` 4a].
 
 ## 0.4 Money and identity primitives
 
-Read `CLAUDE.md`, `BUILD_PLAN.md` §0.4, `DATA_AND_SCHEMA.md` §2 and §4, the
-`FIXTURES.md` rows at 0.4, and Current state above.
+Read `CLAUDE.md`, `BUILD_PLAN.md` §0.4 and its phase definition of done,
+`DATA_AND_SCHEMA.md` §2 and §4, D-W29, the `FIXTURES.md` rows at 0.4, and
+Current state above.
 
 Two things every later phase indexes on: what a number means when it is written
 down, and what makes two option contracts the same contract. They are joined.
@@ -535,10 +536,20 @@ In `Core/Storage`, beside `StoreTimestamp` and the same shape: a declared format
   cleanly and then renders a string the parser cannot read back.
 - **Derive the magnitude bound from the scale, never write it down.** The
   mantissa is fixed and the shift is the scale.
+- **Pin the scale inside the range a decimal admits**, and let that assertion
+  touch the scale constant and nothing else. Above 28 the bound's initialiser
+  throws, which surfaces as a type-initialiser error naming whichever caller got
+  there first rather than the constant that is wrong. A `const` is inlined and
+  does not run the initialiser, so the assertion still reports cleanly while
+  every other test in the file is failing for the wrong reason.
 - **Parse lenient about padding, strict about precision.** A hand-written config
   row carries `0.35`. But `decimal.Parse` silently rounds beyond 29 significant
   digits, so count places on the string, not on the parsed value: a row that
   reads back as a different number than it states defeats the point of the store.
+  Say in the remarks that "lenient on padding" means shorter than the stored
+  form and not longer: `0.350000000` is refused though its zeros carry nothing,
+  so the same value is admitted from a decimal and refused from a string. At most
+  scale PLACES is a simpler contract than at most scale SIGNIFICANT places.
 - **Test** FX-MoneyRoundTrip: values that lose precision as doubles, the worked
   example's figures, both scale boundaries, a midpoint, the magnitude bounds,
   negatives, and a non-terminating ratio through both entry points.
@@ -633,6 +644,13 @@ one check: 0.5 and 0.7 both owe greps.
   a stripper that loses its place still scans every file and still passes.
 - **DoD**: demonstrate a `double` in a decimal path failing, and a
   `Random.NextDouble` failing. Revert both.
+- **Expect it to find something real on its first run, and fix rather than
+  exempt.** `AsOfBoundaryTests` computes an exact power of ten with `Math.Pow`
+  and casts the result back. That is arithmetic that should never have left the
+  integers, not a case for the exemption mechanism this guard deliberately does
+  not have. It will also fire on a token inside a string literal, which is a
+  defect in the guard rather than a violation: strip literals, and add the
+  desync leg to the self-test when you do.
 
 ### FX-NoDecimalOrderingInSql
 
@@ -649,6 +667,27 @@ order-preserving, so no SQL may order, range over or aggregate a decimal column.
   comparison over the `value` column.
 - Assert the two negative controls already in the tree: `ORDER BY version` and
   `MAX(set_at)`, whose string order is its time order by construction.
+- **Record that an alias defeats it**, beside the over-reach note rather than
+  apart from it. `SELECT strike AS s FROM contracts ORDER BY s` orders a decimal
+  and the ordered token is not in the vocabulary. The over-reach note defends the
+  false-positive direction; this is the false-negative one, and it is the
+  direction that fails quietly. Pin it as a test so the gap is in the suite
+  rather than only in prose, named so its eventual failure is the signal to
+  delete it. Put the obligation in `BUILD_PLAN.md` carried obligations, not in a
+  comment: a comment is committed and permanent and still not where the planning
+  for Phase 1 will look.
+
+### The phase definition of done, made checkable
+
+Phase 0 requires every `app`-classed key in `CONFIG_REFERENCE.md` proven to bind,
+and nothing enforces it, so it passes by coincidence. The reverse direction is
+deliberately not standing for `rows`-classed keys, because most are unbound until
+their own phase; that reasoning does not reach `app`, where a key is bound from
+`appsettings` by definition.
+
+- Make it a standing check, in a suite that is not a registered fixture.
+- **Test**: an `app`-classed key with no bound property is reported by name.
+  Demonstrate, revert.
 
 ### Definitions of done carried from 0.2
 
