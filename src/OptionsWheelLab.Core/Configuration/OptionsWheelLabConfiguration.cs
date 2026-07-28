@@ -37,6 +37,19 @@ public static class OptionsWheelLabConfiguration
             optional: true,
             reloadOnChange: false);
 
+        // After the JSON files, deliberately. Both host builders add
+        // environment variables during construction, so without this the
+        // committed empty Storage:Path would beat Storage__Path and the
+        // override would appear not to work.
+        //
+        // Note the side effect: this also puts environment variables after the
+        // host builder's command-line provider, so environment now beats the
+        // command line, which is the reverse of the conventional order.
+        // Harmless while nothing passes configuration on the command line;
+        // whoever adds a command-line override should move this call rather
+        // than debug it.
+        builder.AddEnvironmentVariables();
+
         return builder;
     }
 
@@ -57,6 +70,7 @@ public static class OptionsWheelLabConfiguration
         ArgumentNullException.ThrowIfNull(configuration);
 
         services.BindSection<EodhdOptions>(configuration, EodhdOptions.SectionPath);
+        services.BindSection<StorageOptions>(configuration, StorageOptions.SectionPath);
 
         return services;
     }
