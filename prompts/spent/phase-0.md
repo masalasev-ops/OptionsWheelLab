@@ -28,10 +28,10 @@ Corpus v1.9.9.
 
 .NET 10 solution, nullable enabled, warnings as errors, central package
 management with transitive pinning: `OptionsWheelLab.Core` holding the
-composition root, options types and the storage layer, `.Worker` and `.Api` as
-thin hosts both calling it, and `.Tests`, which references both hosts and
-carries tests that use them, so a broken host fails `dotnet test` and not only
-the separate build step.
+composition root, options types, the storage layer and the identity primitives,
+`.Worker` and `.Api` as thin hosts both calling it, and `.Tests`, which
+references both hosts and carries tests that use them, so a broken host fails
+`dotnet test` and not only the separate build step.
 
 One shared `src/appsettings.json` linked into both hosts and the test project,
 loaded from `AppContext.BaseDirectory` because the generic host and the web host
@@ -94,6 +94,14 @@ from the other. `AsOfConfiguration` takes a date on every member and resolves
 `ConfigWriter` appends `MAX(version) + 1` computed inside the insert's own
 transaction, with `set_at` supplied rather than read from a clock and refused if
 it predates the newest version of that key.
+
+Both read surfaces carry decimal and integer accessors alongside the string one,
+as public instance methods rather than extensions, since the as-of guard reflects
+over declared instance members and anything else would be invisible to it. They
+exist so the canonical form is validated at the point of reading rather than
+assumed, and so changing the scale is one edit; not to close an ambient-culture
+trap, which `InvariantGlobalization` already closes. An integer is stored plainly
+and not in the decimal form.
 
 The two cross-key invariants remain pure predicates over supplied values, with
 no host, no config store, no startup wiring and no clock.
