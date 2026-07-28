@@ -16,6 +16,10 @@ process, the component is what the value does. Naming only the type would lose
 the second, and a column meaning one thing on verified rows and another on
 unverified ones is not a column.
 
+A key naming a proportion says `Fraction` and carries a fraction, so `0.12` is
+twelve percent. The unit is in the name because a consumer comparing a percent
+against a computed fraction rejects nothing and reports no error.
+
 Every key carries a **Store** class [D-W27]. `rows` means a config row,
 resolved as-of a simulated date [D-W26]. `app` means bound from `appsettings`,
 which is not as-of resolvable and is therefore reserved for values that never
@@ -39,9 +43,9 @@ what lets a later behaviour change be explained after the fact.
 
 | Key | Store | Meaning | Consumer | Notes |
 |---|---|---|---|---|
-| `Risk:PerNameCapPct` | rows | max committed capital in one name, as a fraction of equity | Risk gate **Unverified** | Structural, not learner-proposable [D-W11] |
-| `Risk:TotalCapPct` | rows | max total committed capital, as a fraction of equity | Risk gate **Unverified** | Structural [D-W11] |
-| `Risk:SimultaneousAssignmentLimitPct` | rows | max exposure if every open short put assigned at once | Risk gate **Unverified** | Structural [D-W11] |
+| `Risk:PerNameCapFraction` | rows | max committed capital in one name, as a fraction of equity | Risk gate **Unverified** | Structural, not learner-proposable [D-W11] |
+| `Risk:TotalCapFraction` | rows | max total committed capital, as a fraction of equity | Risk gate **Unverified** | Structural [D-W11] |
+| `Risk:SimultaneousAssignmentLimitFraction` | rows | max exposure if every open short put assigned at once, as a fraction of equity | Risk gate **Unverified** | Structural [D-W11] |
 
 ## Gate constraints
 
@@ -50,7 +54,7 @@ defaults, set in Phase 0.8.
 
 | Key | Store | Meaning | Consumer | Notes |
 |---|---|---|---|---|
-| `Gate:MaxSpreadPctOfMid` | rows | reject above this spread as a fraction of mid | Risk gate **Unverified** | Proposed 12. **Unset** [D-W22] |
+| `Gate:MaxSpreadFractionOfMid` | rows | reject above this spread as a fraction of mid | Risk gate **Unverified** | Proposed 0.12. **Unset** [D-W22] |
 | `Gate:MinPremium` | rows | reject below this bid | Risk gate **Unverified** | Proposed 0.30. **Unset** [D-W22] |
 | `Gate:MaxDelta` | rows | reject above this absolute delta | Risk gate **Unverified** | Proposed 0.35. Must be no tighter than the loosest policy band. **Unset** [D-W23] |
 | `Gate:MinDte` | rows | earliest admissible expiry | Risk gate **Unverified** | Proposed 7. **Unset** [D-W24] |

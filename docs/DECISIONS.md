@@ -335,9 +335,10 @@ in the money carries a large excursion on a positive outcome.
 ### D-W22 Contract-level liquidity filter
 `active` · 2026-07-27
 
-The gate rejects a candidate whose quoted spread exceeds `Gate:MaxSpreadPctOfMid`
-of the mid, or whose bid falls below `Gate:MinPremium`. Proposed defaults are 12
-percent and 0.30, both Phase 0.8 config.
+The gate rejects a candidate whose quoted spread exceeds
+`Gate:MaxSpreadFractionOfMid` of the mid, or whose bid falls below
+`Gate:MinPremium`. Proposed defaults are 0.12, being twelve percent of mid, and
+0.30, both Phase 0.8 config.
 
 Rationale, and the first reason matters more than the second. **The filter
 protects the measurement, not only the trade.** The scorer computes an outcome
