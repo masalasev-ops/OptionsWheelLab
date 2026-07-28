@@ -463,9 +463,9 @@ within the buffer is rejected with the earnings reason recorded.
 `active` · 2026-07-27
 
 Any component reading configuration on behalf of a simulated date resolves it as
-of that date, being `MAX(version)` among rows whose `set_at` precedes it, rather
-than reading the current value. There is no code path that serves a simulated
-date from current configuration.
+of that date, being `MAX(version)` among rows whose `set_at` is at or before it,
+rather than reading the current value. There is no code path that serves a
+simulated date from current configuration.
 
 Rationale, and it is structural rather than defensive. The lab's own workflow
 changes configuration: a policy revision inserts a new version [D-W4], and
@@ -486,6 +486,11 @@ store cannot verify. Any tool that reproduces prior sessions records the
 appsettings-bound values it ran under alongside its output, so a later parity
 failure can be checked against them instead of being routed into a store
 investigation.
+
+Resolution is inclusive of the as-of instant, matching `observed_at <= as_of`
+for every other as-of read. An earlier wording said "precedes", which read as
+strict inequality and would have made configuration written on a simulated date
+invisible to that date.
 
 Test FX-ConfigResolvesAsOf: a key with three versions resolves to the version in
 force on the simulated date, not the newest.
@@ -524,6 +529,14 @@ placeholder, because that creates the second path D-W26 exists to prevent.
 Consequence for enforcement: cross-key invariants over config rows are enforced
 when a version is written, not at startup. See the amendments to [D-W23] and
 [D-W24].
+
+**Bootstrap values are `app` by necessity, not by criterion.** A value the
+process needs in order to open the store cannot be stored in the store, so the
+store's own location, its journal mode, and anything else consumed before the
+first query are `app`-classed regardless of what reads them later. The read-path
+criterion does not reach them, and saying they participate in no decision is the
+weaker argument: the connection factory is on every path including simulated
+ones. The reason is circularity, not irrelevance.
 
 Test FX-ConfigStoreClassHonoured: no options type bound from `appsettings`
 exists for a section classified as a config row.

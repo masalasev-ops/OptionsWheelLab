@@ -1,5 +1,42 @@
 # CHANGELOG
 
+## [1.9.7] — 2026-07-28
+
+### Added
+- `DATA_AND_SCHEMA.md` pins the two timestamp forms and forbids comparing a
+  date against a timestamp.
+- `DATA_AND_SCHEMA.md` states WAL journal mode.
+- D-W27 gains a bootstrap clause: a value needed to open the store cannot be
+  stored in the store, so it is `app`-classed by necessity rather than by the
+  read-path criterion.
+- `DATA_AND_SCHEMA.md` gives the filename form of a timestamp, since the stored
+  form contains colons.
+- `CONFIG_REFERENCE.md` gains `Storage:Path`, the absolute directory holding the
+  store and its snapshots.
+
+### Changed
+- `BUILD_PLAN.md` 0.3 states that the as-of and current-value config surfaces
+  are separate types, so D-W26 is enforced by API shape rather than by scanning
+  callers.
+- `CONFIG_REFERENCE.md` records that the reverse binding direction is a
+  per-checkpoint definition of done, not a standing check.
+
+### Fixed
+- D-W26 said `set_at` "precedes" the as-of date, which reads strict. Resolution
+  is inclusive, matching every other as-of read.
+
+### Notes
+- Both the reverse-direction rule and the two-surfaces rule are the same
+  pattern, now used four times: a check whose subjects mostly belong to unbuilt
+  checkpoints cannot be a standing assertion, so it becomes either a definition
+  of done or a shape the code cannot violate. 0.6 and 0.7 will meet it again.
+- Nothing pinned a date format, while twenty-one columns store dates as TEXT and
+  every as-of read compares them as strings. 0.3 is the first checkpoint to
+  write and compare one, so its choice would have become the standard by
+  default.
+- `Storage:Path` rather than `Store:Path`, because the second collides with the
+  **Store** column in a document the suite parses.
+
 ## [1.9.6] — 2026-07-28
 
 ### Changed

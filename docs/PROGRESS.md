@@ -5,7 +5,7 @@ Appended to, never rewritten. The repository is the authority on build state.
 ## Current state
 
 **Phase 0 in progress.** Checkpoints 0.1 and 0.2 built. 0.3 onward not started.
-The documentation corpus is at v1.9.6.
+The documentation corpus is at v1.9.7.
 
 ## Log
 
@@ -173,3 +173,10 @@ ask, with corrections folded back into the checkpoint's prompt. Replaying the
 prompts reproduces the state without replaying the mistakes. What was asked at
 the time is no longer recoverable from the archive; that history stays in the
 commit log and the pull request thread.
+
+### 2026-07-28 — corpus v1.9.7
+Checkpoint 0.3 scoped. The as-of and current-value config surfaces are separated
+so D-W26 holds by construction. The reverse binding direction is recorded as a
+per-checkpoint definition of done. Time formats are pinned, WAL journal mode is
+stated, and D-W27 gains the bootstrap clause that puts `Storage:Path` in
+`appsettings` by necessity rather than by the read-path criterion.

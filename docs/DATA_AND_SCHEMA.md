@@ -51,10 +51,35 @@ query about a past date resolves membership as of that date [D-W9].
 as a parameter and filters on `observed_at <= as_of`. There is no read path that
 returns "current" data to a simulated date.
 
+## Time
+
+Two forms, both UTC, both fixed width, because every as-of read is a string
+comparison and a variable-width or local-time value misorders silently rather
+than failing.
+
+**Dates**: `yyyy-MM-dd`. Session dates, expiries, ex-dates, report dates.
+**Timestamps**: `yyyy-MM-ddTHH:mm:ss.fffZ`. Every column ending `_at`.
+
+A date and a timestamp never appear on opposite sides of a comparison. A
+timestamp for any instant on a day sorts after that day's bare date, so
+`set_at <= as_of` with a timestamp column and a date parameter excludes
+everything written on the as-of date itself. Where a simulated date must be
+compared against a timestamp column it is widened to that date's last instant
+first, and the widening happens in exactly one place.
+
+Filenames cannot carry the stored timestamp form, because `:` is illegal in a
+Windows path. A timestamp used in a filename is written `yyyyMMddTHHmmssfffZ`,
+the same instant with the separators removed. The two forms are never mixed:
+stored columns take the first, filenames the second.
+
 ## 4. Schema
 
 Snapshot-first migrations: the migration runner takes a database snapshot before
 applying, and `migrate.ps1` calls the snapshot tool internally first.
+
+The store runs in WAL journal mode, set once and persisted with the database.
+The snapshot therefore copies the `-wal` and `-shm` files alongside the `.db`;
+copying the database alone loses whatever has not yet checkpointed.
 
 Money is stored as decimal in `TEXT` columns, never as floating point.
 

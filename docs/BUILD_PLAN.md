@@ -116,9 +116,16 @@ tool internally first. Worker is the sole writer; Api opens read-only.
   throws.
 - **DoD**: `migrate.ps1` leaves a timestamped snapshot beside the store.
 
-Also in 0.3: the config read service, exposing an as-of resolver and no
-current-value accessor on any path that serves a simulated date [D-W26].
-Implement the fixtures registered against 0.3 in `FIXTURES.md`.
+Also in 0.3: the config store and its read service. The as-of surface and the
+current-value surface are separate types, and the type a simulated-date path
+depends on exposes no way to read current [D-W26]. Enforcing this by API shape
+rather than by scanning callers means a misuse cannot be written rather than
+being detected after it is. Implement the fixtures registered against 0.3 in
+`FIXTURES.md`.
+
+The invariant enforcement on config writes is owed by 0.8, not here [D-W23,
+D-W24]. Nothing is seeded until 0.8, so there is no window in which an unguarded
+write path could admit a violating version.
 
 ### 0.4 Money and identity primitives
 
