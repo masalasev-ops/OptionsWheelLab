@@ -1,7 +1,6 @@
 # BUILD_PLAN
 
-Build state: **Phase 0 in progress**. 0.1, 0.2, 0.3 and 0.4 built; 0.5 onward
-not started.
+Build state: **Phase 0 in progress**. 0.1 to 0.5 built; 0.6 onward not started.
 
 ## How this document works
 
@@ -229,8 +228,12 @@ clock; they take instants as parameters. No call to `DateTime.Now` or
 `DateTime.UtcNow` outside the clock implementation.
 
 An `IClock` abstraction, being the one member the decision describes. The
-alternative is .NET's `TimeProvider`, and the choice is reported with its
-reasons rather than assumed.
+alternative was .NET's `TimeProvider`, and `IClock` was chosen because of the
+guard: with it the forbidden and sanctioned token sets are disjoint, whereas
+`TimeProvider`'s ambient instance and an injected one are the same type, and
+telling them apart in a text scan is the type inference such a scan cannot do.
+`TimeProvider` also carries a machine-local timezone, which this decision scopes
+out.
 
 The ambient-clock check extends the source guards 0.4 established rather than
 introducing a second mechanism. Whether those guards stay a text scan is open
@@ -248,6 +251,27 @@ reach, since it strips raw string literals by design and every statement here
 lives in one.
 
 Implement the fixtures registered against 0.5 in `FIXTURES.md`.
+
+Reconciled at sign-off against what shipped. Two things were larger than the
+scope above.
+
+**The operator entry point stopped supplying an instant.** `--at` and the
+argument parsing behind it are gone, and `migrate.ps1` no longer computes a
+timestamp. The detail said where the clock is read; the consequence was that
+nothing outside the process may name the instant a row is stamped with, since an
+override would be a way to write a `set_at` that never happened into a store
+whose rows can never be corrected. Two tests went with it, because an absent or
+unparseable instant stopped being a failure mode.
+
+**The SQL half had to be measured rather than listed.** SQLite defaults a date
+function's time value to the current instant when it is omitted, so
+`datetime()`, `date()`, `time()`, `julianday()`, `unixepoch()` and
+`strftime('%Y')` read the clock while carrying no marker at all, and `'subsec'`
+in the time-value position does the same. A first argument that is any other
+modifier returns null rather than implying now, which is what bounds the residual
+at those two words instead of at the whole modifier set. The function list was
+enumerated from the bundled binary rather than from documentation: of 168
+functions, seven read the wall clock, one of which had not been considered.
 
 - **DoD**: with a fixed clock and the same inputs, two runs produce identical
   stored rows, compared as table contents. Not as file bytes: a SQLite file is
@@ -383,6 +407,7 @@ has aged.
 | Phase 1 | Decide what an adjusted strike does when a corporate action makes it non-terminating. Identity canonicalises through the refusing path, so a 3-for-2 split forces a choice between rounding a value that is part of a contract's identity and carrying the ratio. | PR #3 |
 | Phase 1 | Resolve aliases in the decimal-ordering detector, or adopt and check a convention that a decimal column is never aliased. `SELECT strike AS s FROM contracts ORDER BY s` orders a decimal and passes. Deleting FX-NoDecimalOrderingInSql's known-miss test is part of closing it. | PR #3 |
 | Phase 3 | Establish output-level determinism: a simulated run with a fixed clock produces byte-identical output across two invocations. 0.5 restated it as identical stored rows because no run existed to make. Compared as produced artefacts, never as a database file [D-W28]. | PR #4 |
+| Phase 3 | Decide what bars nondeterminism in SQL that is not a clock. Enumerating the bundled SQLite showed `random()` and `randomblob()` alongside the seven clock functions; they are outside FX-ClockIsNotADateSource by name but would break a byte-identical run just as surely. | PR #4 |
 
 ---
 

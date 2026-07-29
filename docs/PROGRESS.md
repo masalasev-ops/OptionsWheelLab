@@ -4,8 +4,8 @@ Appended to, never rewritten. The repository is the authority on build state.
 
 ## Current state
 
-**Phase 0 in progress.** Checkpoints 0.1, 0.2, 0.3 and 0.4 built. 0.5 onward not
-started. The documentation corpus is at v1.10.0.
+**Phase 0 in progress.** Checkpoints 0.1 to 0.5 built. 0.6 onward not started.
+The documentation corpus is at v1.10.0.
 
 ## Log
 
@@ -277,3 +277,23 @@ no data. Its one definition of done was 0.2's registry check restated, so as
 written 0.6 would have discharged on work another checkpoint did. The Kind column
 0.5 added is what made the two kinds of check distinct enough for the third thing
 to be visible as a separate thing at all.
+
+Checkpoint 0.5 built and signed off. `IClock` and the system clock, the migrate
+verb reading it, `--at` and the instant `migrate.ps1` computed both removed, a
+determinism test comparing stored rows across two runs, the ambient-clock guard
+beside the floating-point one, and the two checks D-W30 names. 199 tests.
+
+The SQL half of FX-ClockIsNotADateSource had to be measured rather than
+specified. SQLite reads the clock through six forms that carry no marker at all,
+because a date function's time value defaults to the current instant when it is
+omitted, and `'subsec'` in that position does the same. Every other modifier
+returns null rather than implying now, which is what bounds the residual at one
+word instead of at the modifier set. The function list was enumerated from the
+bundled binary rather than from documentation, and turned up a seventh function
+nobody had considered.
+
+0.5's detail asked for four things and the checkpoint shipped sixteen. The
+largest single cause was one conflict: a registered check that had to be a script
+rather than a file. That is why `BUILD_PLAN.md` now says a checkpoint's detail
+names everything the checkpoint ships, including corrections nothing in it
+caused, and why 0.5's detail carries a section listing them.
