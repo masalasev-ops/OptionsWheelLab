@@ -1,5 +1,64 @@
 # CHANGELOG
 
+## [1.10.0] — 2026-07-28
+
+### Added
+- D-W30: the clock tells wall-clock time and nothing else. The injected clock
+  returns the instant the process is running at, and a simulated date is never
+  obtained from it. It is D-W26's rule arriving through a different door: a
+  component that wants the simulated date and reaches for the clock gets an
+  answer that is plausible, non-null and wrong.
+- D-W30 places the clock at composition and entry points only. Nothing below them
+  reads a clock, which keeps 0.5 a wiring change and keeps tests supplying a
+  fixed instant directly rather than through a fake.
+- D-W30 added to the Data and identity line of the topical index.
+- D-W26 states that a written version is never altered, and that `config_rows` is
+  append-only on that authority. Resolving as-of a past date answers what was in
+  force then, which means anything only if a version still says what it said; an
+  update in place would make a past answer unverifiable rather than wrong.
+- `BUILD_PLAN.md` states what a prompt does when `PROGRESS.md` reports a corpus
+  version other than the one the prompt names: establish what changed, proceed
+  only where the drift demonstrably does not reach what the prompt depends on,
+  and say so in the report. Written as a convention rather than restated per
+  prompt, because a gate that only says stop makes every docs-only bump either
+  halt a checkpoint or teach the gate to be ignored.
+- `GLOSSARY.md` defines Clock and Determinism. "Clock" already carried four
+  meanings here: `SYSTEM_DESIGN.md` §5's two clocks are the daily and per-cycle
+  loops, and §7 has the forward, subscription and evidence clocks. None of them
+  is the wall-clock source D-W30 names.
+
+### Changed
+- `BUILD_PLAN.md` 0.5 said the clock is "injected everywhere", which D-W30's
+  placement clause contradicts. 0.5 is not built, so its detail was corrected as
+  live intent.
+- `BUILD_PLAN.md` 0.5's byte-identical definition of done had no subject, because
+  there is no simulated run at 0.5. Restated as identical stored rows compared as
+  table contents, since a SQLite file is not a deterministic rendering of its
+  contents and a byte comparison would fail for reasons that are not about the
+  clock. The output-level property is carried to Phase 3, the first checkpoint
+  with a run to make.
+- `BUILD_PLAN.md` 0.5 gains the two definitions of done carried from 0.2, which
+  0.2 says apply to every checkpoint from there on and which 0.5, 0.6 and 0.7 all
+  lacked.
+- `BUILD_PLAN.md` 0.6 and 0.7 record that registering their entries is due when
+  their prompts are written. Both instructed implementing a set that is empty.
+
+### Fixed
+- The triggers enforcing `config_rows`' append-only property cited D-W8, which
+  governs snapshots and does not reach a versioned configuration table. Snapshots
+  carry `observed_at` and correct by appending a new observation; this table
+  carries `set_at` and `version`. The property follows from D-W26, which now
+  states it.
+- `BUILD_PLAN.md` 0.7's constraint said five statements in the tree carry the
+  banned text and then enumerated four. Measured: six, being two trigger DDL
+  statements, three tests asserting those triggers reject an `UPDATE` or a
+  `DELETE`, and one `UPDATE` against a scaffold table created inside a test. That
+  sixth is what settled the mechanism, because its *table* lies outside the rule
+  rather than its location being exempt, so the check distinguishes by table and
+  needs no exemption list. The count is now out of the constraint entirely: four
+  of the six are tests, so it moves whenever a test is written and would be wrong
+  again before 0.7 is built.
+
 ## [1.9.10] — 2026-07-28
 
 ### Changed

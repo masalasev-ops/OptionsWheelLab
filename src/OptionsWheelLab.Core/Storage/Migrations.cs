@@ -27,7 +27,10 @@ public static class Migrations
             );
 
             -- Append-only, enforced by the store rather than by convention, so
-            -- the guard holds against any writer and not only ours [D-W8].
+            -- the guard holds against any writer and not only ours [D-W26].
+            -- Not D-W8: that governs snapshots, which carry observed_at and
+            -- correct by appending a new observation. This table carries set_at
+            -- and version, and a written version is never altered.
             CREATE TRIGGER config_rows_no_update
             BEFORE UPDATE ON config_rows
             BEGIN

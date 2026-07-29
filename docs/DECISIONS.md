@@ -16,7 +16,7 @@ predates this file and cannot be relied on.
 
 **Purpose and measurement**: D-W2, D-W3, D-W5, D-W17, D-W18, D-W20, D-W21
 **Isolation and controls**: D-W1, D-W4, D-W6, D-W13
-**Data and identity**: D-W7, D-W8, D-W9, D-W15, D-W26, D-W27, D-W28, D-W29
+**Data and identity**: D-W7, D-W8, D-W9, D-W15, D-W26, D-W27, D-W28, D-W29, D-W30
 **Risk**: D-W10, D-W11, D-W14, D-W19, D-W23, D-W25
 **Gate constraints**: D-W10, D-W22, D-W23, D-W24, D-W25
 **Scope**: D-W12, D-W16
@@ -498,6 +498,13 @@ for every other as-of read. An earlier wording said "precedes", which read as
 strict inequality and would have made configuration written on a simulated date
 invisible to that date.
 
+**A written version is never altered.** Resolving as-of a past date answers what
+was in force then, which means anything only if a version, once written, still
+says what it said. An update in place would not make a past answer wrong so much
+as unverifiable, since nothing would record that it had changed. `config_rows` is
+therefore append-only on this decision's authority: a correction inserts
+version + 1, and the store enforces it rather than trusting the caller.
+
 Test FX-ConfigResolvesAsOf: a key with three versions resolves to the version in
 force on the simulated date, not the newest.
 Test FX-NoCurrentConfigReadOnSimulatedPath: a static check that no component
@@ -623,3 +630,33 @@ Test FX-MoneyRoundTrip: adversarial decimals survive storage, and equal values
 written differently store identically.
 Test FX-NoDecimalOrderingInSql: a static check that no SQL in the codebase
 orders, ranges over, or aggregates a decimal column.
+
+---
+
+### D-W30 The clock tells wall-clock time and nothing else
+`active` · 2026-07-28
+
+The injected clock returns the instant at which the process is running. A
+simulated date is never obtained from it. Simulated dates arrive as parameters
+and are threaded through, exactly as configuration is resolved as-of a date
+rather than as-now [D-W26].
+
+Rationale, and it is the same failure in a new place. The lab has two kinds of
+time and they are unrelated: when this run is happening, and which day is being
+simulated. A component that wants the second and reaches for the clock gets the
+first, and the answer is plausible, non-null and wrong. That is the leakage
+D-W26 forbids, arriving through a different door.
+
+Consequence for placement. The clock is read at composition and entry points
+only. Nothing below them reads a clock; they take instants as parameters, which
+is the shape 0.3 deliberately gave `set_at` and the migration instant. This keeps
+the change at 0.5 a wiring change, and keeps tests supplying a fixed instant
+directly rather than through a fake.
+
+Out of scope, stated. Converting an instant to a trading date needs a market
+calendar and a session timezone. That is Phase 1. This clock knows nothing about
+trading days.
+
+Test FX-NoAmbientClock: no ambient clock call outside the permitted file.
+Test FX-ClockIsNotADateSource: a static check that no simulated-date path
+derives its date from the clock.

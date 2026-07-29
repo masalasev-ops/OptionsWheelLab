@@ -61,6 +61,12 @@ without replaying the mistakes. The file also carries one **Current state**
 section holding the whole state of the repository, read in a single pass without
 consulting another document. Only unspent prompts are subject to propagation.
 
+A prompt names the corpus version it was written against. If `PROGRESS.md`
+reports a different one, establish what changed before doing anything else.
+Proceed only where the drift demonstrably does not reach what the prompt depends
+on, and say in the report what changed and why it does not reach it. Where it
+does reach, or where that cannot be established, stop.
+
 ### The propagation rule
 
 At every reconciliation, ask: **does this decision change a prompt that has not
@@ -208,8 +214,9 @@ Implement the fixtures registered against 0.4 in `FIXTURES.md`.
 
 ### 0.5 Deterministic clock
 
-An `IClock` abstraction injected everywhere. No call to `DateTime.Now` or
-`DateTime.UtcNow` outside the clock implementation.
+An `IClock` abstraction, read at composition and entry points only. Nothing below
+them reads a clock; they take instants as parameters [D-W30]. No call to
+`DateTime.Now` or `DateTime.UtcNow` outside the clock implementation.
 
 The ambient-clock check extends the source guards 0.4 established rather than
 introducing a second mechanism. Whether those guards stay a text scan is open
@@ -218,10 +225,17 @@ are, rather than committing to an implementation a later checkpoint may replace.
 
 Implement the fixtures registered against 0.5 in `FIXTURES.md`.
 
-- **DoD**: a simulated run with a fixed clock produces byte-identical output
-  across two invocations.
+- **DoD**: with a fixed clock and the same inputs, two runs produce identical
+  stored rows, compared as table contents. Not as file bytes: a SQLite file is
+  not a deterministic rendering of its contents, so a byte comparison would fail
+  for reasons that are not about the clock [D-W28]. The output-level property is
+  owed at Phase 3, which is the first checkpoint with a run to make.
 - **DoD**: introducing an ambient clock call outside the permitted file fails
   locally and in CI. Demonstrate, revert.
+- **DoD**: every fixture registered against 0.5 exists and is named for it.
+- **DoD**: every key the sections this checkpoint introduces carry is bound and
+  verified. This checkpoint introduces none, so the obligation is discharged
+  empty rather than skipped.
 
 ### 0.6 Fixture harness
 
@@ -236,7 +250,9 @@ a standing assertion here either: most entries belong to checkpoints not yet
 built, so it stays a definition of done on each checkpoint [`FIXTURES.md` rule
 2]. What 0.6 adds is the loader.
 
-Implement the fixtures registered against 0.6 in `FIXTURES.md`.
+Implement the fixtures registered against 0.6 in `FIXTURES.md`. That set is
+empty today and registering it is due when this checkpoint's prompt is written,
+rather than left as a sentence resolving to nothing [`FIXTURES.md` rule 2].
 
 - **DoD**: adding a fixture file without registering it fails the build.
 
@@ -254,15 +270,23 @@ argued in the abstract. The argument is that a text scan sees declared intent
 and not inferred types, and it was recorded before the comparison rather than
 after.
 
+Register this checkpoint's guards in `FIXTURES.md` as `guard`-kind rows. Nothing
+is registered against 0.7 today, and doing it is due when this checkpoint's
+prompt is written [`FIXTURES.md` rule 2].
+
 - **Test**: the guard fails when a violating statement is introduced, verified
   by a test that adds and removes one.
 - **DoD**: guard runs in CI, not only locally.
-- **Constraint**: five statements already in the tree are the banned text and
-  must not be reported. One is the trigger DDL that enforces append-only, and
-  three are the tests asserting those triggers reject an `UPDATE` or a `DELETE`.
-  Distinguishing them is a design problem for the check, not a case for an
-  exemption list: 0.4's guard has none by decision, and adding one here would
-  reopen that.
+- **Constraint**: statements already in the tree carry the banned text and must
+  not be reported. They are the trigger DDL that enforces append-only, the tests
+  asserting those triggers reject an `UPDATE` or a `DELETE`, and statements
+  against tables the rule does not cover at all. **The check therefore
+  distinguishes by table rather than by location**, which is a design problem for
+  the check and not a case for an exemption list: 0.4's guard has none by
+  decision, and adding one here would reopen that. A vocabulary is the mechanism
+  that needs none, and `DecimalColumns` is the precedent for its shape. No count
+  is given, because the count is not a property of the rule: most of those
+  statements are tests, so it moves whenever one is written.
 
 ### 0.8 Configuration values for the open parameters
 
@@ -293,6 +317,7 @@ has aged.
 | Phase 1 | Give D-W29's write-side rule teeth. Every decimal reaching a `TEXT` column should pass through the canonical form, and nothing enforces that: `ConfigWriter.Append` takes a string. A decimal-typed parameter-binding seam is the likely mechanism, when the first real decimal column exists. | PR #3 |
 | Phase 1 | Decide what an adjusted strike does when a corporate action makes it non-terminating. Identity canonicalises through the refusing path, so a 3-for-2 split forces a choice between rounding a value that is part of a contract's identity and carrying the ratio. | PR #3 |
 | Phase 1 | Resolve aliases in the decimal-ordering detector, or adopt and check a convention that a decimal column is never aliased. `SELECT strike AS s FROM contracts ORDER BY s` orders a decimal and passes. Deleting FX-NoDecimalOrderingInSql's known-miss test is part of closing it. | PR #3 |
+| Phase 3 | Establish output-level determinism: a simulated run with a fixed clock produces byte-identical output across two invocations. 0.5 restated it as identical stored rows because no run existed to make. Compared as produced artefacts, never as a database file [D-W28]. | PR #4 |
 
 ---
 

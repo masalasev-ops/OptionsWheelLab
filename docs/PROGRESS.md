@@ -5,7 +5,7 @@ Appended to, never rewritten. The repository is the authority on build state.
 ## Current state
 
 **Phase 0 in progress.** Checkpoints 0.1, 0.2, 0.3 and 0.4 built. 0.5 onward not
-started. The documentation corpus is at v1.9.10.
+started. The documentation corpus is at v1.10.0.
 
 ## Log
 
@@ -237,3 +237,30 @@ not be known at the moment the rule says to write them. Removing them closed the
 timing gap instead of adding a step to work around it, which is the fifth
 instance of one pattern at this corpus version: the fix for a duplicated fact is
 to delete the copy, not to synchronise it.
+
+### 2026-07-28 — corpus v1.10.0
+Checkpoint 0.5 scoped. D-W30 places the clock: it returns the instant the process
+is running at, a simulated date is never obtained from it, and it is read at
+composition and entry points only. That is D-W26's rule arriving through a
+different door, because a component wanting the simulated date and reaching for
+the clock gets an answer that is plausible, non-null and wrong.
+
+0.5's byte-identical definition of done had no subject, since there is no
+simulated run at 0.5. It is restated as identical stored rows compared as table
+contents, and the output-level property is carried to Phase 3, which is the first
+checkpoint with a run to make. A SQLite file is not a deterministic rendering of
+its contents, so the comparison was never going to be of bytes.
+
+Three corrections came out of applying the corpus rather than out of the
+checkpoint. The Step 0 gate said stop on any version mismatch, which would make
+every docs-only bump either halt a checkpoint or teach the gate to be ignored, so
+`BUILD_PLAN.md` now says establish first and proceed only where the drift
+demonstrably does not reach. D-W26 gains the clause that a written version is
+never altered, which is what makes `config_rows` append-only; the triggers
+enforcing that had cited D-W8, which governs snapshots and does not reach a
+versioned configuration table. And 0.7's constraint counted five statements while
+enumerating four; measuring found six, one of which is an `UPDATE` against a
+table the rule does not cover, and that is what established that the check
+distinguishes by table rather than by location. The count left the constraint
+with it, because four of the six are tests and a count that moves whenever a test
+is written is not a property of the rule.

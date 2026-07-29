@@ -139,3 +139,13 @@ landing together in a correlated selloff.
 
 **Pre-registration.** Writing down what result is expected before running the
 test, committed with a hash so it cannot be revised afterwards [D-W15].
+
+**Clock.** The source of wall-clock time, meaning the instant the process is
+running at [D-W30]. It has nothing to do with the two clocks in
+`SYSTEM_DESIGN.md` §5, which are the daily and per-cycle loops, nor with the
+forward, subscription and evidence clocks, which are elapsed calendar time. A
+simulated date never comes from the clock.
+
+**Determinism.** The same inputs and the same fixed clock produce the same
+output. What makes a result checkable by re-running it rather than by trusting
+the record of it.
