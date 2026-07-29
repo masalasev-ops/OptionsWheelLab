@@ -28,6 +28,16 @@
   is the wall-clock source D-W30 names.
 - `FIXTURES.md` registers FX-ClockIsNotADateSource at 0.5. D-W30 names it and
   this is the single registry, so the registration follows from the decision.
+- `BUILD_PLAN.md` states that a checkpoint's detail names everything the
+  checkpoint ships, including corrections it carries that nothing in the
+  checkpoint caused. The detail is what the build is measured against, so a
+  checkpoint shipping more than its detail predicts leaves the detail describing
+  an idealised version of the work. Recording the difference only here, in the
+  changelog, is how that document becomes ceremonial.
+- `BUILD_PLAN.md` 0.5 names its own design, being D-W30 and the two mechanisms
+  its fixtures need, and carries a section listing the corrections it ships that
+  the clock did not cause. Its detail asked for four things and the checkpoint
+  shipped fourteen.
 
 ### Changed
 - `BUILD_PLAN.md` 0.5 said the clock is "injected everywhere", which D-W30's

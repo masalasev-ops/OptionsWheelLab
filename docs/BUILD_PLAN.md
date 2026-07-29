@@ -43,6 +43,14 @@ it. Doing this at sign-off rather than during the build is what keeps Current
 state true, because it is then written after the last change rather than before
 it.
 
+A checkpoint's detail names everything the checkpoint ships, including
+corrections it carries that nothing in the checkpoint caused. The detail is what
+the build is measured against, so a checkpoint shipping more than its detail
+predicts leaves the detail describing an idealised version of the work rather
+than the work. Correcting the detail as the scope becomes clear is the
+propagation rule doing its job. Leaving it, and recording the difference only in
+the changelog, is how this document becomes ceremonial.
+
 The build-state marker above says which sections are frozen and which are still
 intent. Three things stay live regardless of it, because each is read before work
 rather than after: the phase definition of done, the carried obligations, and the
@@ -214,14 +222,30 @@ Implement the fixtures registered against 0.4 in `FIXTURES.md`.
 
 ### 0.5 Deterministic clock
 
-An `IClock` abstraction, read at composition and entry points only. Nothing below
-them reads a clock; they take instants as parameters [D-W30]. No call to
-`DateTime.Now` or `DateTime.UtcNow` outside the clock implementation.
+D-W30 is this checkpoint's design and lands with it: the clock returns the
+instant the process is running at, a simulated date is never obtained from it,
+and it is read at composition and entry points only. Nothing below them reads a
+clock; they take instants as parameters. No call to `DateTime.Now` or
+`DateTime.UtcNow` outside the clock implementation.
+
+An `IClock` abstraction, being the one member the decision describes. The
+alternative is .NET's `TimeProvider`, and the choice is reported with its
+reasons rather than assumed.
 
 The ambient-clock check extends the source guards 0.4 established rather than
 introducing a second mechanism. Whether those guards stay a text scan is open
 until 0.7, so this checkpoint states the rule and adds a check to whatever they
 are, rather than committing to an implementation a later checkpoint may replace.
+The permitted file is named in the script rather than implied, and has to earn
+its place: scanning it must find an ambient call, or the carve-out is stale.
+
+The two halves of D-W30 need two mechanisms. FX-NoAmbientClock is a `guard`,
+because a source guard must fail even when the build does not.
+FX-ClockIsNotADateSource is a `fixture`, because it asserts over shape: that the
+clock cannot hand out a date, that nothing in `Core` holds one, and that no SQL
+asks the store for the time. That last part is the one place a token scan cannot
+reach, since it strips raw string literals by design and every statement here
+lives in one.
 
 Implement the fixtures registered against 0.5 in `FIXTURES.md`.
 
@@ -236,6 +260,32 @@ Implement the fixtures registered against 0.5 in `FIXTURES.md`.
 - **DoD**: every key the sections this checkpoint introduces carry is bound and
   verified. This checkpoint introduces none, so the obligation is discharged
   empty rather than skipped.
+
+#### Corrections this checkpoint carries
+
+None of these was caused by the clock. They are named here because the detail is
+what the build is measured against, and a checkpoint that ships them without
+saying so leaves this section describing a smaller piece of work than the one
+that happened.
+
+- **The Step 0 gate** moves into "How this document works". It tripped here, on a
+  docs-only version bump, and said stop. Its wording forbade what was right.
+- **`FIXTURES.md` gains a Kind column** and rule 2 is restated per kind. 0.5 is
+  where a registered entry first had to be a script check rather than a file, and
+  0.4's guard turned out to be the same shape and unregistered.
+- **The empty-subject-set clause** in rule 2, because 0.5's own fixture
+  obligations are where a definition of done passing on nothing became visible.
+  0.6 and 0.7 were both discharging it that way.
+- **`GLOSSARY.md` gains Clock and Determinism**, because D-W30 makes "clock" a
+  fifth sense of a word this corpus already overloads four ways.
+- **D-W26 gains the append-only clause**, and the `config_rows` triggers stop
+  citing D-W8. The clock's placement rule turned on what D-W26 does and does not
+  say, and reading it closely is what found the citation wrong.
+- **0.7's detail and its carried obligations**, being the constraint that counted
+  five and enumerated four, and the vocabulary question underneath it. This is
+  0.7 work done at 0.5: the measurement that established 0.7's mechanism came out
+  of counting what this tree already contains, which is a thing 0.5 could do and
+  0.7 would have had to do anyway.
 
 ### 0.6 Fixture harness
 
