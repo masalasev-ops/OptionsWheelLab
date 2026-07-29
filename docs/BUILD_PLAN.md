@@ -601,6 +601,12 @@ Work deferred out of a checkpoint that a later phase must claim. An entry
 leaves this list only when the phase that owns it has done it, never because it
 has aged.
 
+An obligation raised in the corpus rather than out of a build belongs here too,
+and its Raised column carries the corpus version instead of a pull request. The
+first such entry had been recorded in a document banner and a dated log entry for
+nine minor versions without being carried here, which is what a register that
+admits only one origin costs.
+
 | Owed at | Obligation | Raised |
 |---|---|---|
 | Phase 11 | Re-add `Microsoft.AspNetCore.OpenApi` against a version whose `Microsoft.OpenApi` dependency clears the audit. Removed at 0.1 rather than suppressing the advisory; the reason is in the Api project file. | PR #1 |
@@ -613,6 +619,7 @@ has aged.
 | Phase 2 | Set the three `Risk:` fractions. 0.8 seeded nineteen rows-classed keys and left these because an equity-relative cap is the operator's risk appetite [D-W11], and the worked example illustrating one account is not the operator setting one. FX-GateRejectsAboveHeadroom needs them, so the phase that consumes them sets them. | PR #7 |
 | Phase 3 | Set `Costs:AssignmentFee`. No document states it, and zero inferred from an absent ledger line is weaker than a stated number and invisible when wrong. Phase 3's assignment path is the first thing that computes with it. | PR #7 |
 | Phase 2 | Decide whether the gate handles a crossed quote. 0.6's loader refuses bid above ask, which is the one domain rule it enforces, and that makes a crossed or locked market unwritable as a synthetic chain, so nothing can exercise the gate against one. D-W22's spread cap is a fraction of mid, so a crossed quote gives a negative numerator and passes a cap that exists to reject wide markets. If the gate handles it, the loader stops refusing it. | PR #5 |
+| Phase 2 | Reconcile `WORKED_EXAMPLE.md` with [D-W22] to [D-W25]. Its 45.00 strike fails the 12 percent spread cap at 18.18 percent of mid, so the three-candidate feasible set it teaches renders as two and the random maker's choice disappears along with the regret arithmetic built on it; the 47.50 strike passes at 11.97 percent, three hundredths of a point of margin, which is too fragile for the document that defines correctness. The fix is a deliberate rewrite of the chain, ideally so one candidate fails the spread cap by an obvious margin and the example teaches the gate as well. Downstream: seven registered fixtures read its conclusions; FX-WorkedExampleChainLoads parses §2 and §5 as its oracle and fails on a quote revision, which is a tripwire rather than an exposure; `Costs:CommissionPerContract` is seeded from §1 and `Trial:MaxTrialDays` is justified partly by the example's 109-day trial. Raised at v1.6.0, banner in §3, and never carried here because this table did not exist yet. | v1.6.0 |
 
 ---
 

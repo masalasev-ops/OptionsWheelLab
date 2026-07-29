@@ -9,14 +9,15 @@ checkpoint's prompt rather than appended as further entries, so replaying the
 prompts in order against the corpus reproduces the current state without
 replaying the mistakes.
 
-One file per phase. **This file is closed.** Phase 0 signed off at corpus
-v1.15.0; Phase 1 opens its own.
+One file per phase. **No further prompt is appended to this one.** Phase 0 signed
+off at corpus v1.15.0; Phase 1 opens its own. Current state below stays the
+description of the present until that file exists, so it is still corrected.
 
 ---
 
 # Current state
 
-Corpus v1.15.0.
+Corpus v1.15.1.
 
 | | |
 |---|---|
@@ -438,9 +439,15 @@ obligations, which is where planning for the phase that owns it will look, and
 which outlives this file. It is not copied here: two registers of one list is
 how an obligation comes to exist in the one nobody reads.
 
-Ten entries stand, owed at Phase 1, Phase 2, Phase 3 and Phase 11. Nothing is
-owed at a Phase 0 checkpoint, there being none left: 0.7's row closed with an
-answer rather than by lapsing, and 0.8 added two for the four keys it left unset.
+Entries stand against Phase 1, Phase 2, Phase 3 and Phase 11. The count is not
+restated here, because a count is the part of a pointer that rots while the
+pointer stays true. Nothing is owed at a Phase 0 checkpoint, there being none
+left: 0.7's row closed with an answer rather than by lapsing, and 0.8 added two
+for the four keys it left unset.
+
+One entry was raised in the corpus rather than out of a build, so the table admits
+both origins and its Raised column carries a corpus version where there is no pull
+request to name.
 
 Nothing is scoped-but-not-deferred any more. That entry named 0.8's invariant
 wiring, and 0.8 has shipped.

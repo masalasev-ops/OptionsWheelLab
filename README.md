@@ -3,7 +3,7 @@
 A paper-trading laboratory that studies whether a decision-maker's decisions
 improve over time, using the options wheel as its task environment.
 
-Corpus version 1.15.0. The corpus was regenerated from scratch at v1.0.0 on
+Corpus version 1.15.1. The corpus was regenerated from scratch at v1.0.0 on
 2026-07-26, superseding the lost v0.1 entirely.
 
 Phase 0 is complete. The repository compiles, tests, migrates and seeds its

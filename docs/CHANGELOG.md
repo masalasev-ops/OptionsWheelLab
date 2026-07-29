@@ -1,5 +1,25 @@
 # CHANGELOG
 
+## [1.15.1] — 2026-07-29
+
+### Fixed
+- The worked-example reconciliation was recorded in a document banner and a dated
+  log entry and never migrated into Carried obligations when that table was
+  created at v1.9.1. Three checkpoints have since taken dependencies on the
+  example. The obligation is unchanged; only its location is.
+- Carried obligations said it holds work deferred out of a checkpoint, which
+  excluded the entry above: it was raised in the corpus at v1.6.0, before any
+  checkpoint had run. The introduction now admits an obligation raised in the
+  corpus and says its Raised column carries a corpus version rather than a pull
+  request. A register that admits only one origin is how an obligation comes to
+  exist only in the place nobody reads, which is the failure this table was
+  created to prevent.
+- The version sequence skips 1.9.0 with no explanation. Noticed at 0.5, proposed,
+  not applied, and then relied on wrongly by the clause that produced this
+  obligation row. A note sits above the 1.9.1 heading now, which is where a reader
+  meeting the gap is looking. A gap with no note reads as a missing entry, and the
+  first thing anyone does with a missing entry is guess at it.
+
 ## [1.15.0] — 2026-07-29
 
 Checkpoint 0.8 signed off, and with it Phase 0.
@@ -675,6 +695,10 @@ Checkpoint 0.8 signed off, and with it Phase 0.
   would have made FX-EveryBoundKeyIsDocumented fire against a key the
   document contains, and the usual answer to a fixture that fires wrongly is
   to weaken it.
+
+> 1.9.0 was never issued. Two blocks of changes were drafted under 1.9.0 and
+> 1.9.1 and landed in a single sync, so they are recorded as one version
+> rather than two. Nothing references 1.9.0.
 
 ## [1.9.1] — 2026-07-28
 
