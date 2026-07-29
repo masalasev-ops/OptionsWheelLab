@@ -40,6 +40,12 @@ public sealed class MalformedChainException : Exception
         Problems = [message];
     }
 
+    public MalformedChainException(IReadOnlyList<string> problems, Exception innerException)
+        : base(Describe(problems), innerException)
+    {
+        Problems = problems;
+    }
+
     /// <summary>Every reason the chain was refused, in the order found.</summary>
     public IReadOnlyList<string> Problems { get; } = [];
 
