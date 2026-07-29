@@ -5,7 +5,7 @@ Appended to, never rewritten. The repository is the authority on build state.
 ## Current state
 
 **Phase 0 complete.** Checkpoints 0.1 to 0.8 built and signed off. Phase 1
-detail not written. The documentation corpus is at v1.15.0.
+detail not written. The documentation corpus is at v1.15.1.
 
 ## Log
 
@@ -460,3 +460,16 @@ reporting the identical mistake worse than the first.
 Phase 0 delivers a repository that compiles, tests, migrates and runs
 deterministically, with no market data and no domain logic, which is what it said
 it would deliver.
+
+### 2026-07-29 — corpus v1.15.1
+The worked-example reconciliation is a carried obligation, owed at Phase 2. It has
+been recorded since v1.6.0 in a banner at `WORKED_EXAMPLE.md` §3 and in this log,
+and was never carried into `BUILD_PLAN.md` Carried obligations because that table
+did not exist until v1.9.1. Nine minor versions and three checkpoints that took
+dependencies on the example passed in between. The obligation is unchanged; only
+its location is, and the location is the whole point, since planning for Phase 2
+will read the table and not the banner.
+
+Carried obligations said it holds work deferred out of a checkpoint, which is why
+a corpus-raised obligation had nowhere to go. It admits both origins now, and the
+Raised column carries a corpus version where there is no pull request to name.

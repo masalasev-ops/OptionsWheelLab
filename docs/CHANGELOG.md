@@ -1,5 +1,20 @@
 # CHANGELOG
 
+## [1.15.1] — 2026-07-29
+
+### Fixed
+- The worked-example reconciliation was recorded in a document banner and a dated
+  log entry and never migrated into Carried obligations when that table was
+  created at v1.9.1. Three checkpoints have since taken dependencies on the
+  example. The obligation is unchanged; only its location is.
+- Carried obligations said it holds work deferred out of a checkpoint, which
+  excluded the entry above: it was raised in the corpus at v1.6.0, before any
+  checkpoint had run. The introduction now admits an obligation raised in the
+  corpus and says its Raised column carries a corpus version rather than a pull
+  request. A register that admits only one origin is how an obligation comes to
+  exist only in the place nobody reads, which is the failure this table was
+  created to prevent.
+
 ## [1.15.0] — 2026-07-29
 
 Checkpoint 0.8 signed off, and with it Phase 0.
