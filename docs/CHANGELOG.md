@@ -24,9 +24,16 @@
   in four documents and was defined in none. `contracts` is one despite carrying
   no `observed_at`, because a corporate action mints a new identity rather than
   editing a row.
-- A carried obligation at Phase 1 for `watchlist_membership`, whose §4.2 rule and
-  schema shape disagree about whether it is append-only. Raised at 0.7, where
-  drawing the vocabulary made the disagreement visible.
+- A carried obligation at Phase 1 for effective-dating, covering
+  `watchlist_membership`, `positions` and `trials`. Each carries a nullable close
+  column that makes a state change an update while §4.2 says rows are never
+  deleted, so the schema and the rule disagree in three places for one reason.
+  Raised at 0.7 when drawing the vocabulary made the disagreement visible, and
+  widened by this checkpoint's own report, which found the second and third
+  instances. Amended rather than duplicated, for the same reason the alias
+  obligation was: one problem seen at three levels is one obligation, and closing
+  it for one table would leave the others to be rediscovered at Phase 3 and
+  Phase 4.
 
 ### Changed
 - `CLAUDE.md` §2 item 2 states the rule and hands the table list to the check.
@@ -57,6 +64,12 @@
   corrected at v1.9.9 and these were not, so the wording survived in a decision's
   Test line, a schema section and a design section until building the check made
   all three false.
+- §4.5 left `note` unmarked where `Migrations.cs` declares it nullable and where
+  §4 marks nullability elsewhere. One word, and the one case §4 can be wrong
+  rather than merely early: every other block describes a table nobody has built.
+- D-W32's scope clause named two of the three effective-dated tables. Listing two
+  of three reads as a boundary rather than as an example, so `trials` is named
+  alongside them.
 - D-W32's scope clause carried a count and the count was wrong: it said six kinds
   where the measurement is four decisions, five kinds and ten tables. Removed
   rather than corrected, because it would have gone stale regardless once

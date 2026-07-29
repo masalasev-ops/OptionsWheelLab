@@ -228,7 +228,7 @@ possible.
 
 ```
 config_rows
-  key TEXT, version INTEGER, value TEXT, set_at TEXT, note TEXT
+  key TEXT, version INTEGER, value TEXT, set_at TEXT, note TEXT NULL
   PK (key, version)
 ```
 

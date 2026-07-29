@@ -717,9 +717,11 @@ common with.
 
 **Scope, stated because the boundary is easy to overrun.** This does not
 establish a general rule that every table recording something past is
-append-only. `positions` and `watchlist_membership` carry effective-dating, where
-closing a row is how a state change is recorded rather than a rewrite of an
-observation, and whether that counts is already owed at Phase 1. Each decision
+append-only. `watchlist_membership`, `positions` and `trials` carry
+effective-dating, where closing a row is how a state change is recorded rather
+than a rewrite of an observation, and whether that counts is already owed at
+Phase 1. All three are named, because listing two of three reads as a boundary
+rather than as an example. Each decision
 states the property for its own tables and for its own reason, and no general
 rule is inferred from there being several. The reasons genuinely differ, and a
 single rule covering all of them would have to be vague enough to cover cases it
