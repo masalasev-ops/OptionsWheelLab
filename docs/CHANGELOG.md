@@ -54,6 +54,23 @@
   lacked.
 - `BUILD_PLAN.md` 0.6 and 0.7 record that registering their entries is due when
   their prompts are written. Both instructed implementing a set that is empty.
+- `BUILD_PLAN.md` 0.6 separates the two things this corpus calls fixtures. A
+  check is a registry entry, a `fixture` or a `guard`; a synthetic chain is test
+  data. 0.6 builds the loader for the second, and does not read `FIXTURES.md`,
+  which registers checks and holds no data. Surfaced by 0.5's Kind column, which
+  is what made the two kinds of check distinct enough for the third thing to be
+  visible.
+- `CLAUDE.md` §2 item 4 states the property rather than enumerating the forms.
+  It listed two, `guards.ps1` catches six, and the list will grow again. Same
+  shape as 0.7's constraint counting five and enumerating four.
+
+### Removed
+- `BUILD_PLAN.md` 0.6's definition of done, "adding a fixture file without
+  registering it fails the build", was FX-RegistryMatchesDisk from 0.2 restated,
+  so 0.6 would have discharged on work another checkpoint did. Replaced with what
+  the loader must do, and with the format question named rather than answered:
+  rows per table loads trivially and reads badly by hand, a chain per name per
+  date is the reverse, and these are written by hand.
 
 ### Fixed
 - `FIXTURES.md` conflated two kinds of check. Rule 2 assumed every entry is a

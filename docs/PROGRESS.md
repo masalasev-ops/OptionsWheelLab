@@ -264,3 +264,16 @@ table the rule does not cover, and that is what established that the check
 distinguishes by table rather than by location. The count left the constraint
 with it, because four of the six are tests and a count that moves whenever a test
 is written is not a property of the rule.
+
+Two enumerations were replaced by the properties they were trying to state, and
+the second is the same defect as the first. `CLAUDE.md` §2 item 4 listed two
+forms of an ambient time read where the guard catches six, so it now states the
+rule and points at the script for the list.
+
+0.6's detail turned out to conflate two things this corpus calls fixtures. A
+check is a registry entry; a synthetic chain is test data. 0.6 builds the loader
+for the second and does not read `FIXTURES.md`, which registers checks and holds
+no data. Its one definition of done was 0.2's registry check restated, so as
+written 0.6 would have discharged on work another checkpoint did. The Kind column
+0.5 added is what made the two kinds of check distinct enough for the third thing
+to be visible as a separate thing at all.

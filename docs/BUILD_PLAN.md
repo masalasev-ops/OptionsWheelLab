@@ -286,25 +286,40 @@ that happened.
   0.7 work done at 0.5: the measurement that established 0.7's mechanism came out
   of counting what this tree already contains, which is a thing 0.5 could do and
   0.7 would have had to do anyway.
+- **0.6's detail**, which conflated a check with a synthetic chain and stated a
+  definition of done that was 0.2's check restated. The Kind column is what made
+  the two kinds of check distinct enough for the third thing, which is data, to
+  be visible as a separate thing at all.
+- **`CLAUDE.md` §2 item 4** states the property rather than listing the forms of
+  an ambient time read. It named two and this checkpoint's guard catches six.
 
 ### 0.6 Fixture harness
 
-The loader that reads synthetic chain fixtures, plus `FIXTURES.md` as the single
-registry. Fixtures are declared against a checkpoint, and the harness discovers
-them from the registry rather than from a hardcoded list.
+Two different things are called fixtures in this corpus and 0.6 conflated them.
+A **check** is a registry entry in `FIXTURES.md`, either a `fixture` that is a C#
+test file or a `guard` that is a named check in a script. A **synthetic chain**
+is test data: option quotes and bars for a simulated date, written by hand so
+that assignment, early exercise and roll-cap cases can be constructed
+deliberately rather than waited for [`SYSTEM_DESIGN.md` §7].
 
-The registry checks are not this checkpoint's to build. FX-RegistryMatchesDisk
-is registered at 0.2 and shipped there, because the file-to-entry direction is
-safe from the first fixture onward. The entry-to-file direction does not become
-a standing assertion here either: most entries belong to checkpoints not yet
-built, so it stays a definition of done on each checkpoint [`FIXTURES.md` rule
-2]. What 0.6 adds is the loader.
+0.6 builds the loader for synthetic chains. It does not read `FIXTURES.md`,
+which registers checks and contains no data. Nothing about the registry is this
+checkpoint's to build: FX-RegistryMatchesDisk shipped at 0.2, and the
+entry-to-artefact direction is a definition of done on each checkpoint
+[`FIXTURES.md` rule 2].
 
 Implement the fixtures registered against 0.6 in `FIXTURES.md`. That set is
 empty today and registering it is due when this checkpoint's prompt is written,
 rather than left as a sentence resolving to nothing [`FIXTURES.md` rule 2].
 
-- **DoD**: adding a fixture file without registering it fails the build.
+- **DoD**: the loader reads a synthetic chain from disk and produces the quotes
+  and bars a simulated date offers, and a malformed one fails rather than
+  loading partially.
+- **Open, and 0.6's prompt settles it**: whether a synthetic chain mirrors the
+  schema, being rows per table, or a domain shape, being a chain per name per
+  date. The first loads trivially and reads badly by hand; the second is the
+  reverse. These are written by hand, which is what makes the choice a real one
+  rather than a formatting preference.
 
 ### 0.7 Append-only guards
 

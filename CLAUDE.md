@@ -52,8 +52,9 @@ asserted rather than measured, say so in the same sentence.
    greps for both.
 3. **Money is decimal in TEXT.** No `double` or `float` in any monetary path.
    CI greps for it.
-4. **No ambient clock.** Inject `IClock`. No `DateTime.Now` or `DateTime.UtcNow`
-   outside the clock implementation.
+4. **No ambient clock.** Inject `IClock`. No ambient time read outside the clock
+   implementation. `guards.ps1` holds the current list of forms; a rule that
+   enumerates them goes stale every time one is added.
 5. **Reads are as-of.** Every read path serving a simulated date filters on
    `observed_at <= as_of`. There is no "current data" read path for a simulated
    date.
