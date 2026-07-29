@@ -15,14 +15,18 @@ One file per phase. It closes when Phase 0 signs off; Phase 1 opens its own.
 
 # Current state
 
-Corpus v1.9.9.
+Corpus v1.10.0.
 
 | | |
 |---|---|
-| Phase 0 | 0.1, 0.2, 0.3 and 0.4 built; 0.5 onward not started |
-| Branch | `phase-0/checkpoint-0.4`, off `main` |
-| Merged | PR #1 as `53cc0b4` and PR #2 as `a2b8c28`, both merge commits, neither squashed |
-| CI | green, 156 tests, guards then restore then build then test, on push to `main` and every pull request |
+| Phase 0 | 0.1 to 0.5 built; 0.6 onward not started |
+| CI | green, 199 tests, guards then restore then build then test, on push to `main` and every pull request |
+
+Which branch the work sits on and which pull requests have merged are not
+recorded here. Git holds both exactly, and a fact kept in two places drifts:
+these two rows were the only thing in this section that could not be known at the
+moment a checkpoint is determined fully built, because a merge commit does not
+exist until after it.
 
 ## Build
 
@@ -71,8 +75,9 @@ records that it skipped and why. Applied migrations are rows in
 `config_rows` with its append-only triggers, and a trigger holding `set_at`
 monotonic per key.
 
-`migrate.ps1` supplies the instant and refuses when `Storage__Path` is unset.
-The Worker carries the `migrate` verb, because the Worker is the sole writer.
+`migrate.ps1` refuses when `Storage__Path` is unset and invokes the verb. It
+supplies nothing else: the Worker carries the `migrate` verb, because the Worker
+is the sole writer, and the verb reads the instant from the clock.
 
 ## Configuration
 
@@ -133,6 +138,35 @@ decimal column. `config_rows.value` is the first entry in that vocabulary.
 A contract right stores as `put` or `call`, declared rather than derived from the
 enum's spelling.
 
+## Time
+
+`IClock` returns the instant the process is running at and offers nothing else
+[D-W30]. A simulated date never comes from it: the lab's two kinds of time are
+unrelated, and a component wanting the simulated one and reaching for the clock
+gets an answer that is plausible, non-null and wrong.
+
+It is read at composition and entry points only. The sole writer's host registers
+it, the `migrate` verb resolves it, and nothing below them holds one. The config
+writer and the migration runner still take instants as parameters, so a test
+supplies a fixed value directly rather than through a fake. The read-only host
+registers no clock, having nothing to stamp.
+
+Nothing outside the process can name the instant a row is stamped with. The
+option that supplied one existed for want of a clock and is gone, because an
+override is a way to write a `set_at` that never happened into a store whose rows
+can never be corrected.
+
+`IClock` rather than `TimeProvider`, and the deciding reason is the guard: the
+forbidden and sanctioned token sets are disjoint, where `TimeProvider`'s ambient
+instance and an injected one are one type separated by which member is touched.
+The return is `DateTimeOffset`, so it is UTC by construction rather than by a
+`Kind` nothing checks.
+
+Determinism is asserted as identical stored rows across two runs on one fixed
+clock, compared as table contents. A SQLite file is not a deterministic rendering
+of its contents, so bytes were never the comparison. The output-level property is
+owed at Phase 3, the first checkpoint with a run to make.
+
 ## Identity
 
 A ticker is the bare dash form, `BRK-B`, constructible only through
@@ -154,23 +188,41 @@ byte-identical candidate sets requires one.
 
 `guards.ps1` at the root holds the checks that are not unit tests, and `ci.yml`
 calls it before the build, because a source guard must fail even when the build
-does not. Today it bans floating point across `src` and `tests` with no exemption
-mechanism of any kind. The catch-list covers the two keywords plus
-`Random.NextDouble`, `Convert.ToDouble`, `GetDouble`, the `Math` functions and
-exponent literals, none of which carry a `double` token. It self-tests on three
-samples before scanning, one of which exists because a literal stripper that
-desyncs still scans every file and still reports success.
+does not. Two named checks, each a `guard`-kind row in `FIXTURES.md`, scanning
+every `.cs` under `src` and `tests` with no exemption mechanism of any kind.
 
-It catches declared intent, not inferred types, and says so.
+FX-NoFloatingPoint bans floating point. Its catch-list covers the two keywords
+plus `Random.NextDouble`, `Convert.ToDouble`, `GetDouble`, the `Math` functions
+and exponent literals, none of which carry a `double` token.
+
+FX-NoAmbientClock bans the ambient time reads and `TimeProvider` as a type, since
+a second time abstraction is the drift it exists to prevent. It is anchored on the
+type name so the injected call cannot match, and does not catch converting a
+supplied instant to a date, which three tests do. One file is permitted, named
+once in the script: that states the rule rather than escaping it, since the rule
+is "outside the clock implementation". The carve-out has to earn its place, so
+scanning a permitted file with nothing to permit fails.
+
+Elapsed-time counters are deliberately absent from both lists. They have no epoch
+and cannot yield a date, so they cannot commit the error; a duration reaching a
+stored row is the row comparison's business.
+
+Each check self-tests on its own must-fire and must-not-fire samples before
+scanning. A shared third sample exists because a literal stripper that desyncs
+still scans every file and still reports success.
+
+They catch declared intent, not inferred types, and say so. No `.ps1` is
+scanned, including these.
 
 ## Tests
 
-156: 97 across fourteen fixtures, and 59 across twelve unregistered suites, one
+199: 135 across fifteen fixtures, and 64 across fourteen unregistered suites, one
 of which is the 0.1 smoke test and one of which checks the phase definition of
-done.
+done. The two guards are checks rather than tests and are counted in neither.
 
 | Fixture | Tests |
 |---|---|
+| FX-ClockIsNotADateSource | 34 |
 | FX-MoneyRoundTrip | 17 |
 | FX-TickerDashForm | 12 |
 | FX-ConfigStoreClassHonoured | 12 |
@@ -180,15 +232,19 @@ done.
 | FX-EveryConfigSectionBinds | 6 |
 | FX-MigrateFromEmpty | 6 |
 | FX-EveryBoundKeyIsDocumented | 5 |
+| FX-RegistryMatchesDisk | 5 |
 | FX-MaxDteBelowTrialBound | 4 |
 | FX-ApiCannotWrite | 3 |
 | FX-NoCurrentConfigReadOnSimulatedPath | 3 |
 | FX-SnapshotRestoresIdentically | 3 |
-| FX-RegistryMatchesDisk | 1 |
 
-All fourteen fixtures registered against 0.2, 0.3 and 0.4 are implemented and
-named for their registry entry. The suite parses `CONFIG_REFERENCE.md`,
-`FIXTURES.md` and `DATA_AND_SCHEMA.md`, so all three are load-bearing rather than
+FX-ClockIsNotADateSource is large because most of it pins measured SQLite
+behaviour rather than its own detector, so an upgrade that changes the behaviour
+fails on the behaviour.
+
+All seventeen entries registered against 0.2 to 0.5 are implemented and named for
+their registry entry. The suite parses `CONFIG_REFERENCE.md`, `FIXTURES.md`,
+`DATA_AND_SCHEMA.md` and `guards.ps1`, so all four are load-bearing rather than
 descriptive.
 
 Every store test creates its own database in a temp directory, because the
@@ -201,22 +257,31 @@ path does not exist.
 Repository root holds `README.md`, `CLAUDE.md`, `migrate.ps1` and `guards.ps1`.
 Every document is in `docs/`. Spent prompts are in `prompts/spent/`.
 
-`Core` has three folders: `Configuration`, `Storage` and `Identity`.
+`Core` has four folders: `Configuration`, `Storage`, `Identity` and `Time`.
 
 ## Working rules in force
 
 - Commit subjects are prefixed with the phase name and stage, as
-  `Phase 0 Foundations / 0.4 - <type>: <subject>`.
-- The pull request description is updated on every check-in.
+  `Phase 0 Foundations / 0.6 - <type>: <subject>`.
+- The pull request description is updated on every check-in, and describes the
+  change as it stands rather than accumulating a section per review round. An
+  appended section cannot retract an earlier one, so a superseded decision ends
+  up asserted alongside the one that replaced it. The commit log is the log.
 - Code reaches GitHub as a pull request with CI, never by committing to `main`.
+- A checkpoint's pull request is merged as a merge commit, never squashed, so
+  the phase-prefixed commits stay legible on `main`.
 
 ## Not built
 
-Market data tables and every other table. The deterministic clock. The fixture
-loader. The append-only CI greps. Every checkpoint from 0.5 onward.
+Market data tables and every other table. The loader for synthetic chains, which
+is data rather than a registry entry and is 0.6's. The append-only guards. Every
+checkpoint from 0.6 onward.
 
 Nothing writes a decimal through a typed path yet: `ConfigWriter.Append` takes a
 string, so D-W29's write-side rule is a convention with no enforcement behind it.
+
+Nothing runs, so nothing produces output. Determinism is asserted over stored
+rows, and the output-level property waits for the first checkpoint with a run.
 
 ## Owed
 
@@ -225,7 +290,7 @@ obligations, which is where planning for the phase that owns it will look, and
 which outlives this file. It is not copied here: two registers of one list is
 how an obligation comes to exist in the one nobody reads.
 
-Five entries stand, owed at 0.7, Phase 1 and Phase 11.
+Seven entries stand, owed at 0.7, Phase 1, Phase 3 and Phase 11.
 
 Scoped work that is not deferred, and so is not a carried obligation:
 
@@ -700,3 +765,110 @@ their own phase; that reasoning does not reach `app`, where a key is bound from
 
 No `DateTime.Now` or `DateTime.UtcNow`; the clock is 0.5. Nothing here reads or
 writes market data.
+
+## 0.5 Deterministic clock
+
+Read `CLAUDE.md`, `BUILD_PLAN.md` §0.5 and "How this document works", the carried
+obligations, D-W26 and D-W27, the `FIXTURES.md` rows at 0.5, and Current state
+above.
+
+The lab has two kinds of time and they are unrelated: when this run is happening,
+and which day is being simulated. A component that wants the second and reaches
+for the clock gets the first, and the answer is plausible, non-null and wrong.
+That is D-W26's leakage arriving through a different door, so the checkpoint is
+about where the clock may be read rather than about the clock existing.
+
+### D-W30, the decision this checkpoint lands
+
+The injected clock returns the instant at which the process is running. A
+simulated date is never obtained from it. It is read at composition and entry
+points only; nothing below them reads a clock, which is the shape 0.3
+deliberately gave `set_at` and the migration instant, and which keeps this
+checkpoint a wiring change. Converting an instant to a trading date needs a
+market calendar and a session timezone and is Phase 1.
+
+Register both fixtures it names. `FIXTURES.md` is the single registry, so a
+decision naming a check obliges a row.
+
+### The abstraction
+
+- **Choose between an `IClock` and .NET's `TimeProvider`, and report why.** The
+  deciding argument is the guard: with a bespoke interface the forbidden and
+  sanctioned token sets are disjoint, whereas `TimeProvider`'s ambient instance
+  and an injected one are the same type and telling them apart is the type
+  inference a text scan cannot do. `TimeProvider` also carries a machine-local
+  timezone, which D-W30 scopes out, and its test double is a package in a
+  repository that drops rather than suppresses.
+- **The return is UTC by construction rather than by convention.** A `DateTime`
+  with an unchecked `Kind` is the trap, and it is also not what the stored
+  timestamp form takes.
+- **Test**: the system clock's offset is zero.
+
+### Wiring, at the edges only
+
+- Register it in the sole writer's host and nowhere else. The read-only host has
+  nothing to stamp, and an unused registration is noise.
+- The migrate verb reads it. **Remove the option that supplied the instant, and
+  the computation behind it in the operator script.** It existed for want of a
+  clock, four comments say so, and an override left in place is a way to write a
+  `set_at` that never happened into a store whose rows can never be corrected.
+  Two tests go with it: an absent or unparseable instant stops being a failure
+  mode.
+- The config writer and the migration runner keep taking instants as parameters.
+  Injecting the clock there would replace a fixed value in tests with a fake and
+  buy nothing. Correct their comments, which give the reason as the clock not
+  existing yet.
+- **Test**: with one fixed clock and the same inputs, two runs produce identical
+  stored rows, compared as table contents. Not as file bytes: a SQLite file is
+  not a deterministic rendering of its contents. Seed a config row at the same
+  instant so both tables carry one, assert the compared set is non-empty, and
+  carry the negative direction so the comparison is known to be able to fail. Do
+  not order by a column the decimal vocabulary claims.
+
+### The guard, extending the one 0.4 built
+
+- **Name each check**, because a registry row has to point at one.
+- Catch-list at least: the ambient `DateTime` and `DateTimeOffset` reads, the
+  day-granularity one, and whatever the abstraction choice makes ambient. Anchor
+  on the type name, or the sanctioned call matches. Do not catch converting a
+  supplied instant to a date; three existing tests do that.
+- **The permitted file is named once, in the script.** This does not reopen
+  0.4's no-exemption decision: the rule is "outside the clock implementation", so
+  naming the implementation states the rule rather than escapes it. Make it earn
+  its place, so a carve-out over a file with nothing to permit fails.
+- **Decide whether elapsed-time counters are in scope and say why either way.**
+- The script reads `*.cs` only, so no operator script is scanned. State it rather
+  than leaving it incidental.
+- **DoD**: an ambient call outside the permitted file fails locally and in CI.
+  Demonstrate, revert. CI should need no change.
+
+### The check a script cannot make
+
+- The clock cannot hand out a date: one member, returning an instant.
+- Nothing below an entry point holds a clock.
+- The types serving a simulated date are enumerated rather than assumed, so the
+  assertion is anchored to what would do the damage.
+- **The store is not a date source either, and this is the leg to take
+  seriously.** It is the one place a token scan structurally cannot reach,
+  because the guard strips raw string literals by design and every statement here
+  lives in one. **Measure the bundled SQLite rather than reading its
+  documentation.** A date function whose time value is omitted reads the clock
+  while carrying no marker; one modifier in that position does the same and the
+  rest return null, which is what bounds the residual. Enumerate the functions
+  from the binary, not from memory. Match positionally, since the same word
+  applied to a supplied time value is legitimate.
+- Absence assertions carry probes proving each predicate fires.
+- **Test**: whichever way the measurement goes, pin it, so an upgrade that
+  changes the behaviour fails on the behaviour rather than silently.
+
+### Definitions of done carried from 0.2
+
+- Every fixture registered against 0.5 exists and is named for it.
+- Every key the sections this checkpoint introduces carry is bound and verified.
+  This checkpoint introduces none, so the obligation is discharged empty rather
+  than skipped.
+
+### Constraints
+
+No `double` or `float`. Nothing here reads or writes market data. Reconcile the
+detail and the archive at sign-off, not during the build.

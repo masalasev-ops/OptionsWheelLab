@@ -31,6 +31,12 @@ internal static class RepoRoot
     internal static string FixturesRegistryPath =>
         Path.Combine(Location, "docs", "FIXTURES.md");
 
+    /// <summary>
+    /// The source guards. Registered in `FIXTURES.md` with Kind `guard`, so the
+    /// suite reads the script to check the registry against it.
+    /// </summary>
+    internal static string GuardScriptPath => Path.Combine(Location, "guards.ps1");
+
     internal static string TestProjectPath =>
         Path.Combine(Location, "tests", "OptionsWheelLab.Tests");
 

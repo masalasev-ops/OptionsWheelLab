@@ -4,8 +4,8 @@ Appended to, never rewritten. The repository is the authority on build state.
 
 ## Current state
 
-**Phase 0 in progress.** Checkpoints 0.1, 0.2, 0.3 and 0.4 built. 0.5 onward not
-started. The documentation corpus is at v1.9.9.
+**Phase 0 in progress.** Checkpoints 0.1 to 0.5 built. 0.6 onward not started.
+The documentation corpus is at v1.10.0.
 
 ## Log
 
@@ -224,3 +224,76 @@ and archiving bound to the single moment a checkpoint is determined fully built.
 That second rule replaced a weaker one written the same day, and it also closed a
 defect the checkpoint had hit four times: Current state kept going stale because
 it was written mid-build rather than after the last change.
+
+### 2026-07-28 — corpus v1.9.10
+The three-state rule refined twice by trying to apply it. It now says when a
+checkpoint is determined fully built, which is after review closes rather than
+when the code is written, because at 0.4 review changed the deliverable four
+times after the prompt had been archived.
+
+Current state stops recording the branch and the merged pull requests. Git holds
+both, a fact kept in two places drifts, and they were the only fields that could
+not be known at the moment the rule says to write them. Removing them closed the
+timing gap instead of adding a step to work around it, which is the fifth
+instance of one pattern at this corpus version: the fix for a duplicated fact is
+to delete the copy, not to synchronise it.
+
+### 2026-07-28 — corpus v1.10.0
+Checkpoint 0.5 scoped. D-W30 places the clock: it returns the instant the process
+is running at, a simulated date is never obtained from it, and it is read at
+composition and entry points only. That is D-W26's rule arriving through a
+different door, because a component wanting the simulated date and reaching for
+the clock gets an answer that is plausible, non-null and wrong.
+
+0.5's byte-identical definition of done had no subject, since there is no
+simulated run at 0.5. It is restated as identical stored rows compared as table
+contents, and the output-level property is carried to Phase 3, which is the first
+checkpoint with a run to make. A SQLite file is not a deterministic rendering of
+its contents, so the comparison was never going to be of bytes.
+
+Three corrections came out of applying the corpus rather than out of the
+checkpoint. The Step 0 gate said stop on any version mismatch, which would make
+every docs-only bump either halt a checkpoint or teach the gate to be ignored, so
+`BUILD_PLAN.md` now says establish first and proceed only where the drift
+demonstrably does not reach. D-W26 gains the clause that a written version is
+never altered, which is what makes `config_rows` append-only; the triggers
+enforcing that had cited D-W8, which governs snapshots and does not reach a
+versioned configuration table. And 0.7's constraint counted five statements while
+enumerating four; measuring found six, one of which is an `UPDATE` against a
+table the rule does not cover, and that is what established that the check
+distinguishes by table rather than by location. The count left the constraint
+with it, because four of the six are tests and a count that moves whenever a test
+is written is not a property of the rule.
+
+Two enumerations were replaced by the properties they were trying to state, and
+the second is the same defect as the first. `CLAUDE.md` §2 item 4 listed two
+forms of an ambient time read where the guard catches six, so it now states the
+rule and points at the script for the list.
+
+0.6's detail turned out to conflate two things this corpus calls fixtures. A
+check is a registry entry; a synthetic chain is test data. 0.6 builds the loader
+for the second and does not read `FIXTURES.md`, which registers checks and holds
+no data. Its one definition of done was 0.2's registry check restated, so as
+written 0.6 would have discharged on work another checkpoint did. The Kind column
+0.5 added is what made the two kinds of check distinct enough for the third thing
+to be visible as a separate thing at all.
+
+Checkpoint 0.5 built and signed off. `IClock` and the system clock, the migrate
+verb reading it, `--at` and the instant `migrate.ps1` computed both removed, a
+determinism test comparing stored rows across two runs, the ambient-clock guard
+beside the floating-point one, and the two checks D-W30 names. 199 tests.
+
+The SQL half of FX-ClockIsNotADateSource had to be measured rather than
+specified. SQLite reads the clock through six forms that carry no marker at all,
+because a date function's time value defaults to the current instant when it is
+omitted, and `'subsec'` in that position does the same. Every other modifier
+returns null rather than implying now, which is what bounds the residual at one
+word instead of at the modifier set. The function list was enumerated from the
+bundled binary rather than from documentation, and turned up a seventh function
+nobody had considered.
+
+0.5's detail asked for four things and the checkpoint shipped sixteen. The
+largest single cause was one conflict: a registered check that had to be a script
+rather than a file. That is why `BUILD_PLAN.md` now says a checkpoint's detail
+names everything the checkpoint ships, including corrections nothing in it
+caused, and why 0.5's detail carries a section listing them.

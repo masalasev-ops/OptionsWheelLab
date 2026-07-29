@@ -1,5 +1,150 @@
 # CHANGELOG
 
+## [1.10.0] — 2026-07-28
+
+### Added
+- D-W30: the clock tells wall-clock time and nothing else. The injected clock
+  returns the instant the process is running at, and a simulated date is never
+  obtained from it. It is D-W26's rule arriving through a different door: a
+  component that wants the simulated date and reaches for the clock gets an
+  answer that is plausible, non-null and wrong.
+- D-W30 places the clock at composition and entry points only. Nothing below them
+  reads a clock, which keeps 0.5 a wiring change and keeps tests supplying a
+  fixed instant directly rather than through a fake.
+- D-W30 added to the Data and identity line of the topical index.
+- D-W26 states that a written version is never altered, and that `config_rows` is
+  append-only on that authority. Resolving as-of a past date answers what was in
+  force then, which means anything only if a version still says what it said; an
+  update in place would make a past answer unverifiable rather than wrong.
+- `BUILD_PLAN.md` states what a prompt does when `PROGRESS.md` reports a corpus
+  version other than the one the prompt names: establish what changed, proceed
+  only where the drift demonstrably does not reach what the prompt depends on,
+  and say so in the report. Written as a convention rather than restated per
+  prompt, because a gate that only says stop makes every docs-only bump either
+  halt a checkpoint or teach the gate to be ignored.
+- `GLOSSARY.md` defines Clock and Determinism. "Clock" already carried four
+  meanings here: `SYSTEM_DESIGN.md` §5's two clocks are the daily and per-cycle
+  loops, and §7 has the forward, subscription and evidence clocks. None of them
+  is the wall-clock source D-W30 names.
+- `FIXTURES.md` registers FX-ClockIsNotADateSource at 0.5. D-W30 names it and
+  this is the single registry, so the registration follows from the decision.
+- `BUILD_PLAN.md` states that a checkpoint's detail names everything the
+  checkpoint ships, including corrections it carries that nothing in the
+  checkpoint caused. The detail is what the build is measured against, so a
+  checkpoint shipping more than its detail predicts leaves the detail describing
+  an idealised version of the work. Recording the difference only here, in the
+  changelog, is how that document becomes ceremonial.
+- `BUILD_PLAN.md` 0.5 names its own design, being D-W30 and the two mechanisms
+  its fixtures need, and carries a section listing the corrections it ships that
+  the clock did not cause. Its detail asked for four things and the checkpoint
+  shipped fourteen.
+
+### Changed
+- `BUILD_PLAN.md` 0.5 said the clock is "injected everywhere", which D-W30's
+  placement clause contradicts. 0.5 is not built, so its detail was corrected as
+  live intent.
+- `BUILD_PLAN.md` 0.5's byte-identical definition of done had no subject, because
+  there is no simulated run at 0.5. Restated as identical stored rows compared as
+  table contents, since a SQLite file is not a deterministic rendering of its
+  contents and a byte comparison would fail for reasons that are not about the
+  clock. The output-level property is carried to Phase 3, the first checkpoint
+  with a run to make.
+- `BUILD_PLAN.md` 0.5 gains the two definitions of done carried from 0.2, which
+  0.2 says apply to every checkpoint from there on and which 0.5, 0.6 and 0.7 all
+  lacked.
+- `BUILD_PLAN.md` 0.6 and 0.7 record that registering their entries is due when
+  their prompts are written. Both instructed implementing a set that is empty.
+- `BUILD_PLAN.md` 0.6 separates the two things this corpus calls fixtures. A
+  check is a registry entry, a `fixture` or a `guard`; a synthetic chain is test
+  data. 0.6 builds the loader for the second, and does not read `FIXTURES.md`,
+  which registers checks and holds no data. Surfaced by 0.5's Kind column, which
+  is what made the two kinds of check distinct enough for the third thing to be
+  visible.
+- `CLAUDE.md` §2 item 4 states the property rather than enumerating the forms.
+  It listed two, `guards.ps1` catches six, and the list will grow again. Same
+  shape as 0.7's constraint counting five and enumerating four.
+- FX-ClockIsNotADateSource catches SQLite's bare-call clock forms. Its date and
+  time functions default their time value to `'now'` when it is omitted, so
+  `datetime()`, `date()`, `time()`, `julianday()`, `unixepoch()` and
+  `strftime('%Y')` all return the current time while carrying neither `'now'` nor
+  `CURRENT_`. Measured against the bundled SQLite 3.53.3 rather than taken from
+  documentation, which also turned up `strftime` with the time value omitted, a
+  form that was not raised.
+- FX-ClockIsNotADateSource catches `'subsec'` and `'subsecond'` as a time value,
+  and pins the measurement that bounds them. A first argument that is a modifier
+  rather than a time value does not imply `'now'`: SQLite parses it as a time
+  value, fails, and returns NULL. Measured across all twenty-four documented
+  modifiers, twenty-two behave that way and only those two do not. That bounds
+  the residual at two forms rather than at the whole modifier set, so both are
+  caught and no known limit is owed for modifiers. The patterns are positional,
+  because the same word applied to a supplied time value is a legitimate
+  modifier.
+- The clock-reading function list is enumerated from the binary rather than from
+  documentation. Of the 168 functions the bundled SQLite registers, exactly seven
+  read the wall clock, one of which, `timediff`, had not been considered. That
+  list is the standing residual: an upgrade adding an eighth returns here, and a
+  test asserts every named function still exists.
+
+### Removed
+- `BUILD_PLAN.md` 0.6's definition of done, "adding a fixture file without
+  registering it fails the build", was FX-RegistryMatchesDisk from 0.2 restated,
+  so 0.6 would have discharged on work another checkpoint did. Replaced with what
+  the loader must do, and with the format question named rather than answered:
+  rows per table loads trivially and reads badly by hand, a chain per name per
+  date is the reverse, and these are written by hand.
+
+### Fixed
+- `FIXTURES.md` conflated two kinds of check. Rule 2 assumed every entry is a
+  `.cs` file, which was true when it was written and stopped being true at 0.4,
+  when the first check landed in a script. The registry gains a Kind column and
+  rule 2 is restated per kind.
+- The 0.4 floating-point guard was never registered, so the registry did not list
+  every check the build enforces. Registered as FX-NoFloatingPoint.
+- The triggers enforcing `config_rows`' append-only property cited D-W8, which
+  governs snapshots and does not reach a versioned configuration table. Snapshots
+  carry `observed_at` and correct by appending a new observation; this table
+  carries `set_at` and `version`. The property follows from D-W26, which now
+  states it.
+
+### Notes
+- Surfaced by FX-NoAmbientClock at 0.5, which is registered and is a script
+  check. The 0.4 guard was the same shape and raised no conflict only because it
+  was absent from the registry, which is the defect rather than the escape.
+- `BUILD_PLAN.md` 0.7's constraint said five statements in the tree carry the
+  banned text and then enumerated four. Measured: six, being two trigger DDL
+  statements, three tests asserting those triggers reject an `UPDATE` or a
+  `DELETE`, and one `UPDATE` against a scaffold table created inside a test. That
+  sixth is what settled the mechanism, because its *table* lies outside the rule
+  rather than its location being exempt, so the check distinguishes by table and
+  needs no exemption list. The count is now out of the constraint entirely: four
+  of the six are tests, so it moves whenever a test is written and would be wrong
+  again before 0.7 is built.
+
+## [1.9.10] — 2026-07-28
+
+### Changed
+- `BUILD_PLAN.md` says when a checkpoint is determined fully built: after review
+  has closed and before the merge, not when the last line is written. Review is
+  part of the determination because it changes what shipped. At 0.4 it changed
+  the deliverable four times and the prompt had been archived before any of it,
+  so replaying that prompt would not have reproduced the tree. Without this the
+  rule reproduces the staleness it was written to prevent, because "fully built"
+  reads as "I have finished writing it".
+- The archive's Current state no longer records which branch the work sits on or
+  which pull requests have merged. Git holds both exactly, and a fact kept in two
+  places drifts, which is the same defect corrected four other times at 1.9.9.
+  They were also the only fields that could not be known at the moment a
+  checkpoint is determined fully built, since a merge commit does not exist until
+  after it, so removing them closes the one timing gap in the new rule rather
+  than adding a step to work around it.
+- The no-squash policy moves from that table to Working rules in force, beside
+  the two workflow rules it belongs with, since it is a policy rather than an
+  observation.
+- Working rules records that a pull request description describes the change as
+  it stands rather than accumulating a section per review round. An appended
+  section cannot retract an earlier one, so PR #3 ended up asserting a superseded
+  rule alongside the rule that replaced it.
+
 ## [1.9.9] — 2026-07-28
 
 ### Added

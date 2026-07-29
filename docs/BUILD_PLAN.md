@@ -1,7 +1,6 @@
 # BUILD_PLAN
 
-Build state: **Phase 0 in progress**. 0.1, 0.2, 0.3 and 0.4 built; 0.5 onward
-not started.
+Build state: **Phase 0 in progress**. 0.1 to 0.5 built; 0.6 onward not started.
 
 ## How this document works
 
@@ -28,13 +27,28 @@ describes the result, and a third description that kept moving would be the leas
 authoritative of the three.
 
 **Determined fully built**, which is the transition between them and happens
-once. At that point, and only then, the detail is reconciled against what
-shipped, and the checkpoint's prompt is appended to `prompts/spent/phase-N.md`
-with Current state overwritten. Both halves belong to the same moment: the
-reconciled detail says what the checkpoint turned out to be, and the archive says
-how to reproduce it. Doing this at sign-off rather than during the build is what
-keeps Current state true, because it is then written after the last change rather
-than before it.
+once. That moment is **after review has closed and before the merge**, not when
+the last line is written. Review is part of determining a checkpoint fully built
+because it changes what shipped: at 0.4 it changed the deliverable four times,
+and the prompt had been archived before any of it, so replaying that prompt would
+not have reproduced the tree. Reading "fully built" as "I have finished writing
+it" reproduces exactly the staleness this rule exists to prevent.
+
+At that point, and only then, the detail is reconciled against what shipped, and
+the checkpoint's prompt is appended to `prompts/spent/phase-N.md` with Current
+state overwritten. Both halves belong to the same moment: the reconciled detail
+says what the checkpoint turned out to be, and the archive says how to reproduce
+it. Doing this at sign-off rather than during the build is what keeps Current
+state true, because it is then written after the last change rather than before
+it.
+
+A checkpoint's detail names everything the checkpoint ships, including
+corrections it carries that nothing in the checkpoint caused. The detail is what
+the build is measured against, so a checkpoint shipping more than its detail
+predicts leaves the detail describing an idealised version of the work rather
+than the work. Correcting the detail as the scope becomes clear is the
+propagation rule doing its job. Leaving it, and recording the difference only in
+the changelog, is how this document becomes ceremonial.
 
 The build-state marker above says which sections are frozen and which are still
 intent. Three things stay live regardless of it, because each is read before work
@@ -53,6 +67,12 @@ checkpoint's prompt, so replaying the prompts in order reproduces the state
 without replaying the mistakes. The file also carries one **Current state**
 section holding the whole state of the repository, read in a single pass without
 consulting another document. Only unspent prompts are subject to propagation.
+
+A prompt names the corpus version it was written against. If `PROGRESS.md`
+reports a different one, establish what changed before doing anything else.
+Proceed only where the drift demonstrably does not reach what the prompt depends
+on, and say in the report what changed and why it does not reach it. Where it
+does reach, or where that cannot be established, stop.
 
 ### The propagation rule
 
@@ -201,37 +221,129 @@ Implement the fixtures registered against 0.4 in `FIXTURES.md`.
 
 ### 0.5 Deterministic clock
 
-An `IClock` abstraction injected everywhere. No call to `DateTime.Now` or
+D-W30 is this checkpoint's design and lands with it: the clock returns the
+instant the process is running at, a simulated date is never obtained from it,
+and it is read at composition and entry points only. Nothing below them reads a
+clock; they take instants as parameters. No call to `DateTime.Now` or
 `DateTime.UtcNow` outside the clock implementation.
+
+An `IClock` abstraction, being the one member the decision describes. The
+alternative was .NET's `TimeProvider`, and `IClock` was chosen because of the
+guard: with it the forbidden and sanctioned token sets are disjoint, whereas
+`TimeProvider`'s ambient instance and an injected one are the same type, and
+telling them apart in a text scan is the type inference such a scan cannot do.
+`TimeProvider` also carries a machine-local timezone, which this decision scopes
+out.
 
 The ambient-clock check extends the source guards 0.4 established rather than
 introducing a second mechanism. Whether those guards stay a text scan is open
 until 0.7, so this checkpoint states the rule and adds a check to whatever they
 are, rather than committing to an implementation a later checkpoint may replace.
+The permitted file is named in the script rather than implied, and has to earn
+its place: scanning it must find an ambient call, or the carve-out is stale.
+
+The two halves of D-W30 need two mechanisms. FX-NoAmbientClock is a `guard`,
+because a source guard must fail even when the build does not.
+FX-ClockIsNotADateSource is a `fixture`, because it asserts over shape: that the
+clock cannot hand out a date, that nothing in `Core` holds one, and that no SQL
+asks the store for the time. That last part is the one place a token scan cannot
+reach, since it strips raw string literals by design and every statement here
+lives in one.
 
 Implement the fixtures registered against 0.5 in `FIXTURES.md`.
 
-- **DoD**: a simulated run with a fixed clock produces byte-identical output
-  across two invocations.
+Reconciled at sign-off against what shipped. Two things were larger than the
+scope above.
+
+**The operator entry point stopped supplying an instant.** `--at` and the
+argument parsing behind it are gone, and `migrate.ps1` no longer computes a
+timestamp. The detail said where the clock is read; the consequence was that
+nothing outside the process may name the instant a row is stamped with, since an
+override would be a way to write a `set_at` that never happened into a store
+whose rows can never be corrected. Two tests went with it, because an absent or
+unparseable instant stopped being a failure mode.
+
+**The SQL half had to be measured rather than listed.** SQLite defaults a date
+function's time value to the current instant when it is omitted, so
+`datetime()`, `date()`, `time()`, `julianday()`, `unixepoch()` and
+`strftime('%Y')` read the clock while carrying no marker at all, and `'subsec'`
+in the time-value position does the same. A first argument that is any other
+modifier returns null rather than implying now, which is what bounds the residual
+at those two words instead of at the whole modifier set. The function list was
+enumerated from the bundled binary rather than from documentation: of 168
+functions, seven read the wall clock, one of which had not been considered.
+
+- **DoD**: with a fixed clock and the same inputs, two runs produce identical
+  stored rows, compared as table contents. Not as file bytes: a SQLite file is
+  not a deterministic rendering of its contents, so a byte comparison would fail
+  for reasons that are not about the clock [D-W28]. The output-level property is
+  owed at Phase 3, which is the first checkpoint with a run to make.
 - **DoD**: introducing an ambient clock call outside the permitted file fails
   locally and in CI. Demonstrate, revert.
+- **DoD**: every fixture registered against 0.5 exists and is named for it.
+- **DoD**: every key the sections this checkpoint introduces carry is bound and
+  verified. This checkpoint introduces none, so the obligation is discharged
+  empty rather than skipped.
+
+#### Corrections this checkpoint carries
+
+None of these was caused by the clock. They are named here because the detail is
+what the build is measured against, and a checkpoint that ships them without
+saying so leaves this section describing a smaller piece of work than the one
+that happened.
+
+- **The Step 0 gate** moves into "How this document works". It tripped here, on a
+  docs-only version bump, and said stop. Its wording forbade what was right.
+- **`FIXTURES.md` gains a Kind column** and rule 2 is restated per kind. 0.5 is
+  where a registered entry first had to be a script check rather than a file, and
+  0.4's guard turned out to be the same shape and unregistered.
+- **The empty-subject-set clause** in rule 2, because 0.5's own fixture
+  obligations are where a definition of done passing on nothing became visible.
+  0.6 and 0.7 were both discharging it that way.
+- **`GLOSSARY.md` gains Clock and Determinism**, because D-W30 makes "clock" a
+  fifth sense of a word this corpus already overloads four ways.
+- **D-W26 gains the append-only clause**, and the `config_rows` triggers stop
+  citing D-W8. The clock's placement rule turned on what D-W26 does and does not
+  say, and reading it closely is what found the citation wrong.
+- **0.7's detail and its carried obligations**, being the constraint that counted
+  five and enumerated four, and the vocabulary question underneath it. This is
+  0.7 work done at 0.5: the measurement that established 0.7's mechanism came out
+  of counting what this tree already contains, which is a thing 0.5 could do and
+  0.7 would have had to do anyway.
+- **0.6's detail**, which conflated a check with a synthetic chain and stated a
+  definition of done that was 0.2's check restated. The Kind column is what made
+  the two kinds of check distinct enough for the third thing, which is data, to
+  be visible as a separate thing at all.
+- **`CLAUDE.md` §2 item 4** states the property rather than listing the forms of
+  an ambient time read. It named two and this checkpoint's guard catches six.
 
 ### 0.6 Fixture harness
 
-The loader that reads synthetic chain fixtures, plus `FIXTURES.md` as the single
-registry. Fixtures are declared against a checkpoint, and the harness discovers
-them from the registry rather than from a hardcoded list.
+Two different things are called fixtures in this corpus and 0.6 conflated them.
+A **check** is a registry entry in `FIXTURES.md`, either a `fixture` that is a C#
+test file or a `guard` that is a named check in a script. A **synthetic chain**
+is test data: option quotes and bars for a simulated date, written by hand so
+that assignment, early exercise and roll-cap cases can be constructed
+deliberately rather than waited for [`SYSTEM_DESIGN.md` §7].
 
-The registry checks are not this checkpoint's to build. FX-RegistryMatchesDisk
-is registered at 0.2 and shipped there, because the file-to-entry direction is
-safe from the first fixture onward. The entry-to-file direction does not become
-a standing assertion here either: most entries belong to checkpoints not yet
-built, so it stays a definition of done on each checkpoint [`FIXTURES.md` rule
-2]. What 0.6 adds is the loader.
+0.6 builds the loader for synthetic chains. It does not read `FIXTURES.md`,
+which registers checks and contains no data. Nothing about the registry is this
+checkpoint's to build: FX-RegistryMatchesDisk shipped at 0.2, and the
+entry-to-artefact direction is a definition of done on each checkpoint
+[`FIXTURES.md` rule 2].
 
-Implement the fixtures registered against 0.6 in `FIXTURES.md`.
+Implement the fixtures registered against 0.6 in `FIXTURES.md`. That set is
+empty today and registering it is due when this checkpoint's prompt is written,
+rather than left as a sentence resolving to nothing [`FIXTURES.md` rule 2].
 
-- **DoD**: adding a fixture file without registering it fails the build.
+- **DoD**: the loader reads a synthetic chain from disk and produces the quotes
+  and bars a simulated date offers, and a malformed one fails rather than
+  loading partially.
+- **Open, and 0.6's prompt settles it**: whether a synthetic chain mirrors the
+  schema, being rows per table, or a domain shape, being a chain per name per
+  date. The first loads trivially and reads badly by hand; the second is the
+  reverse. These are written by hand, which is what makes the choice a real one
+  rather than a formatting preference.
 
 ### 0.7 Append-only guards
 
@@ -247,15 +359,23 @@ argued in the abstract. The argument is that a text scan sees declared intent
 and not inferred types, and it was recorded before the comparison rather than
 after.
 
+Register this checkpoint's guards in `FIXTURES.md` as `guard`-kind rows. Nothing
+is registered against 0.7 today, and doing it is due when this checkpoint's
+prompt is written [`FIXTURES.md` rule 2].
+
 - **Test**: the guard fails when a violating statement is introduced, verified
   by a test that adds and removes one.
 - **DoD**: guard runs in CI, not only locally.
-- **Constraint**: five statements already in the tree are the banned text and
-  must not be reported. One is the trigger DDL that enforces append-only, and
-  three are the tests asserting those triggers reject an `UPDATE` or a `DELETE`.
-  Distinguishing them is a design problem for the check, not a case for an
-  exemption list: 0.4's guard has none by decision, and adding one here would
-  reopen that.
+- **Constraint**: statements already in the tree carry the banned text and must
+  not be reported. They are the trigger DDL that enforces append-only, the tests
+  asserting those triggers reject an `UPDATE` or a `DELETE`, and statements
+  against tables the rule does not cover at all. **The check therefore
+  distinguishes by table rather than by location**, which is a design problem for
+  the check and not a case for an exemption list: 0.4's guard has none by
+  decision, and adding one here would reopen that. A vocabulary is the mechanism
+  that needs none, and `DecimalColumns` is the precedent for its shape. No count
+  is given, because the count is not a property of the rule: most of those
+  statements are tests, so it moves whenever one is written.
 
 ### 0.8 Configuration values for the open parameters
 
@@ -286,6 +406,8 @@ has aged.
 | Phase 1 | Give D-W29's write-side rule teeth. Every decimal reaching a `TEXT` column should pass through the canonical form, and nothing enforces that: `ConfigWriter.Append` takes a string. A decimal-typed parameter-binding seam is the likely mechanism, when the first real decimal column exists. | PR #3 |
 | Phase 1 | Decide what an adjusted strike does when a corporate action makes it non-terminating. Identity canonicalises through the refusing path, so a 3-for-2 split forces a choice between rounding a value that is part of a contract's identity and carrying the ratio. | PR #3 |
 | Phase 1 | Resolve aliases in the decimal-ordering detector, or adopt and check a convention that a decimal column is never aliased. `SELECT strike AS s FROM contracts ORDER BY s` orders a decimal and passes. Deleting FX-NoDecimalOrderingInSql's known-miss test is part of closing it. | PR #3 |
+| Phase 3 | Establish output-level determinism: a simulated run with a fixed clock produces byte-identical output across two invocations. 0.5 restated it as identical stored rows because no run existed to make. Compared as produced artefacts, never as a database file [D-W28]. | PR #4 |
+| Phase 3 | Decide what bars nondeterminism in SQL that is not a clock. Enumerating the bundled SQLite showed `random()` and `randomblob()` alongside the seven clock functions; they are outside FX-ClockIsNotADateSource by name but would break a byte-identical run just as surely. | PR #4 |
 
 ---
 

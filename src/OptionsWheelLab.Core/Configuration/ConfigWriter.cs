@@ -36,9 +36,11 @@ public sealed class ConfigWriter
     /// version. The primary key on (key, version) makes a collision fail rather
     /// than pass silently.
     /// <para>
-    /// <paramref name="setAt"/> is a parameter, never a clock read. The clock
-    /// abstraction lands at 0.5 and a <c>DateTime.UtcNow</c> here would be a
-    /// call 0.5 has to remove.
+    /// <paramref name="setAt"/> is a parameter, never a clock read. A clock
+    /// exists from 0.5 and this still does not take one: it is read at
+    /// composition and entry points only, and nothing below them holds one
+    /// [D-W30]. Injecting it here would also replace a fixed value in tests with
+    /// a fake and buy nothing.
     /// </para>
     /// </remarks>
     public int Append(string key, string value, DateTimeOffset setAt, string? note = null)
