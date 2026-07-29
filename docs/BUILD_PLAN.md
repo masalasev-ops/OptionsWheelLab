@@ -1,6 +1,6 @@
 # BUILD_PLAN
 
-Build state: **Phase 0 in progress**. 0.1 to 0.6 built; 0.7 onward not started.
+Build state: **Phase 0 in progress**. 0.1 to 0.7 built; 0.8 not started.
 
 ## How this document works
 
@@ -426,11 +426,9 @@ rather than a mistake: the constraint lands before the tables it guards.
 
 Also in 0.7: decide whether the source guards stay a text scan or move to a
 Roslyn analyser. 0.4 raised it and deferred it here deliberately, because this
-is the first checkpoint where three guards exist and one mechanism serving all
-of them can be compared against three separate scans concretely rather than
-argued in the abstract. The argument is that a text scan sees declared intent
-and not inferred types, and it was recorded before the comparison rather than
-after.
+is the first checkpoint where the mechanisms can be compared concretely rather
+than argued in the abstract. Answered by D-W33: they stay, and the comparison
+that settled it is recorded there.
 
 Register this checkpoint's check in `FIXTURES.md`. Nothing is registered against
 0.7 today, and doing it is due when this checkpoint's prompt is written
@@ -471,6 +469,27 @@ Register this checkpoint's check in `FIXTURES.md`. Nothing is registered against
   than to prove a trigger, is not caught. Pinned as a test in the style of
   the alias miss rather than left in prose.
 
+Reconciled at sign-off against what shipped. Three things were larger than the
+scope above.
+
+**Three citations were wrong, not one.** `decisions` and `candidates` were cited
+to D-W3 for a property D-W3 did not state, exactly as `config_rows` was cited to
+D-W8 until 0.5. Applying the method that found them to the vocabulary before any
+code existed predicted a third: `schema_migrations` would have rested on §4.0's
+prose. D-W3 gains the property, D-W32 states it for the ledger, and `CLAUDE.md`
+§1 gains the method. That last is the part that outlives the checkpoint.
+
+**The vocabulary needed a schema section that did not exist.** §4 documented
+seventeen tables that do not exist and omitted one of the two that do, so §4.0
+was written for `schema_migrations` and §4.1 gained the definition of "snapshot
+tables", a phrase used in four documents and defined in none.
+
+**The Roslyn measurement refuted the reason the guards were split.**
+`guards.ps1` said a guard must fail even when the build does not; a probe showed
+an analyser reports alongside a compile error, so the claim was false. The true
+property is narrower — it reports when restore does not succeed — and the script
+now says that instead [D-W33].
+
 ### 0.8 Configuration values for the open parameters
 
 Set `MaxRolls` and `MaxTrialDays` [D-W14], and the divergence threshold and
@@ -496,7 +515,6 @@ has aged.
 | Owed at | Obligation | Raised |
 |---|---|---|
 | Phase 11 | Re-add `Microsoft.AspNetCore.OpenApi` against a version whose `Microsoft.OpenApi` dependency clears the audit. Removed at 0.1 rather than suppressing the advisory; the reason is in the Api project file. | PR #1 |
-| 0.7 | Decide whether the source guards stay a text scan or move to a Roslyn analyser. A text scan sees declared intent and not inferred types, so `Math.Sqrt`, `Convert.ToDouble` and `Random.NextDouble` are caught only by naming each one. Scoped into 0.7 above. | PR #3 |
 | Phase 1 | Give D-W29's write-side rule teeth. Every decimal reaching a `TEXT` column should pass through the canonical form, and nothing enforces that: `ConfigWriter.Append` takes a string. A decimal-typed parameter-binding seam is the likely mechanism, when the first real decimal column exists. | PR #3 |
 | Phase 1 | Decide what an adjusted strike does when a corporate action makes it non-terminating. Identity canonicalises through the refusing path, so a 3-for-2 split forces a choice between rounding a value that is part of a contract's identity and carrying the ratio. | PR #3 |
 | Phase 1 | Resolve aliases in the SQL detectors, or adopt and check a convention that neither a decimal column nor a table is aliased. `SELECT strike AS s FROM contracts ORDER BY s` and `UPDATE config_rows AS c SET` both pass. Deleting both known-miss tests is part of closing it. | PR #3, PR #6 |

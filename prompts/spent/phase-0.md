@@ -15,12 +15,12 @@ One file per phase. It closes when Phase 0 signs off; Phase 1 opens its own.
 
 # Current state
 
-Corpus v1.11.0.
+Corpus v1.13.0.
 
 | | |
 |---|---|
-| Phase 0 | 0.1 to 0.6 built; 0.7 onward not started |
-| CI | green, 224 tests, guards then restore then build then test, on push to `main` and every pull request |
+| Phase 0 | 0.1 to 0.7 built; 0.8 not started |
+| CI | green, 245 tests, guards then restore then build then test, on push to `main` and every pull request |
 
 Which branch the work sits on and which pull requests have merged are not
 recorded here. Git holds both exactly, and a fact kept in two places drifts:
@@ -254,15 +254,53 @@ still scans every file and still reports success.
 They catch declared intent, not inferred types, and say so. No `.ps1` is
 scanned, including these.
 
+The property is that they report when restore does not succeed, which is narrower
+than the "fails even when the build does not" they used to claim. An analyser
+reports alongside a compile error, measured; what it cannot survive is a failed
+restore, where none runs at all. The guards stay a text scan and a fixture
+[D-W33], one check of four being all an analyser would gain.
+
+## Append-only
+
+Ten tables are never rewritten, and no statement in `src/` may delete from or
+update one. Six are the snapshot tables of §4.1 [D-W8], defined there because the
+phrase was used in four documents and defined in none; `contracts` is one despite
+carrying no `observed_at`, since a corporate action mints a new identity rather
+than editing a row. Then `decisions` and `candidates` [D-W3], `config_rows`
+[D-W26] and `schema_migrations` [D-W32]. Two exist and eight do not.
+
+Every entry rests on a decision that states the property rather than on the list's
+own existence. Three citations had to be corrected to make that true, which is
+what `CLAUDE.md` §1's rule about verifying a citation by what rests on it came
+from.
+
+Three mechanisms exclude the statements already in the tree, and one would not
+suffice. Statement form excludes the trigger DDL, since `DELETE FROM` needs the
+`FROM` and `UPDATE` needs the `SET`. The vocabulary excludes a statement against
+a table the rule does not cover. Scan scope excludes the tests that prove the
+triggers work, which are real offences and are excluded by being tests rather
+than by being anything else. None is an exemption list.
+
+Quoted identifiers are covered, since four spellings are one statement. A table
+alias is a known miss, pinned, and owed at Phase 1 with the decimal detector's
+alias miss, which is the same problem one level down. So is a rewrite written in
+`tests/` by mistake, which is what the scope mechanism costs.
+
+Effective-dating is unsettled and three tables carry it: `watchlist_membership`,
+`positions` and `trials` each have a nullable close column that makes a state
+change an update while §4.2 says rows are never deleted. All three stay out of
+the vocabulary and are owed at Phase 1 as one obligation.
+
 ## Tests
 
-224: 160 across eighteen fixtures, and 64 across fourteen unregistered suites, one
+245: 181 across nineteen fixtures, and 64 across fourteen unregistered suites, one
 of which is the 0.1 smoke test and one of which checks the phase definition of
 done. The two guards are checks rather than tests and are counted in neither.
 
 | Fixture | Tests |
 |---|---|
 | FX-ClockIsNotADateSource | 34 |
+| FX-NoRewriteOfAppendOnlyTables | 21 |
 | FX-MalformedChainFailsWhole | 17 |
 | FX-MoneyRoundTrip | 17 |
 | FX-TickerDashForm | 12 |
@@ -285,8 +323,10 @@ FX-ClockIsNotADateSource is large because most of it pins measured SQLite
 behaviour rather than its own detector, so an upgrade that changes the behaviour
 fails on the behaviour. FX-MalformedChainFailsWhole is large because a refusal
 and the case beside it are separate assertions.
+FX-NoRewriteOfAppendOnlyTables is large because each of the three exclusion
+mechanisms is asserted separately, and one of them takes both halves.
 
-All twenty entries registered against 0.2 to 0.6 are implemented and named for
+All twenty-one entries registered against 0.2 to 0.7 are implemented and named for
 their registry entry. The suite parses `CONFIG_REFERENCE.md`, `FIXTURES.md`,
 `DATA_AND_SCHEMA.md`, `WORKED_EXAMPLE.md` and `guards.ps1`, so all five are
 load-bearing rather than descriptive.
@@ -309,7 +349,7 @@ prompts are in `prompts/spent/`, and hand-written synthetic chains are in
 ## Working rules in force
 
 - Commit subjects are prefixed with the phase name and stage, as
-  `Phase 0 Foundations / 0.7 - <type>: <subject>`.
+  `Phase 0 Foundations / 0.8 - <type>: <subject>`.
 - The pull request description is updated on every check-in, and describes the
   change as it stands rather than accumulating a section per review round. An
   appended section cannot retract an earlier one, so a superseded decision ends
@@ -320,8 +360,8 @@ prompts are in `prompts/spent/`, and hand-written synthetic chains are in
 
 ## Not built
 
-Market data tables and every other table. The append-only guards. Every
-checkpoint from 0.7 onward.
+Market data tables and every other table. 0.8, which is the last checkpoint in
+this phase.
 
 Nothing writes a decimal through a typed path yet: `ConfigWriter.Append` takes a
 string, so D-W29's write-side rule is a convention with no enforcement behind it.
@@ -341,7 +381,9 @@ obligations, which is where planning for the phase that owns it will look, and
 which outlives this file. It is not copied here: two registers of one list is
 how an obligation comes to exist in the one nobody reads.
 
-Eight entries stand, owed at 0.7, Phase 1, Phase 2, Phase 3 and Phase 11.
+Eight entries stand, owed at Phase 1, Phase 2, Phase 3 and Phase 11. Nothing is
+owed at a Phase 0 checkpoint any more: 0.7's row closed with an answer rather
+than by lapsing.
 
 Scoped work that is not deferred, and so is not a carried obligation:
 
@@ -1028,6 +1070,89 @@ against something rather than against nothing.
 ### Definitions of done carried from 0.2
 
 - Every check registered against 0.6 exists in its kind.
+- Every key the sections this checkpoint introduces carry is bound and verified.
+  This checkpoint introduces none, so the obligation is discharged empty rather
+  than skipped.
+
+### Constraints
+
+No `double` or `float`. No ambient clock. Nothing here writes to the store.
+Reconcile the detail and the archive at sign-off, not during the build.
+
+## 0.7 Append-only guards
+
+Read `CLAUDE.md` §2, `BUILD_PLAN.md` §0.7 and the carried obligations,
+`DATA_AND_SCHEMA.md` §3 and §4, D-W3, D-W8 and D-W26, the `FIXTURES.md` rules,
+FX-NoDecimalOrderingInSql, `guards.ps1`, and Current state above.
+
+The rule has existed since D-W8 and nothing has ever enforced it. Building the
+check settles three things the corpus left open: which tables it covers, what
+mechanism it is, and whether the source guards move to Roslyn.
+
+### Settle the mechanism first, because it decides the shape
+
+- **Measure before choosing.** `guards.ps1` strips raw string literals and every
+  SQL statement here lives in one, so a pattern added to the script matches
+  nothing in the tree by construction. The script's own stripper self-test
+  already demonstrates it.
+- So this is a `fixture`, which is also what 0.4's criterion says: a guard is for
+  a check that reports when nothing else can, a fixture for one needing a
+  vocabulary and structure. 0.7's detail says the opposite and is corrected.
+
+### The vocabulary, and check every entry's authority
+
+- Flat set beside `DecimalColumns`, same two-directions contract: every name must
+  appear in a §4 schema block, and the reverse is a definition of done on the
+  checkpoint that adds each table. Most entries name tables that do not exist,
+  which is the point.
+- **Check what each entry rests on before it goes in, and expect to find a
+  citation naming a decision for a property that decision does not state.** This
+  corpus has had two. Reading the decision does not find them; building the check
+  that rests on them does.
+- Report which tables are in, which are forward-declared and which are live.
+- A table whose schema shape and stated rule disagree stays out and is raised.
+  Putting it in would settle the disagreement by implication.
+
+### The check
+
+- A pure detector over SQL and the vocabulary, exercised on synthetic statements
+  with the tree as its negative controls. Reuse the existing SQL extraction
+  rather than writing a second scanner, and say whether it needed changing.
+- **Statement form is what excludes the trigger DDL.** Require the `FROM` and the
+  `SET`, so `BEFORE UPDATE ON` matches neither. That is a property of what those
+  statements are rather than an exemption granted to them.
+- Cover the quoted identifier forms. One statement spelled four ways is lexical,
+  and a check missing the quoted form is evaded by a paste from a database
+  browser. Pin a table alias as a known miss instead, since widening the pattern
+  invites ambiguity about which token is the table.
+- **Test**: a violating statement is reported, naming the table.
+- **Test**: each statement already in the tree, individually, with the mechanism
+  that excludes it asserted rather than left incidental. Where the mechanism is
+  scan scope, assert both halves: that the statement IS an offence, and that it
+  does not appear in the scanned scope.
+- **Test**: the vocabulary and the scan are each asserted non-empty first.
+- **Test**: every vocabulary name appears in a §4 schema block.
+- **No exemption mechanism.** A statement not reported is one whose table, form
+  or scope puts it outside the rule, each fixed once with a reason.
+- **DoD**: introducing a violation fails. Demonstrate, revert.
+
+### The Roslyn question, which this checkpoint owns
+
+- **Measure two facts rather than arguing them.** Whether an analyser still
+  reports when the compilation has errors elsewhere, which is the script's stated
+  justification; and what a package costs in a repository that drops rather than
+  suppresses.
+- Compare all four checks against the mechanisms: what a text scan sees, what a
+  fixture sees, what an analyser would add.
+- **Decide, and record it as a decision either way.** A no-change outcome is
+  still a decision, because what it records is why the mechanism stays, and a
+  later phase reopening it should supersede something rather than redo the
+  comparison. Say what would reopen it.
+- Close the carried obligation with the answer rather than letting it lapse.
+
+### Definitions of done carried from 0.2
+
+- Every check registered against 0.7 exists in its kind.
 - Every key the sections this checkpoint introduces carry is bound and verified.
   This checkpoint introduces none, so the obligation is discharged empty rather
   than skipped.

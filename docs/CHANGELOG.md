@@ -1,5 +1,35 @@
 # CHANGELOG
 
+## [1.13.0] — 2026-07-29
+
+### Added
+- D-W33: the source guards stay a text scan and a fixture, and neither is
+  replaced by a Roslyn analyser. One check of four would gain anything, being
+  inferred types for the floating-point guard; the two SQL checks gain nothing
+  because an analyser returns the same string literal a fixture already has and
+  does not parse SQL. The package costs ten transitive pins and a project
+  overriding the build props. It also records what would reopen it.
+- The topical index gains a **Verification mechanisms** line. The six existing
+  lines are about the experiment rather than about how the repository checks
+  itself, and "Isolation and controls" means control arms. D-W28 joins D-W33
+  there while staying on Data and identity, since it is both and the index is a
+  finding aid rather than a partition.
+
+### Changed
+- The carried obligation to decide between a text scan and a Roslyn analyser is
+  **closed with a no-change answer**, not lapsed. D-W33 discharges it, and the
+  row is removed rather than left standing, because an obligation that outlives
+  its answer reads as unfinished.
+
+### Notes
+- The measurement refuted the reason the guards were split. `guards.ps1` claimed
+  a guard must fail even when the build does not; a probe with a violation in one
+  file and a type error in another reported both, so the claim was false. What an
+  analyser cannot survive is a failed restore, where none runs and only the NuGet
+  error appears. The script runs before restore, so the property it actually has
+  is that it reports when restore does not succeed. Narrower, true, and enough —
+  and the script now says that instead of the claim it could not support.
+
 ## [1.12.0] — 2026-07-29
 
 ### Added

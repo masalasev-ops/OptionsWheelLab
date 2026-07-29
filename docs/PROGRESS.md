@@ -4,8 +4,8 @@ Appended to, never rewritten. The repository is the authority on build state.
 
 ## Current state
 
-**Phase 0 in progress.** Checkpoints 0.1 to 0.6 built. 0.7 onward not started.
-The documentation corpus is at v1.12.0.
+**Phase 0 in progress.** Checkpoints 0.1 to 0.7 built. 0.8 not started.
+The documentation corpus is at v1.13.0.
 
 ## Log
 
@@ -372,3 +372,25 @@ the check that rests on the citation is what found both. `CLAUDE.md` §1 gains
 that method, and applying it to the vocabulary before writing any code predicted
 the third: `schema_migrations` would have rested on §4.0's prose, so D-W32 states
 the property instead. That is the first instance found deliberately.
+
+### 2026-07-29 — corpus v1.13.0
+Checkpoint 0.7 built and signed off. The append-only vocabulary of ten tables,
+FX-NoRewriteOfAppendOnlyTables and its detector, §4.0 for the migration ledger,
+§4.1's definition of the snapshot tables, and three corrected citations. 245
+tests.
+
+D-W33 closes the obligation 0.4 raised and deferred here: the source guards stay
+a text scan and a fixture. The measurement refuted the reason the split was
+given. `guards.ps1` claimed a guard must fail even when the build does not, and a
+probe with a violation in one file and a type error in another reported both, so
+the claim was false. What an analyser cannot survive is a failed restore, where
+none runs at all. The script runs before restore, so its property is narrower
+than claimed and true, and it now says so.
+
+One check of four would have gained anything. The two SQL checks are SQL-parsing
+problems where an analyser returns the same string literal a fixture already has,
+so "one mechanism serving four" did not survive contact with what the four are.
+
+The obligation is closed with a no-change answer rather than left to lapse, and
+the topical index gains a Verification mechanisms line, the six existing ones
+being about the experiment rather than about how the repository checks itself.

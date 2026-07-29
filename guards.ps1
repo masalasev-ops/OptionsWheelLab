@@ -36,11 +36,12 @@
     binding a vendor number into an untyped tree. Anyone reading a green run as
     proof that no floating point reaches a monetary path is wrong. The mechanism
     that would see those is a Roslyn analyser, and 0.7 made the comparison it was
-    deferred for: of the four checks this repository has, an analyser would gain
-    this one and only this one. The two SQL checks are SQL-parsing problems, so
+    deferred for. Of the four checks this repository has, an analyser would gain
+    this one and only this one: the two SQL checks are SQL-parsing problems where
     an analyser hands back the same string literal a fixture already gets, and
-    the clock check gains only alias resolution. The decision lands with 0.7's
-    sign-off; until it does, this remains the one documented gap.
+    the clock check gains only alias resolution. The guards therefore stay a text
+    scan and a fixture [D-W33], which also records what would reopen it -- this
+    gap becoming a live defect rather than a documented one.
 
     IT READS *.cs UNDER src AND tests, AND NOTHING ELSE. No .ps1 is scanned,
     including this one and migrate.ps1. That is correct rather than incidental:
