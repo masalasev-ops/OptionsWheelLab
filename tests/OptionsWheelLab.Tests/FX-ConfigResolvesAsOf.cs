@@ -15,7 +15,11 @@ namespace OptionsWheelLab.Tests;
 /// </remarks>
 public sealed class FX_ConfigResolvesAsOf
 {
-    private const string Key = "Gate:MaxDelta";
+    // Deliberately a key that belongs to no cross-key invariant. This fixture is
+    // about resolution, not about the invariants, and a write touching an
+    // invariant's key must carry that invariant's whole key set [D-W34]. It was
+    // Gate:MaxDelta until 0.8 gave the write path teeth.
+    private const string Key = "Gate:MinPremium";
 
     [Fact]
     public void Three_versions_resolve_to_the_one_in_force_not_the_newest()

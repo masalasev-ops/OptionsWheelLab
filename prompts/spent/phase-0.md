@@ -9,18 +9,19 @@ checkpoint's prompt rather than appended as further entries, so replaying the
 prompts in order against the corpus reproduces the current state without
 replaying the mistakes.
 
-One file per phase. It closes when Phase 0 signs off; Phase 1 opens its own.
+One file per phase. **This file is closed.** Phase 0 signed off at corpus
+v1.15.0; Phase 1 opens its own.
 
 ---
 
 # Current state
 
-Corpus v1.13.0.
+Corpus v1.15.0.
 
 | | |
 |---|---|
-| Phase 0 | 0.1 to 0.7 built; 0.8 not started |
-| CI | green, 245 tests, guards then restore then build then test, on push to `main` and every pull request |
+| Phase 0 | complete, 0.1 to 0.8 built and signed off |
+| CI | green, 262 tests, guards then restore then build then test, on push to `main` and every pull request |
 
 Which branch the work sits on and which pull requests have merged are not
 recorded here. Git holds both exactly, and a fact kept in two places drifts:
@@ -89,8 +90,29 @@ Six sections deliberately unbound because `CONFIG_REFERENCE.md` classes them
 `Gate`, `Costs`, `Policy`, `Trial`, `Scoring`.
 
 `CONFIG_REFERENCE.md` carries 27 key rows, one key per row. Four Consumer cells
-are verified; 23 carry **Unverified**. No value is set that the document marks
-unset.
+are verified; 23 carry **Unverified**, and they stay that way because every
+consumer of a `rows` key is Phase 2 or later.
+
+Nineteen of the 23 `rows`-classed keys hold a value at version 1, written by the
+`seed` verb. Four carry an `Unset` marker and each names the phase that owes it:
+the three `Risk:` fractions at Phase 2, `Costs:AssignmentFee` at Phase 3. Both
+`app`-classed unset keys are supplied per machine.
+
+The document is not the authority on what is in force; the store is. A value in
+Notes is version 1 and the reason for it, and a revision inserts version + 1
+without editing the document. Provenance is stated per key and is three kinds:
+transcribed from a corpus statement, taken from a value a decision proposed, or
+judged. Four values are judged, and `Trial:MaxTrialDays` at 120 is the least free
+of them, having to clear `Gate:MaxDte` [D-W24] and to leave the worked example's
+own 109-day trial representable. `Gate:MaxDelta` and `Policy:Random:DeltaMax` are
+both 0.35 by choice, which settles D-W23; the 0.10 floor beneath them is inherited
+and recorded as inherited.
+
+Both directions of the key contract are standing checks for `app` keys:
+FX-EveryBoundKeyIsDocumented walks the types and checks the document,
+FX-EveryAppKeyBinds walks the document and checks the types. For `rows` keys only
+the first holds, because most are deliberately unbound until their phase, and the
+paragraph declining the reverse now says so.
 
 Configuration is readable two ways, as separate types so neither can be reached
 from the other. `AsOfConfiguration` takes a date on every member and resolves
@@ -98,7 +120,10 @@ from the other. `AsOfConfiguration` takes a date on every member and resolves
 `CurrentConfiguration` returns the newest and is for operational paths only.
 `ConfigWriter` appends `MAX(version) + 1` computed inside the insert's own
 transaction, with `set_at` supplied rather than read from a clock and refused if
-it predates the newest version of that key.
+it predates the newest version of that key. `AppendAll` writes N entries in one
+transaction and `Append` delegates to it, so there is one definition of the insert
+and one of the monotonic check. `AppendMissing` writes the first version of each
+key that has none, skips the rest and names both sets.
 
 Both read surfaces carry decimal and integer accessors alongside the string one,
 as public instance methods rather than extensions, since the as-of guard reflects
@@ -108,8 +133,27 @@ assumed, and so changing the scale is one edit; not to close an ambient-culture
 trap, which `InvariantGlobalization` already closes. An integer is stored plainly
 and not in the decimal form.
 
-The two cross-key invariants remain pure predicates over supplied values, with
-no host, no config store, no startup wiring and no clock.
+The two cross-key invariants are pure predicates over supplied values, with no
+host, no config store, no startup wiring and no clock, and `ConfigWriter` calls
+them on every write. They are in the writer rather than in the seeder because the
+seeder is one caller and `Append` would have stayed unguarded, and because D-W23,
+D-W24 and D-W27 all put enforcement at the moment a version is written, versions
+being insertable while the process runs. A refused write leaves the table exactly
+as it was, which the fixture asserts by row comparison rather than by the absence
+of an exception.
+
+A write touching a key one invariant needs, and leaving the store without the
+rest of that invariant's keys, is refused [D-W34]. So `Gate:MaxDte` and
+`Trial:MaxTrialDays` cannot be written apart, and neither can the delta ceiling
+and the bands. A write touching no invariant key succeeds into an empty store. A
+key already stored counts as an operand, so a half-seeded store can be completed.
+`ConfigKeys` declares each invariant's key set, the same declared-vocabulary shape
+as `DecimalColumns` and `AppendOnlyTables`, and carries each band's name beside
+its key so a refusal can say which band it failed against.
+
+`ConfigRowQuery.ResolveCurrent` takes an optional transaction, because the
+invariants read rows that have not committed and Microsoft.Data.Sqlite refuses a
+command with no transaction while one is pending.
 
 ## Stored forms
 
@@ -227,9 +271,9 @@ byte-identical candidate sets requires one.
 ## Guards
 
 `guards.ps1` at the root holds the checks that are not unit tests, and `ci.yml`
-calls it before the build, because a source guard must fail even when the build
-does not. Two named checks, each a `guard`-kind row in `FIXTURES.md`, scanning
-every `.cs` under `src` and `tests` with no exemption mechanism of any kind.
+calls it before restore, so it reports on a tree where nothing else can run. Two
+named checks, each a `guard`-kind row in `FIXTURES.md`, scanning every `.cs` under
+`src` and `tests` with no exemption mechanism of any kind.
 
 FX-NoFloatingPoint bans floating point. Its catch-list covers the two keywords
 plus `Random.NextDouble`, `Convert.ToDouble`, `GetDouble`, the `Math` functions
@@ -293,9 +337,9 @@ the vocabulary and are owed at Phase 1 as one obligation.
 
 ## Tests
 
-245: 181 across nineteen fixtures, and 64 across fourteen unregistered suites, one
-of which is the 0.1 smoke test and one of which checks the phase definition of
-done. The two guards are checks rather than tests and are counted in neither.
+262: 200 across twenty-one fixtures, and 62 across thirteen unregistered suites,
+one of which is the 0.1 smoke test. The two guards are checks rather than tests
+and are counted in neither.
 
 | Fixture | Tests |
 |---|---|
@@ -303,6 +347,7 @@ done. The two guards are checks rather than tests and are counted in neither.
 | FX-NoRewriteOfAppendOnlyTables | 21 |
 | FX-MalformedChainFailsWhole | 17 |
 | FX-MoneyRoundTrip | 17 |
+| FX-ConfigWriteRefusesInvariantBreach | 16 |
 | FX-TickerDashForm | 12 |
 | FX-ConfigStoreClassHonoured | 12 |
 | FX-NoDecimalOrderingInSql | 12 |
@@ -316,6 +361,7 @@ done. The two guards are checks rather than tests and are counted in neither.
 | FX-MaxDteBelowTrialBound | 4 |
 | FX-WorkedExampleChainLoads | 4 |
 | FX-ApiCannotWrite | 3 |
+| FX-EveryAppKeyBinds | 3 |
 | FX-NoCurrentConfigReadOnSimulatedPath | 3 |
 | FX-SnapshotRestoresIdentically | 3 |
 
@@ -325,8 +371,10 @@ fails on the behaviour. FX-MalformedChainFailsWhole is large because a refusal
 and the case beside it are separate assertions.
 FX-NoRewriteOfAppendOnlyTables is large because each of the three exclusion
 mechanisms is asserted separately, and one of them takes both halves.
+FX-ConfigWriteRefusesInvariantBreach is large because it covers two invariants,
+both directions of D-W34, and the seed's own values through the same path.
 
-All twenty-one entries registered against 0.2 to 0.7 are implemented and named for
+All twenty-one entries registered against 0.2 to 0.8 are implemented and named for
 their registry entry. The suite parses `CONFIG_REFERENCE.md`, `FIXTURES.md`,
 `DATA_AND_SCHEMA.md`, `WORKED_EXAMPLE.md` and `guards.ps1`, so all five are
 load-bearing rather than descriptive.
@@ -338,10 +386,15 @@ path does not exist.
 
 ## Layout
 
-Repository root holds `README.md`, `CLAUDE.md`, `migrate.ps1` and `guards.ps1`.
-The corpus rule governs documents only: every document is in `docs/`, spent
-prompts are in `prompts/spent/`, and hand-written synthetic chains are in
-`synthetic/`. None of the last two are documents.
+Repository root holds `README.md`, `CLAUDE.md`, `migrate.ps1`, `seed.ps1` and
+`guards.ps1`. The corpus rule governs documents only: every document is in
+`docs/`, spent prompts are in `prompts/spent/`, and hand-written synthetic chains
+are in `synthetic/`. None of the last two are documents.
+
+The Worker has two verbs, `migrate` and `seed`, each with an operator script that
+checks `Storage__Path` and reports a failure without a stack trace. Setting a
+store up is `.\migrate.ps1` then `.\seed.ps1`, and the second is a no-op on a
+store that already has its values.
 
 `Core` has five folders: `Configuration`, `Storage`, `Identity`, `Time` and
 `Synthetic`.
@@ -360,11 +413,15 @@ prompts are in `prompts/spent/`, and hand-written synthetic chains are in
 
 ## Not built
 
-Market data tables and every other table. 0.8, which is the last checkpoint in
-this phase.
+Market data tables and every other table. Phase 0 is complete, so what is not
+built is Phase 1 onward, whose checkpoint detail is not written.
 
-Nothing writes a decimal through a typed path yet: `ConfigWriter.Append` takes a
-string, so D-W29's write-side rule is a convention with no enforcement behind it.
+Nothing writes a decimal through a typed path yet: `ConfigWriter.Append` and
+`AppendAll` take strings, so D-W29's write-side rule is a convention with no
+enforcement behind it. The nineteen seeded values are hand-written short forms
+such as `0.35`, which `StoreDecimal.ParseStored` accepts by design, that leniency
+existing for exactly this case. What is missing is not the padding but the seam:
+a decimal reaching a `TEXT` column still does so as a string somebody typed.
 
 Nothing runs, so nothing produces output. Determinism is asserted over stored
 rows, and the output-level property waits for the first checkpoint with a run.
@@ -381,14 +438,12 @@ obligations, which is where planning for the phase that owns it will look, and
 which outlives this file. It is not copied here: two registers of one list is
 how an obligation comes to exist in the one nobody reads.
 
-Eight entries stand, owed at Phase 1, Phase 2, Phase 3 and Phase 11. Nothing is
-owed at a Phase 0 checkpoint any more: 0.7's row closed with an answer rather
-than by lapsing.
+Ten entries stand, owed at Phase 1, Phase 2, Phase 3 and Phase 11. Nothing is
+owed at a Phase 0 checkpoint, there being none left: 0.7's row closed with an
+answer rather than by lapsing, and 0.8 added two for the four keys it left unset.
 
-Scoped work that is not deferred, and so is not a carried obligation:
-
-- **0.8**: wire the two cross-key invariants to the config write path, and
-  FX-ConfigWriteRefusesInvariantBreach. Already in `BUILD_PLAN.md` 0.8.
+Nothing is scoped-but-not-deferred any more. That entry named 0.8's invariant
+wiring, and 0.8 has shipped.
 
 ---
 
@@ -1161,3 +1216,125 @@ mechanism it is, and whether the source guards move to Roslyn.
 
 No `double` or `float`. No ambient clock. Nothing here writes to the store.
 Reconcile the detail and the archive at sign-off, not during the build.
+
+## 0.8 Configuration values and write-time invariants
+
+Read `CLAUDE.md` §1 and §3, `BUILD_PLAN.md` §0.8 and the Phase 0 definition of
+done, `CONFIG_REFERENCE.md` whole, `SYSTEM_DESIGN.md` §3.5 and §8,
+`WORKED_EXAMPLE.md` §1, D-W4, D-W11, D-W12, D-W14, D-W20, D-W22 to D-W27 and
+D-W34, `ConfigurationInvariants`, and Current state above.
+
+The last checkpoint of Phase 0. Every value the lab will run under is absent, and
+the two cross-key invariants have been pure predicates with no caller since 0.2.
+This sets the values and gives the predicates teeth.
+
+### Count the unset keys before believing the detail
+
+- **Measure, do not read.** The detail names four unset keys. Count the `Unset`
+  markers in `CONFIG_REFERENCE.md` and check them against D-W22 to D-W25. Where
+  the two documents disagree, say which is wrong rather than reconciling silently.
+- The `Policy:` keys carry no marker and are seeded anyway, or D-W23's invariant
+  cannot be exercised: the predicate passes vacuously against an empty band set,
+  which its own fixture has asserted since 0.2.
+- **Provenance is judged per key, not per section.** A section is not a unit of
+  provenance, and `Costs:` is the case that proves it: the commission is a
+  property of the modelled market that D-W12 fixes in advance, the assignment fee
+  is stated nowhere, and they are in the same section.
+
+### The values, and say which kind each is
+
+- Three kinds: transcribed from a corpus statement, taken from a value a decision
+  proposed, or judged. Say which for every key, and mark the judged ones.
+- **A judged value is argued from what constrains it, and where nothing does, say
+  so.** A free choice presented with a rationale reads as derived, which is worse
+  than saying it was chosen.
+- **Look for a second constraint on every bound before setting it.** One of them
+  has a constraint no document names: check the worked example's own trial against
+  the day bound, and against what that example's stated total depends on.
+- What is deliberately not seeded gets a stated reason and **a carried obligation
+  naming the phase that owes it**. Unseeded and unscheduled are different, and
+  only the first is a decision.
+
+### D-W23's open clause, which this checkpoint owns
+
+- Settle it, and settle only what the argument reaches. The ceiling and the floor
+  of one band are two questions and D-W4 reaches one of them.
+- Where the argument does not reach, report the value as inherited and name the
+  measurement that would settle it, without making it. A measurement 0.8 cannot
+  perform is not an argument 0.8 can use.
+- Closing the clause is authored, so raise the wording rather than writing it.
+
+### Enforcement, in the write path
+
+- **In `ConfigWriter`, not in the seeder.** The seeder is one caller. D-W23,
+  D-W24 and D-W27 all put enforcement at the moment a version is written,
+  precisely because versions are insertable while the process runs.
+- One transaction for the whole seed. An invariant over two keys cannot be
+  evaluated while only one exists, so a loop over `Append` either fails on the
+  first key or passes vacuously until the last. That loop is the obvious
+  implementation and is wrong in a way that passes.
+- Each invariant's key set is a declared vocabulary beside the predicates, the
+  same shape as `DecimalColumns` and `AppendOnlyTables`.
+- A write leaving a touched invariant unevaluable is refused [D-W34]. A write
+  touching no invariant key is permitted whatever else is absent.
+- **Expect existing tests to fail, and read the failure before fixing it.** A
+  fixture using an invariant's key as a convenient arbitrary key was relying on
+  the write path being unguarded. Move it to a key in no invariant and say why in
+  a comment, because moving it back is the obvious edit.
+
+### The seed, as a verb
+
+- A verb beside `migrate`, not a migration. A migration is applied once and
+  recorded by id and can never be corrected except by another migration; a config
+  value is expected to be revised, and version 1 arriving by a different route
+  from every later version gives "how did this value get here" two answers.
+- Idempotent by **skipping**, not by overwriting. Write the first version of each
+  key that has none, skip the rest, report both. An identical version + 1 is legal
+  and would fill the history with revisions that revised nothing and overwrite an
+  operator's later value on every run.
+- A refusal is an outcome of the verb, not a crash. Report it; the messages name
+  their decision and say no row was written, and a stack trace buries them.
+- **Test**: both invariants, both directions of D-W34, and a refused write leaving
+  the store exactly as it was, asserted by comparing rows rather than by the
+  absence of an exception.
+- **DoD**: the refusal demonstrated end to end against a real store, and a second
+  seed run shown to be a no-op.
+
+### Documentation
+
+- Replace the `Unset` markers with the value in force and the reason for it.
+  Consumer cells stay `Unverified`: every consumer is Phase 2 or later, so the
+  definition of done means named, not verified.
+- **Say that the store is the authority, not the document.** A value recorded here
+  is version 1; a revision inserts version + 1 and does not edit the document.
+  Without that sentence the first revision makes the document read as wrong.
+- Record any coupling the schema cannot express. A key absent because another key
+  covers it looks like an omission to a reader of the reference alone, and this is
+  the checkpoint that makes that reader exist.
+- **Check every sentence you are about to make a reader trust.** Seeding the
+  values a design paragraph describes is what finds the paragraph that was wrong
+  about them, the same way building a check found three wrong citations at 0.7.
+
+### Definitions of done carried from 0.2
+
+- Every check registered against 0.8 exists in its kind.
+- Every key the sections this checkpoint introduces carry is bound and verified.
+  It introduces none, and the keys it sets are `rows`-classed and so never bind, so
+  the obligation is discharged with that reason rather than empty.
+
+### The Phase 0 definition of done, which nothing after this will demonstrate
+
+- Run each of the five items and record its output rather than asserting it.
+- **Anything in it that can be a standing check should be one, and check whether
+  it already is before building it.** One item was already covered by an
+  unregistered suite, and a report claiming otherwise was written from the
+  fixture files without reading the rest of the tests.
+- Where a standing check exists outside the registry, register it and move it.
+  Two tests asserting one thing with two failure messages is a fact kept in two
+  places.
+
+### Constraints
+
+No `double` or `float`. No ambient clock; the instant is read at the verb and
+threaded down. Money is decimal in `TEXT`. Reconcile the detail and the archive at
+sign-off, not during the build.

@@ -3,6 +3,16 @@ using OptionsWheelLab.Core.Storage;
 
 namespace OptionsWheelLab.Core.Configuration;
 
+/// <summary>One key and the value to write for it, with the note explaining the choice.</summary>
+public sealed record ConfigEntry(string Key, string Value, string? Note = null);
+
+/// <summary>What a seeding write did, key by key.</summary>
+/// <remarks>
+/// Both sets rather than both counts: an operator looking at a partly seeded
+/// store needs to know which keys were left, not how many.
+/// </remarks>
+public sealed record SeedOutcome(IReadOnlyList<string> Written, IReadOnlyList<string> Skipped);
+
 /// <summary>
 /// Appends a new version of a configuration key.
 /// </summary>
@@ -11,9 +21,18 @@ namespace OptionsWheelLab.Core.Configuration;
 /// row, it inserts version + 1, which is what lets a later behaviour change be
 /// explained after the fact.
 /// <para>
-/// Cross-key invariant enforcement on writes is owed by 0.8 [D-W23, D-W24].
-/// Nothing is seeded until then, so there is no window in which an unguarded
-/// write path could admit a violating version.
+/// <b>The cross-key invariants are enforced here, on every write.</b> They were
+/// pure predicates with no caller until 0.8. Putting the check in the seeder
+/// instead would leave <see cref="Append"/> an unguarded path, and D-W23, D-W24
+/// and D-W27 all say enforcement is at the moment a version is written rather
+/// than at startup, precisely because versions are insertable while the process
+/// runs.
+/// </para>
+/// <para>
+/// <b>A write that leaves an invariant unevaluable is refused too</b> [D-W34],
+/// which is what stops the check passing vacuously on the way to a complete set.
+/// Its consequence is the mechanism: <c>Gate:MaxDte</c> and
+/// <c>Trial:MaxTrialDays</c> cannot be written apart.
 /// </para>
 /// </remarks>
 public sealed class ConfigWriter
@@ -48,43 +67,234 @@ public sealed class ConfigWriter
         ArgumentException.ThrowIfNullOrWhiteSpace(key);
         ArgumentNullException.ThrowIfNull(value);
 
-        using var transaction = _connection.BeginTransaction(deferred: false);
+        AppendAll([new ConfigEntry(key, value, note)], setAt);
 
-        RefuseIfEarlierThanNewest(transaction, key, setAt);
+        using var read = _connection.CreateCommand();
+        read.CommandText = "SELECT MAX(version) FROM config_rows WHERE key = $key;";
+        read.Parameters.AddWithValue("$key", key);
+        return Convert.ToInt32(read.ExecuteScalar());
+    }
 
-        using (var insert = _connection.CreateCommand())
+    /// <summary>
+    /// Writes every entry in one transaction, or writes none of them.
+    /// </summary>
+    /// <remarks>
+    /// <b>One transaction is not a convenience.</b> A cross-key invariant cannot
+    /// be evaluated while only one of its keys exists, so writing key by key
+    /// either fails on the first or passes vacuously until the last. The
+    /// invariants are checked over the complete set, with what is already stored,
+    /// before the transaction commits.
+    /// </remarks>
+    public void AppendAll(IReadOnlyList<ConfigEntry> entries, DateTimeOffset setAt)
+    {
+        ArgumentNullException.ThrowIfNull(entries);
+
+        if (entries.Count == 0)
         {
-            insert.Transaction = transaction;
-            insert.CommandText =
-                """
-                INSERT INTO config_rows (key, version, value, set_at, note)
-                SELECT $key,
-                       COALESCE(MAX(version), 0) + 1,
-                       $value,
-                       $setAt,
-                       $note
-                FROM config_rows
-                WHERE key = $key;
-                """;
-            insert.Parameters.AddWithValue("$key", key);
-            insert.Parameters.AddWithValue("$value", value);
-            insert.Parameters.AddWithValue("$setAt", StoreTimestamp.ToStored(setAt));
-            insert.Parameters.AddWithValue("$note", note ?? (object)DBNull.Value);
-            insert.ExecuteNonQuery();
+            return;
         }
 
-        int version;
+        using var transaction = _connection.BeginTransaction(deferred: false);
+        Write(transaction, entries, setAt);
+        transaction.Commit();
+    }
 
-        using (var read = _connection.CreateCommand())
+    /// <summary>
+    /// Writes the first version of every entry whose key has none, leaves every
+    /// key that already has a version alone, and names both sets.
+    /// </summary>
+    /// <remarks>
+    /// <b>Skipping rather than appending an identical value is the point.</b>
+    /// Appending version + 1 with the same value is legal and would be wrong: it
+    /// fills the history with revisions that revised nothing, and it would
+    /// silently overwrite an operator's later value every time the verb ran.
+    /// <para>
+    /// The existence check is inside the same transaction as the insert, so a key
+    /// cannot appear between deciding to write it and writing it.
+    /// </para>
+    /// <para>
+    /// A skipped key is still an operand. If the store holds a value that the
+    /// entries being written contradict, the invariants refuse the write rather
+    /// than the seed quietly leaving the pair inconsistent.
+    /// </para>
+    /// </remarks>
+    public SeedOutcome AppendMissing(IReadOnlyList<ConfigEntry> entries, DateTimeOffset setAt)
+    {
+        ArgumentNullException.ThrowIfNull(entries);
+
+        using var transaction = _connection.BeginTransaction(deferred: false);
+
+        var missing = new List<ConfigEntry>();
+        var skipped = new List<string>();
+
+        foreach (var entry in entries)
         {
-            read.Transaction = transaction;
-            read.CommandText = "SELECT MAX(version) FROM config_rows WHERE key = $key;";
-            read.Parameters.AddWithValue("$key", key);
-            version = Convert.ToInt32(read.ExecuteScalar());
+            ArgumentException.ThrowIfNullOrWhiteSpace(entry.Key);
+
+            if (ConfigRowQuery.ResolveCurrent(_connection, entry.Key, transaction) is null)
+            {
+                missing.Add(entry);
+            }
+            else
+            {
+                skipped.Add(entry.Key);
+            }
+        }
+
+        if (missing.Count > 0)
+        {
+            Write(transaction, missing, setAt);
         }
 
         transaction.Commit();
-        return version;
+
+        return new SeedOutcome(missing.Select(entry => entry.Key).ToList(), skipped);
+    }
+
+    private void Write(
+        SqliteTransaction transaction,
+        IReadOnlyList<ConfigEntry> entries,
+        DateTimeOffset setAt)
+    {
+        foreach (var entry in entries)
+        {
+            ArgumentException.ThrowIfNullOrWhiteSpace(entry.Key);
+            ArgumentNullException.ThrowIfNull(entry.Value);
+
+            RefuseIfEarlierThanNewest(transaction, entry.Key, setAt);
+            Insert(transaction, entry, setAt);
+        }
+
+        RefuseIfInvariantsDoNotHold(transaction, entries);
+    }
+
+    private void Insert(SqliteTransaction transaction, ConfigEntry entry, DateTimeOffset setAt)
+    {
+        using var insert = _connection.CreateCommand();
+        insert.Transaction = transaction;
+        insert.CommandText =
+            """
+            INSERT INTO config_rows (key, version, value, set_at, note)
+            SELECT $key,
+                   COALESCE(MAX(version), 0) + 1,
+                   $value,
+                   $setAt,
+                   $note
+            FROM config_rows
+            WHERE key = $key;
+            """;
+        insert.Parameters.AddWithValue("$key", entry.Key);
+        insert.Parameters.AddWithValue("$value", entry.Value);
+        insert.Parameters.AddWithValue("$setAt", StoreTimestamp.ToStored(setAt));
+        insert.Parameters.AddWithValue("$note", entry.Note ?? (object)DBNull.Value);
+        insert.ExecuteNonQuery();
+    }
+
+    /// <summary>
+    /// Checks both cross-key invariants over the store as this write leaves it.
+    /// </summary>
+    /// <remarks>
+    /// Read through the current-value surface's query rather than an as-of one:
+    /// a write is an operational path, not a simulated-date one, so reading the
+    /// newest version is the right question [D-W26].
+    /// <para>
+    /// Only an invariant this write touches is checked. A write of an unrelated
+    /// key is not the moment to re-litigate a pair it has nothing to do with,
+    /// and D-W34 scopes the refusal the same way.
+    /// </para>
+    /// </remarks>
+    private void RefuseIfInvariantsDoNotHold(
+        SqliteTransaction transaction,
+        IReadOnlyList<ConfigEntry> entries)
+    {
+        var touched = entries.Select(entry => entry.Key).ToHashSet(StringComparer.Ordinal);
+
+        if (touched.Overlaps(ConfigKeys.DeltaCeilingKeys))
+        {
+            CheckDeltaCeiling(transaction);
+        }
+
+        if (touched.Overlaps(ConfigKeys.TrialBoundKeys))
+        {
+            CheckTrialBound(transaction);
+        }
+    }
+
+    private void CheckDeltaCeiling(SqliteTransaction transaction)
+    {
+        var ceiling = RequiredDecimal(transaction, ConfigKeys.GateMaxDelta, ConfigKeys.DeltaCeilingKeys);
+
+        var bands = ConfigKeys.PolicyBandCeilings
+            .Select(band => new PolicyBand(
+                band.Name,
+                decimal.Zero,
+                RequiredDecimal(transaction, band.Key, ConfigKeys.DeltaCeilingKeys)))
+            .ToList();
+
+        if (ConfigurationInvariants.CeilingNotInsidePolicyBand(ceiling, bands))
+        {
+            return;
+        }
+
+        var offending = ConfigurationInvariants.BandsTighterThanCeiling(ceiling, bands);
+
+        throw new InvalidOperationException(
+            $"'{ConfigKeys.GateMaxDelta}' of {ceiling} is tighter than "
+            + $"{string.Join(" and ", offending.Select(band => $"the {band.Name} band at {band.DeltaMax}"))}. "
+            + "The ceiling is an outer bound on catastrophe, not a strategy parameter, so a "
+            + "ceiling inside a policy band would silently override that policy rather than "
+            + "bound it [D-W23]. No row was written.");
+    }
+
+    private void CheckTrialBound(SqliteTransaction transaction)
+    {
+        var maxDte = RequiredInt(transaction, ConfigKeys.GateMaxDte, ConfigKeys.TrialBoundKeys);
+        var maxTrialDays = RequiredInt(transaction, ConfigKeys.TrialMaxTrialDays, ConfigKeys.TrialBoundKeys);
+
+        if (ConfigurationInvariants.MaxDteBelowTrialBound(maxDte, maxTrialDays))
+        {
+            return;
+        }
+
+        throw new InvalidOperationException(
+            $"'{ConfigKeys.GateMaxDte}' of {maxDte} is not below "
+            + $"'{ConfigKeys.TrialMaxTrialDays}' of {maxTrialDays}. An opening contract "
+            + "longer-dated than the trial bound would guarantee a forced close at market "
+            + "before its own expiry, making the trial's outcome an artefact of the bound "
+            + "rather than of the decision [D-W24]. No row was written.");
+    }
+
+    private decimal RequiredDecimal(SqliteTransaction transaction, string key, IReadOnlySet<string> needed) =>
+        ConfigValue.AsDecimal(Required(transaction, key, needed), key)!.Value;
+
+    private int RequiredInt(SqliteTransaction transaction, string key, IReadOnlySet<string> needed) =>
+        ConfigValue.AsInt(Required(transaction, key, needed), key)!.Value;
+
+    /// <summary>
+    /// The value a touched invariant needs, or a refusal naming what is missing.
+    /// </summary>
+    /// <remarks>
+    /// This is D-W34. Skipping the check when a key is absent would let it pass
+    /// vacuously until the last key landed, which is the state the enforcement
+    /// exists to prevent, so the write is refused instead of the check being
+    /// waived.
+    /// </remarks>
+    private string Required(SqliteTransaction transaction, string key, IReadOnlySet<string> needed)
+    {
+        var stored = ConfigRowQuery.ResolveCurrent(_connection, key, transaction);
+
+        if (stored is not null)
+        {
+            return stored;
+        }
+
+        throw new InvalidOperationException(
+            $"This write touches a cross-key invariant and '{key}' has no value, so the "
+            + "invariant cannot be evaluated. Every one of "
+            + $"{string.Join(", ", needed.Order(StringComparer.Ordinal))} must be present. "
+            + "Write them together: a check skipped for want of an operand passes vacuously "
+            + "until the last one lands, which is the state it exists to prevent [D-W34]. No "
+            + "row was written.");
     }
 
     /// <summary>

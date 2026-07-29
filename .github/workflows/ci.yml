@@ -17,9 +17,12 @@ jobs:
         with:
           dotnet-version: '10.0.x'
 
-      # Before the build, because a source guard must fail even when the build
-      # does not. The checks live in the script rather than here, so there is one
-      # definition of each and a developer can run the same thing locally.
+      # Before restore, so the checks report on a tree where nothing else can
+      # run. Not because an analyser cannot report when the build is broken: it
+      # can, measured, and it reports alongside a compile error. What it cannot
+      # survive is a failed restore, where none runs at all [D-W33]. The checks
+      # live in the script rather than here, so there is one definition of each
+      # and a developer can run the same thing locally.
       - name: Guards
         shell: pwsh
         run: ./guards.ps1

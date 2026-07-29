@@ -12,8 +12,10 @@ namespace OptionsWheelLab.Core.Configuration;
 /// later boot. A startup check would leave every later version unguarded and
 /// survives only as a backstop [D-W27].
 /// <para>
-/// The write path lands at Phase 0.8, which is where these are wired and where
-/// FX-ConfigWriteRefusesInvariantBreach demonstrates the refusal.
+/// Wired at 0.8, in <see cref="ConfigWriter"/> so every write is guarded rather
+/// than only the seed, with FX-ConfigWriteRefusesInvariantBreach demonstrating
+/// the refusal. <see cref="ConfigKeys"/> declares the key set each one needs,
+/// because a write leaving an invariant unevaluable is refused too [D-W34].
 /// </para>
 /// </remarks>
 public static class ConfigurationInvariants

@@ -1,6 +1,7 @@
 # BUILD_PLAN
 
-Build state: **Phase 0 in progress**. 0.1 to 0.7 built; 0.8 not started.
+Build state: **Phase 0 complete**. 0.1 to 0.8 built and signed off. Phase 1
+detail not written.
 
 ## How this document works
 
@@ -100,6 +101,10 @@ Definition of done for the phase: `dotnet test` green, `migrate.ps1` runs clean
 from empty, CI green on a fresh clone, every `app`-classed key in
 `CONFIG_REFERENCE.md` proven to bind, and no `rows`-classed key bound from
 `appsettings` [D-W27].
+
+**Met at 0.8**, item by item. The fourth item has been a standing check since
+0.4 and is a registered fixture from 0.8: FX-EveryAppKeyBinds walks the document
+and checks the types, where its mirror walks the types and checks the document.
 
 ### 0.1 Repository skeleton
 
@@ -492,17 +497,101 @@ now says that instead [D-W33].
 
 ### 0.8 Configuration values for the open parameters
 
-Set `MaxRolls` and `MaxTrialDays` [D-W14], and the divergence threshold and
-window [D-W20]. These are policy choices, deliberately not fixed in the design.
+**Ten keys carry an `Unset` marker, not four.** `MaxRolls` and `MaxTrialDays`
+[D-W14] and the divergence threshold and window [D-W20] are the four this section
+used to name. `CONFIG_REFERENCE.md` also marks all six `Gate:` keys unset with
+proposed values, and D-W22 to D-W25 each say "Phase 0.8 config". All ten are
+0.8's.
+
+**The seven `Policy:` keys are seeded too, and without them one invariant cannot
+be exercised at all.** They carry no value and no `Unset` marker, so a strict
+reading of "the unset keys" would leave them out — but D-W23 compares
+`Gate:MaxDelta` against every policy band, and the predicate passes vacuously
+against an empty band set. Their values come from `WORKED_EXAMPLE.md` §1 rather
+than from invention. `Policy:Random:Seed` is chosen and reported as chosen.
+
+**Provenance is judged per key, not per section.** `Policy:` was already split
+that way and `Costs:` was not.
+`Costs:CommissionPerContract` is seeded at the worked example's `0.65`, which
+§4's fills, §6.3's ledger and FX-TrialCompleteIncludesAssignment's total all
+depend on; its note says a real broker's rate replaces it by version + 1, which
+is what the versioned store is for. `Costs:FillPoint` is seeded at `bid`, fixed
+and not a tunable [D-W12], because a fixed value still has to be readable and a
+`rows` key never written cannot be resolved as-of at all.
+
+**What 0.8 deliberately does not set**, so the gap is not read as an omission:
+`Costs:AssignmentFee`, which no document states and where a zero inferred from an
+absent ledger line would be weaker than a stated number and invisible when wrong;
+and the three `Risk:` fractions, which are the operator's risk appetite [D-W11],
+an example's illustration of one account not being the operator setting one. Both
+are carried obligations rather than gaps.
+
+**Seeding is one transaction.** An invariant over two keys cannot be evaluated
+while only one exists, so a loop over `Append` either fails on the first key or
+passes vacuously until the last. Stated because that loop is the obvious
+implementation and is wrong in a way that passes.
 
 - **DoD**: values are recorded as config rows with a note explaining the choice,
-  and appear in `CONFIG_REFERENCE.md` with their consumer named.
-- **DoD**: the cross-key invariants are enforced at config-write time, and an
-  attempted insert violating either is refused with no row written [D-W23,
-  D-W24]. Implement the fixture registered against 0.8 in `FIXTURES.md`.
+  and appear in `CONFIG_REFERENCE.md` with their consumer **named**. Not
+  verified: every consumer is Phase 2 or later, so the `Unverified` markers stay.
+  A definition of done that reads as satisfiable and is not is 0.6's own failure.
+- **DoD**: the cross-key invariants are enforced at config-write time, on every
+  write rather than only on the seed, and an attempted insert violating either is
+  refused with no row written [D-W23, D-W24]. A write leaving an invariant
+  unevaluable is refused too [D-W34]. Implement the fixture registered against
+  0.8 in `FIXTURES.md`.
+- **DoD**: every check registered against 0.8 exists in its kind.
+- **DoD**: every key the sections this checkpoint introduces carry is bound and
+  verified. It introduces no new key, and the keys it sets are `rows`-classed and
+  so never bind, so the obligation is discharged with that reason rather than
+  empty.
+- **DoD, the phase's**: this is the last checkpoint, so nothing after it will
+  demonstrate the Phase 0 definition of done. Each item is run and its output
+  recorded: `dotnet test` green, `migrate.ps1` clean from empty, CI green on a
+  fresh clone, every `app`-classed key proven to bind, and no `rows`-classed key
+  bound from `appsettings` [D-W27].
 - **Note**: these values are expected to be revised. Because config rows are
   append-only and versioned, a revision inserts version + 1 and the old value
   stays readable, which is what lets a later behaviour change be explained.
+
+Reconciled at sign-off against what shipped. Five things were larger than the
+scope above, and the first two came out of the build rather than out of review.
+
+**§3.5 was wrong about the delta bands.** It said the makers select inside the
+same delta and expiry bands: true for expiry, false for delta, and
+`WORKED_EXAMPLE.md` §1 has said 0.20 to 0.30 against 0.10 to 0.35 since v1.0.0.
+Seeding the values a sentence describes is what found it, the same way building
+the thing that enforces a rule found three wrong citations at 0.7. It now also
+records the coupling the schema cannot: `Policy:Random:` carries no DTE keys
+because the random maker reads the baseline's window, and 0.8 is the checkpoint
+that makes a reader who would misread that absence exist.
+
+**D-W23's open clause is settled and closed.** The detail did not name it. The
+ceiling at 0.35 against 0.35 is argued from D-W4, a control drawing from a smaller
+opportunity set than the gate admits making a difference partly permission rather
+than judgement. The 0.10 floor is reported as inherited rather than argued,
+because that argument does not reach it and no measurement 0.8 can make does
+either.
+
+**The `app`-classed reverse direction is a registered fixture now.** The
+assertion is not new: it landed at 0.4 in a suite deliberately outside the
+registry, because a phase definition of done was held not to be a fixture. It is
+moved rather than copied into FX-EveryAppKeyBinds, so the phase's fourth item is
+discoverable from `FIXTURES.md`. What was genuinely missing is the sentence in
+`CONFIG_REFERENCE.md`: the paragraph declining the reverse check did not say
+which class it declined it for, so it read as complete while covering only
+`rows` keys, and has done since `Eodhd` bound at 0.2.
+
+**`seed.ps1` ships beside `migrate.ps1`.** Seeding wraps nothing, so the case for
+it was symmetry until it was measured: with `Storage__Path` unset the verb throws
+from `StoreLocation` with the right words under a stack trace, where the script
+refuses cleanly. Two steps of one setup sequence, and the second reporting the
+identical mistake worse than the first is what the script fixes.
+
+**The seed verb reports a refusal rather than raising one.** A refusal is a
+designed outcome of the verb, being what happens when the store already holds a
+value the entries contradict, and the messages name their decision and say no row
+was written. A stack trace above them buries the sentence the operator needs.
 
 ---
 
@@ -521,6 +610,8 @@ has aged.
 | Phase 3 | Establish output-level determinism: a simulated run with a fixed clock produces byte-identical output across two invocations. 0.5 restated it as identical stored rows because no run existed to make. Compared as produced artefacts, never as a database file [D-W28]. | PR #4 |
 | Phase 3 | Decide what bars nondeterminism in SQL that is not a clock. Enumerating the bundled SQLite showed `random()` and `randomblob()` alongside the seven clock functions; they are outside FX-ClockIsNotADateSource by name but would break a byte-identical run just as surely. | PR #4 |
 | Phase 1 | Decide whether effective-dating counts as append-only, for `watchlist_membership` (`left_on`), `positions` (`effective_to`) and `trials` (`closed_on`). §4.2 says rows are never deleted while a nullable close column makes a state change an update, so the schema and the rule disagree in three places for one reason. If append-only, a change is a new row and the tables join the vocabulary as flat entries; if not, the vocabulary needs per-table statement kinds it does not have today, and that shape is the cost of the decision rather than a reason to defer it. Raised at 0.7, where drawing the vocabulary made the disagreement visible; widened by PR #6's own report, which found the second and third instances. | PR #6 |
+| Phase 2 | Set the three `Risk:` fractions. 0.8 seeded nineteen rows-classed keys and left these because an equity-relative cap is the operator's risk appetite [D-W11], and the worked example illustrating one account is not the operator setting one. FX-GateRejectsAboveHeadroom needs them, so the phase that consumes them sets them. | PR #7 |
+| Phase 3 | Set `Costs:AssignmentFee`. No document states it, and zero inferred from an absent ledger line is weaker than a stated number and invisible when wrong. Phase 3's assignment path is the first thing that computes with it. | PR #7 |
 | Phase 2 | Decide whether the gate handles a crossed quote. 0.6's loader refuses bid above ask, which is the one domain rule it enforces, and that makes a crossed or locked market unwritable as a synthetic chain, so nothing can exercise the gate against one. D-W22's spread cap is a fraction of mid, so a crossed quote gives a negative numerator and passes a cap that exists to reject wide markets. If the gate handles it, the loader stops refusing it. | PR #5 |
 
 ---

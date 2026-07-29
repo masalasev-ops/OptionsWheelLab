@@ -3,8 +3,8 @@ using OptionsWheelLab.Core.Configuration;
 using OptionsWheelLab.Core.Time;
 using OptionsWheelLab.Worker;
 
-// The Worker is the sole writer to the store [D-W1], so the migrate verb lives
-// here rather than in a separate tool.
+// The Worker is the sole writer to the store [D-W1], so the migrate and seed
+// verbs live here rather than in a separate tool.
 var builder = Host.CreateApplicationBuilder(args);
 
 builder.Configuration.AddOptionsWheelLabConfiguration();
@@ -18,9 +18,15 @@ builder.Services.AddSingleton<IClock>(SystemClock.Instance);
 
 var host = builder.Build();
 
+// Two ifs rather than a dispatch table, which two verbs do not yet earn.
 if (args.Length > 0 && string.Equals(args[0], MigrateCommand.Verb, StringComparison.OrdinalIgnoreCase))
 {
     return MigrateCommand.Run(host.Services, Console.Out);
+}
+
+if (args.Length > 0 && string.Equals(args[0], SeedCommand.Verb, StringComparison.OrdinalIgnoreCase))
+{
+    return SeedCommand.Run(host.Services, Console.Out);
 }
 
 host.Run();

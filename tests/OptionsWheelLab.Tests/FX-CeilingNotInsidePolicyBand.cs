@@ -11,9 +11,10 @@ namespace OptionsWheelLab.Tests;
 /// ceiling sitting inside a policy band would silently override that policy
 /// rather than bound it [D-W23].
 /// <para>
-/// Values are supplied by the test. Both operands are config rows and are unset
-/// until Phase 0.8, and enforcement is at config-write time rather than startup
-/// [D-W27], so nothing here reads configuration.
+/// Values are supplied by the test, so nothing here reads configuration. Both
+/// operands are config rows, seeded at 0.8, and enforcement is at config-write
+/// time rather than startup [D-W27]. That the refusal actually happens is
+/// FX-ConfigWriteRefusesInvariantBreach's; this covers the predicate alone.
 /// </para>
 /// </remarks>
 public sealed class FX_CeilingNotInsidePolicyBand

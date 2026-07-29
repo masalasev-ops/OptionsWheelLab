@@ -3,8 +3,11 @@
 A paper-trading laboratory that studies whether a decision-maker's decisions
 improve over time, using the options wheel as its task environment.
 
-Corpus version 1.13.0. The corpus was regenerated from scratch at v1.0.0 on
+Corpus version 1.15.0. The corpus was regenerated from scratch at v1.0.0 on
 2026-07-26, superseding the lost v0.1 entirely.
+
+Phase 0 is complete. The repository compiles, tests, migrates and seeds its
+configuration, and holds no market data and no domain logic.
 
 ## What this lab is not
 
@@ -32,7 +35,8 @@ Read these when you need them:
 - `DECISIONS.md` — the numbered register. Looked up, not read start to finish.
 - `VALIDITY.md` — what the lab claims, what would falsify it, what it cannot test.
 - `DATA_AND_SCHEMA.md` — the data contract and the store.
-- `BUILD_PLAN.md` — phase map plus detail for the phase in progress.
+- `BUILD_PLAN.md` — phase map plus detail for the phase in progress, and the
+  reconciled detail of every checkpoint already signed off.
 - `FIXTURES.md` — the single registry of test fixtures.
 - `CONFIG_REFERENCE.md` — every configuration key and its verified consumer.
 - `CLAUDE.md` — rules for agents working in this repo.

@@ -1,5 +1,116 @@
 # CHANGELOG
 
+## [1.15.0] — 2026-07-29
+
+Checkpoint 0.8 signed off, and with it Phase 0.
+
+### Added
+- Nineteen of the twenty-three `rows`-classed keys carry a value, written at
+  version 1 in one transaction. Provenance is stated per key in
+  `CONFIG_REFERENCE.md` and is three kinds: the six `Gate:` keys are the values
+  their decisions proposed [D-W22 to D-W25]; the seven `Policy:` keys,
+  `Costs:CommissionPerContract` and `Costs:FillPoint` are transcribed from
+  `WORKED_EXAMPLE.md` §1; `Trial:MaxRolls`, `Trial:MaxTrialDays` and the two
+  `Scoring:` keys are judged. `Trial:MaxTrialDays` at 120 is the least free of the
+  four: D-W24 puts it above `Gate:MaxDte`, and the worked example's own trial runs
+  109 days, so a lower bound would force-close that trial before its third expiry
+  and make its stated total unreachable. The two `Scoring:` values are constrained
+  by nothing in this corpus and are recorded as free judgement rather than left to
+  look derived.
+- Fixture FX-EveryAppKeyBinds (0.8): every `app`-classed row in
+  `CONFIG_REFERENCE.md` has a bound settable property on a registered options
+  type. The mirror of FX-EveryBoundKeyIsDocumented, which walks the types and
+  checks the document, where this walks the document and checks the types.
+  **The assertion is not new.** It landed at 0.4 in a suite deliberately outside
+  the registry, because a phase definition of done was held not to be a fixture.
+  Registering it makes it discoverable from `FIXTURES.md` rather than only from
+  the file it lived in, and it is moved rather than copied: two tests asserting
+  one thing with two failure messages is how a fact kept in two places drifts.
+- `seed.ps1`, beside `migrate.ps1`. The case for it was symmetry until it was
+  measured: with `Storage__Path` unset the verb throws from `StoreLocation` with
+  the right words under a stack trace, where the script refuses cleanly. Two steps
+  of one setup sequence, and the second reporting the identical mistake worse than
+  the first is what it fixes.
+
+### Changed
+- D-W23's proposed 0.35 for `Gate:MaxDelta` is chosen rather than inherited. The
+  ceiling is argued from D-W4: a control drawing from a smaller opportunity set
+  than the gate admits would make a difference between it and the learner partly
+  permission rather than judgement. The 0.10 floor is a separate question the same
+  argument does not reach, and is recorded as inherited from `WORKED_EXAMPLE.md`
+  §1 rather than argued.
+- `CONFIG_REFERENCE.md` says the store is the authority on what is in force. A
+  value in the Notes column is version 1 and the reason for it; a revision inserts
+  version + 1 and does not edit the document, so a value the store has since
+  revised is history rather than a contradiction.
+- `BUILD_PLAN.md`'s build-state marker says Phase 0 is complete. The first time
+  this corpus says a phase is done.
+
+### Fixed
+- D-W23 carried an `Open, and to be settled at Phase 0.8` clause and 0.8 settled
+  it. Leaving it open after the checkpoint that answers it is the stale-corpus
+  failure this project keeps correcting.
+- `CONFIG_REFERENCE.md` declined a standing check on the reverse binding
+  direction because most keys are deliberately unbound until their own phase. That
+  reasoning covers `rows` keys and has not reached `app` keys since `Eodhd` bound
+  at 0.2, an `app` key being bound from `appsettings` by definition. The paragraph
+  now says which class it speaks for and names the check that covers the other. It
+  had been half wrong for six checkpoints and read as complete, because a
+  paragraph declining a check does not say which keys it is declining it for.
+
+## [1.14.0] — 2026-07-29
+
+### Added
+- D-W34: a write that makes a cross-key invariant unevaluable is refused. An
+  invariant over two keys cannot be evaluated while only one exists, so skipping
+  the check passes vacuously until the last key lands, which is the state the
+  enforcement exists to prevent. Its consequence is the mechanism rather than a
+  side effect: neither `Gate:MaxDte` nor `Trial:MaxTrialDays` can be written
+  alone, so the pair is atomic by the write path rather than by the seeder's
+  discipline. Scoped so a write touching no invariant key is still permitted into
+  an empty store.
+- D-W34 added to the Data and identity line of the topical index.
+- Two carried obligations for the four `rows`-classed keys 0.8 leaves unset. Two
+  rows rather than one, because the reasons and the consumers differ: the risk
+  fractions are withheld on authority [D-W11] and are owed at Phase 2, which
+  consumes them; the assignment fee is withheld for want of any statement and is
+  owed at Phase 3, whose assignment path first computes with it. Leaving a key
+  unseeded and leaving it unscheduled are different, and only the first was
+  deliberate.
+
+### Changed
+- `BUILD_PLAN.md` 0.8 names ten unset keys rather than four. It named the two
+  `Trial:` and two `Scoring:` keys, while `CONFIG_REFERENCE.md` and D-W22 to
+  D-W25 assign the six `Gate:` keys to Phase 0.8 as well. The two documents
+  disagreed and the checkpoint detail was the one that was wrong.
+- `BUILD_PLAN.md` 0.8 records that the seven `Policy:` keys are seeded too. They
+  carry no unset marker, so a strict reading would leave them out, and without
+  them D-W23's invariant cannot be exercised at all: the predicate passes
+  vacuously against an empty band set.
+- `BUILD_PLAN.md` 0.8 states that provenance is judged per key rather than per
+  section, which is what `Policy:` already was and `Costs:` was not.
+- `BUILD_PLAN.md` 0.8's first definition of done says the consumer is **named**
+  rather than verified. Every consumer is Phase 2 or later, so a definition of
+  done reading as satisfiable at 0.8 was not.
+- `BUILD_PLAN.md` 0.8 carries the Phase 0 definition of done, this being the last
+  checkpoint and nothing after it being left to demonstrate the phase's.
+- `SYSTEM_DESIGN.md` §8 is rewritten. Its subject closes at 0.8, so a section
+  describing an openness that has ended is replaced by one naming what is now in
+  force, where the provenance is recorded, and which four keys are owed rather
+  than open.
+
+### Fixed
+- `SYSTEM_DESIGN.md` §3.5 said the makers select inside the same delta and expiry
+  bands. That is true for expiry and false for delta: `WORKED_EXAMPLE.md` §1 has
+  said 0.20 to 0.30 against 0.10 to 0.35 since v1.0.0, so the two have never
+  shared a delta band. Found by seeding the values the sentence describes. It now
+  also records the coupling the schema does not, that `Policy:Random:` carries no
+  DTE keys because the random maker reads the baseline's window, which a reader of
+  `CONFIG_REFERENCE.md` alone would take for an omission.
+- `SYSTEM_DESIGN.md` §8 was loose before 0.8 made it false. It said "two values"
+  while naming four keys, the roll bounds being two and the divergence threshold
+  and window being two, and omitted the six gate constraints entirely.
+
 ## [1.13.0] — 2026-07-29
 
 ### Added

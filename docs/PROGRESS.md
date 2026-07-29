@@ -4,8 +4,8 @@ Appended to, never rewritten. The repository is the authority on build state.
 
 ## Current state
 
-**Phase 0 in progress.** Checkpoints 0.1 to 0.7 built. 0.8 not started.
-The documentation corpus is at v1.13.0.
+**Phase 0 complete.** Checkpoints 0.1 to 0.8 built and signed off. Phase 1
+detail not written. The documentation corpus is at v1.15.0.
 
 ## Log
 
@@ -394,3 +394,69 @@ so "one mechanism serving four" did not survive contact with what the four are.
 The obligation is closed with a no-change answer rather than left to lapse, and
 the topical index gains a Verification mechanisms line, the six existing ones
 being about the experiment rather than about how the repository checks itself.
+
+### 2026-07-29 — corpus v1.14.0
+Checkpoint 0.8 scoped, the last of Phase 0. Its detail named four unset keys and
+measuring found ten: `CONFIG_REFERENCE.md` marks all six `Gate:` keys unset with
+proposed values and D-W22 to D-W25 each assign them to Phase 0.8, so the two
+documents disagreed and the checkpoint detail was the one that was wrong.
+
+The seven `Policy:` keys are seeded too, though they carry no unset marker,
+because without them D-W23's invariant cannot be exercised at all: the predicate
+passes vacuously against an empty band set, which the fixture that has asserted
+it since 0.2 already documents.
+
+D-W34 makes that vacuity unreachable. A write touching a key one of the
+invariants needs, and leaving the store without the rest of them, is refused. The
+consequence is the mechanism: `Gate:MaxDte` and `Trial:MaxTrialDays` cannot be
+written apart, so the pair is atomic by the write path rather than by the
+seeder's discipline, and every later phase that writes configuration inherits
+that without knowing to reproduce it.
+
+Provenance is judged per key rather than per section, which `Policy:` already was
+and `Costs:` was not. Four keys are left unset and both are owed rather than
+open, since leaving a key unseeded and leaving it unscheduled are different
+things and only the first was deliberate.
+
+§3.5 said the makers select inside the same delta and expiry bands. True for
+expiry, false for delta, and the worked example has said so since v1.0.0. Found
+by seeding the values the sentence describes.
+
+### 2026-07-29 — corpus v1.15.0
+Checkpoint 0.8 built and signed off, and with it **Phase 0**. Nineteen of the
+twenty-three `rows`-classed keys carry a value at version 1, the two cross-key
+invariants are enforced in `ConfigWriter` on every write, a `seed` verb and
+`seed.ps1` write them, and FX-ConfigWriteRefusesInvariantBreach and
+FX-EveryAppKeyBinds are registered against 0.8. 264 tests.
+
+The invariants had been pure predicates with no caller since 0.2. They are wired
+in the writer rather than in the seeder, because the seeder is one caller and
+`Append` would have stayed an unguarded path, and because D-W23, D-W24 and D-W27
+all put enforcement at the moment a version is written precisely so that later
+versions are guarded too.
+
+D-W23's open clause is closed. The ceiling at 0.35 is chosen, argued from D-W4:
+a control drawing from a smaller opportunity set than the gate admits would make
+a difference between it and the learner partly permission rather than judgement.
+The 0.10 floor is a separate question that argument does not reach, and is
+recorded as inherited rather than argued. Two provenances for two bounds of one
+band, which is what judging provenance per key means when it is applied.
+
+The `app`-classed reverse direction is a registered fixture now, and the
+assertion behind it is not new: it landed at 0.4 outside the registry, because a
+phase definition of done was held not to be a fixture. It moves into
+FX-EveryAppKeyBinds rather than being copied there. What was genuinely missing
+was in `CONFIG_REFERENCE.md`, whose paragraph declining the reverse check did not
+say which class it declined it for, so it read as complete while covering `rows`
+keys only, and had done since `Eodhd` bound at 0.2. A finding reported at 0.8
+said the check itself was absent; that was asserted from the fixture files
+without reading the unregistered suites, and it was wrong.
+
+`seed.ps1` ships for a reason that had to be measured rather than assumed. With
+`Storage__Path` unset, `migrate.ps1` refuses cleanly and the bare verb throws the
+same words under a stack trace. Two steps of one setup sequence, the second
+reporting the identical mistake worse than the first.
+
+Phase 0 delivers a repository that compiles, tests, migrates and runs
+deterministically, with no market data and no domain logic, which is what it said
+it would deliver.
