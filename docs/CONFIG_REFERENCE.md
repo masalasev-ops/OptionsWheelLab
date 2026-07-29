@@ -30,11 +30,19 @@ anything parsing this document, and a suffix-only second token is not a key
 path at all. Keys that constrain each other say so in their Notes instead.
 
 The reverse direction, a documented key that nothing binds, is not a standing
-check. Most keys here are documented and deliberately unbound until their own
-phase, so a standing assertion would fire on all of them. It is a definition of
-done on each checkpoint instead: a checkpoint is not done until every key its
-sections introduce is bound and verified. Same shape as the two directions of
-`FIXTURES.md` rule 2, and for the same reason.
+check **for `rows` keys**. Most of those are documented and deliberately unbound
+until their own phase, so a standing assertion would fire on all of them. It is a
+definition of done on each checkpoint instead: a checkpoint is not done until
+every key its sections introduce is bound and verified. Same shape as the two
+directions of `FIXTURES.md` rule 2, and for the same reason.
+
+That reasoning does not reach an `app` key. An `app` key is bound from
+`appsettings` by definition, so one that binds to nothing is a key an operator
+can set and nothing will read, which is a defect today rather than a future
+phase's work. **FX-EveryAppKeyBinds checks that direction**, and it is the mirror
+of FX-EveryBoundKeyIsDocumented: one walks the types and checks this document,
+the other walks this document and checks the types. Between them the loop closes
+for `app` keys.
 
 Config rows are append-only and versioned; current is `MAX(version)` for a key. A revision inserts version + 1 and the old value stays readable, which is
 what lets a later behaviour change be explained after the fact.
