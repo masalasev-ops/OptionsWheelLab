@@ -123,9 +123,15 @@ separate ledgers [D-W4].
 The **frozen baseline** implements a fixed policy that never changes for the life
 of the experiment. It is the yardstick.
 
-The **random-within-band** maker selects uniformly among candidates inside the
-same delta and expiry bands. It separates selection skill from the return to
-simply being short volatility.
+The **random-within-band** maker selects uniformly among candidates in the frozen
+baseline's expiry window, over a delta band of its own that is wider than the
+baseline's and spans what the gate admits. It separates selection skill from the
+return to simply being short volatility, which it can only do if it is not itself
+constrained by a band someone chose.
+
+`Policy:Random:` therefore carries no DTE keys: the random maker reads the
+baseline's window. A reader of `CONFIG_REFERENCE.md` alone would take their
+absence for an omission.
 
 The **learner** acts from its current policy rows and is the subject of the
 experiment.
@@ -307,9 +313,17 @@ early exercise, and roll-cap cases can be constructed deliberately rather than
 waited for. The subscription clock and the evidence clock are the same clock, so
 paying before Phase 8 buys nothing.
 
-## 8. Open parameters
+## 8. Open parameters, closed at 0.8
 
-Two values are deliberately unset and belong in Phase 0 configuration rather than
-in this design: the roll bounds in [D-W14], and the fast-slow divergence
-threshold and window in [D-W20]. They are policy, and setting them here would
-disguise a parameter choice as a design decision.
+The roll bounds [D-W14], the divergence threshold and window [D-W20] and the six
+gate constraints [D-W22 to D-W25] were left unset in this document deliberately,
+because setting a policy value in a design disguises a parameter choice as a
+design decision. They are config rows now. `CONFIG_REFERENCE.md` states what is
+in force and `CHANGELOG.md` at v1.14.0 records the provenance of each, which is
+three kinds: transcribed from a corpus statement, taken from a proposed value in
+a decision, or judged.
+
+Four rows-classed keys remain unset, and they are owed rather than open. The
+three risk fractions are the operator's [D-W11] and the assignment fee has no
+statement anywhere. Both are carried obligations against the phase that first
+consumes them.

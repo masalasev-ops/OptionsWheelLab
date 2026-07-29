@@ -5,7 +5,7 @@ Appended to, never rewritten. The repository is the authority on build state.
 ## Current state
 
 **Phase 0 in progress.** Checkpoints 0.1 to 0.7 built. 0.8 not started.
-The documentation corpus is at v1.13.0.
+The documentation corpus is at v1.14.0.
 
 ## Log
 
@@ -394,3 +394,30 @@ so "one mechanism serving four" did not survive contact with what the four are.
 The obligation is closed with a no-change answer rather than left to lapse, and
 the topical index gains a Verification mechanisms line, the six existing ones
 being about the experiment rather than about how the repository checks itself.
+
+### 2026-07-29 — corpus v1.14.0
+Checkpoint 0.8 scoped, the last of Phase 0. Its detail named four unset keys and
+measuring found ten: `CONFIG_REFERENCE.md` marks all six `Gate:` keys unset with
+proposed values and D-W22 to D-W25 each assign them to Phase 0.8, so the two
+documents disagreed and the checkpoint detail was the one that was wrong.
+
+The seven `Policy:` keys are seeded too, though they carry no unset marker,
+because without them D-W23's invariant cannot be exercised at all: the predicate
+passes vacuously against an empty band set, which the fixture that has asserted
+it since 0.2 already documents.
+
+D-W34 makes that vacuity unreachable. A write touching a key one of the
+invariants needs, and leaving the store without the rest of them, is refused. The
+consequence is the mechanism: `Gate:MaxDte` and `Trial:MaxTrialDays` cannot be
+written apart, so the pair is atomic by the write path rather than by the
+seeder's discipline, and every later phase that writes configuration inherits
+that without knowing to reproduce it.
+
+Provenance is judged per key rather than per section, which `Policy:` already was
+and `Costs:` was not. Four keys are left unset and both are owed rather than
+open, since leaving a key unseeded and leaving it unscheduled are different
+things and only the first was deliberate.
+
+§3.5 said the makers select inside the same delta and expiry bands. True for
+expiry, false for delta, and the worked example has said so since v1.0.0. Found
+by seeding the values the sentence describes.

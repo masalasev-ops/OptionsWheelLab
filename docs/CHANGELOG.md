@@ -1,5 +1,58 @@
 # CHANGELOG
 
+## [1.14.0] — 2026-07-29
+
+### Added
+- D-W34: a write that makes a cross-key invariant unevaluable is refused. An
+  invariant over two keys cannot be evaluated while only one exists, so skipping
+  the check passes vacuously until the last key lands, which is the state the
+  enforcement exists to prevent. Its consequence is the mechanism rather than a
+  side effect: neither `Gate:MaxDte` nor `Trial:MaxTrialDays` can be written
+  alone, so the pair is atomic by the write path rather than by the seeder's
+  discipline. Scoped so a write touching no invariant key is still permitted into
+  an empty store.
+- D-W34 added to the Data and identity line of the topical index.
+- Two carried obligations for the four `rows`-classed keys 0.8 leaves unset. Two
+  rows rather than one, because the reasons and the consumers differ: the risk
+  fractions are withheld on authority [D-W11] and are owed at Phase 2, which
+  consumes them; the assignment fee is withheld for want of any statement and is
+  owed at Phase 3, whose assignment path first computes with it. Leaving a key
+  unseeded and leaving it unscheduled are different, and only the first was
+  deliberate.
+
+### Changed
+- `BUILD_PLAN.md` 0.8 names ten unset keys rather than four. It named the two
+  `Trial:` and two `Scoring:` keys, while `CONFIG_REFERENCE.md` and D-W22 to
+  D-W25 assign the six `Gate:` keys to Phase 0.8 as well. The two documents
+  disagreed and the checkpoint detail was the one that was wrong.
+- `BUILD_PLAN.md` 0.8 records that the seven `Policy:` keys are seeded too. They
+  carry no unset marker, so a strict reading would leave them out, and without
+  them D-W23's invariant cannot be exercised at all: the predicate passes
+  vacuously against an empty band set.
+- `BUILD_PLAN.md` 0.8 states that provenance is judged per key rather than per
+  section, which is what `Policy:` already was and `Costs:` was not.
+- `BUILD_PLAN.md` 0.8's first definition of done says the consumer is **named**
+  rather than verified. Every consumer is Phase 2 or later, so a definition of
+  done reading as satisfiable at 0.8 was not.
+- `BUILD_PLAN.md` 0.8 carries the Phase 0 definition of done, this being the last
+  checkpoint and nothing after it being left to demonstrate the phase's.
+- `SYSTEM_DESIGN.md` §8 is rewritten. Its subject closes at 0.8, so a section
+  describing an openness that has ended is replaced by one naming what is now in
+  force, where the provenance is recorded, and which four keys are owed rather
+  than open.
+
+### Fixed
+- `SYSTEM_DESIGN.md` §3.5 said the makers select inside the same delta and expiry
+  bands. That is true for expiry and false for delta: `WORKED_EXAMPLE.md` §1 has
+  said 0.20 to 0.30 against 0.10 to 0.35 since v1.0.0, so the two have never
+  shared a delta band. Found by seeding the values the sentence describes. It now
+  also records the coupling the schema does not, that `Policy:Random:` carries no
+  DTE keys because the random maker reads the baseline's window, which a reader of
+  `CONFIG_REFERENCE.md` alone would take for an omission.
+- `SYSTEM_DESIGN.md` §8 was loose before 0.8 made it false. It said "two values"
+  while naming four keys, the roll bounds being two and the divergence threshold
+  and window being two, and omitted the six gate constraints entirely.
+
 ## [1.13.0] — 2026-07-29
 
 ### Added

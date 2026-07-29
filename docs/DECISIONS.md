@@ -16,7 +16,7 @@ predates this file and cannot be relied on.
 
 **Purpose and measurement**: D-W2, D-W3, D-W5, D-W17, D-W18, D-W20, D-W21
 **Isolation and controls**: D-W1, D-W4, D-W6, D-W13
-**Data and identity**: D-W7, D-W8, D-W9, D-W15, D-W26, D-W27, D-W28, D-W29, D-W30, D-W31, D-W32
+**Data and identity**: D-W7, D-W8, D-W9, D-W15, D-W26, D-W27, D-W28, D-W29, D-W30, D-W31, D-W32, D-W34
 **Risk**: D-W10, D-W11, D-W14, D-W19, D-W23, D-W25
 **Gate constraints**: D-W10, D-W22, D-W23, D-W24, D-W25
 **Scope**: D-W12, D-W16
@@ -762,3 +762,33 @@ What would reopen this. The floating-point guard's blind spot is real and
 unclosed: a `double` reached through inference is invisible to every mechanism
 here. If that becomes a live defect rather than a documented gap, the comparison
 changes for the check that has it and not for the other three.
+
+---
+
+### D-W34 A write that makes an invariant unevaluable is refused
+`active` · 2026-07-29
+
+A configuration write is refused when it touches a key belonging to a cross-key
+invariant and the store would not then hold every key that invariant needs. A
+write touching no such key is permitted regardless of what else is absent.
+
+Rationale. An invariant over two keys cannot be evaluated while only one exists,
+so a rule that simply skips the check passes vacuously until the last key lands,
+which is the state the enforcement exists to prevent. The alternative is to make
+seeding atomic and rely on that, but then the protection belongs to the seeder
+rather than to the write path, and every later phase that writes configuration
+would have to know to reproduce it. Make it unwritable rather than detectable.
+
+**Consequence, and it is the point.** Neither `Gate:MaxDte` nor
+`Trial:MaxTrialDays` can be written alone, since either alone leaves D-W24
+unevaluable and touches its keys. The pair is therefore atomic by the write path
+rather than by the seeder's discipline. The same holds for `Gate:MaxDelta` and
+the policy bands under D-W23.
+
+Scoped narrowly on purpose. A write touching no invariant key is permitted into
+an empty store, so a store can be built up in any order that does not split a
+pair. Refusing every write while any invariant is unevaluable would block an
+unrelated key for a reason that has nothing to do with it.
+
+Test FX-ConfigWriteRefusesInvariantBreach: extended to cover the unevaluable
+case, not only the violating one.
