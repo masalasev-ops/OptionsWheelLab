@@ -1,0 +1,57 @@
+// The chain and the underlying's path from WORKED_EXAMPLE.md, sections 2 and 5.
+//
+// This is the acceptance case for the loader. It is transcribed from the
+// document rather than invented, and FX-WorkedExampleChainLoads parses those two
+// tables and compares, so a revision to the example fails the suite and names
+// the value that moved rather than letting this file drift quietly.
+//
+// WDGT is not a real ticker, deliberately, so that nobody mistakes any of this
+// for a backtest.
+//
+// Every value is quoted, including the numbers. An unquoted JSON number binds to
+// a double and no guard in this repository can see it.
+{
+  "symbol": "WDGT",
+
+  // Section 5, "What the underlying did". Closes only; the document states no
+  // open, high, low or volume, and a zero would be a false observation rather
+  // than a missing one.
+  "bars": [
+    { "date": "2026-03-02", "close": "52.40" }, // trial opens
+    { "date": "2026-04-08", "close": "45.80" }, // low of the trial window
+    { "date": "2026-04-17", "close": "48.90" }, // first expiry
+    { "date": "2026-04-20", "close": "48.95" }, // covered call sold
+    { "date": "2026-05-15", "close": "51.20" }, // second expiry
+    { "date": "2026-05-18", "close": "51.30" }, // second covered call sold
+    { "date": "2026-06-19", "close": "53.40" }  // third expiry
+  ],
+
+  // Section 2, "The chain snapshot". The underlying's close on this date is not
+  // repeated here: the bar above carries it, and a fact kept in two places
+  // drifts.
+  //
+  // The "Committed if 1 contract" column of that table is derived, being strike
+  // times the multiplier, so it is not an observation and is not carried.
+  "chains": [
+    {
+      "date": "2026-03-02",
+      "contracts": [
+        {
+          "expiry": "2026-04-17",
+          "right": "put",
+
+          // Delta carries the sign section 2 states. Sections 1 and 4 quote the
+          // same quantity unsigned, and whether the ceiling compares magnitude
+          // is Phase 2's to settle.
+          "quotes": [
+            { "strike": "45.00", "delta": "-0.10", "bid": "0.30", "ask": "0.36" },
+            { "strike": "47.50", "delta": "-0.16", "bid": "0.55", "ask": "0.62" },
+            { "strike": "50.00", "delta": "-0.24", "bid": "0.95", "ask": "1.05" },
+            { "strike": "52.50", "delta": "-0.44", "bid": "2.05", "ask": "2.20" },
+            { "strike": "55.00", "delta": "-0.62", "bid": "3.60", "ask": "3.85" }
+          ]
+        }
+      ]
+    }
+  ]
+}

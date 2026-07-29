@@ -46,6 +46,23 @@ internal static class RepoRoot
         Path.Combine(Location, "docs", "DATA_AND_SCHEMA.md");
 
     /// <summary>
+    /// The worked example, which is the oracle for the synthetic chain that was
+    /// transcribed from it.
+    /// </summary>
+    internal static string WorkedExamplePath =>
+        Path.Combine(Location, "docs", "WORKED_EXAMPLE.md");
+
+    /// <summary>
+    /// Hand-written synthetic chains [D-W31]. Beside `src/` and `docs/` rather
+    /// than inside the test project, because phases 1 to 7 consume them and the
+    /// Worker cannot reach test-project content.
+    /// </summary>
+    internal static string SyntheticPath => Path.Combine(Location, "synthetic");
+
+    internal static string WorkedExampleChainPath =>
+        Path.Combine(SyntheticPath, "worked-example.json");
+
+    /// <summary>
     /// Every committed C# file under a directory, with build output excluded.
     /// </summary>
     /// <remarks>
