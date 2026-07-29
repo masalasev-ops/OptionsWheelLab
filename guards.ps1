@@ -4,12 +4,26 @@
 
 .DESCRIPTION
     Checks that must hold over the source text rather than over behaviour, and
-    that must fail even when the build does not. CI calls this script rather
-    than restating the checks, so there is one definition of each.
+    that report even when nothing else can. CI calls this script rather than
+    restating the checks, so there is one definition of each.
+
+    "EVEN WHEN THE BUILD DOES NOT" WAS IMPRECISE, and 0.7 measured it. A Roslyn
+    analyser DOES still report when the compilation has errors elsewhere: a
+    probe with a violation in one file and a type error in another reported both.
+    What it cannot survive is a failed restore, where no analyser runs at all and
+    only the NuGet error appears. This script runs before restore, so the
+    property it actually has is that it reports when restore does not succeed.
 
     Today it holds two: no floating point in the tree [CLAUDE.md 2, D-W29], and
     no ambient clock call outside the clock implementation [CLAUDE.md 2, D-W30].
-    The append-only guards at 0.7 belong here too.
+
+    THE APPEND-ONLY CHECK IS NOT HERE, and this is structural rather than a
+    choice. Remove-NonCode strips raw string literals, every SQL statement in
+    this repository lives in one, and a pattern added below would therefore
+    match nothing in the tree by construction -- the third self-test proves it,
+    since its sample's BEFORE UPDATE ON sits inside a raw string and only the
+    line after it survives. FX-NoRewriteOfAppendOnlyTables is a fixture for the
+    same reason FX-NoDecimalOrderingInSql is.
 
     EACH CHECK IS NAMED, and the name is its row in FIXTURES.md, where its Kind
     is `guard`. FX-RegistryMatchesDisk asserts both directions: a check here with
@@ -21,9 +35,12 @@
     numbers carries none of the tokens below and passes, as does System.Text.Json
     binding a vendor number into an untyped tree. Anyone reading a green run as
     proof that no floating point reaches a monetary path is wrong. The mechanism
-    that would see those is a Roslyn analyser, which is raised for 0.7, where
-    three guards exist and one mechanism serving all of them can be compared
-    concretely.
+    that would see those is a Roslyn analyser, and 0.7 made the comparison it was
+    deferred for: of the four checks this repository has, an analyser would gain
+    this one and only this one. The two SQL checks are SQL-parsing problems, so
+    an analyser hands back the same string literal a fixture already gets, and
+    the clock check gains only alias resolution. The decision lands with 0.7's
+    sign-off; until it does, this remains the one documented gap.
 
     IT READS *.cs UNDER src AND tests, AND NOTHING ELSE. No .ps1 is scanned,
     including this one and migrate.ps1. That is correct rather than incidental:
