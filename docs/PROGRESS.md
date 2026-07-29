@@ -5,7 +5,7 @@ Appended to, never rewritten. The repository is the authority on build state.
 ## Current state
 
 **Phase 0 in progress.** Checkpoints 0.1 to 0.5 built. 0.6 onward not started.
-The documentation corpus is at v1.10.0.
+The documentation corpus is at v1.11.0.
 
 ## Log
 
@@ -297,3 +297,27 @@ largest single cause was one conflict: a registered check that had to be a scrip
 rather than a file. That is why `BUILD_PLAN.md` now says a checkpoint's detail
 names everything the checkpoint ships, including corrections nothing in it
 caused, and why 0.5's detail carries a section listing them.
+
+### 2026-07-29 — corpus v1.11.0
+Checkpoint 0.6 scoped. D-W31 states that a synthetic chain is authored by a
+person and that the format optimises for being written and read by hand, paying
+for it in loading cost. That settles the open question at 0.6 in favour of a
+domain shape, and the deciding argument is not readability: the fields a
+schema-mirroring row repeats are three of the four that make up contract
+identity, so a hand-typo would mint a different contract rather than fail.
+
+The decision states what the format optimises for rather than what the format is,
+so a later phase changing the format supersedes nothing while a later phase
+changing the property has something to supersede.
+
+Hand-written chains live in `synthetic/` at the repository root. `README.md` now
+says the corpus rule governs documents only, since code, spent prompts and
+synthetic chains are none of them. The directory is not called `fixtures/`,
+because 0.5 established that a fixture is a registry entry and a `fixtures/`
+directory holding no `FX-*.cs` would undo that.
+
+One obligation is carried to Phase 2. The loader refuses a quote whose bid
+exceeds its ask, which is the single domain rule it enforces, and that makes a
+crossed or locked market unwritable as a synthetic chain. Nothing can then
+exercise the gate against one, which is a hole in D-W31's own premise that
+deliberate cases are writable.

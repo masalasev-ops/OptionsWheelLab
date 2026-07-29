@@ -3,7 +3,7 @@
 A paper-trading laboratory that studies whether a decision-maker's decisions
 improve over time, using the options wheel as its task environment.
 
-Corpus version 1.10.0. The corpus was regenerated from scratch at v1.0.0 on
+Corpus version 1.11.0. The corpus was regenerated from scratch at v1.0.0 on
 2026-07-26, superseding the lost v0.1 entirely.
 
 ## What this lab is not
@@ -48,6 +48,10 @@ These track state and are appended to, never rewritten:
 The repository root holds `README.md` and `CLAUDE.md` only. Every other
 document in this corpus lives in `docs/`. One rule, so anything resolving a
 corpus path needs to know one thing rather than a list of exceptions.
+
+That rule governs the corpus. Code lives in `src/` and `tests/`, spent prompts in
+`prompts/`, and hand-written synthetic chains in `synthetic/`. None of those are
+documents and none belong in `docs/`.
 
 ## Corpus rules
 
