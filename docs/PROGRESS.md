@@ -473,3 +473,9 @@ will read the table and not the banner.
 Carried obligations said it holds work deferred out of a checkpoint, which is why
 a corpus-raised obligation had nowhere to go. It admits both origins now, and the
 Raised column carries a corpus version where there is no pull request to name.
+
+The changelog now says why there is no 1.9.0, above the 1.9.1 heading where a
+reader meeting the gap is looking. That note was proposed at 0.5 and not applied,
+and four days later the clause raising this obligation cited v1.9.0 as the version
+that created the table. An unexplained gap is not inert: it reads as a missing
+entry, and a missing entry gets guessed at.
