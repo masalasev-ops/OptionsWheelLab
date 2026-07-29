@@ -51,6 +51,12 @@ public sealed class StoreConnectionFactory
             Mode = access == StoreAccess.Write
                 ? SqliteOpenMode.ReadWriteCreate
                 : SqliteOpenMode.ReadOnly,
+
+            // Load-bearing on Windows, not a default worth tidying. With pooling
+            // on, the native file handle outlives Dispose, so the snapshot copy
+            // and the temp-store teardown fail on a locked file. The cost is a
+            // fresh handle per connection, which is the thing that looks
+            // attractive to remove when ingest throughput first matters.
             Pooling = false,
         };
 

@@ -17,12 +17,12 @@ description of the present until that file exists, so it is still corrected.
 
 # Current state
 
-Corpus v1.15.1.
+Corpus v1.16.0.
 
 | | |
 |---|---|
-| Phase 0 | complete, 0.1 to 0.8 built and signed off |
-| CI | green, 262 tests, guards then restore then build then test, on push to `main` and every pull request |
+| Phase 0 | complete and reviewed, 0.1 to 0.8 built and signed off |
+| CI | green, 268 tests, guards then restore then build then test, on push to `main` and every pull request |
 
 Which branch the work sits on and which pull requests have merged are not
 recorded here. Git holds both exactly, and a fact kept in two places drifts:
@@ -124,7 +124,9 @@ transaction, with `set_at` supplied rather than read from a clock and refused if
 it predates the newest version of that key. `AppendAll` writes N entries in one
 transaction and `Append` delegates to it, so there is one definition of the insert
 and one of the monotonic check. `AppendMissing` writes the first version of each
-key that has none, skips the rest and names both sets.
+key that has none, skips the rest and names both sets. Each insert reports its own
+version through `RETURNING`, inside the transaction that wrote it, rather than by
+a following `MAX(version)` read that a second writer would make wrong.
 
 Both read surfaces carry decimal and integer accessors alongside the string one,
 as public instance methods rather than extensions, since the as-of guard reflects
@@ -151,6 +153,15 @@ key already stored counts as an operand, so a half-seeded store can be completed
 `ConfigKeys` declares each invariant's key set, the same declared-vocabulary shape
 as `DecimalColumns` and `AppendOnlyTables`, and carries each band's name beside
 its key so a refusal can say which band it failed against.
+
+**A declared vocabulary is checked standing in the direction in which absence
+causes the bad outcome.** For `DecimalColumns` and `AppendOnlyTables` that is list
+to document, a name with no table behind it being the error, and the reverse is a
+definition of done on the checkpoint that adds each table. For
+`PolicyBandCeilings` it is document to list, a band with no entry being the error,
+because the ceiling is compared only against the bands the list names and an
+omission would make a violating configuration pass rather than fail. The three
+look inconsistent and are not.
 
 `ConfigRowQuery.ResolveCurrent` takes an optional transaction, because the
 invariants read rows that have not committed and Microsoft.Data.Sqlite refuses a
@@ -338,7 +349,7 @@ the vocabulary and are owed at Phase 1 as one obligation.
 
 ## Tests
 
-262: 200 across twenty-one fixtures, and 62 across thirteen unregistered suites,
+268: 205 across twenty-two fixtures, and 63 across thirteen unregistered suites,
 one of which is the 0.1 smoke test. The two guards are checks rather than tests
 and are counted in neither.
 
@@ -358,6 +369,7 @@ and are counted in neither.
 | FX-MigrateFromEmpty | 6 |
 | FX-EveryBoundKeyIsDocumented | 5 |
 | FX-RegistryMatchesDisk | 5 |
+| FX-EveryPolicyBandIsChecked | 5 |
 | FX-ChainLoadsInIdentityOrder | 4 |
 | FX-MaxDteBelowTrialBound | 4 |
 | FX-WorkedExampleChainLoads | 4 |
@@ -375,7 +387,7 @@ mechanisms is asserted separately, and one of them takes both halves.
 FX-ConfigWriteRefusesInvariantBreach is large because it covers two invariants,
 both directions of D-W34, and the seed's own values through the same path.
 
-All twenty-one entries registered against 0.2 to 0.8 are implemented and named for
+All twenty-two entries registered against 0.2 to 0.8 are implemented and named for
 their registry entry. The suite parses `CONFIG_REFERENCE.md`, `FIXTURES.md`,
 `DATA_AND_SCHEMA.md`, `WORKED_EXAMPLE.md` and `guards.ps1`, so all five are
 load-bearing rather than descriptive.

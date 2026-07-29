@@ -1,5 +1,53 @@
 # CHANGELOG
 
+## [1.16.0] — 2026-07-29
+
+Findings from a review of Phase 0, the first independent pass over the code.
+
+### Added
+- Fixture FX-EveryPolicyBandIsChecked (0.8): every `Policy:*:DeltaMax` row in
+  `CONFIG_REFERENCE.md` appears in `ConfigKeys.PolicyBandCeilings`. Without it an
+  incomplete band list makes a violating configuration **pass**, because D-W23's
+  ceiling is compared only against the bands the list names. That differs in kind
+  from an incomplete catch-list, which still catches what is on it. It was also
+  scheduled to happen: the learner acts from policy rows, so its band arrives at
+  Phase 4 and nothing would have failed had it never been listed.
+- **A rule about which direction a declared vocabulary is checked in.**
+  `DecimalColumns` and `AppendOnlyTables` are checked list to document, because
+  there the error is a name with no table behind it. `PolicyBandCeilings` is
+  checked document to list, because there the error is a band with no entry. Each
+  is checked standing in the direction in which absence causes the bad outcome,
+  and the other direction is a definition of done on the checkpoint that adds the
+  thing. Recorded at the vocabulary and in the fixture, since the apparent
+  inconsistency is what a reader meets first.
+- A carried obligation owed at Phase 8: extract the market rules out of
+  `SyntheticChainReader`. Refusing a negative bid, a negative ask and a crossed
+  market are statements about what a market can be, not JSON concerns, and they
+  sit as private statics on the reader, so the vendor ingest could only duplicate
+  them. Coupled to the Phase 2 crossed-quote decision, which determines whether
+  the crossed rule moves to the gate instead of into the shared definition.
+
+### Fixed
+- `ConfigWriter.Append` returned a version it had not necessarily written. It
+  committed, then read `MAX(version)` on a fresh command outside any transaction,
+  while its own summary said it returns the version written. The insert reports
+  its own version through `RETURNING` now, inside the transaction that wrote it.
+  Correct before only because the store has a single writer [D-W1], and it would
+  have failed by returning a plausible number rather than by raising, which is the
+  worst way for it to fail. `RETURNING` needs SQLite 3.35 and the bundled engine
+  is 3.53.3, measured from the binary at 0.5.
+- `SqliteConnectionStringBuilder.Pooling = false` carried no reason. It is
+  load-bearing on Windows: with pooling on the native file handle outlives
+  `Dispose`, so the snapshot copy and the temp-store teardown fail on a locked
+  file. Every other non-obvious choice in that file states its reason, and this is
+  the one that looks like a tidy-up when ingest throughput first matters.
+- `ConfigRowQuery.ResolveAtOrBefore` takes no transaction where `ResolveCurrent`
+  does, and nothing said the asymmetry was deliberate. Recorded, with what ends
+  it: Phase 1's ingest writes chains while resolving membership as-of [D-W9], and
+  meets exactly the behaviour that forced the parameter onto the other method.
+- `SyntheticChainReader.RefuseImpossibleMarket` was documented as "the one domain
+  rule this reader enforces" while enforcing three.
+
 ## [1.15.1] — 2026-07-29
 
 ### Fixed

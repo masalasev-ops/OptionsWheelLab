@@ -352,13 +352,20 @@ public static class SyntheticChainReader
     }
 
     /// <summary>
-    /// The one domain rule this reader enforces, and it is deliberate.
+    /// The domain rules this reader enforces, and enforcing them here is
+    /// deliberate.
     /// </summary>
     /// <remarks>
     /// A crossed market is not an observation that existed, and a hand-written
     /// one is a transposition. It matters more than it looks: the spread cap is a
     /// fraction of mid [D-W22], so a crossed quote gives a negative numerator and
     /// passes a cap that exists to reject wide markets.
+    /// <para>
+    /// They are statements about what a market can be rather than about JSON, so
+    /// a second producer of quotes could only duplicate them. Extracting them is
+    /// a carried obligation owed at Phase 8, where the vendor ingest becomes that
+    /// second producer, and it waits because there is one caller today.
+    /// </para>
     /// <para>
     /// The cost is recorded in carried obligations rather than here, because it
     /// is real: no synthetic chain can now express a crossed or locked market, so

@@ -13,6 +13,20 @@ internal static class ConfigRowQuery
     /// <summary>
     /// The value of the highest version at or before <paramref name="upperBound"/>.
     /// </summary>
+    /// <remarks>
+    /// No transaction parameter, unlike <see cref="ResolveCurrent"/>, and the
+    /// asymmetry is deliberate rather than an omission. An as-of read serves a
+    /// simulated date and never runs inside a write today, so it never meets the
+    /// behaviour that forced the parameter onto the other method:
+    /// Microsoft.Data.Sqlite refuses a command with no transaction while one is
+    /// pending on the connection.
+    /// <para>
+    /// What ends it is a writer that also resolves as-of while its transaction is
+    /// open, and Phase 1's ingest is the first: it writes chains while resolving
+    /// watchlist membership as of the query date [D-W9]. At that point this takes
+    /// the same optional parameter for the same reason.
+    /// </para>
+    /// </remarks>
     internal static string? ResolveAtOrBefore(
         SqliteConnection connection,
         string key,
