@@ -1,6 +1,7 @@
 # BUILD_PLAN
 
-Build state: **Phase 0 in progress**. 0.1 to 0.7 built; 0.8 not started.
+Build state: **Phase 0 complete**. 0.1 to 0.8 built and signed off. Phase 1
+detail not written.
 
 ## How this document works
 
@@ -100,6 +101,10 @@ Definition of done for the phase: `dotnet test` green, `migrate.ps1` runs clean
 from empty, CI green on a fresh clone, every `app`-classed key in
 `CONFIG_REFERENCE.md` proven to bind, and no `rows`-classed key bound from
 `appsettings` [D-W27].
+
+**Met at 0.8**, item by item. The fourth item has been a standing check since
+0.4 and is a registered fixture from 0.8: FX-EveryAppKeyBinds walks the document
+and checks the types, where its mirror walks the types and checks the document.
 
 ### 0.1 Repository skeleton
 
@@ -548,6 +553,45 @@ implementation and is wrong in a way that passes.
 - **Note**: these values are expected to be revised. Because config rows are
   append-only and versioned, a revision inserts version + 1 and the old value
   stays readable, which is what lets a later behaviour change be explained.
+
+Reconciled at sign-off against what shipped. Five things were larger than the
+scope above, and the first two came out of the build rather than out of review.
+
+**§3.5 was wrong about the delta bands.** It said the makers select inside the
+same delta and expiry bands: true for expiry, false for delta, and
+`WORKED_EXAMPLE.md` §1 has said 0.20 to 0.30 against 0.10 to 0.35 since v1.0.0.
+Seeding the values a sentence describes is what found it, the same way building
+the thing that enforces a rule found three wrong citations at 0.7. It now also
+records the coupling the schema cannot: `Policy:Random:` carries no DTE keys
+because the random maker reads the baseline's window, and 0.8 is the checkpoint
+that makes a reader who would misread that absence exist.
+
+**D-W23's open clause is settled and closed.** The detail did not name it. The
+ceiling at 0.35 against 0.35 is argued from D-W4, a control drawing from a smaller
+opportunity set than the gate admits making a difference partly permission rather
+than judgement. The 0.10 floor is reported as inherited rather than argued,
+because that argument does not reach it and no measurement 0.8 can make does
+either.
+
+**The `app`-classed reverse direction is a registered fixture now.** The
+assertion is not new: it landed at 0.4 in a suite deliberately outside the
+registry, because a phase definition of done was held not to be a fixture. It is
+moved rather than copied into FX-EveryAppKeyBinds, so the phase's fourth item is
+discoverable from `FIXTURES.md`. What was genuinely missing is the sentence in
+`CONFIG_REFERENCE.md`: the paragraph declining the reverse check did not say
+which class it declined it for, so it read as complete while covering only
+`rows` keys, and has done since `Eodhd` bound at 0.2.
+
+**`seed.ps1` ships beside `migrate.ps1`.** Seeding wraps nothing, so the case for
+it was symmetry until it was measured: with `Storage__Path` unset the verb throws
+from `StoreLocation` with the right words under a stack trace, where the script
+refuses cleanly. Two steps of one setup sequence, and the second reporting the
+identical mistake worse than the first is what the script fixes.
+
+**The seed verb reports a refusal rather than raising one.** A refusal is a
+designed outcome of the verb, being what happens when the store already holds a
+value the entries contradict, and the messages name their decision and say no row
+was written. A stack trace above them buries the sentence the operator needs.
 
 ---
 

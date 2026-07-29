@@ -1,5 +1,63 @@
 # CHANGELOG
 
+## [1.15.0] — 2026-07-29
+
+Checkpoint 0.8 signed off, and with it Phase 0.
+
+### Added
+- Nineteen of the twenty-three `rows`-classed keys carry a value, written at
+  version 1 in one transaction. Provenance is stated per key in
+  `CONFIG_REFERENCE.md` and is three kinds: the six `Gate:` keys are the values
+  their decisions proposed [D-W22 to D-W25]; the seven `Policy:` keys,
+  `Costs:CommissionPerContract` and `Costs:FillPoint` are transcribed from
+  `WORKED_EXAMPLE.md` §1; `Trial:MaxRolls`, `Trial:MaxTrialDays` and the two
+  `Scoring:` keys are judged. `Trial:MaxTrialDays` at 120 is the least free of the
+  four: D-W24 puts it above `Gate:MaxDte`, and the worked example's own trial runs
+  109 days, so a lower bound would force-close that trial before its third expiry
+  and make its stated total unreachable. The two `Scoring:` values are constrained
+  by nothing in this corpus and are recorded as free judgement rather than left to
+  look derived.
+- Fixture FX-EveryAppKeyBinds (0.8): every `app`-classed row in
+  `CONFIG_REFERENCE.md` has a bound settable property on a registered options
+  type. The mirror of FX-EveryBoundKeyIsDocumented, which walks the types and
+  checks the document, where this walks the document and checks the types.
+  **The assertion is not new.** It landed at 0.4 in a suite deliberately outside
+  the registry, because a phase definition of done was held not to be a fixture.
+  Registering it makes it discoverable from `FIXTURES.md` rather than only from
+  the file it lived in, and it is moved rather than copied: two tests asserting
+  one thing with two failure messages is how a fact kept in two places drifts.
+- `seed.ps1`, beside `migrate.ps1`. The case for it was symmetry until it was
+  measured: with `Storage__Path` unset the verb throws from `StoreLocation` with
+  the right words under a stack trace, where the script refuses cleanly. Two steps
+  of one setup sequence, and the second reporting the identical mistake worse than
+  the first is what it fixes.
+
+### Changed
+- D-W23's proposed 0.35 for `Gate:MaxDelta` is chosen rather than inherited. The
+  ceiling is argued from D-W4: a control drawing from a smaller opportunity set
+  than the gate admits would make a difference between it and the learner partly
+  permission rather than judgement. The 0.10 floor is a separate question the same
+  argument does not reach, and is recorded as inherited from `WORKED_EXAMPLE.md`
+  §1 rather than argued.
+- `CONFIG_REFERENCE.md` says the store is the authority on what is in force. A
+  value in the Notes column is version 1 and the reason for it; a revision inserts
+  version + 1 and does not edit the document, so a value the store has since
+  revised is history rather than a contradiction.
+- `BUILD_PLAN.md`'s build-state marker says Phase 0 is complete. The first time
+  this corpus says a phase is done.
+
+### Fixed
+- D-W23 carried an `Open, and to be settled at Phase 0.8` clause and 0.8 settled
+  it. Leaving it open after the checkpoint that answers it is the stale-corpus
+  failure this project keeps correcting.
+- `CONFIG_REFERENCE.md` declined a standing check on the reverse binding
+  direction because most keys are deliberately unbound until their own phase. That
+  reasoning covers `rows` keys and has not reached `app` keys since `Eodhd` bound
+  at 0.2, an `app` key being bound from `appsettings` by definition. The paragraph
+  now says which class it speaks for and names the check that covers the other. It
+  had been half wrong for six checkpoints and read as complete, because a
+  paragraph declining a check does not say which keys it is declining it for.
+
 ## [1.14.0] — 2026-07-29
 
 ### Added

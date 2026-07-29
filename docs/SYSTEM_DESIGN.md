@@ -319,9 +319,9 @@ The roll bounds [D-W14], the divergence threshold and window [D-W20] and the six
 gate constraints [D-W22 to D-W25] were left unset in this document deliberately,
 because setting a policy value in a design disguises a parameter choice as a
 design decision. They are config rows now. `CONFIG_REFERENCE.md` states what is
-in force and `CHANGELOG.md` at v1.14.0 records the provenance of each, which is
-three kinds: transcribed from a corpus statement, taken from a proposed value in
-a decision, or judged.
+in force and the reason for each, and `CHANGELOG.md` at v1.15.0 records them
+landing. Provenance is three kinds: transcribed from a corpus statement, taken
+from a proposed value in a decision, or judged.
 
 Four rows-classed keys remain unset, and they are owed rather than open. The
 three risk fractions are the operator's [D-W11] and the assignment fee has no

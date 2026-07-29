@@ -391,11 +391,20 @@ The ceiling is an outer bound on catastrophe, not a strategy parameter, so it
 must be set no tighter than the loosest policy band in use [D-W4]. A ceiling
 inside a policy band would silently override that policy rather than bound it.
 
-**Open, and to be settled at Phase 0.8.** The proposed 0.35 exactly equals the
-upper bound of the random control's band. If both are held at 0.35, the random
-control becomes uniform over the entire feasible delta range rather than uniform
-within a band inside it. That may be the better control, but it should be chosen
-rather than inherited from a coincidence of defaults.
+**Settled at 0.8.** Both are held at 0.35, and the coincidence is now
+deliberate. The control spans what the gate admits, because a control
+drawing from a smaller opportunity set than the gate allows would make a
+difference between it and the learner partly permission rather than
+judgement [D-W4], which is the failure [D-W10] names in the neighbouring
+case.
+
+The lower bound is a separate question and this argument does not reach
+it. There is no `Gate:MinDelta`, so `Policy:Random:DeltaMin` at 0.10 sits
+strictly inside what the gate admits and the control is bounded below by
+a chosen number. It is inherited from `WORKED_EXAMPLE.md` §1 rather than
+argued. Whether `Gate:MinPremium` already excludes most of what lies
+below it is a measurement over real chains, and belongs to the phase that
+has them.
 
 **Amendment, 2026-07-27.** This decision originally said the invariant is
 checked at startup. That wording assumed a value bound once at boot. Under
