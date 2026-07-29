@@ -69,7 +69,7 @@ exists to catch, and would make any historical run incapable of failing.
 A daily end-of-day snapshot of the option chains for watchlist names, plus
 underlying bars, dividends, and the earnings calendar. Snapshots are append-only
 and stamped with what was observable that day; a stored snapshot is never
-rewritten [D-W8]. CI greps for deletes and updates against the snapshot tables,
+rewritten [D-W8]. A delete or an update against a snapshot table fails the build,
 the same guard AlphaLab uses for bar history.
 
 ### 3.3 Candidate generator

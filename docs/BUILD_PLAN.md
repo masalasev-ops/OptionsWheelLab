@@ -1,6 +1,6 @@
 # BUILD_PLAN
 
-Build state: **Phase 0 in progress**. 0.1 to 0.6 built; 0.7 onward not started.
+Build state: **Phase 0 in progress**. 0.1 to 0.7 built; 0.8 not started.
 
 ## How this document works
 
@@ -404,34 +404,91 @@ structural and stated once in prose, and no prose is parsed at all.
 ### 0.7 Append-only guards
 
 Assertions that no `DELETE FROM` or `UPDATE` reaches a snapshot table [D-W8],
-and none reaches `decisions` or `candidates` [D-W3]. They extend the source
-guards 0.4 established rather than introducing a second mechanism.
+`decisions` or `candidates` [D-W3], `config_rows` [D-W26], or the migration
+ledger [D-W32].
+
+**A fixture, not a source guard.** 0.7's detail said these extend the guards 0.4
+established, which predates the split it now contradicts. 0.4's criterion decides
+it: a `guard` is for a check that must fail when the build is broken, and a
+`fixture` is for one that needs a vocabulary and must read structure rather than
+text. The measurement settles it beyond the criterion — `guards.ps1` strips raw
+string literals by design and every SQL statement here lives in one, so a pattern
+added to the script would match nothing in the tree by construction.
+FX-NoDecimalOrderingInSql is the precedent end to end, with a table vocabulary in
+place of a column one.
+
+**The vocabulary is checked against the schema, not against the database.** Every
+name in it must appear in a §4 schema block, which is enforceable today; the
+reverse is a definition of done on the checkpoint that adds each table. Most
+entries name tables that will not exist for several phases, and that is the point
+rather than a mistake: the constraint lands before the tables it guards.
+`DecimalColumns` carries exactly this contract already.
 
 Also in 0.7: decide whether the source guards stay a text scan or move to a
 Roslyn analyser. 0.4 raised it and deferred it here deliberately, because this
-is the first checkpoint where three guards exist and one mechanism serving all
-of them can be compared against three separate scans concretely rather than
-argued in the abstract. The argument is that a text scan sees declared intent
-and not inferred types, and it was recorded before the comparison rather than
-after.
+is the first checkpoint where the mechanisms can be compared concretely rather
+than argued in the abstract. Answered by D-W33: they stay, and the comparison
+that settled it is recorded there.
 
-Register this checkpoint's guards in `FIXTURES.md` as `guard`-kind rows. Nothing
-is registered against 0.7 today, and doing it is due when this checkpoint's
-prompt is written [`FIXTURES.md` rule 2].
+Register this checkpoint's check in `FIXTURES.md`. Nothing is registered against
+0.7 today, and doing it is due when this checkpoint's prompt is written
+[`FIXTURES.md` rule 2].
 
-- **Test**: the guard fails when a violating statement is introduced, verified
+- **Test**: the check fails when a violating statement is introduced, verified
   by a test that adds and removes one.
-- **DoD**: guard runs in CI, not only locally.
-- **Constraint**: statements already in the tree carry the banned text and must
-  not be reported. They are the trigger DDL that enforces append-only, the tests
-  asserting those triggers reject an `UPDATE` or a `DELETE`, and statements
-  against tables the rule does not cover at all. **The check therefore
-  distinguishes by table rather than by location**, which is a design problem for
-  the check and not a case for an exemption list: 0.4's guard has none by
-  decision, and adding one here would reopen that. A vocabulary is the mechanism
-  that needs none, and `DecimalColumns` is the precedent for its shape. No count
-  is given, because the count is not a property of the rule: most of those
-  statements are tests, so it moves whenever one is written.
+- **DoD**: the check runs in CI, not only locally.
+- **DoD**: every check registered against 0.7 exists in its kind.
+- **DoD**: every key the sections this checkpoint introduces carry is bound and
+  verified. It introduces none, so the obligation is discharged empty rather than
+  skipped.
+- **Constraint**: statements already in the tree carry the banned text and
+  must not be reported. Three mechanisms exclude them, each a different
+  class, which is why one does not suffice.
+
+  **Statement form** excludes the trigger DDL. `BEFORE UPDATE ON
+  config_rows` is not an `UPDATE ... SET`, so a check keyed on statement
+  shape never sees it.
+
+  **The table vocabulary** excludes statements against tables the rule does
+  not cover, such as `SnapshotTests`' `UPDATE probe` on a scaffold table
+  created inside the test.
+
+  **Scan scope** excludes the tests that prove the triggers work.
+  `ConfigWriteTests`' `UPDATE config_rows SET` and the two `DELETE FROM
+  config_rows` are genuinely banned statements against a vocabulary table,
+  and they exist to assert the triggers reject them. The rule governs what
+  the lab does to its own store, and a test proving the guard works is not
+  the lab doing it. So the check scans `src/`, which is the scope
+  `FX-NoDecimalOrderingInSql` already has.
+
+  None of the three is an exemption list. An exemption names a file to
+  silence a failure; these name what the check is about, each fixed once
+  with a reason rather than extended when something failed [0.4].
+
+  Known limit: a banned statement written in `tests/` by mistake, rather
+  than to prove a trigger, is not caught. Pinned as a test in the style of
+  the alias miss rather than left in prose.
+
+Reconciled at sign-off against what shipped. Three things were larger than the
+scope above.
+
+**Three citations were wrong, not one.** `decisions` and `candidates` were cited
+to D-W3 for a property D-W3 did not state, exactly as `config_rows` was cited to
+D-W8 until 0.5. Applying the method that found them to the vocabulary before any
+code existed predicted a third: `schema_migrations` would have rested on §4.0's
+prose. D-W3 gains the property, D-W32 states it for the ledger, and `CLAUDE.md`
+§1 gains the method. That last is the part that outlives the checkpoint.
+
+**The vocabulary needed a schema section that did not exist.** §4 documented
+seventeen tables that do not exist and omitted one of the two that do, so §4.0
+was written for `schema_migrations` and §4.1 gained the definition of "snapshot
+tables", a phrase used in four documents and defined in none.
+
+**The Roslyn measurement refuted the reason the guards were split.**
+`guards.ps1` said a guard must fail even when the build does not; a probe showed
+an analyser reports alongside a compile error, so the claim was false. The true
+property is narrower — it reports when restore does not succeed — and the script
+now says that instead [D-W33].
 
 ### 0.8 Configuration values for the open parameters
 
@@ -458,12 +515,12 @@ has aged.
 | Owed at | Obligation | Raised |
 |---|---|---|
 | Phase 11 | Re-add `Microsoft.AspNetCore.OpenApi` against a version whose `Microsoft.OpenApi` dependency clears the audit. Removed at 0.1 rather than suppressing the advisory; the reason is in the Api project file. | PR #1 |
-| 0.7 | Decide whether the source guards stay a text scan or move to a Roslyn analyser. A text scan sees declared intent and not inferred types, so `Math.Sqrt`, `Convert.ToDouble` and `Random.NextDouble` are caught only by naming each one. Scoped into 0.7 above. | PR #3 |
 | Phase 1 | Give D-W29's write-side rule teeth. Every decimal reaching a `TEXT` column should pass through the canonical form, and nothing enforces that: `ConfigWriter.Append` takes a string. A decimal-typed parameter-binding seam is the likely mechanism, when the first real decimal column exists. | PR #3 |
 | Phase 1 | Decide what an adjusted strike does when a corporate action makes it non-terminating. Identity canonicalises through the refusing path, so a 3-for-2 split forces a choice between rounding a value that is part of a contract's identity and carrying the ratio. | PR #3 |
-| Phase 1 | Resolve aliases in the decimal-ordering detector, or adopt and check a convention that a decimal column is never aliased. `SELECT strike AS s FROM contracts ORDER BY s` orders a decimal and passes. Deleting FX-NoDecimalOrderingInSql's known-miss test is part of closing it. | PR #3 |
+| Phase 1 | Resolve aliases in the SQL detectors, or adopt and check a convention that neither a decimal column nor a table is aliased. `SELECT strike AS s FROM contracts ORDER BY s` and `UPDATE config_rows AS c SET` both pass. Deleting both known-miss tests is part of closing it. | PR #3, PR #6 |
 | Phase 3 | Establish output-level determinism: a simulated run with a fixed clock produces byte-identical output across two invocations. 0.5 restated it as identical stored rows because no run existed to make. Compared as produced artefacts, never as a database file [D-W28]. | PR #4 |
 | Phase 3 | Decide what bars nondeterminism in SQL that is not a clock. Enumerating the bundled SQLite showed `random()` and `randomblob()` alongside the seven clock functions; they are outside FX-ClockIsNotADateSource by name but would break a byte-identical run just as surely. | PR #4 |
+| Phase 1 | Decide whether effective-dating counts as append-only, for `watchlist_membership` (`left_on`), `positions` (`effective_to`) and `trials` (`closed_on`). §4.2 says rows are never deleted while a nullable close column makes a state change an update, so the schema and the rule disagree in three places for one reason. If append-only, a change is a new row and the tables join the vocabulary as flat entries; if not, the vocabulary needs per-table statement kinds it does not have today, and that shape is the cost of the decision rather than a reason to defer it. Raised at 0.7, where drawing the vocabulary made the disagreement visible; widened by PR #6's own report, which found the second and third instances. | PR #6 |
 | Phase 2 | Decide whether the gate handles a crossed quote. 0.6's loader refuses bid above ask, which is the one domain rule it enforces, and that makes a crossed or locked market unwritable as a synthetic chain, so nothing can exercise the gate against one. D-W22's spread cap is a fraction of mid, so a crossed quote gives a negative numerator and passes a cap that exists to reject wide markets. If the gate handles it, the loader stops refusing it. | PR #5 |
 
 ---

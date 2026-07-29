@@ -16,10 +16,11 @@ predates this file and cannot be relied on.
 
 **Purpose and measurement**: D-W2, D-W3, D-W5, D-W17, D-W18, D-W20, D-W21
 **Isolation and controls**: D-W1, D-W4, D-W6, D-W13
-**Data and identity**: D-W7, D-W8, D-W9, D-W15, D-W26, D-W27, D-W28, D-W29, D-W30, D-W31
+**Data and identity**: D-W7, D-W8, D-W9, D-W15, D-W26, D-W27, D-W28, D-W29, D-W30, D-W31, D-W32
 **Risk**: D-W10, D-W11, D-W14, D-W19, D-W23, D-W25
 **Gate constraints**: D-W10, D-W22, D-W23, D-W24, D-W25
 **Scope**: D-W12, D-W16
+**Verification mechanisms**: D-W28, D-W33
 
 ## Status legend
 
@@ -66,6 +67,12 @@ features of every candidate in it, the choice made, and which maker made it.
 
 Consequence: the decision record is the primary artefact of the system, and its
 loss is the one unrecoverable data loss in the design.
+
+**A recorded decision is never rewritten.** The record exists so a decision can
+be re-scored later from what stood at the time, which holds only if what stood at
+the time is still there. An update in place would leave the record present and
+the decision unrecoverable, which is the loss this decision names rather than a
+different one.
 
 Test FX-RecordCarriesFeasibleSet: a recorded decision can be re-scored from the
 record alone, with no access to live state.
@@ -129,8 +136,8 @@ are separate purchases and only the add-on unlocks this lab.
 A stored snapshot records what was observable on that date and is never
 rewritten. Corrections arrive as new rows carrying their own observation stamp.
 
-Test: CI greps for `DELETE FROM` and `UPDATE` against snapshot tables and fails
-the build on a match.
+Test FX-NoRewriteOfAppendOnlyTables: no statement in `src/` deletes from or
+updates a table the append-only vocabulary covers.
 
 ---
 
@@ -692,3 +699,66 @@ the property holds.
 
 Test: `WORKED_EXAMPLE.md`'s chain is expressible in the format and round-trips
 through the loader.
+
+---
+
+### D-W32 The migration ledger is never rewritten
+`active` · 2026-07-29
+
+`schema_migrations` records which migrations have been applied. Rows are appended
+when a migration runs and are never updated or deleted.
+
+Rationale, and it is not the reason the other append-only tables have. A store's
+schema version is not stated anywhere; it is derived from what the ledger says
+has been applied. A ledger that can be rewritten therefore makes a store unable
+to answer what it is, and a snapshot taken before a rewrite and one taken after
+would restore to different schemas while both claiming the same version. That is
+why the ledger sits in the vocabulary alongside the tables it has nothing else in
+common with.
+
+**Scope, stated because the boundary is easy to overrun.** This does not
+establish a general rule that every table recording something past is
+append-only. `watchlist_membership`, `positions` and `trials` carry
+effective-dating, where closing a row is how a state change is recorded rather
+than a rewrite of an observation, and whether that counts is already owed at
+Phase 1. All three are named, because listing two of three reads as a boundary
+rather than as an example. Each decision
+states the property for its own tables and for its own reason, and no general
+rule is inferred from there being several. The reasons genuinely differ, and a
+single rule covering all of them would have to be vague enough to cover cases it
+should not.
+
+Test FX-NoRewriteOfAppendOnlyTables: covered by the vocabulary entry.
+
+---
+
+### D-W33 The source guards stay a text scan and a fixture
+`active` · 2026-07-29
+
+Checks are enforced by two mechanisms and neither is replaced by a Roslyn
+analyser. A named check in `guards.ps1` scans text and runs before restore. A
+fixture reads structure and a vocabulary and runs under the test suite.
+
+Measured rather than argued, and the first measurement refuted the reason the
+split was given. `guards.ps1` claimed a guard must fail even when the build does
+not. An analyser probe with a violation in one file and a type error in another
+reported both, so that is false. What an analyser cannot survive is a failed
+restore, where none runs and only the NuGet error appears. The script runs before
+restore, so its property is that it reports when restore does not succeed.
+Narrower, true, and enough.
+
+One check of four would gain. Inferred types for the floating-point guard, which
+is its documented blind spot; alias resolution for the clock guard, which is
+marginal; nothing for either SQL check, because an analyser returns the same
+string literal a fixture already has and does not parse SQL. So "one mechanism
+serving four" does not survive contact with what the four are.
+
+Cost, weighed and declined. `Microsoft.CodeAnalysis.CSharp` restores clean
+against the audit, and brings ten transitive packages that this repository's
+central pinning would each require a pin for, plus a `netstandard2.0` project
+overriding `Directory.Build.props`.
+
+What would reopen this. The floating-point guard's blind spot is real and
+unclosed: a `double` reached through inference is invisible to every mechanism
+here. If that becomes a live defect rather than a documented gap, the comparison
+changes for the check that has it and not for the other three.

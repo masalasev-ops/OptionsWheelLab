@@ -1,5 +1,112 @@
 # CHANGELOG
 
+## [1.13.0] — 2026-07-29
+
+### Added
+- D-W33: the source guards stay a text scan and a fixture, and neither is
+  replaced by a Roslyn analyser. One check of four would gain anything, being
+  inferred types for the floating-point guard; the two SQL checks gain nothing
+  because an analyser returns the same string literal a fixture already has and
+  does not parse SQL. The package costs ten transitive pins and a project
+  overriding the build props. It also records what would reopen it.
+- The topical index gains a **Verification mechanisms** line. The six existing
+  lines are about the experiment rather than about how the repository checks
+  itself, and "Isolation and controls" means control arms. D-W28 joins D-W33
+  there while staying on Data and identity, since it is both and the index is a
+  finding aid rather than a partition.
+
+### Changed
+- The carried obligation to decide between a text scan and a Roslyn analyser is
+  **closed with a no-change answer**, not lapsed. D-W33 discharges it, and the
+  row is removed rather than left standing, because an obligation that outlives
+  its answer reads as unfinished.
+
+### Notes
+- The measurement refuted the reason the guards were split. `guards.ps1` claimed
+  a guard must fail even when the build does not; a probe with a violation in one
+  file and a type error in another reported both, so the claim was false. What an
+  analyser cannot survive is a failed restore, where none runs and only the NuGet
+  error appears. The script runs before restore, so the property it actually has
+  is that it reports when restore does not succeed. Narrower, true, and enough —
+  and the script now says that instead of the claim it could not support.
+
+## [1.12.0] — 2026-07-29
+
+### Added
+- D-W32: the migration ledger is never rewritten, so `schema_migrations` enters
+  the append-only vocabulary on a decision rather than on §4.0's prose. Its
+  rationale is not the one the other tables have: a store's schema version is
+  derived from the ledger rather than stated anywhere, so a rewritable ledger
+  makes a store unable to answer what it is, and two snapshots either side of a
+  rewrite would restore to different schemas while claiming the same version.
+  Predicted by the plan before the check was built, using the method `CLAUDE.md`
+  §1 gained this checkpoint, which makes it the third instance of the pattern and
+  the first found deliberately rather than by accident.
+- D-W32 added to the Data and identity line of the topical index.
+- `CLAUDE.md` §1: a citation is verified by what rests on it, not by reading it.
+  Two citations named a decision for a property that decision did not state, both
+  were right about the rule and wrong about its authority, and building the thing
+  that enforces the rule is what found both.
+- `DATA_AND_SCHEMA.md` §4.0 documents `schema_migrations`, which 0.3 created and
+  §4 never carried. §4 documented seventeen tables that do not exist and omitted
+  one of the two that do.
+- `DATA_AND_SCHEMA.md` §4.1 defines the **snapshot tables**. The phrase is used
+  in four documents and was defined in none. `contracts` is one despite carrying
+  no `observed_at`, because a corporate action mints a new identity rather than
+  editing a row.
+- A carried obligation at Phase 1 for effective-dating, covering
+  `watchlist_membership`, `positions` and `trials`. Each carries a nullable close
+  column that makes a state change an update while §4.2 says rows are never
+  deleted, so the schema and the rule disagree in three places for one reason.
+  Raised at 0.7 when drawing the vocabulary made the disagreement visible, and
+  widened by this checkpoint's own report, which found the second and third
+  instances. Amended rather than duplicated, for the same reason the alias
+  obligation was: one problem seen at three levels is one obligation, and closing
+  it for one table would leave the others to be rediscovered at Phase 3 and
+  Phase 4.
+
+### Changed
+- `CLAUDE.md` §2 item 2 states the rule and hands the table list to the check.
+  It named snapshot tables, `decisions` and `candidates` and stopped, while
+  `config_rows` was the only one of them that existed.
+- `BUILD_PLAN.md` 0.7 says the check is a fixture rather than a source guard.
+  0.4's criterion decides it, and a measurement settles it beyond the criterion:
+  `guards.ps1` strips raw string literals by design and every SQL statement here
+  lives in one, so a pattern added to the script would match nothing in the tree
+  by construction.
+- `BUILD_PLAN.md` 0.7 gains the two definitions of done carried from 0.2, which
+  0.5 and 0.6 received and it did not.
+- The Phase 1 alias obligation is amended rather than duplicated. It named one
+  detector and one known-miss test; 0.7 adds a second detector with a table-alias
+  miss, and it is one alias problem seen at two levels. Deleting both known-miss
+  tests is now part of closing it.
+
+### Fixed
+- `decisions` and `candidates` were cited to D-W3 for a property D-W3 did not
+  state. Same shape as the D-W8 citation corrected at 0.5, found the same way, by
+  building the check that rests on it. D-W3 now says a recorded decision is never
+  rewritten.
+- 0.7's constraint said the check distinguishes by table rather than by location.
+  Building it measured three mechanisms, and scan scope is one of them. Corrected
+  from the measurement; no decision determined it, and the correction states why
+  scope is not an exemption.
+- Three documents described this guard as a CI grep. `BUILD_PLAN.md` was
+  corrected at v1.9.9 and these were not, so the wording survived in a decision's
+  Test line, a schema section and a design section until building the check made
+  all three false.
+- §4.5 left `note` unmarked where `Migrations.cs` declares it nullable and where
+  §4 marks nullability elsewhere. One word, and the one case §4 can be wrong
+  rather than merely early: every other block describes a table nobody has built.
+- D-W32's scope clause named two of the three effective-dated tables. Listing two
+  of three reads as a boundary rather than as an example, so `trials` is named
+  alongside them.
+- D-W32's scope clause carried a count and the count was wrong: it said six kinds
+  where the measurement is four decisions, five kinds and ten tables. Removed
+  rather than corrected, because it would have gone stale regardless once
+  `watchlist_membership` resolves. That is the same treatment 0.7's own constraint
+  gets in this version, and for the same reason — a number that moves when
+  unrelated work lands is not a property of the rule.
+
 ## [1.11.0] — 2026-07-29
 
 ### Added
