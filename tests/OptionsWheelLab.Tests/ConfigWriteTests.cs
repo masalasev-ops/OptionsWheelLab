@@ -14,7 +14,11 @@ namespace OptionsWheelLab.Tests;
 /// </remarks>
 public sealed class ConfigWriteTests
 {
+    // Both keys belong to no cross-key invariant, deliberately. A write touching
+    // one of an invariant's keys must carry that invariant's whole set [D-W34],
+    // and these tests are about versioning rather than about the invariants.
     private const string Key = "Trial:MaxRolls";
+    private const string OtherKey = "Gate:MinDte";
 
     private static readonly DateTimeOffset SetAt =
         new(2026, 3, 20, 12, 0, 0, TimeSpan.Zero);
@@ -41,7 +45,10 @@ public sealed class ConfigWriteTests
         writer.Append(Key, "2", SetAt);
         writer.Append(Key, "3", SetAt);
 
-        Assert.Equal(1, writer.Append("Trial:MaxTrialDays", "120", SetAt));
+        // A second key, chosen from outside both cross-key invariants: a write
+        // touching one of their keys must carry that invariant's whole set
+        // [D-W34], which is not what this test is about.
+        Assert.Equal(1, writer.Append(OtherKey, "7", SetAt));
     }
 
     [Fact]
@@ -187,8 +194,8 @@ public sealed class ConfigWriteTests
         writer.Append(Key, "3", new DateTimeOffset(2026, 6, 10, 12, 0, 0, TimeSpan.Zero));
 
         var version = writer.Append(
-            "Trial:MaxTrialDays",
-            "120",
+            OtherKey,
+            "7",
             new DateTimeOffset(2026, 1, 10, 12, 0, 0, TimeSpan.Zero));
 
         Assert.Equal(1, version);
