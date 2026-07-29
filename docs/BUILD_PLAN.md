@@ -1,6 +1,6 @@
 # BUILD_PLAN
 
-Build state: **Phase 0 in progress**. 0.1 to 0.5 built; 0.6 onward not started.
+Build state: **Phase 0 in progress**. 0.1 to 0.6 built; 0.7 onward not started.
 
 ## How this document works
 
@@ -377,6 +377,29 @@ Implement the fixtures registered against 0.6 in `FIXTURES.md`.
 - **DoD**: every key the sections this checkpoint introduces carry is bound and
   verified. It introduces none, the loader taking text and resolving no location,
   so the obligation is discharged empty rather than skipped.
+
+Reconciled at sign-off against what shipped. Three things were larger than the
+scope above.
+
+**Every value in a chain is a quoted string, including the numbers.** The detail
+asked only that values parse through the stored forms. The mechanism turned out
+to matter more than the rule: `guards.ps1` names, as the thing it cannot catch,
+a JSON number bound into an untyped tree, and an unquoted number is a `double`
+waiting to happen that no scan here would see. Quoting closes that by
+construction, and an unquoted value is refused, so the format carries exactly the
+text the parser reads.
+
+**Malformed reports every reason rather than the first.** The detail asked that a
+malformed chain fail whole. A hand-written file carries three typos as often as
+one, so reporting them a run at a time turns a minute into an afternoon. The same
+reasoning as a gate recording every failing reason rather than the first [D-W22],
+applied to a different subject.
+
+**A third document became machine-checked.** The acceptance test parses the two
+tables in `WORKED_EXAMPLE.md` rather than restating their numbers, joining the
+Store column and the fixture registry. The line is drawn at tables: symbol,
+snapshot date, expiry and right are constants in the test, because they are
+structural and stated once in prose, and no prose is parsed at all.
 
 ### 0.7 Append-only guards
 

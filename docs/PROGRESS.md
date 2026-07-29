@@ -4,7 +4,7 @@ Appended to, never rewritten. The repository is the authority on build state.
 
 ## Current state
 
-**Phase 0 in progress.** Checkpoints 0.1 to 0.5 built. 0.6 onward not started.
+**Phase 0 in progress.** Checkpoints 0.1 to 0.6 built. 0.7 onward not started.
 The documentation corpus is at v1.11.0.
 
 ## Log
@@ -321,3 +321,28 @@ exceeds its ask, which is the single domain rule it enforces, and that makes a
 crossed or locked market unwritable as a synthetic chain. Nothing can then
 exercise the gate against one, which is a hole in D-W31's own premise that
 deliberate cases are writable.
+
+Checkpoint 0.6 built and signed off. The synthetic chain types, the reader, the
+worked example transcribed into `synthetic/worked-example.json`, and the three
+checks registered against it. 224 tests.
+
+The format is a chain rather than a table, and the deciding argument was not
+readability. The fields a schema-mirroring row repeats are three of the four that
+make up contract identity, so a hand-typo would mint a different contract rather
+than fail, which is the failure D-W29 exists to prevent arriving through the
+fixture instead of the store.
+
+Every value in a chain is a quoted string, including the numbers. The source
+guard names a JSON number bound into an untyped tree as something it cannot
+catch, so the format closes that by construction rather than by discipline, and
+an unquoted value is refused.
+
+The acceptance test parses `WORKED_EXAMPLE.md`'s two tables rather than restating
+their numbers, which makes it the third document to be machine-checked after the
+Store column and the fixture registry. That also closes a coupling that could
+only be flagged before: §3's unresolved banner may be settled by revising the
+quotes, and the test now fails on that revision and names the value rather than
+letting the transcription drift until Phase 2.
+
+The loader refuses a quote whose bid exceeds its ask, which is the single domain
+rule it enforces, and what that costs is carried at Phase 2.
