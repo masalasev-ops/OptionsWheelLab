@@ -1,5 +1,6 @@
 using System.Reflection;
 using System.Text.RegularExpressions;
+using Microsoft.Data.Sqlite;
 using OptionsWheelLab.Core.Configuration;
 using OptionsWheelLab.Core.Time;
 
@@ -38,10 +39,24 @@ public sealed class FX_ClockIsNotADateSource
     /// <b>The bare-call forms are the ones that hide.</b> SQLite's date and time
     /// functions default their time-value argument to <c>'now'</c> when it is
     /// omitted, so <c>datetime()</c>, <c>date()</c>, <c>time()</c>,
-    /// <c>julianday()</c> and <c>strftime('%Y')</c> all return the current time
-    /// while carrying neither <c>'now'</c> nor <c>CURRENT_</c>. Measured against
-    /// the SQLite that <c>Microsoft.Data.Sqlite</c> bundles here, 3.53.3, rather
-    /// than taken from the documentation.
+    /// <c>julianday()</c>, <c>unixepoch()</c> and <c>strftime('%Y')</c> all
+    /// return the current time while carrying neither <c>'now'</c> nor
+    /// <c>CURRENT_</c>.
+    /// <para>
+    /// <b>And <c>'subsec'</c> is a time value, not only a modifier.</b> As the
+    /// first argument it means now-with-subsecond-precision, so
+    /// <c>datetime('subsec')</c> reads the clock. As a later argument it is a
+    /// modifier on a supplied time value and is legitimate, which is why these
+    /// patterns are positional rather than a search for the word.
+    /// </para>
+    /// <para>
+    /// <b>The function list is enumerated from the binary, not from
+    /// documentation.</b> Of the 168 functions the bundled SQLite 3.53.3
+    /// registers, exactly seven read the wall clock, and they are the seven
+    /// named below. That is also the residual: a SQLite upgrade adding an eighth
+    /// returns here. Known limit, pinned in the style of the alias miss rather
+    /// than left in prose.
+    /// </para>
     /// <para>
     /// A catch-list, not an exemption list, exactly as the source guard's is: an
     /// incomplete one still catches what is on it, so adding a form never needs
@@ -52,10 +67,22 @@ public sealed class FX_ClockIsNotADateSource
     [
         (@"\bCURRENT_(TIMESTAMP|DATE|TIME)\b", "CURRENT_TIMESTAMP and friends"),
         (@"'now'", "an explicit 'now' time value"),
-        (@"\bunixepoch\s*\(", "unixepoch()"),
-        (@"\b(datetime|date|time|julianday)\s*\(\s*\)", "a date or time function called with no time value"),
+        (@"\b(date|datetime|time|julianday|unixepoch)\s*\(\s*\)",
+            "a date or time function called with no time value"),
         (@"\bstrftime\s*\(\s*'[^']*'\s*\)", "strftime with the time value omitted"),
+        (@"\b(date|datetime|time|julianday|unixepoch|timediff)\s*\(\s*'subsec(ond)?'",
+            "subsec as the time value, which is now to subsecond precision"),
+        (@"\bstrftime\s*\(\s*'[^']*'\s*,\s*'subsec(ond)?'",
+            "strftime with subsec as its time value"),
     ];
+
+    /// <summary>
+    /// Every function the bundled SQLite offers that reads the wall clock,
+    /// enumerated by calling all 168 it registers and keeping the ones that
+    /// returned a time.
+    /// </summary>
+    private static readonly string[] ClockReadingFunctions =
+        ["date", "datetime", "time", "julianday", "unixepoch", "strftime", "timediff"];
 
     /// <summary>
     /// The clock returns an instant and offers nothing else. Converting an
@@ -207,11 +234,120 @@ public sealed class FX_ClockIsNotADateSource
     [InlineData("observed_at REAL NOT NULL DEFAULT (julianday())")]
     [InlineData("session_year TEXT NOT NULL DEFAULT (strftime('%Y'))")]
     [InlineData("observed_at INTEGER NOT NULL DEFAULT (unixepoch())")]
+    [InlineData("observed_at TEXT NOT NULL DEFAULT (datetime('subsec'))")]
+    [InlineData("session_date TEXT NOT NULL DEFAULT (date('subsecond'))")]
+    [InlineData("observed_at INTEGER NOT NULL DEFAULT (unixepoch('subsec'))")]
+    [InlineData("session_year TEXT NOT NULL DEFAULT (strftime('%Y', 'subsec'))")]
+    [InlineData("elapsed TEXT NOT NULL DEFAULT (timediff('subsec', session_date))")]
     public void A_date_function_with_its_time_value_omitted_is_reported(string column)
     {
         var sql = $"CREATE TABLE contract_quotes (contract_id TEXT NOT NULL, {column});";
 
         Assert.NotEmpty(ClockFunctionsIn(sql));
+    }
+
+    /// <summary>
+    /// The measured behaviour of the bundled SQLite, pinned so an upgrade that
+    /// changes it fails here rather than silently widening the hole.
+    /// </summary>
+    /// <remarks>
+    /// A first argument that is a modifier rather than a time value does
+    /// <b>not</b> imply <c>'now'</c>: SQLite parses it as a time value, fails,
+    /// and returns NULL. Measured across all twenty-four documented modifiers on
+    /// 3.53.3, twenty-two behave that way. <c>subsec</c> and <c>subsecond</c> are
+    /// the two that do not, and they are on the catch-list above.
+    /// <para>
+    /// This matters because it bounds the residual. Were the general case true,
+    /// the gap would be the whole modifier set, which is long and grows; as
+    /// measured, the gap is two forms and both are covered.
+    /// </para>
+    /// </remarks>
+    [Theory]
+    [InlineData("+1 day")]
+    [InlineData("-3 hours")]
+    [InlineData("start of month")]
+    [InlineData("start of year")]
+    [InlineData("weekday 0")]
+    [InlineData("localtime")]
+    [InlineData("utc")]
+    [InlineData("auto")]
+    [InlineData("ceiling")]
+    [InlineData("floor")]
+    [InlineData("unixepoch")]
+    [InlineData("julianday")]
+    public void A_modifier_as_the_time_value_yields_null_rather_than_now(string modifier)
+    {
+        Assert.Null(Scalar($"SELECT datetime('{modifier}');"));
+    }
+
+    [Theory]
+    [InlineData("subsec")]
+    [InlineData("subsecond")]
+    public void Subsec_as_the_time_value_does_read_the_clock(string modifier)
+    {
+        Assert.NotNull(Scalar($"SELECT datetime('{modifier}');"));
+    }
+
+    /// <summary>
+    /// The same modifier applied to a supplied time value is legitimate and must
+    /// keep working, which is what makes the patterns positional.
+    /// </summary>
+    [Fact]
+    public void Subsec_on_a_supplied_time_value_is_not_a_clock_read()
+    {
+        Assert.Equal(
+            "2026-01-01 00:00:00.000",
+            Scalar("SELECT datetime('2026-01-01 00:00:00', 'subsec');"));
+
+        Assert.Empty(ClockFunctionsIn("SELECT datetime(observed_at, 'subsec') FROM contract_quotes;"));
+    }
+
+    /// <summary>
+    /// The function list is the residual, so it is checked against the binary
+    /// rather than trusted. Every function named here must still exist.
+    /// </summary>
+    [Fact]
+    public void Every_clock_reading_function_still_exists_in_the_bundled_sqlite()
+    {
+        using var connection = new SqliteConnection("Data Source=:memory:");
+        connection.Open();
+
+        using var command = connection.CreateCommand();
+        command.CommandText = "SELECT DISTINCT name FROM pragma_function_list();";
+
+        var registered = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+        using (var reader = command.ExecuteReader())
+        {
+            while (reader.Read())
+            {
+                registered.Add(reader.GetString(0));
+            }
+        }
+
+        Assert.NotEmpty(registered);
+
+        var missing = ClockReadingFunctions
+            .Where(function => !registered.Contains(function))
+            .ToList();
+
+        Assert.True(
+            missing.Count == 0,
+            $"These functions are on the clock-reading list and the bundled SQLite no longer "
+            + $"registers them: {string.Join(", ", missing)}. The list was enumerated from the "
+            + "binary, so a change here means the enumeration needs redoing.");
+    }
+
+    private static object? Scalar(string sql)
+    {
+        using var connection = new SqliteConnection("Data Source=:memory:");
+        connection.Open();
+
+        using var command = connection.CreateCommand();
+        command.CommandText = sql;
+
+        var value = command.ExecuteScalar();
+        return value is DBNull ? null : value;
     }
 
     /// <summary>

@@ -70,6 +70,20 @@
   `CURRENT_`. Measured against the bundled SQLite 3.53.3 rather than taken from
   documentation, which also turned up `strftime` with the time value omitted, a
   form that was not raised.
+- FX-ClockIsNotADateSource catches `'subsec'` and `'subsecond'` as a time value,
+  and pins the measurement that bounds them. A first argument that is a modifier
+  rather than a time value does not imply `'now'`: SQLite parses it as a time
+  value, fails, and returns NULL. Measured across all twenty-four documented
+  modifiers, twenty-two behave that way and only those two do not. That bounds
+  the residual at two forms rather than at the whole modifier set, so both are
+  caught and no known limit is owed for modifiers. The patterns are positional,
+  because the same word applied to a supplied time value is a legitimate
+  modifier.
+- The clock-reading function list is enumerated from the binary rather than from
+  documentation. Of the 168 functions the bundled SQLite registers, exactly seven
+  read the wall clock, one of which, `timediff`, had not been considered. That
+  list is the standing residual: an upgrade adding an eighth returns here, and a
+  test asserts every named function still exists.
 
 ### Removed
 - `BUILD_PLAN.md` 0.6's definition of done, "adding a fixture file without
