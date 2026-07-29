@@ -1,4 +1,5 @@
 using System.Reflection;
+using System.Text.RegularExpressions;
 using OptionsWheelLab.Core.Configuration;
 using OptionsWheelLab.Core.Time;
 
@@ -33,8 +34,28 @@ public sealed class FX_ClockIsNotADateSource
     /// store reading a wall clock, which is the same leak with the store as the
     /// culprit.
     /// </summary>
-    private static readonly string[] SqlClockFunctions =
-        ["CURRENT_TIMESTAMP", "CURRENT_DATE", "CURRENT_TIME", "'now'", "unixepoch("];
+    /// <remarks>
+    /// <b>The bare-call forms are the ones that hide.</b> SQLite's date and time
+    /// functions default their time-value argument to <c>'now'</c> when it is
+    /// omitted, so <c>datetime()</c>, <c>date()</c>, <c>time()</c>,
+    /// <c>julianday()</c> and <c>strftime('%Y')</c> all return the current time
+    /// while carrying neither <c>'now'</c> nor <c>CURRENT_</c>. Measured against
+    /// the SQLite that <c>Microsoft.Data.Sqlite</c> bundles here, 3.53.3, rather
+    /// than taken from the documentation.
+    /// <para>
+    /// A catch-list, not an exemption list, exactly as the source guard's is: an
+    /// incomplete one still catches what is on it, so adding a form never needs
+    /// a decision.
+    /// </para>
+    /// </remarks>
+    private static readonly (string Pattern, string Form)[] SqlClockFunctions =
+    [
+        (@"\bCURRENT_(TIMESTAMP|DATE|TIME)\b", "CURRENT_TIMESTAMP and friends"),
+        (@"'now'", "an explicit 'now' time value"),
+        (@"\bunixepoch\s*\(", "unixepoch()"),
+        (@"\b(datetime|date|time|julianday)\s*\(\s*\)", "a date or time function called with no time value"),
+        (@"\bstrftime\s*\(\s*'[^']*'\s*\)", "strftime with the time value omitted"),
+    ];
 
     /// <summary>
     /// The clock returns an instant and offers nothing else. Converting an
@@ -143,9 +164,8 @@ public sealed class FX_ClockIsNotADateSource
         Assert.Contains(statements, statement => statement.Sql.Contains("config_rows", StringComparison.Ordinal));
 
         var offences = statements
-            .SelectMany(statement => SqlClockFunctions
-                .Where(function => statement.Sql.Contains(function, StringComparison.OrdinalIgnoreCase))
-                .Select(function => $"{statement.File}: {function}"))
+            .SelectMany(statement => ClockFunctionsIn(statement.Sql)
+                .Select(form => $"{statement.File}: {form}"))
             .OrderBy(offence => offence, StringComparer.Ordinal)
             .ToList();
 
@@ -169,9 +189,29 @@ public sealed class FX_ClockIsNotADateSource
             );
             """;
 
-        Assert.Contains(
-            SqlClockFunctions,
-            function => Sql.Contains(function, StringComparison.OrdinalIgnoreCase));
+        Assert.NotEmpty(ClockFunctionsIn(Sql));
+    }
+
+    /// <summary>
+    /// The bare-call forms, which carry neither <c>'now'</c> nor
+    /// <c>CURRENT_</c> and are the reason the list is not three entries long.
+    /// </summary>
+    /// <remarks>
+    /// Measured rather than assumed: on the bundled SQLite 3.53.3, each of these
+    /// returns the current time with its time-value argument omitted.
+    /// </remarks>
+    [Theory]
+    [InlineData("observed_at TEXT NOT NULL DEFAULT (datetime())")]
+    [InlineData("session_date TEXT NOT NULL DEFAULT (date())")]
+    [InlineData("observed_at TEXT NOT NULL DEFAULT (time())")]
+    [InlineData("observed_at REAL NOT NULL DEFAULT (julianday())")]
+    [InlineData("session_year TEXT NOT NULL DEFAULT (strftime('%Y'))")]
+    [InlineData("observed_at INTEGER NOT NULL DEFAULT (unixepoch())")]
+    public void A_date_function_with_its_time_value_omitted_is_reported(string column)
+    {
+        var sql = $"CREATE TABLE contract_quotes (contract_id TEXT NOT NULL, {column});";
+
+        Assert.NotEmpty(ClockFunctionsIn(sql));
     }
 
     /// <summary>
@@ -186,11 +226,10 @@ public sealed class FX_ClockIsNotADateSource
             SELECT $key, COALESCE(MAX(version), 0) + 1, $value, $setAt, $note
             FROM config_rows WHERE key = $key;
             SELECT MAX(set_at) FROM config_rows WHERE key = $key;
+            SELECT strftime('%Y', set_at) FROM config_rows WHERE key = $key;
             """;
 
-        Assert.DoesNotContain(
-            SqlClockFunctions,
-            function => Sql.Contains(function, StringComparison.OrdinalIgnoreCase));
+        Assert.Empty(ClockFunctionsIn(Sql));
     }
 
     /// <summary>
@@ -239,6 +278,14 @@ public sealed class FX_ClockIsNotADateSource
     {
         public static string Of(DateTimeOffset instant) => instant.ToString();
     }
+
+    private static IReadOnlyList<string> ClockFunctionsIn(string sql) =>
+        [.. SqlClockFunctions
+            .Where(function => Regex.IsMatch(
+                sql,
+                function.Pattern,
+                RegexOptions.IgnoreCase | RegexOptions.CultureInvariant))
+            .Select(function => function.Form)];
 
     private static IReadOnlyList<Type> CoreTypes() =>
         [.. typeof(IClock).Assembly

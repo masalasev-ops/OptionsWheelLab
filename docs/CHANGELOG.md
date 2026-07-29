@@ -63,6 +63,13 @@
 - `CLAUDE.md` §2 item 4 states the property rather than enumerating the forms.
   It listed two, `guards.ps1` catches six, and the list will grow again. Same
   shape as 0.7's constraint counting five and enumerating four.
+- FX-ClockIsNotADateSource catches SQLite's bare-call clock forms. Its date and
+  time functions default their time value to `'now'` when it is omitted, so
+  `datetime()`, `date()`, `time()`, `julianday()`, `unixepoch()` and
+  `strftime('%Y')` all return the current time while carrying neither `'now'` nor
+  `CURRENT_`. Measured against the bundled SQLite 3.53.3 rather than taken from
+  documentation, which also turned up `strftime` with the time value omitted, a
+  form that was not raised.
 
 ### Removed
 - `BUILD_PLAN.md` 0.6's definition of done, "adding a fixture file without
