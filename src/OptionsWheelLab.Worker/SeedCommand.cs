@@ -48,7 +48,23 @@ internal static class SeedCommand
         output.WriteLine($"Instant:  {StoreTimestamp.ToStored(instant)}");
 
         using var connection = factory.Open(StoreAccess.Write);
-        var outcome = new ConfigWriter(connection).AppendMissing(SeedValues.All, instant);
+
+        SeedOutcome outcome;
+
+        try
+        {
+            outcome = new ConfigWriter(connection).AppendMissing(SeedValues.All, instant);
+        }
+        catch (InvalidOperationException refusal)
+        {
+            // A refusal is a designed outcome of this verb, not a crash: it is
+            // what happens when the store already holds a value these entries
+            // contradict. The refusal messages name the decision and say no row
+            // was written, and a stack trace above them buries the sentence the
+            // operator needs.
+            output.WriteLine($"Refused:  {refusal.Message}");
+            return 1;
+        }
 
         foreach (var key in outcome.Written)
         {
