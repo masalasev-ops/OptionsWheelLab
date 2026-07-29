@@ -26,6 +26,8 @@
   meanings here: `SYSTEM_DESIGN.md` §5's two clocks are the daily and per-cycle
   loops, and §7 has the forward, subscription and evidence clocks. None of them
   is the wall-clock source D-W30 names.
+- `FIXTURES.md` registers FX-ClockIsNotADateSource at 0.5. D-W30 names it and
+  this is the single registry, so the registration follows from the decision.
 
 ### Changed
 - `BUILD_PLAN.md` 0.5 said the clock is "injected everywhere", which D-W30's
@@ -44,11 +46,22 @@
   their prompts are written. Both instructed implementing a set that is empty.
 
 ### Fixed
+- `FIXTURES.md` conflated two kinds of check. Rule 2 assumed every entry is a
+  `.cs` file, which was true when it was written and stopped being true at 0.4,
+  when the first check landed in a script. The registry gains a Kind column and
+  rule 2 is restated per kind.
+- The 0.4 floating-point guard was never registered, so the registry did not list
+  every check the build enforces. Registered as FX-NoFloatingPoint.
 - The triggers enforcing `config_rows`' append-only property cited D-W8, which
   governs snapshots and does not reach a versioned configuration table. Snapshots
   carry `observed_at` and correct by appending a new observation; this table
   carries `set_at` and `version`. The property follows from D-W26, which now
   states it.
+
+### Notes
+- Surfaced by FX-NoAmbientClock at 0.5, which is registered and is a script
+  check. The 0.4 guard was the same shape and raised no conflict only because it
+  was absent from the registry, which is the defect rather than the escape.
 - `BUILD_PLAN.md` 0.7's constraint said five statements in the tree carry the
   banned text and then enumerated four. Measured: six, being two trigger DDL
   statements, three tests asserting those triggers reject an `UPDATE` or a
