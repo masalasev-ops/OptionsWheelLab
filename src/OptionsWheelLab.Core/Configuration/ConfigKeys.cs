@@ -35,6 +35,20 @@ public static class ConfigKeys
     /// A maker added later brings its band here. Until it does, the invariant
     /// does not know about it, and that is the direction this list can be wrong
     /// in: a band nothing names is a band the ceiling is not checked against.
+    /// FX-EveryPolicyBandIsChecked holds that direction, reading every
+    /// <c>Policy:*:DeltaMax</c> row out of <c>CONFIG_REFERENCE.md</c>.
+    /// </para>
+    /// <para>
+    /// <b>That is the opposite direction from the other two vocabularies, and it
+    /// is the rule rather than an inconsistency.</b>
+    /// <see cref="Storage.DecimalColumns"/> and
+    /// <see cref="Storage.AppendOnlyTables"/> are checked list to document,
+    /// because there the error is a name with no table behind it. Here it is
+    /// document to list, because the error is a band with no entry. Each is
+    /// checked standing in the direction in which absence causes the bad outcome.
+    /// The consequence differs in kind too: an incomplete catch-list still
+    /// catches what is on it, where an incomplete band list makes a violating
+    /// configuration pass.
     /// </para>
     /// </remarks>
     public static IReadOnlyList<(string Key, string Name)> PolicyBandCeilings { get; } =

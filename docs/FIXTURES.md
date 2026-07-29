@@ -64,6 +64,7 @@ fail even when the build does not.
 | FX-EveryBoundKeyIsDocumented | fixture | 0.2 | every settable key on a bound options type has a row in CONFIG_REFERENCE.md | authored |
 | FX-ConfigStoreClassHonoured | fixture | 0.2 | parses the Store column from CONFIG_REFERENCE.md and asserts no appsettings section has a root classed `rows` | authored |
 | FX-EveryAppKeyBinds | fixture | 0.8 | every `app`-classed row in CONFIG_REFERENCE.md has a bound settable property on a registered options type | authored |
+| FX-EveryPolicyBandIsChecked | fixture | 0.8 | every `Policy:*:DeltaMax` row in CONFIG_REFERENCE.md appears in `PolicyBandCeilings`, so the delta ceiling is checked against every band that exists | authored |
 | FX-ConfigWriteRefusesInvariantBreach | fixture | 0.8 | a config version violating a cross-key invariant is refused and no row is written | authored |
 | FX-ConfigResolvesAsOf | fixture | 0.3 | a key resolves to the version in force on the simulated date | authored |
 | FX-NoCurrentConfigReadOnSimulatedPath | fixture | 0.3 | no simulated-date component reads current config | authored |
