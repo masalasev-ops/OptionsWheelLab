@@ -4,8 +4,8 @@ The single registry of test fixtures and source guards. Prompts and checkpoints
 reference the entries registered against them here; they never enumerate names
 inline.
 
-Build state: **partly built**. The seventeen entries registered against 0.2 to
-0.5 are implemented, being fifteen fixtures and two guards; the rest belong to
+Build state: **partly built**. The twenty entries registered against 0.2 to 0.6
+are implemented, being eighteen fixtures and two guards; the rest belong to
 checkpoints not yet reached.
 
 ## Why this file exists
@@ -56,6 +56,9 @@ fail even when the build does not.
 | FX-NoFloatingPoint | guard | 0.4 | no `double` or `float` and no named floating-point entry point anywhere in the tree | authored |
 | FX-NoAmbientClock | guard | 0.5 | no ambient DateTime call outside the clock | authored |
 | FX-ClockIsNotADateSource | fixture | 0.5 | no simulated-date path derives its date from the clock | authored |
+| FX-WorkedExampleChainLoads | fixture | 0.6 | the chain and bars in WORKED_EXAMPLE §2 and §5 round-trip through the loader | WORKED_EXAMPLE §2, §5 |
+| FX-ChainLoadsInIdentityOrder | fixture | 0.6 | quotes are yielded in contract identity order, and loading twice gives one sequence | authored |
+| FX-MalformedChainFailsWhole | fixture | 0.6 | a chain with one malformed contract yields nothing rather than the valid ones before it | authored |
 | FX-RegistryMatchesDisk | fixture | 0.2 | every fixture file on disk has an entry here and is named for it | authored |
 | FX-EveryBoundKeyIsDocumented | fixture | 0.2 | every settable key on a bound options type has a row in CONFIG_REFERENCE.md | authored |
 | FX-ConfigStoreClassHonoured | fixture | 0.2 | parses the Store column from CONFIG_REFERENCE.md and asserts no appsettings section has a root classed `rows` | authored |

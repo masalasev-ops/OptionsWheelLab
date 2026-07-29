@@ -1,6 +1,35 @@
 # CHANGELOG
 
-## [1.10.0] — 2026-07-28
+## [1.11.0] — 2026-07-29
+
+### Added
+- D-W31: synthetic chains are written by hand, and the format serves that. It
+  states what the format optimises for rather than what the format is, so a later
+  phase changing the format supersedes nothing and a later phase changing the
+  property has something to supersede. It settles the open question at 0.6 in
+  favour of a domain shape over a schema-mirroring one.
+- D-W31 added to the Data and identity line of the topical index.
+- `README.md` records that the corpus rule governs documents only: code lives in
+  `src/` and `tests/`, spent prompts in `prompts/`, and hand-written synthetic
+  chains in `synthetic/`. None of those are documents and none belong in `docs/`.
+  Named `synthetic/` rather than `fixtures/` because 0.5 established that a
+  fixture is a registry entry, and a `fixtures/` directory holding no `FX-*.cs`
+  would undo that the week after it was drawn.
+- `BUILD_PLAN.md` carried obligations gains the crossed-quote question, owed at
+  Phase 2. Refusing bid above ask at the loader makes a crossed or locked market
+  unwritable, so nothing can exercise the gate against one, which is a hole in
+  D-W31's own premise that deliberate cases are writable.
+
+### Changed
+- `BUILD_PLAN.md` 0.6 names what the checkpoint ships and the detail was silent
+  on: that the loader produces objects rather than rows, since no market-data
+  table exists; that it defines the quote and bar types, there being none; that
+  values parse through the stored forms on the way in and refuse rather than
+  round; that output is in contract identity order rather than file order; that
+  `WORKED_EXAMPLE.md` §2 and §5 are the acceptance test; and where chains live.
+- `BUILD_PLAN.md` 0.6 gains the two definitions of done carried from 0.2, the
+  second discharged empty because the loader takes text and resolves no location,
+  which is what keeps a configuration key out of this checkpoint.
 
 ### Added
 - D-W30: the clock tells wall-clock time and nothing else. The injected clock

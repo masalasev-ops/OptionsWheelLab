@@ -16,7 +16,7 @@ predates this file and cannot be relied on.
 
 **Purpose and measurement**: D-W2, D-W3, D-W5, D-W17, D-W18, D-W20, D-W21
 **Isolation and controls**: D-W1, D-W4, D-W6, D-W13
-**Data and identity**: D-W7, D-W8, D-W9, D-W15, D-W26, D-W27, D-W28, D-W29, D-W30
+**Data and identity**: D-W7, D-W8, D-W9, D-W15, D-W26, D-W27, D-W28, D-W29, D-W30, D-W31
 **Risk**: D-W10, D-W11, D-W14, D-W19, D-W23, D-W25
 **Gate constraints**: D-W10, D-W22, D-W23, D-W24, D-W25
 **Scope**: D-W12, D-W16
@@ -660,3 +660,35 @@ trading days.
 Test FX-NoAmbientClock: no ambient clock call outside the permitted file.
 Test FX-ClockIsNotADateSource: a static check that no simulated-date path
 derives its date from the clock.
+
+---
+
+### D-W31 Synthetic chains are written by hand, and the format serves that
+`active` · 2026-07-29
+
+A synthetic chain is authored by a person, not generated. The format optimises
+for being written and read by hand, and pays for that in loading cost rather than
+the reverse.
+
+Rationale. These exist so that assignment, early exercise and roll-cap cases can
+be constructed deliberately rather than waited for [`SYSTEM_DESIGN.md` §7]. A
+case nobody can write is a case nobody constructs. Mirroring the schema loads
+trivially and turns a five-strike chain into a wall of repeated columns; a domain
+shape reads as a chain and costs the loader some work. The loader is written once
+and the chains are written every time a case is needed.
+
+**Values are in the canonical stored forms** [D-W29, `DATA_AND_SCHEMA.md` Time].
+A hand-written number that reads back as a different number defeats the reason
+for writing it by hand, so a value beyond scale is a malformed chain rather than
+one to round.
+
+**The loader yields in `ContractIdentity`'s order** and never in file order
+[D-W4]. Hand-written files get reordered by whoever edits them, and an order that
+depends on the file changes when someone tidies it.
+
+Scope. This governs what the format optimises for, not what the format is. The
+format is checkpoint detail and may change without superseding this, so long as
+the property holds.
+
+Test: `WORKED_EXAMPLE.md`'s chain is expressible in the format and round-trips
+through the loader.

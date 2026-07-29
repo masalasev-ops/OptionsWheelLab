@@ -15,12 +15,12 @@ One file per phase. It closes when Phase 0 signs off; Phase 1 opens its own.
 
 # Current state
 
-Corpus v1.10.0.
+Corpus v1.11.0.
 
 | | |
 |---|---|
-| Phase 0 | 0.1 to 0.5 built; 0.6 onward not started |
-| CI | green, 199 tests, guards then restore then build then test, on push to `main` and every pull request |
+| Phase 0 | 0.1 to 0.6 built; 0.7 onward not started |
+| CI | green, 224 tests, guards then restore then build then test, on push to `main` and every pull request |
 
 Which branch the work sits on and which pull requests have merged are not
 recorded here. Git holds both exactly, and a fact kept in two places drifts:
@@ -167,6 +167,46 @@ clock, compared as table contents. A SQLite file is not a deterministic renderin
 of its contents, so bytes were never the comparison. The output-level property is
 owed at Phase 3, the first checkpoint with a run to make.
 
+## Synthetic chains
+
+A synthetic chain is data, not a registry entry [D-W31]. It is authored by a
+person, so the format optimises for being written and read by hand and pays for
+that in loading cost. They live in `synthetic/` at the repository root, beside
+`src/` and `docs/` rather than inside the test project, because phases 1 to 7
+consume them and the Worker cannot reach test-project content.
+
+The shape is a chain rather than a table: symbol, snapshot date, expiry and right
+are stated once and the strike rows carry only what varies. That is decided on
+identity rather than on readability, since three of those four make up contract
+identity and a schema-mirroring row repeating them would turn a typo into a
+different contract rather than into an error.
+
+Every value is a quoted string, including the numbers, and an unquoted one is
+refused. The source guard names a JSON number bound into an untyped tree as
+something it cannot catch, so the format closes it by construction. Comments and
+trailing commas are admitted, because these files carry commentary and get their
+lists reordered.
+
+Absent is absent rather than zero: the worked example gives bid, ask and delta
+and the schema has seven more fields, and a zero gamma would be a false
+observation. The underlying's close on a snapshot date is stated once, by the bar.
+
+The loader takes text and resolves no path, so it needs no configured root and
+introduces no key. It yields objects rather than rows, nothing reaching the store
+until Phase 1 wires it, in contract identity order rather than file order.
+
+Malformed fails whole and reports every reason in one pass, each carrying the
+path to the offending value. Refused: any primitive refusal, a decimal beyond the
+scale, an unrecognised property, an unquoted number, a duplicate bar or contract,
+an expiry before its snapshot date, a negative bid or ask, and a bid above its
+ask. The last is the one domain rule, and what it costs is owed at Phase 2: no
+chain can now express a crossed market for the gate to be tested against.
+
+`synthetic/worked-example.json` carries `WORKED_EXAMPLE.md` §2 and §5. The test
+parses those two tables and compares rather than restating their numbers, which
+makes that document the third to be machine-checked after `CONFIG_REFERENCE.md`
+and `FIXTURES.md`.
+
 ## Identity
 
 A ticker is the bare dash form, `BRK-B`, constructible only through
@@ -216,13 +256,14 @@ scanned, including these.
 
 ## Tests
 
-199: 135 across fifteen fixtures, and 64 across fourteen unregistered suites, one
+224: 160 across eighteen fixtures, and 64 across fourteen unregistered suites, one
 of which is the 0.1 smoke test and one of which checks the phase definition of
 done. The two guards are checks rather than tests and are counted in neither.
 
 | Fixture | Tests |
 |---|---|
 | FX-ClockIsNotADateSource | 34 |
+| FX-MalformedChainFailsWhole | 17 |
 | FX-MoneyRoundTrip | 17 |
 | FX-TickerDashForm | 12 |
 | FX-ConfigStoreClassHonoured | 12 |
@@ -233,19 +274,22 @@ done. The two guards are checks rather than tests and are counted in neither.
 | FX-MigrateFromEmpty | 6 |
 | FX-EveryBoundKeyIsDocumented | 5 |
 | FX-RegistryMatchesDisk | 5 |
+| FX-ChainLoadsInIdentityOrder | 4 |
 | FX-MaxDteBelowTrialBound | 4 |
+| FX-WorkedExampleChainLoads | 4 |
 | FX-ApiCannotWrite | 3 |
 | FX-NoCurrentConfigReadOnSimulatedPath | 3 |
 | FX-SnapshotRestoresIdentically | 3 |
 
 FX-ClockIsNotADateSource is large because most of it pins measured SQLite
 behaviour rather than its own detector, so an upgrade that changes the behaviour
-fails on the behaviour.
+fails on the behaviour. FX-MalformedChainFailsWhole is large because a refusal
+and the case beside it are separate assertions.
 
-All seventeen entries registered against 0.2 to 0.5 are implemented and named for
+All twenty entries registered against 0.2 to 0.6 are implemented and named for
 their registry entry. The suite parses `CONFIG_REFERENCE.md`, `FIXTURES.md`,
-`DATA_AND_SCHEMA.md` and `guards.ps1`, so all four are load-bearing rather than
-descriptive.
+`DATA_AND_SCHEMA.md`, `WORKED_EXAMPLE.md` and `guards.ps1`, so all five are
+load-bearing rather than descriptive.
 
 Every store test creates its own database in a temp directory, because the
 append-only triggers make `config_rows` impossible to clean between cases. No
@@ -255,14 +299,17 @@ path does not exist.
 ## Layout
 
 Repository root holds `README.md`, `CLAUDE.md`, `migrate.ps1` and `guards.ps1`.
-Every document is in `docs/`. Spent prompts are in `prompts/spent/`.
+The corpus rule governs documents only: every document is in `docs/`, spent
+prompts are in `prompts/spent/`, and hand-written synthetic chains are in
+`synthetic/`. None of the last two are documents.
 
-`Core` has four folders: `Configuration`, `Storage`, `Identity` and `Time`.
+`Core` has five folders: `Configuration`, `Storage`, `Identity`, `Time` and
+`Synthetic`.
 
 ## Working rules in force
 
 - Commit subjects are prefixed with the phase name and stage, as
-  `Phase 0 Foundations / 0.6 - <type>: <subject>`.
+  `Phase 0 Foundations / 0.7 - <type>: <subject>`.
 - The pull request description is updated on every check-in, and describes the
   change as it stands rather than accumulating a section per review round. An
   appended section cannot retract an earlier one, so a superseded decision ends
@@ -273,15 +320,19 @@ Every document is in `docs/`. Spent prompts are in `prompts/spent/`.
 
 ## Not built
 
-Market data tables and every other table. The loader for synthetic chains, which
-is data rather than a registry entry and is 0.6's. The append-only guards. Every
-checkpoint from 0.6 onward.
+Market data tables and every other table. The append-only guards. Every
+checkpoint from 0.7 onward.
 
 Nothing writes a decimal through a typed path yet: `ConfigWriter.Append` takes a
 string, so D-W29's write-side rule is a convention with no enforcement behind it.
 
 Nothing runs, so nothing produces output. Determinism is asserted over stored
 rows, and the output-level property waits for the first checkpoint with a run.
+
+A loaded chain reaches nothing. There is no market-data table to put it in, so
+Phase 1 wires the quotes and bars the loader yields and stamps `observed_at` as
+it does so. One synthetic chain exists, being the worked example; the calls and
+later expiries §6.3 names are expressible and belong to Phase 3's fixture.
 
 ## Owed
 
@@ -290,7 +341,7 @@ obligations, which is where planning for the phase that owns it will look, and
 which outlives this file. It is not copied here: two registers of one list is
 how an obligation comes to exist in the one nobody reads.
 
-Seven entries stand, owed at 0.7, Phase 1, Phase 3 and Phase 11.
+Eight entries stand, owed at 0.7, Phase 1, Phase 2, Phase 3 and Phase 11.
 
 Scoped work that is not deferred, and so is not a carried obligation:
 
@@ -872,3 +923,116 @@ decision naming a check obliges a row.
 
 No `double` or `float`. Nothing here reads or writes market data. Reconcile the
 detail and the archive at sign-off, not during the build.
+
+## 0.6 Synthetic chain loader
+
+Read `CLAUDE.md`, `BUILD_PLAN.md` §0.6 and "How this document works",
+`DATA_AND_SCHEMA.md` §2, §4.1 and the Time section, D-W29 and D-W30,
+`WORKED_EXAMPLE.md` §2 and §5, the `FIXTURES.md` rules, and Current state above.
+
+Phases 1 to 7 all run on synthetic chains and none exists. The difficulty is not
+parsing. **A synthetic chain is written by a person**, which makes the format a
+usability decision with a correctness consequence: a case nobody can write is a
+case nobody constructs, and a number that reads back differently from how it was
+written defeats the reason for writing it by hand.
+
+### D-W31, the decision this checkpoint lands
+
+A synthetic chain is authored rather than generated. The format optimises for
+being written and read by hand and pays for that in loading cost. It states what
+the format optimises for rather than what the format is, so a later checkpoint
+changing the format supersedes nothing while one changing the property has
+something to supersede.
+
+Register the checkpoint's checks. The registry set is empty and the detail
+already says registering it is due when this prompt is written.
+
+### Settle the format, and report the choice
+
+The open question is a schema-mirroring shape, rows per table, against a domain
+shape, a chain per name per date.
+
+- **Decide it on identity, not on readability.** The fields a schema-mirroring
+  row repeats are three of the four that make up contract identity, so a hand-typo
+  produces a different contract rather than a parse error. That is the failure
+  D-W29 exists to prevent, arriving through the fixture instead of the store.
+- **Every value is quoted, including the numbers, and an unquoted one is
+  refused.** The source guard names a JSON number bound into an untyped tree as
+  something it cannot catch, so close it by construction rather than by
+  discipline. Quoted, the file carries exactly the text the parser reads.
+- **Absent is absent, never zero.** The document supplies bid, ask and delta and
+  the schema has seven more fields. A zero gamma is a false observation rather
+  than a missing one.
+- **State each fact once.** The underlying's close on the snapshot date is in the
+  bar; do not repeat it on the chain. Derived columns are not observations and are
+  not carried.
+- Report where files live and how one is found, since the detail says neither.
+  Use no configured root: take text, and the checkpoint introduces no key.
+
+### The loader
+
+Objects, not rows. No market-data table exists, so nothing here reaches the
+store and Phase 1 wires it. Define the quote and bar types it produces, being
+what a chain can express rather than the domain model Phase 2 will want.
+
+- Values go through the existing stored forms and the identity factory. Add no
+  parsing. The refusing path, since a hand-written value is exact and one beyond
+  the scale is a malformed chain rather than one to round.
+- **Output is in contract identity order**, never file order. Write the test
+  fixture out of order deliberately: a file already sorted would pass on a loader
+  that sorted nothing.
+- **Test**: loading twice gives one sequence, and expiry orders before right and
+  right before strike, since a strike-only case would pass on a loader that sorted
+  only by strike.
+
+### Malformed fails whole
+
+Parse then yield. A partially loaded chain looks like a chain and whatever it is
+missing is missing silently.
+
+- **Report every reason in one pass, not the first.** A hand-written file carries
+  three typos as often as one. Same reasoning as a gate recording every failing
+  reason [D-W22], as an analogy rather than as authority.
+- Carry the path to the offending value in each message, or the reader cannot fix
+  the file.
+- **Refuse an unrecognised property rather than ignoring it.** A misspelled field
+  ignored silently leaves the value absent and the chain loading with nothing to
+  show for it. This is the worst failure a hand-written file has.
+- Report what else was treated as malformed. A duplicate identity and a quote
+  whose bid exceeds its ask are the two worth a judgement, and the second is a
+  domain rule rather than a format one.
+- **Test the boundary next to each refusal**, so a refusal is known not to have
+  swallowed the case beside it: a locked market where bid equals ask loads, and an
+  expiry on its own snapshot date loads.
+- Cases are inline strings, not files. A malformed file in the data directory
+  reads as data rather than as a test case.
+
+### The acceptance test
+
+`WORKED_EXAMPLE.md` §2 and §5 are the acceptance case, so the format is chosen
+against something rather than against nothing.
+
+- **Parse the two tables and compare, rather than restating their numbers.** A
+  second copy of a number is a second thing to keep true. It also closes a live
+  coupling: §3 carries an unresolved banner whose recorded fix may revise the
+  quotes, and a parsed oracle fails on that revision and names the value.
+- **Draw the line at tables.** Symbol, snapshot date, expiry and right are
+  constants in the test: they are structural, stated once in prose, and if one
+  changed the example would be a different example. Build no prose parser; a regex
+  over a sentence breaks on a rewording that changes no fact.
+- **Vacuity**: assert both tables parsed to a non-empty set before comparing.
+- Demonstrate the oracle failing on a divergence, and revert.
+- Report where the line was drawn, whether it held, and whether parsing was
+  harder than restating.
+
+### Definitions of done carried from 0.2
+
+- Every check registered against 0.6 exists in its kind.
+- Every key the sections this checkpoint introduces carry is bound and verified.
+  This checkpoint introduces none, so the obligation is discharged empty rather
+  than skipped.
+
+### Constraints
+
+No `double` or `float`. No ambient clock. Nothing here writes to the store.
+Reconcile the detail and the archive at sign-off, not during the build.

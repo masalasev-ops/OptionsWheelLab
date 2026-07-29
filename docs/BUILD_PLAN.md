@@ -1,6 +1,6 @@
 # BUILD_PLAN
 
-Build state: **Phase 0 in progress**. 0.1 to 0.5 built; 0.6 onward not started.
+Build state: **Phase 0 in progress**. 0.1 to 0.6 built; 0.7 onward not started.
 
 ## How this document works
 
@@ -332,18 +332,74 @@ checkpoint's to build: FX-RegistryMatchesDisk shipped at 0.2, and the
 entry-to-artefact direction is a definition of done on each checkpoint
 [`FIXTURES.md` rule 2].
 
-Implement the fixtures registered against 0.6 in `FIXTURES.md`. That set is
-empty today and registering it is due when this checkpoint's prompt is written,
-rather than left as a sentence resolving to nothing [`FIXTURES.md` rule 2].
+D-W31 lands with this checkpoint: a synthetic chain is authored by a person, so
+the format optimises for being written and read by hand and pays for that in
+loading cost. That decides the open question, which was whether a chain mirrors
+the schema as rows per table or takes a domain shape as a chain per name per
+date. The domain shape wins, and the reason is stronger than readability: the
+fields a schema-mirroring row repeats are three of the four that make up contract
+identity, so a hand-typo would produce a different contract rather than a parse
+error.
+
+**The loader produces objects, not rows.** No market-data table exists; 0.3
+created `config_rows` and said the rest are Phase 1. Nothing this checkpoint
+produces reaches the store, and Phase 1 wires it. Stated because "the quotes and
+bars a simulated date offers" reads both ways, and the wrong reading builds a
+store writer with nowhere to write.
+
+**It defines the types it produces**, there being no quote type and no bar type
+in the tree. A quote is a `ContractIdentity` plus its market data. The boundary
+is what a synthetic chain can express, not the domain model Phase 2 will want.
+
+**Decimals and dates parse through the stored forms**, never `decimal.Parse` or
+`DateOnly.Parse` at a call site. The refusing path, because a hand-written value
+is exact: a value beyond the scale is a malformed chain rather than one to round
+[D-W29].
+
+**Output is in `ContractIdentity`'s order**, never file order. This is where the
+total order 0.4 built gets its first caller, and a hand-written file is reordered
+by whoever edits it.
+
+**`WORKED_EXAMPLE.md` §2 and §5 are the acceptance test**, so the format is
+chosen against something rather than against nothing. The test parses those two
+tables and compares, rather than restating their numbers, so a revision to the
+example fails here and names the value that moved.
+
+Chains live in `synthetic/` at the repository root, not in `docs/`, which holds
+documents, and not in the test project, which the Worker cannot reach.
+
+Implement the fixtures registered against 0.6 in `FIXTURES.md`.
 
 - **DoD**: the loader reads a synthetic chain from disk and produces the quotes
   and bars a simulated date offers, and a malformed one fails rather than
   loading partially.
-- **Open, and 0.6's prompt settles it**: whether a synthetic chain mirrors the
-  schema, being rows per table, or a domain shape, being a chain per name per
-  date. The first loads trivially and reads badly by hand; the second is the
-  reverse. These are written by hand, which is what makes the choice a real one
-  rather than a formatting preference.
+- **DoD**: every check registered against 0.6 exists in its kind.
+- **DoD**: every key the sections this checkpoint introduces carry is bound and
+  verified. It introduces none, the loader taking text and resolving no location,
+  so the obligation is discharged empty rather than skipped.
+
+Reconciled at sign-off against what shipped. Three things were larger than the
+scope above.
+
+**Every value in a chain is a quoted string, including the numbers.** The detail
+asked only that values parse through the stored forms. The mechanism turned out
+to matter more than the rule: `guards.ps1` names, as the thing it cannot catch,
+a JSON number bound into an untyped tree, and an unquoted number is a `double`
+waiting to happen that no scan here would see. Quoting closes that by
+construction, and an unquoted value is refused, so the format carries exactly the
+text the parser reads.
+
+**Malformed reports every reason rather than the first.** The detail asked that a
+malformed chain fail whole. A hand-written file carries three typos as often as
+one, so reporting them a run at a time turns a minute into an afternoon. The same
+reasoning as a gate recording every failing reason rather than the first [D-W22],
+applied to a different subject.
+
+**A third document became machine-checked.** The acceptance test parses the two
+tables in `WORKED_EXAMPLE.md` rather than restating their numbers, joining the
+Store column and the fixture registry. The line is drawn at tables: symbol,
+snapshot date, expiry and right are constants in the test, because they are
+structural and stated once in prose, and no prose is parsed at all.
 
 ### 0.7 Append-only guards
 
@@ -408,6 +464,7 @@ has aged.
 | Phase 1 | Resolve aliases in the decimal-ordering detector, or adopt and check a convention that a decimal column is never aliased. `SELECT strike AS s FROM contracts ORDER BY s` orders a decimal and passes. Deleting FX-NoDecimalOrderingInSql's known-miss test is part of closing it. | PR #3 |
 | Phase 3 | Establish output-level determinism: a simulated run with a fixed clock produces byte-identical output across two invocations. 0.5 restated it as identical stored rows because no run existed to make. Compared as produced artefacts, never as a database file [D-W28]. | PR #4 |
 | Phase 3 | Decide what bars nondeterminism in SQL that is not a clock. Enumerating the bundled SQLite showed `random()` and `randomblob()` alongside the seven clock functions; they are outside FX-ClockIsNotADateSource by name but would break a byte-identical run just as surely. | PR #4 |
+| Phase 2 | Decide whether the gate handles a crossed quote. 0.6's loader refuses bid above ask, which is the one domain rule it enforces, and that makes a crossed or locked market unwritable as a synthetic chain, so nothing can exercise the gate against one. D-W22's spread cap is a fraction of mid, so a crossed quote gives a negative numerator and passes a cap that exists to reject wide markets. If the gate handles it, the loader stops refusing it. | PR #5 |
 
 ---
 
