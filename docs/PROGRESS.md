@@ -5,7 +5,7 @@ Appended to, never rewritten. The repository is the authority on build state.
 ## Current state
 
 **Phase 0 in progress.** Checkpoints 0.1 to 0.6 built. 0.7 onward not started.
-The documentation corpus is at v1.11.0.
+The documentation corpus is at v1.12.0.
 
 ## Log
 
@@ -346,3 +346,29 @@ letting the transcription drift until Phase 2.
 
 The loader refuses a quote whose bid exceeds its ask, which is the single domain
 rule it enforces, and what that costs is carried at Phase 2.
+
+### 2026-07-29 — corpus v1.12.0
+Checkpoint 0.7 scoped. The append-only rule has existed since D-W8 and nothing
+has ever enforced it, so building the check had to settle three things the corpus
+left open: which tables the rule covers, what mechanism the check is, and whether
+the source guards move to Roslyn.
+
+"Snapshot tables" was used in four documents and defined in none. §4.1 now
+defines the six, and `contracts` is one of them despite carrying no `observed_at`
+because a corporate action mints a new identity rather than editing a row. §4.0
+documents `schema_migrations`, which 0.3 created and which §4 had never carried
+while documenting seventeen tables that do not exist.
+
+The check is a fixture rather than a source guard. 0.4's criterion decides it,
+and a measurement settles it beyond the criterion: `guards.ps1` strips raw string
+literals by design and every SQL statement here lives in one, so a pattern added
+to the script would match nothing in the tree by construction.
+
+Two citation errors of one shape are now three. `decisions` and `candidates` were
+cited to D-W3 for a property D-W3 did not state, exactly as `config_rows` was
+cited to D-W8 until 0.5. Both were right about the rule and wrong about its
+authority, which is why reading either document alone found neither, and building
+the check that rests on the citation is what found both. `CLAUDE.md` §1 gains
+that method, and applying it to the vocabulary before writing any code predicted
+the third: `schema_migrations` would have rested on §4.0's prose, so D-W32 states
+the property instead. That is the first instance found deliberately.

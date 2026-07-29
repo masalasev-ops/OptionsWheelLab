@@ -38,6 +38,14 @@ recorded. State it where it will be found, then read it back off disk.
 right and re-read.** In the sibling project the challenger with a line number
 was right nearly every time.
 
+**A citation is verified by what rests on it, not by reading it.** Two citations
+in this corpus named a decision for a property that decision did not state:
+`config_rows` to D-W8, and `decisions` and `candidates` to D-W3. Both were right
+about the rule and wrong about its authority, which is why reading either
+document alone found neither. Building the thing that enforces the rule is what
+found both. So when a checkpoint enforces a rule, check that the decision it
+cites states it, and expect the answer to be no more often than reading suggests.
+
 **State uncertainty as uncertainty.** A measured number and an assumed number
 are different things, and an argument is not evidence. If something has been
 asserted rather than measured, say so in the same sentence.
@@ -47,9 +55,11 @@ asserted rather than measured, say so in the same sentence.
 ## 2. Non-negotiable invariants
 
 1. **Worker is the sole writer.** The Api opens the store read-only.
-2. **Snapshots are append-only.** Never emit `DELETE FROM` or `UPDATE` against
-   snapshot tables, or against `decisions` and `candidates` [D-W3, D-W8]. CI
-   greps for both.
+2. **Append-only tables are never rewritten.** Never emit `DELETE FROM` or
+   `UPDATE` against a snapshot table, against `decisions` or `candidates`
+   [D-W3, D-W8], or against `config_rows`, whose versions are immutable because
+   as-of resolution answers what was in force then [D-W26]. The table vocabulary
+   is the check's, not this sentence's; this names why each is in it.
 3. **Money is decimal in TEXT.** No `double` or `float` in any monetary path.
    CI greps for it.
 4. **No ambient clock.** Inject `IClock`. No ambient time read outside the clock

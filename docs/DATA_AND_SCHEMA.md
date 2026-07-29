@@ -56,8 +56,8 @@ Three, and they are the ones that make historical runs capable of failing.
 
 **Snapshots are append-only.** A stored snapshot records what was observable that
 date and is never rewritten [D-W8]. Vendor corrections arrive as new rows with
-their own `observed_at`. CI greps for `DELETE FROM` and `UPDATE` against snapshot
-tables.
+their own `observed_at`. A delete or an update against a snapshot table fails the
+build.
 
 **Membership is state.** Watchlist membership carries entry and exit dates, and a
 query about a past date resolves membership as of that date [D-W9].
@@ -108,7 +108,24 @@ floating point, in the canonical fixed-scale form [D-W29]. The scale is a single
 declared constant, wide enough for the most precise value any column carries.
 Decimal columns are not ordered, ranged over, or aggregated in SQL.
 
+### 4.0 The migration ledger
+
+```
+schema_migrations
+  id INTEGER PK, name TEXT, applied_at TEXT
+```
+
+Records which migrations have been applied, which is where a store's schema
+version comes from rather than from `PRAGMA user_version` [0.3]. Never rewritten
+[D-W32].
+
 ### 4.1 Market data
+
+These six are the **snapshot tables**: they record what was observable on a date
+and are never rewritten [D-W8]. `contracts` is one of them despite carrying no
+`observed_at`, because a corporate action mints a new identity with a predecessor
+link rather than editing the existing row [§2]. The phrase is used in four
+documents and this is where it is defined.
 
 ```
 underlying_bars

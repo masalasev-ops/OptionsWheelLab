@@ -1,5 +1,69 @@
 # CHANGELOG
 
+## [1.12.0] — 2026-07-29
+
+### Added
+- D-W32: the migration ledger is never rewritten, so `schema_migrations` enters
+  the append-only vocabulary on a decision rather than on §4.0's prose. Its
+  rationale is not the one the other tables have: a store's schema version is
+  derived from the ledger rather than stated anywhere, so a rewritable ledger
+  makes a store unable to answer what it is, and two snapshots either side of a
+  rewrite would restore to different schemas while claiming the same version.
+  Predicted by the plan before the check was built, using the method `CLAUDE.md`
+  §1 gained this checkpoint, which makes it the third instance of the pattern and
+  the first found deliberately rather than by accident.
+- D-W32 added to the Data and identity line of the topical index.
+- `CLAUDE.md` §1: a citation is verified by what rests on it, not by reading it.
+  Two citations named a decision for a property that decision did not state, both
+  were right about the rule and wrong about its authority, and building the thing
+  that enforces the rule is what found both.
+- `DATA_AND_SCHEMA.md` §4.0 documents `schema_migrations`, which 0.3 created and
+  §4 never carried. §4 documented seventeen tables that do not exist and omitted
+  one of the two that do.
+- `DATA_AND_SCHEMA.md` §4.1 defines the **snapshot tables**. The phrase is used
+  in four documents and was defined in none. `contracts` is one despite carrying
+  no `observed_at`, because a corporate action mints a new identity rather than
+  editing a row.
+- A carried obligation at Phase 1 for `watchlist_membership`, whose §4.2 rule and
+  schema shape disagree about whether it is append-only. Raised at 0.7, where
+  drawing the vocabulary made the disagreement visible.
+
+### Changed
+- `CLAUDE.md` §2 item 2 states the rule and hands the table list to the check.
+  It named snapshot tables, `decisions` and `candidates` and stopped, while
+  `config_rows` was the only one of them that existed.
+- `BUILD_PLAN.md` 0.7 says the check is a fixture rather than a source guard.
+  0.4's criterion decides it, and a measurement settles it beyond the criterion:
+  `guards.ps1` strips raw string literals by design and every SQL statement here
+  lives in one, so a pattern added to the script would match nothing in the tree
+  by construction.
+- `BUILD_PLAN.md` 0.7 gains the two definitions of done carried from 0.2, which
+  0.5 and 0.6 received and it did not.
+- The Phase 1 alias obligation is amended rather than duplicated. It named one
+  detector and one known-miss test; 0.7 adds a second detector with a table-alias
+  miss, and it is one alias problem seen at two levels. Deleting both known-miss
+  tests is now part of closing it.
+
+### Fixed
+- `decisions` and `candidates` were cited to D-W3 for a property D-W3 did not
+  state. Same shape as the D-W8 citation corrected at 0.5, found the same way, by
+  building the check that rests on it. D-W3 now says a recorded decision is never
+  rewritten.
+- 0.7's constraint said the check distinguishes by table rather than by location.
+  Building it measured three mechanisms, and scan scope is one of them. Corrected
+  from the measurement; no decision determined it, and the correction states why
+  scope is not an exemption.
+- Three documents described this guard as a CI grep. `BUILD_PLAN.md` was
+  corrected at v1.9.9 and these were not, so the wording survived in a decision's
+  Test line, a schema section and a design section until building the check made
+  all three false.
+- D-W32's scope clause carried a count and the count was wrong: it said six kinds
+  where the measurement is four decisions, five kinds and ten tables. Removed
+  rather than corrected, because it would have gone stale regardless once
+  `watchlist_membership` resolves. That is the same treatment 0.7's own constraint
+  gets in this version, and for the same reason — a number that moves when
+  unrelated work lands is not a property of the rule.
+
 ## [1.11.0] — 2026-07-29
 
 ### Added
