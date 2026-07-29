@@ -6,6 +6,13 @@ namespace OptionsWheelLab.Core.Configuration;
 /// <summary>One key and the value to write for it, with the note explaining the choice.</summary>
 public sealed record ConfigEntry(string Key, string Value, string? Note = null);
 
+/// <summary>What a seeding write did, key by key.</summary>
+/// <remarks>
+/// Both sets rather than both counts: an operator looking at a partly seeded
+/// store needs to know which keys were left, not how many.
+/// </remarks>
+public sealed record SeedOutcome(IReadOnlyList<string> Written, IReadOnlyList<string> Skipped);
+
 /// <summary>
 /// Appends a new version of a configuration key.
 /// </summary>
@@ -88,7 +95,67 @@ public sealed class ConfigWriter
         }
 
         using var transaction = _connection.BeginTransaction(deferred: false);
+        Write(transaction, entries, setAt);
+        transaction.Commit();
+    }
 
+    /// <summary>
+    /// Writes the first version of every entry whose key has none, leaves every
+    /// key that already has a version alone, and names both sets.
+    /// </summary>
+    /// <remarks>
+    /// <b>Skipping rather than appending an identical value is the point.</b>
+    /// Appending version + 1 with the same value is legal and would be wrong: it
+    /// fills the history with revisions that revised nothing, and it would
+    /// silently overwrite an operator's later value every time the verb ran.
+    /// <para>
+    /// The existence check is inside the same transaction as the insert, so a key
+    /// cannot appear between deciding to write it and writing it.
+    /// </para>
+    /// <para>
+    /// A skipped key is still an operand. If the store holds a value that the
+    /// entries being written contradict, the invariants refuse the write rather
+    /// than the seed quietly leaving the pair inconsistent.
+    /// </para>
+    /// </remarks>
+    public SeedOutcome AppendMissing(IReadOnlyList<ConfigEntry> entries, DateTimeOffset setAt)
+    {
+        ArgumentNullException.ThrowIfNull(entries);
+
+        using var transaction = _connection.BeginTransaction(deferred: false);
+
+        var missing = new List<ConfigEntry>();
+        var skipped = new List<string>();
+
+        foreach (var entry in entries)
+        {
+            ArgumentException.ThrowIfNullOrWhiteSpace(entry.Key);
+
+            if (ConfigRowQuery.ResolveCurrent(_connection, entry.Key, transaction) is null)
+            {
+                missing.Add(entry);
+            }
+            else
+            {
+                skipped.Add(entry.Key);
+            }
+        }
+
+        if (missing.Count > 0)
+        {
+            Write(transaction, missing, setAt);
+        }
+
+        transaction.Commit();
+
+        return new SeedOutcome(missing.Select(entry => entry.Key).ToList(), skipped);
+    }
+
+    private void Write(
+        SqliteTransaction transaction,
+        IReadOnlyList<ConfigEntry> entries,
+        DateTimeOffset setAt)
+    {
         foreach (var entry in entries)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(entry.Key);
@@ -99,8 +166,6 @@ public sealed class ConfigWriter
         }
 
         RefuseIfInvariantsDoNotHold(transaction, entries);
-
-        transaction.Commit();
     }
 
     private void Insert(SqliteTransaction transaction, ConfigEntry entry, DateTimeOffset setAt)
