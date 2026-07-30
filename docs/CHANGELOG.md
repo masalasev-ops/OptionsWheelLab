@@ -24,6 +24,15 @@ Checkpoint 1.4.
   before migration 5 was scoped: bid and ask NOT NULL, the rest NULL, so the
   migration touches `underlying_bars` only. The 1.2 finding's own lesson was
   that 1.1 verified one record and claimed both.
+- D-W29's write-side obligation closes with the teeth it got stated honestly.
+  `AddStored` renders every typed value through its stored form, the decimal
+  path refusing rather than rounding, and the chain writer binds exclusively
+  through it. Nothing structural prevents a future call site bypassing the
+  seam, a type-level check having been declined at D-W33, so exclusivity is
+  review's to hold. `ConfigWriter`'s string parameter is out of scope:
+  `config_rows.value` is polymorphic by design and the obligation named
+  decimal-typed columns. Twelve carried obligations stand, down from
+  thirteen.
 
 ## [1.23.0] — 2026-07-30
 

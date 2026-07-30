@@ -610,7 +610,6 @@ admits only one origin costs.
 | Owed at | Obligation | Raised |
 |---|---|---|
 | Phase 11 | Re-add `Microsoft.AspNetCore.OpenApi` against a version whose `Microsoft.OpenApi` dependency clears the audit. Removed at 0.1 rather than suppressing the advisory; the reason is in the Api project file. | PR #1 |
-| Phase 1 | Give D-W29's write-side rule teeth. Every decimal reaching a `TEXT` column should pass through the canonical form, and nothing enforces that: `ConfigWriter.Append` takes a string. A decimal-typed parameter-binding seam is the likely mechanism, when the first real decimal column exists. | PR #3 |
 | Phase 1 | Decide what an adjusted strike does when a corporate action makes it non-terminating. Identity canonicalises through the refusing path, so a 3-for-2 split forces a choice between rounding a value that is part of a contract's identity and carrying the ratio. | PR #3 |
 | Phase 3 | Establish output-level determinism: a simulated run with a fixed clock produces byte-identical output across two invocations. 0.5 restated it as identical stored rows because no run existed to make. Compared as produced artefacts, never as a database file [D-W28]. | PR #4 |
 | Phase 3 | Decide what bars nondeterminism in SQL that is not a clock. Enumerating the bundled SQLite showed `random()` and `randomblob()` alongside the seven clock functions; they are outside FX-ClockIsNotADateSource by name but would break a byte-identical run just as surely. | PR #4 |
