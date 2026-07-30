@@ -81,6 +81,7 @@ fail even when the build does not.
 | FX-SnapshotRestoresIdentically | fixture | 0.3 | a store restored from its snapshot resolves the values it did before the mutation | authored |
 | FX-PitMembershipExcludesLaterJoiner | fixture | 1.3 | as-of membership excludes later joiners | authored |
 | FX-SnapshotNeverRewritten | fixture | 1.1 | a vendor correction appends rather than updates | authored |
+| FX-WorkedExampleChainPersists | fixture | 1.4 | the worked example's chain persists and reads back identical to the document's tables | authored |
 | FX-GateRejectsAboveHeadroom | fixture | 2 | candidates breaching per-name headroom are rejected with a reason | WORKED_EXAMPLE §3 |
 | FX-OffWatchlistRejected | fixture | 2 | no candidates for a non-member symbol | authored |
 | FX-SpreadCapRejects | fixture | 2 | a candidate above the spread cap is rejected with its reason | authored |

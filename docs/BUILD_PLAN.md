@@ -797,6 +797,15 @@ record rather than from this sentence, and correct §4.1 to match. Found
 at 1.2 by reading the migration against the record; 1.1's claim that "a
 chain the loader accepts is a chain this schema can hold" was verified
 against ContractQuote only.
+
+What a second ingest does is settled. Re-loading a chain with the same
+observation instant is refused by the primary keys and the refusal says so;
+recording the same chain with a new instant appends alongside the old, which
+is the correction model arriving at the ingest level [D-W8]. Both are tested.
+
+No Worker verb. Ingest is a Core writer; tests are its only caller until a
+phase needs an operator entry point, and a verb nothing calls is speculation.
+The first consumer with an operational need is Phase 8's vendor ingest.
 - **DoD**: the worked example's chain loads into the store and reads back
   identical, against the same oracle 0.6's fixture uses.
 - Discharges D-W29's write-side seam. This writes the first real decimal columns,

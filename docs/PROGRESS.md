@@ -5,8 +5,8 @@ Appended to, never rewritten. The repository is the authority on build state.
 ## Current state
 
 **Phase 0 complete and reviewed. Phase 1 in progress.** Checkpoints 0.1 to 0.8
-and 1.1 to 1.3 built and signed off; 1.4 and 1.5 not built. Phase 2 detail not
-written. The documentation corpus is at v1.23.0.
+and 1.1 to 1.3 built and signed off; 1.4 building; 1.5 not built. Phase 2
+detail not written. The documentation corpus is at v1.24.0.
 
 ## Log
 
@@ -732,3 +732,16 @@ test now builds its previous-schema store from the frozen migration list
 itself. And the alias detector flagged this checkpoint's own migration
 comment, "version as config_rows", which was reworded rather than the detector
 narrowed: prose inside a SQL literal is inside the scanner's jurisdiction.
+
+### 2026-07-30 — corpus v1.24.0
+Checkpoint 1.4 scoped. Its check is registered new,
+FX-WorkedExampleChainPersists, and the detail settles two things it left
+open: a second ingest at the same instant is refused by the keys while a new
+instant appends alongside, the correction model arriving at the ingest level,
+and no Worker verb ships, tests being the only caller until Phase 8's vendor
+ingest needs an operator entry point.
+
+`contract_quotes` was reconfirmed against `ContractQuote` by direct read, so
+migration 5 is scoped to `underlying_bars` alone. The 1.2 finding that raised
+the migration was itself a lesson in verifying one record and claiming both,
+which is why the reconfirmation was done rather than assumed.

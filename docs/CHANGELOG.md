@@ -1,5 +1,30 @@
 # CHANGELOG
 
+## [1.24.0] — 2026-07-30
+
+Checkpoint 1.4.
+
+### Added
+- FX-WorkedExampleChainPersists registered at 1.4: the worked example's chain
+  persists and reads back identical to the document's tables, which is the
+  checkpoint's definition of done as a standing check rather than a one-time
+  demonstration.
+
+### Changed
+- BUILD_PLAN 1.4's detail settles what it left open. A second ingest at the
+  same observation instant is refused by the primary keys with a refusal that
+  says so; the same chain at a new instant appends alongside the old, the
+  correction model arriving at the ingest level. And no Worker verb ships:
+  ingest is a Core writer, tests are its only caller until a phase needs an
+  operator entry point, and the first consumer with an operational need is
+  Phase 8's vendor ingest.
+
+### Notes
+- `contract_quotes` was reconfirmed against `ContractQuote` by direct read
+  before migration 5 was scoped: bid and ask NOT NULL, the rest NULL, so the
+  migration touches `underlying_bars` only. The 1.2 finding's own lesson was
+  that 1.1 verified one record and claimed both.
+
 ## [1.23.0] — 2026-07-30
 
 Checkpoint 1.3 signed off.
