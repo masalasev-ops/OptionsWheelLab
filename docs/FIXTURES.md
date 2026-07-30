@@ -34,6 +34,14 @@ fixtures in one place and pointing at it removes that failure by construction.
      registers no entries says so in its detail, rather than discharging
      this vacuously. An obligation that passes because its subject set is
      empty is not discharged, it is unexercised.
+
+     A row is registered against a phase until that phase's checkpoint
+     detail is written, and against a checkpoint once it is. Detail is
+     written one phase ahead, so a row sits at phase granularity for at
+     most one phase. A row left at phase granularity after its detail
+     exists makes every checkpoint's definition of done resolve to
+     nothing, which is this rule discharging on an empty set rather than
+     on its subjects.
 3. Fixture data is synthetic unless explicitly marked otherwise. Synthetic is
    preferred because assignment, early exercise, and roll-cap cases can be
    constructed deliberately rather than waited for.
@@ -60,6 +68,7 @@ fail even when the build does not.
 | FX-ChainLoadsInIdentityOrder | fixture | 0.6 | quotes are yielded in contract identity order, and loading twice gives one sequence | authored |
 | FX-MalformedChainFailsWhole | fixture | 0.6 | a chain with one malformed contract yields nothing rather than the valid ones before it | authored |
 | FX-NoRewriteOfAppendOnlyTables | fixture | 0.7 | no statement in `src/` deletes from or updates a table the append-only vocabulary covers | authored |
+| FX-NoSqlAliases | fixture | 1.1 | no SQL in `src/` aliases a table or a column, which is what makes both SQL detectors sound without either resolving aliases | authored |
 | FX-RegistryMatchesDisk | fixture | 0.2 | every fixture file on disk has an entry here and is named for it | authored |
 | FX-EveryBoundKeyIsDocumented | fixture | 0.2 | every settable key on a bound options type has a row in CONFIG_REFERENCE.md | authored |
 | FX-ConfigStoreClassHonoured | fixture | 0.2 | parses the Store column from CONFIG_REFERENCE.md and asserts no appsettings section has a root classed `rows` | authored |
@@ -69,8 +78,8 @@ fail even when the build does not.
 | FX-ConfigResolvesAsOf | fixture | 0.3 | a key resolves to the version in force on the simulated date | authored |
 | FX-NoCurrentConfigReadOnSimulatedPath | fixture | 0.3 | no simulated-date component reads current config | authored |
 | FX-SnapshotRestoresIdentically | fixture | 0.3 | a store restored from its snapshot resolves the values it did before the mutation | authored |
-| FX-PitMembershipExcludesLaterJoiner | fixture | 1 | as-of membership excludes later joiners | authored |
-| FX-SnapshotNeverRewritten | fixture | 1 | a vendor correction appends rather than updates | authored |
+| FX-PitMembershipExcludesLaterJoiner | fixture | 1.3 | as-of membership excludes later joiners | authored |
+| FX-SnapshotNeverRewritten | fixture | 1.1 | a vendor correction appends rather than updates | authored |
 | FX-GateRejectsAboveHeadroom | fixture | 2 | candidates breaching per-name headroom are rejected with a reason | WORKED_EXAMPLE §3 |
 | FX-OffWatchlistRejected | fixture | 2 | no candidates for a non-member symbol | authored |
 | FX-SpreadCapRejects | fixture | 2 | a candidate above the spread cap is rejected with its reason | authored |

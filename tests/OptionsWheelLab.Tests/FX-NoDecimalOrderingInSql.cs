@@ -192,21 +192,51 @@ public sealed class FX_NoDecimalOrderingInSql
     }
 
     /// <summary>
-    /// The known limit, pinned rather than left in a comment.
+    /// <c>last</c> is a decimal column, not the <c>NULLS LAST</c> keyword.
     /// </summary>
     /// <remarks>
-    /// An alias defeats the detector. This test asserts the miss so the gap is
-    /// visible in the suite rather than only in prose, and it is NOT an
-    /// endorsement: when Phase 1 resolves aliases, or adopts a convention that a
-    /// decimal column is never aliased, this test fails and that failure is the
-    /// signal to delete it.
+    /// The order-keyword filter ran before the vocabulary was consulted and skipped
+    /// <c>LAST</c> unconditionally, so an ordering over <c>contract_quotes.last</c>
+    /// was dropped: a real ordering over a canonical decimal, unreported. The defect
+    /// did not exist until 1.1 made <c>last</c> a decimal column, and it was found
+    /// by measuring the extended vocabulary against the detector rather than by
+    /// running it.
     /// </remarks>
     [Fact]
-    public void An_aliased_decimal_column_is_a_known_miss()
+    public void Ordering_by_the_last_column_is_reported()
     {
-        const string Sql = "SELECT strike AS s FROM contracts ORDER BY s DESC;";
+        const string Sql = "SELECT contract_id FROM contract_quotes ORDER BY last DESC;";
 
-        Assert.Empty(DecimalOrderingInSql.Offences(Sql, Vocabulary("strike")));
+        var offence = Assert.Single(DecimalOrderingInSql.Offences(Sql, Vocabulary("last")));
+
+        Assert.Contains("ORDER BY", offence, StringComparison.Ordinal);
+        Assert.Contains("last", offence, StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    /// <c>NULLS LAST</c> is still an order keyword and is not read as the column.
+    /// </summary>
+    /// <remarks>
+    /// The pair is what SQLite gives the keyword meaning to, so it is removed as a
+    /// pair. Without this the fix would trade a false negative for a false positive.
+    /// </remarks>
+    [Fact]
+    public void Nulls_last_is_not_read_as_the_last_column()
+    {
+        const string Sql = "SELECT contract_id FROM contract_quotes ORDER BY snapshot_date NULLS LAST;";
+
+        Assert.Empty(DecimalOrderingInSql.Offences(Sql, Vocabulary("last")));
+    }
+
+    /// <summary>
+    /// Both together, which is the case that would have hidden the defect.
+    /// </summary>
+    [Fact]
+    public void The_last_column_is_reported_even_beside_a_nulls_last_clause()
+    {
+        const string Sql = "SELECT contract_id FROM contract_quotes ORDER BY last DESC NULLS LAST;";
+
+        Assert.Single(DecimalOrderingInSql.Offences(Sql, Vocabulary("last")));
     }
 
     private static IReadOnlyList<string> SourceFiles() =>
@@ -282,7 +312,16 @@ internal static class DecimalOrderingInSql
         @"""(?<body>(?:[^""\\\r\n]|\\.)*)""",
         RegexOptions.Compiled | RegexOptions.CultureInvariant);
 
-    private static readonly string[] OrderKeywords = ["ASC", "DESC", "COLLATE", "NULLS", "FIRST", "LAST"];
+    private static readonly string[] OrderKeywords = ["ASC", "DESC", "COLLATE", "NULLS"];
+
+    // FIRST and LAST are order keywords only after NULLS, and `last` is a decimal
+    // column from 1.1. Skipping them unconditionally, as this list did, meant
+    // `ORDER BY last` was filtered out before the vocabulary was consulted: a real
+    // ordering over a canonical decimal, silently unreported. Matched as a pair so
+    // the keyword is excluded in the one context SQLite gives it and nowhere else.
+    private static readonly Regex NullsOrdering = new(
+        @"\bNULLS\s+(FIRST|LAST)\b",
+        RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
 
     internal static IReadOnlyList<string> Offences(string sql, IReadOnlySet<string> decimalColumns)
     {
@@ -293,7 +332,11 @@ internal static class DecimalOrderingInSql
 
         foreach (Match clause in OrderByClause.Matches(sql))
         {
-            foreach (Match identifier in Identifier.Matches(clause.Groups["columns"].Value))
+            // NULLS FIRST and NULLS LAST are removed as a pair before the
+            // identifiers are read, so `last` is a column everywhere else.
+            var columns = NullsOrdering.Replace(clause.Groups["columns"].Value, " ");
+
+            foreach (Match identifier in Identifier.Matches(columns))
             {
                 if (OrderKeywords.Contains(identifier.Value, StringComparer.OrdinalIgnoreCase))
                 {

@@ -1,5 +1,115 @@
 # CHANGELOG
 
+## [1.19.0] — 2026-07-30
+
+Checkpoint 1.1 signed off.
+
+### Added
+- `prompts/spent/phase-1.md`, carrying 1.1's prompt with its review rounds folded in
+  and the Current state that describes the present. Phase 0's file is closed and its
+  Current state is frozen as a record of that phase's close.
+
+### Changed
+- `BUILD_PLAN.md` 1.1 is reconciled against what shipped. Five things were larger
+  than its scope, and three of them were found by measuring something the detail
+  assumed rather than by reviewing what was written.
+- The build-state markers say Phase 1 is in progress and that 1.1 is built and
+  signed off, 1.2 to 1.5 being live intent.
+
+### Notes
+- 1.1 shipped a schema the document did not fully specify: twelve triggers, three
+  indexes, a `CHECK`, a uniqueness constraint and two foreign keys, where only the
+  tables were in the detail. The foreign keys were asked for by nothing and are
+  raised rather than assumed.
+- Three of the checkpoint's findings came from measurement answering a question other
+  than the one asked. Measuring the decimal vocabulary's false-positive surface found
+  a false negative; running the alias convention over real statements found two
+  detector defects; demonstrating the twelve refusals found a trigger message that
+  claimed a column its table does not have.
+
+## [1.18.0] — 2026-07-29
+
+Checkpoint 1.1.
+
+### Added
+- `contracts` carries `multiplier` and `deliverable_shares` as separate columns.
+  `multiplier` is what a quoted premium multiplies by and an adjustment does not
+  change it; `deliverable_shares` is what one contract conveys on exercise and an
+  adjustment does. The single `multiplier` column was named for one and intended as
+  the other. Neither is described by what consumes it, because which of the two the
+  outcome metric uses is open.
+- `UNIQUE (symbol, expiry, right, strike, deliverable_shares)` on `contracts`. The
+  identity tuple alone is not unique: an adjusted series can carry a strike that
+  collides with a standard one on the same underlying and expiry, and the deliverable
+  is what separates them. Deliberately weaker than a constraint on the tuple, which
+  would forbid a collision that occurs, and it still stops the same contract being
+  inserted twice. Not `vendor_symbol`, because a synthetic chain carries none and
+  SQLite treats nulls in a unique index as distinct, so it would guard nothing until
+  Phase 8 while the duplicate-insert bug is live from 1.4.
+- Three indexes on the market-data tables, each naming the query it serves. The three
+  keyed tables need none: a primary key ending in `observed_at` is already the index
+  an as-of read wants.
+- A carried obligation owed at Phase 3: settle which quantity committed capital uses.
+  D-W17's first paragraph says the contract multiplier and its third says the
+  deliverable, and they differ for an adjusted contract. To be checked against OCC's
+  contract adjustment memos rather than a secondary source.
+- `FIXTURES.md` rule 2 says when a row sits at phase granularity and when that becomes
+  a defect: a row is registered against a phase until that phase's detail is written
+  and against a checkpoint once it is.
+
+### Changed
+- Phase 1's two registered rows move to checkpoint granularity now that its detail
+  names five checkpoints. FX-SnapshotNeverRewritten to 1.1,
+  FX-PitMembershipExcludesLaterJoiner to 1.3. Phases 2 to 9 stay at phase
+  granularity, which is correct while their detail is unwritten.
+- `BUILD_PLAN.md` 1.1 no longer says `AppendOnlyTables` gains the six. 0.7 declared
+  all six forward, so 1.1 adds no names and what it owes is the reverse direction.
+- `vendor_symbol` is nullable. The field OCC uses to distinguish an adjusted series
+  is the one a synthetic chain cannot supply, and everything before Phase 8 runs on
+  synthetic chains.
+
+- Fixture FX-NoSqlAliases (1.1): no SQL in `src/` aliases a table or a column. This
+  discharges the alias obligation raised at 0.4 and widened at 0.7, by the
+  convention half of it rather than by resolution. Resolving an alias in the decimal
+  detector needs the detector to know which table a column belongs to, because the
+  vocabulary is unqualified column names, and that is the problem 1.1 declined when
+  it kept `DecimalColumns` unqualified. Both known-miss tests are deleted, which the
+  obligation named as part of closing it. **What it costs**: a self-join must alias
+  one side, so the convention forbids one, and 1.5's definition of done requires a
+  historical join across a split. The cost is recorded against 1.5 by name rather
+  than against a hypothetical, so it is revisited with a real query. Measured: the
+  walk is expressible without an alias as a recursive CTE, which names the working
+  set rather than renaming the table, and it runs against migration 3 over a
+  three-generation chain.
+
+### Removed
+- The Phase 1 carried obligation on SQL aliases, discharged by FX-NoSqlAliases.
+
+### Reconciled
+- `DATA_AND_SCHEMA.md` §4.1 now records nullability, the foreign keys and the
+  `CHECK`, which the schema block did not carry. The document marks `NULL`
+  explicitly where it means it, so ten columns the migration makes nullable read as
+  `NOT NULL`: `corporate_actions.ratio` and `.amount`, and eight of
+  `contract_quotes`. That is the difference between a chain having to supply a gamma
+  and being allowed to omit one, which is what `ContractQuote` settled at 0.6.
+- §3 said a delete or an update against a snapshot table fails the build. It also
+  fails in the store from 1.1. The two guards cover different writers, and the
+  sentence described only the one that reads `src/`.
+- `AppendOnlyTables` said two of its ten tables exist and eight do not. Eight exist
+  and two do not; `decisions` and `candidates` are Phase 4. Its inline comment still
+  said none of the snapshot tables existed yet.
+- Current state in `prompts/spent/phase-0.md` carried the same count.
+
+### Fixed
+- `DATA_AND_SCHEMA.md` §2 says an option contract's identity is the tuple of
+  underlying, expiry, right and strike. **It is not.** An adjusted series can share
+  all four with a standard contract and differ only in the deliverable, which the
+  sources confirm for a three-for-two split. §2's own promise that an adjusted
+  contract is "a new identity with a recorded predecessor link" is unkeepable when
+  the new identity equals an existing one. Recorded against §2 rather than corrected,
+  because it reaches D-W29's rationale, `ContractIdentity`'s equality and checkpoint
+  1.5, and wants a decision.
+
 ## [1.17.0] — 2026-07-29
 
 Phase 1 checkpoint detail authored. Documentation only; no code.

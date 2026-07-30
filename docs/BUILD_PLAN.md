@@ -1,7 +1,7 @@
 # BUILD_PLAN
 
-Build state: **Phase 0 complete; Phase 1 not built**. 0.1 to 0.8 built and signed
-off. Phase 1 detail written and live intent. Phase 2 detail not written.
+Build state: **Phase 0 complete; Phase 1 in progress**. 0.1 to 0.8 and 1.1 built and
+signed off. 1.2 to 1.5 are live intent. Phase 2 detail not written.
 
 ## How this document works
 
@@ -612,13 +612,13 @@ admits only one origin costs.
 | Phase 11 | Re-add `Microsoft.AspNetCore.OpenApi` against a version whose `Microsoft.OpenApi` dependency clears the audit. Removed at 0.1 rather than suppressing the advisory; the reason is in the Api project file. | PR #1 |
 | Phase 1 | Give D-W29's write-side rule teeth. Every decimal reaching a `TEXT` column should pass through the canonical form, and nothing enforces that: `ConfigWriter.Append` takes a string. A decimal-typed parameter-binding seam is the likely mechanism, when the first real decimal column exists. | PR #3 |
 | Phase 1 | Decide what an adjusted strike does when a corporate action makes it non-terminating. Identity canonicalises through the refusing path, so a 3-for-2 split forces a choice between rounding a value that is part of a contract's identity and carrying the ratio. | PR #3 |
-| Phase 1 | Resolve aliases in the SQL detectors, or adopt and check a convention that neither a decimal column nor a table is aliased. `SELECT strike AS s FROM contracts ORDER BY s` and `UPDATE config_rows AS c SET` both pass. Deleting both known-miss tests is part of closing it. | PR #3, PR #6 |
 | Phase 3 | Establish output-level determinism: a simulated run with a fixed clock produces byte-identical output across two invocations. 0.5 restated it as identical stored rows because no run existed to make. Compared as produced artefacts, never as a database file [D-W28]. | PR #4 |
 | Phase 3 | Decide what bars nondeterminism in SQL that is not a clock. Enumerating the bundled SQLite showed `random()` and `randomblob()` alongside the seven clock functions; they are outside FX-ClockIsNotADateSource by name but would break a byte-identical run just as surely. | PR #4 |
 | Phase 1 | Decide whether effective-dating counts as append-only, for `watchlist_membership` (`left_on`), `positions` (`effective_to`) and `trials` (`closed_on`). §4.2 says rows are never deleted while a nullable close column makes a state change an update, so the schema and the rule disagree in three places for one reason. If append-only, a change is a new row and the tables join the vocabulary as flat entries; if not, the vocabulary needs per-table statement kinds it does not have today, and that shape is the cost of the decision rather than a reason to defer it. Raised at 0.7, where drawing the vocabulary made the disagreement visible; widened by PR #6's own report, which found the second and third instances. | PR #6 |
 | Phase 2 | Set the three `Risk:` fractions. 0.8 seeded nineteen rows-classed keys and left these because an equity-relative cap is the operator's risk appetite [D-W11], and the worked example illustrating one account is not the operator setting one. FX-GateRejectsAboveHeadroom needs them, so the phase that consumes them sets them. | PR #7 |
 | Phase 3 | Set `Costs:AssignmentFee`. No document states it, and zero inferred from an absent ledger line is weaker than a stated number and invisible when wrong. Phase 3's assignment path is the first thing that computes with it. | PR #7 |
 | Phase 2 | Decide whether the gate handles a crossed quote. 0.6's loader refuses bid above ask, which is the one domain rule it enforces, and that makes a crossed or locked market unwritable as a synthetic chain, so nothing can exercise the gate against one. D-W22's spread cap is a fraction of mid, so a crossed quote gives a negative numerator and passes a cap that exists to reject wide markets. If the gate handles it, the loader stops refusing it. | PR #5 |
+| Phase 3 | Settle which quantity committed capital uses. D-W17's first paragraph says the contract multiplier and its third says the deliverable, and they differ for an adjusted contract. On a 3-for-2 split taking a $90 strike to $60 with a 150-share deliverable, strike times multiplier gives $6,000 and strike times deliverable gives $9,000, and only the second leaves the aggregate exercise where the adjustment found it. A reverse split may behave differently, in which case the aggregate exercise price is a stated fact per adjustment rather than a product of two columns, and the schema needs to carry it. Check against OCC's contract adjustment memos, not a secondary source. Raised at 1.1 while choosing a unique constraint, and twice reasoned wrongly from a sentence about premium quoting before the arithmetic was run. | v1.18.0 |
 | Phase 4 | Store one feasible set per name and date rather than one per decision. `candidates` is keyed on `decision_id`, so three makers acting on one set write it three times, while [D-W4] requires the three to be byte-identical and `FX-ThreeMakersSameFeasibleSet` asserts it. Storing once and referencing thrice makes it true by construction and divides the largest uncertain table by three. Raised while estimating store size over a ten-year lifetime, before the table exists. | v1.17.0 |
 | Phase 8 | Extract the market rules out of `SyntheticChainReader`, so one definition serves the synthetic reader and the vendor ingest. Refusing a negative bid, a negative ask and a crossed market are statements about what a market can be, not JSON concerns, and they sit as private statics on the reader, so a second producer of quotes can only duplicate them. Phase 8 is where that second producer arrives. **Coupled to the Phase 2 crossed-quote decision**: if the gate handles a crossed quote, the crossed rule moves to the gate rather than into the shared definition, so settle that first and extract what is left. Not extracted at 0.8 because there is one caller and the second does not exist. | PR #9 |
 | Phase 2 | Reconcile `WORKED_EXAMPLE.md` with [D-W22] to [D-W25]. Its 45.00 strike fails the 12 percent spread cap at 18.18 percent of mid, so the three-candidate feasible set it teaches renders as two and the random maker's choice disappears along with the regret arithmetic built on it; the 47.50 strike passes at 11.97 percent, three hundredths of a point of margin, which is too fragile for the document that defines correctness. The fix is a deliberate rewrite of the chain, ideally so one candidate fails the spread cap by an obvious margin and the example teaches the gate as well. Downstream: seven registered fixtures read its conclusions; FX-WorkedExampleChainLoads parses §2 and §5 as its oracle and fails on a quote revision, which is a tripwire rather than an exposure; `Costs:CommissionPerContract` is seeded from §1 and `Trial:MaxTrialDays` is justified partly by the example's 109-day trial. Raised at v1.6.0, banner in §3, and never carried here because this table did not exist yet. | v1.6.0 |
@@ -627,20 +627,58 @@ admits only one origin costs.
 
 ## Phase 1 — Chain store and point-in-time invariants
 
-Build state: **not built**. On synthetic chains; no vendor data until Phase 8.
-Delivers the market-data schema, the as-of read paths over it, and membership as
-state.
+Build state: **1.1 built and signed off; 1.2 to 1.5 not built**. On synthetic chains;
+no vendor data until Phase 8. Delivers the market-data schema, the as-of read paths
+over it, and membership as state.
 
 ### 1.1 The market-data schema
-The six tables of §4.1 with the observation stamp in the key [D-W8]. Both declared
-vocabularies extended: `AppendOnlyTables` gains the six, and `DecimalColumns`
-gains every decimal column they carry.
+The six tables of §4.1 with the observation stamp in the key [D-W8].
+
+`AppendOnlyTables` gains nothing: 0.7 declared all six forward. What 1.1 owes is the
+other direction, the definition of done that every table this checkpoint adds is in
+the vocabulary, which was unmeetable at 0.7 because none of them existed.
+`DecimalColumns` is the vocabulary that gains entries, sixteen of them.
 - **Test** FX-SnapshotNeverRewritten: a correction appends and both rows survive
   with their own stamps.
 - **DoD**: migrating from empty produces the schema, and both guards report the
   new tables and columns rather than passing over them.
 - Discharges the SQL alias obligation. Both detectors are touched here and the
   tables they will scan first appear here.
+
+Reconciled at sign-off against what shipped. Five things were larger than the scope
+above, and three of them were found by measuring something the detail assumed.
+
+**The schema gained what the document did not specify.** Twelve triggers refusing
+`UPDATE` and `DELETE`, three indexes, a `CHECK` on `right`, a uniqueness constraint,
+and two foreign keys. Only the tables were in the detail. The triggers exist because
+the source detector reads `src/` and cannot see a writer at a `sqlite3` prompt, which
+is the same argument the `config_rows` triggers already rest on; the foreign keys
+were not asked for by any document and are raised for that reason.
+
+**§2's identity claim is false, and 1.1 is where it had to be settled or recorded.**
+An adjusted series can share underlying, expiry, right and strike with a standard
+contract and differ only in the deliverable. Checked against Fidelity, Schwab and
+OCC's own symbology memo rather than reasoned about, then demonstrated against the
+built schema: two contracts, one tuple. §2 carries a banner and the constraint went
+on the deliverable, which is a floor under the decision rather than an answer to it.
+
+**The multiplier and the deliverable were one column.** Splitting them was 1.1's;
+deciding which one committed capital uses is Phase 3's and was deliberately not
+settled here. The arithmetic favours the deliverable, and a reverse split may behave
+differently, which is why it is owed against OCC's memos rather than closed on one
+worked case.
+
+**Measuring the decimal vocabulary's false-positive surface found a false negative.**
+The detector filtered `LAST` as an order keyword before consulting the vocabulary, so
+`ORDER BY last` would have been dropped the moment `last` became a column here. The
+checkpoint asked for one measurement and the other defect was what the measurement
+turned up.
+
+**The alias convention's first run flagged a legitimate statement**, and would have
+flagged thirteen once migration 3 landed: `BEFORE UPDATE ON config_rows BEGIN` reads
+as a table followed by an alias. A second defect in the same detector meant the
+second table of every join went unscanned. Both were found by running the convention
+against real statements rather than synthetic ones.
 
 ### 1.2 As-of reads
 Every read serving a simulated date filters `observed_at <= as_of` and takes the

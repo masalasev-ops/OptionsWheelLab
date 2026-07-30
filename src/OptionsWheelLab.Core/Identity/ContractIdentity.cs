@@ -139,9 +139,30 @@ public sealed record ContractIdentity : IComparable<ContractIdentity>
 /// because record equality covers every declared member, so putting it there
 /// would make it part of the key, which is the one thing the schema forbids.
 /// <para>
-/// <c>Multiplier</c> is the deliverable, normally one hundred and not always:
-/// an adjusted contract carries its own [D-W17]. It is not part of identity
-/// either, since the adjusted contract is a separate identity in the first place.
+/// <b><c>Multiplier</c> and <c>DeliverableShares</c> are two quantities, and this
+/// record said they were one.</b> The multiplier is what a quoted premium
+/// multiplies by to give the cash paid for one contract, and an adjustment does not
+/// change it. The deliverable is what one contract conveys on exercise, and an
+/// adjustment does: a three-for-two split takes a 90 strike to 60 and the
+/// deliverable to 150. Both are one hundred for a standard contract, which is why
+/// one column read as sufficient.
+/// </para>
+/// <para>
+/// <b>Which of the two the outcome metric uses is open.</b> D-W17's first paragraph
+/// says the contract multiplier and its third says the deliverable. That is a
+/// carried obligation owed at Phase 3, which computes committed capital, and
+/// nothing here presumes the answer.
+/// </para>
+/// <para>
+/// Neither is part of identity, and after the §2 finding that is a statement about
+/// what this record holds rather than an argument. The deliverable is what
+/// distinguishes an adjusted series from a standard one at the same strike, so
+/// identity not carrying it is precisely why the tuple maps two contracts to one
+/// identity. §2 records that; it is not settled here.
 /// </para>
 /// </remarks>
-public sealed record Contract(ContractIdentity Identity, string VendorSymbol, int Multiplier);
+public sealed record Contract(
+    ContractIdentity Identity,
+    string? VendorSymbol,
+    int Multiplier,
+    int DeliverableShares);
