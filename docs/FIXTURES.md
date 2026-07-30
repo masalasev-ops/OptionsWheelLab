@@ -4,8 +4,8 @@ The single registry of test fixtures and source guards. Prompts and checkpoints
 reference the entries registered against them here; they never enumerate names
 inline.
 
-Build state: **partly built**. The twenty-eight entries registered against
-0.2 to 1.4 are implemented, being twenty-six fixtures and two guards; the
+Build state: **partly built**. The twenty-nine entries registered against
+0.2 to 1.5 are implemented, being twenty-seven fixtures and two guards; the
 rest belong to checkpoints not yet reached. 1.2 registered none, which its
 detail states.
 
