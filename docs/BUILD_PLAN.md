@@ -627,7 +627,7 @@ admits only one origin costs.
 
 ## Phase 1 — Chain store and point-in-time invariants
 
-Build state: **1.1 and 1.2 built and signed off; 1.3 to 1.5 not built**. On synthetic chains;
+Build state: **1.1 to 1.3 built and signed off; 1.4 and 1.5 not built**. On synthetic chains;
 no vendor data until Phase 8. Delivers the market-data schema, the as-of read paths
 over it, and membership as state.
 
@@ -756,6 +756,34 @@ checkpoint open when they were found.
 - **Test**: a name that left and returned resolves correctly at a date in each of
   the three intervals.
 - **DoD**: no query resolves membership from the latest row alone.
+
+Reconciled at sign-off against what shipped. The read is its own type,
+`AsOfMembership`, not a member of the market-data surface: that type documents
+itself as the only read surface over the snapshot tables, membership corrects by
+version rather than by re-observation, and the market-data one-surface guarantee
+rests on a premise never argued for membership, which is probably false for it
+once Phase 8's ingest wants to know what to fetch. Its shape suite and
+no-current tripwire are mirrored copies, and the tripwire's message says a
+current surface arrives as a decision that amends it.
+
+**The governing axis is the greatest (`effective_on`, `version`), and the
+choice was measured rather than asserted.** The two candidate axes disagree
+only when a correction carries an earlier effective date than a later genuine
+transition; flipping the window ordering to version alone fails exactly the
+divergence test and passes the other five.
+
+**Migration 4 carries three triggers where the detail implied two.** The third
+is the monotonic stamp per symbol: version ordering constrains versions, not
+visibility, so a backdated stamp would change what was believed at a past
+instant after the fact. It landed inside the migration because an applied
+migration's SQL is frozen, so deferring the decision would have cost migration
+5.
+
+**The upgrade test is the first from-previous-schema migration test in the
+suite.** 1.1's prompt asked for one and the suite covered empty and
+nothing-pending only, which nothing noticed because every store in the tree was
+either empty or current until this checkpoint created a real gap to migrate
+across.
 
 ### 1.4 Chain ingest
 0.6 built a loader producing objects and nothing persists them. 1.4 does.

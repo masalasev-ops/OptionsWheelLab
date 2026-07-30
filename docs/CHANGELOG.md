@@ -1,5 +1,30 @@
 # CHANGELOG
 
+## [1.23.0] — 2026-07-30
+
+Checkpoint 1.3 signed off.
+
+### Added
+- `prompts/spent/phase-1.md` carries 1.3's prompt with its review rounds folded
+  in, and Current state is overwritten with the measured present: 346 tests,
+  247 across twenty-five fixtures and 99 across nineteen unregistered suites.
+
+### Changed
+- `BUILD_PLAN.md` 1.3 is reconciled against what shipped: the reader-placement
+  decision, the governing axis measured by divergence, the third trigger the
+  detail implied it would not have, and the first from-previous-schema
+  migration test in the suite.
+- The build-state markers say 1.1 to 1.3 are built and signed off, 1.4 and 1.5
+  being live intent.
+
+### Notes
+- The one check registered against 1.3 holds on both axes: a later joiner is
+  excluded whether it is later on the effective date or later in what was
+  known at the as-of instant, and the backfilled-join case is the second.
+- 1.4 is next and its detail already carries its first item: relax the
+  `underlying_bars` columns the record makes optional, as migration 5, and
+  correct §4.1 to match.
+
 ## [1.22.0] — 2026-07-30
 
 Checkpoint 1.3.
