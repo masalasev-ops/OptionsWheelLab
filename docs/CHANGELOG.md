@@ -1,5 +1,56 @@
 # CHANGELOG
 
+## [1.18.0] — 2026-07-29
+
+Checkpoint 1.1.
+
+### Added
+- `contracts` carries `multiplier` and `deliverable_shares` as separate columns.
+  `multiplier` is what a quoted premium multiplies by and an adjustment does not
+  change it; `deliverable_shares` is what one contract conveys on exercise and an
+  adjustment does. The single `multiplier` column was named for one and intended as
+  the other. Neither is described by what consumes it, because which of the two the
+  outcome metric uses is open.
+- `UNIQUE (symbol, expiry, right, strike, deliverable_shares)` on `contracts`. The
+  identity tuple alone is not unique: an adjusted series can carry a strike that
+  collides with a standard one on the same underlying and expiry, and the deliverable
+  is what separates them. Deliberately weaker than a constraint on the tuple, which
+  would forbid a collision that occurs, and it still stops the same contract being
+  inserted twice. Not `vendor_symbol`, because a synthetic chain carries none and
+  SQLite treats nulls in a unique index as distinct, so it would guard nothing until
+  Phase 8 while the duplicate-insert bug is live from 1.4.
+- Three indexes on the market-data tables, each naming the query it serves. The three
+  keyed tables need none: a primary key ending in `observed_at` is already the index
+  an as-of read wants.
+- A carried obligation owed at Phase 3: settle which quantity committed capital uses.
+  D-W17's first paragraph says the contract multiplier and its third says the
+  deliverable, and they differ for an adjusted contract. To be checked against OCC's
+  contract adjustment memos rather than a secondary source.
+- `FIXTURES.md` rule 2 says when a row sits at phase granularity and when that becomes
+  a defect: a row is registered against a phase until that phase's detail is written
+  and against a checkpoint once it is.
+
+### Changed
+- Phase 1's two registered rows move to checkpoint granularity now that its detail
+  names five checkpoints. FX-SnapshotNeverRewritten to 1.1,
+  FX-PitMembershipExcludesLaterJoiner to 1.3. Phases 2 to 9 stay at phase
+  granularity, which is correct while their detail is unwritten.
+- `BUILD_PLAN.md` 1.1 no longer says `AppendOnlyTables` gains the six. 0.7 declared
+  all six forward, so 1.1 adds no names and what it owes is the reverse direction.
+- `vendor_symbol` is nullable. The field OCC uses to distinguish an adjusted series
+  is the one a synthetic chain cannot supply, and everything before Phase 8 runs on
+  synthetic chains.
+
+### Fixed
+- `DATA_AND_SCHEMA.md` §2 says an option contract's identity is the tuple of
+  underlying, expiry, right and strike. **It is not.** An adjusted series can share
+  all four with a standard contract and differ only in the deliverable, which the
+  sources confirm for a three-for-two split. §2's own promise that an adjusted
+  contract is "a new identity with a recorded predecessor link" is unkeepable when
+  the new identity equals an existing one. Recorded against §2 rather than corrected,
+  because it reaches D-W29's rationale, `ContractIdentity`'s equality and checkpoint
+  1.5, and wants a decision.
+
 ## [1.17.0] — 2026-07-29
 
 Phase 1 checkpoint detail authored. Documentation only; no code.

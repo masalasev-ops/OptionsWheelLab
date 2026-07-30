@@ -40,6 +40,22 @@ of helper as a timestamp. `InvariantGlobalization` makes the invariant short-dat
 form `MM/dd/yyyy`, so a date stringified without an explicit format is
 culture-independent and still wrong.
 
+> **Unresolved, added 2026-07-29 at checkpoint 1.1.** The identity claim below is
+> false and needs a decision. An adjusted series can share underlying, expiry, right
+> and strike with a standard contract, differing only in the deliverable: a
+> three-for-two split takes a 90 strike to 60 with a 150-share deliverable, and a
+> standard 60 strike with 100 shares lists alongside it. So the tuple maps two
+> different contracts to one identity, and the promise two paragraphs down that an
+> adjusted contract is a new identity with a predecessor link cannot be kept, because
+> the new identity equals an existing one.
+>
+> It reaches [D-W29]'s reason for canonicalising the strike,
+> `ContractIdentity`'s equality, and checkpoint 1.5's predecessor link, so it wants a
+> decision rather than a migration. 1.1 added the strongest constraint the answer
+> allows, on the deliverable rather than the tuple, which is a floor under the
+> decision and not an answer to it. Nothing below is safe to build identity from
+> until this is settled.
+
 An option contract's identity is the tuple of underlying, expiry, right, and
 strike. The vendor's contract symbol is stored but is not the key, because
 contract symbol conventions change on splits and special dividends and a stored
@@ -145,7 +161,9 @@ chain_snapshots
 
 contracts
   contract_id INTEGER PK, symbol TEXT, expiry TEXT, right TEXT, strike TEXT,
-  vendor_symbol TEXT, predecessor_contract_id INTEGER NULL, multiplier INTEGER
+  vendor_symbol TEXT NULL, predecessor_contract_id INTEGER NULL,
+  multiplier INTEGER, deliverable_shares INTEGER
+  UNIQUE (symbol, expiry, right, strike, deliverable_shares)
 
 contract_quotes
   contract_id INTEGER, snapshot_date TEXT, bid TEXT, ask TEXT, last TEXT,
@@ -161,8 +179,58 @@ only way to record a vendor correction is an update, and
 `observed_at` at or before the as-of instant, which is `config_rows`' shape with
 an observation stamp in place of a version.
 
+Three indexes, and each names the query it serves:
+
+```
+corporate_actions (symbol, ex_date, observed_at)
+earnings_calendar (symbol, report_date, observed_at)
+contracts        (predecessor_contract_id)
+```
+
+The first two are the tables with no key of their own, and both are read as-of: the
+actions in force for a name at a date, and the clearance window either side of a
+report date [D-W25]. The third is the only access path to a predecessor link and
+exists for the join across a split.
+
+The three keyed tables need no separate index. A primary key carrying
+`observed_at` last is already the index an as-of read wants, since "the latest
+`observed_at` at or before X for this key" is a prefix scan on it.
+
+**Deliberately not indexed yet**: every quote for a name on a date as of an instant,
+which is the query the gate will run. Whether it reaches `contract_quotes` by joining
+`contracts` on `symbol` or through a denormalised column is 1.2's to define, and
+indexing it before then is a guess at a join. The `UNIQUE` constraint below yields a
+`contracts (symbol, expiry, ...)` prefix, which serves the join half either way.
+
 `right` is `put` or `call`, lower case, matching the house convention for
-enumerated text elsewhere in this schema.
+enumerated text elsewhere in this schema. The database enforces it with a `CHECK`
+as well, because a stored form only the code enforces has one guard.
+
+**`contracts` carries two quantities that are easy to read as one.**
+`multiplier` is the number a quoted premium multiplies by to give the cash paid for
+one contract, and an adjustment does not change it. `deliverable_shares` is what one
+contract conveys on exercise, and an adjustment does change it: a three-for-two
+split takes a 90 strike to 60 and the deliverable to 150. **Which of the two the
+outcome metric uses is open**, and the carried obligation owed at Phase 3 settles it
+against OCC's adjustment memos. Neither column is described here by what consumes
+it, because that is the open question.
+
+A contract is unique on its identity tuple together with what it delivers. An
+adjusted series can carry a strike that collides with a standard one on the same
+underlying and expiry, and the deliverable is what separates them: the multiplier
+stays at one hundred through an adjustment and cannot. This is deliberately weaker
+than a constraint on the tuple alone, which would forbid a collision that occurs,
+and it stops the same contract being inserted twice, which is the live defect.
+
+Not `vendor_symbol`, though it is the field OCC uses. A synthetic chain carries
+none, SQLite treats nulls in a unique index as distinct, and the constraint would
+guard nothing until Phase 8 while the duplicate-insert bug is live from 1.4.
+
+The residual: OCC says an option symbol without a numeric suffix will almost always
+designate a standard option, and in rare instances a symbol without one may
+nevertheless represent a non-standard option. So no field is perfectly
+discriminating, and a constraint on the deliverable is the best available rather
+than complete.
 
 ### 4.2 Universe
 

@@ -4,9 +4,9 @@ Appended to, never rewritten. The repository is the authority on build state.
 
 ## Current state
 
-**Phase 0 complete and reviewed. Phase 1 detail written, not built.** Checkpoints
-0.1 to 0.8 built and signed off. Phase 2 detail not written. The documentation
-corpus is at v1.17.0.
+**Phase 0 complete and reviewed. Phase 1 in progress.** Checkpoints 0.1 to 0.8
+built and signed off; 1.1 building. Phase 2 detail not written. The documentation
+corpus is at v1.18.0.
 
 ## Log
 
@@ -540,3 +540,42 @@ would have caught it is the checkpoint this detail describes.
 
 Found by reading the schema against what rests on it, which is the method that
 found three wrong citations at 0.7 and is now the third time it has paid.
+
+### 2026-07-29 — corpus v1.18.0
+Checkpoint 1.1's corpus changes, ahead of the code.
+
+**§2's identity claim is false, and it is recorded rather than corrected.** An
+adjusted series can share underlying, expiry, right and strike with a standard
+contract and differ only in the deliverable: a three-for-two split takes a 90 strike
+to 60 with a 150-share deliverable while a standard 60 strike with 100 shares lists
+alongside. Checked against Fidelity's contract-adjustment guidance, Schwab on
+non-standard options, and OCC's own symbology memo rather than reasoned about. §2's
+promise that an adjusted contract is a new identity with a predecessor link cannot be
+kept when the new identity equals an existing one. It reaches D-W29,
+`ContractIdentity` and 1.5, so it wants a decision.
+
+`contracts` gains the constraint the answer allows, on the deliverable rather than
+the tuple. Not on `vendor_symbol`, which is the field OCC uses: a synthetic chain
+carries none, SQLite treats nulls in a unique index as distinct, and it would guard
+nothing until Phase 8 while the duplicate-insert bug is live from 1.4. The residual
+is recorded too, since OCC says a symbol without a numeric suffix only "almost
+always" designates a standard option.
+
+**The multiplier and the deliverable were one column.** They are two quantities and
+`multiplier` was named for the one that does not change while being intended as the
+one that does. Split. Which of the two committed capital uses is a separate question
+and is **not** settled here: D-W17's first paragraph says the multiplier and its
+third says the deliverable, and the arithmetic favours the third, but a reverse split
+may behave differently and the aggregate exercise price may have to be a stated fact
+per adjustment. Owed at Phase 3, which computes the metric, and to be checked against
+OCC's adjustment memos.
+
+That question was twice reasoned wrongly here from a sentence about premium quoting
+before the arithmetic was run. `WORKED_EXAMPLE.md` cannot adjudicate it either: for a
+standard contract both quantities are one hundred, so `strike x 100 x contracts` is
+silent on which one the hundred is.
+
+Phase 1's two registered rows move to checkpoint granularity, and `FIXTURES.md` rule
+2 now says when a row belongs at phase granularity and when that becomes a defect. A
+row left at phase granularity after its detail exists makes every checkpoint's
+definition of done resolve to nothing.
