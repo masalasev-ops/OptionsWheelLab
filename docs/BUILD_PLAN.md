@@ -1,7 +1,7 @@
 # BUILD_PLAN
 
-Build state: **Phase 0 complete; Phase 1 in progress**. 0.1 to 0.8 and 1.1 built and
-signed off. 1.2 to 1.5 are live intent. Phase 2 detail not written.
+Build state: **Phase 0 and Phase 1 complete**. 0.1 to 0.8 and 1.1 to 1.5 built
+and signed off. Phase 2 detail not written.
 
 ## How this document works
 
@@ -627,9 +627,10 @@ admits only one origin costs.
 
 ## Phase 1 — Chain store and point-in-time invariants
 
-Build state: **1.1 to 1.4 built and signed off; 1.5 not built**. On synthetic chains;
-no vendor data until Phase 8. Delivers the market-data schema, the as-of read paths
-over it, and membership as state.
+Build state: **complete**. 1.1 to 1.5 built and signed off. On synthetic chains;
+no vendor data until Phase 8. Delivered the market-data schema, the as-of read
+paths over it, membership as state, chain ingest, and the corporate-action mint
+with its lineage walk.
 
 ### 1.1 The market-data schema
 The six tables of §4.1 with the observation stamp in the key [D-W8].
@@ -851,6 +852,38 @@ predecessor rather than editing the existing row [§2].
   decimal path is the tripwire that keeps it dissolved.
 - **DoD**: an adjusted contract is a new identity, its predecessor is recorded,
   and a historical join across the split resolves both.
+
+Reconciled at sign-off against what shipped. D-W36 dissolved the dilemma the
+detail was written around, and the refusing decimal path is exercised inside
+the minting writer: the stated strike runs through it on the way to identity,
+so a derivation that produced a non-terminating value could not be stored.
+
+**The fifth identity component touched six sites where three were known.** The
+comparer and equality; ChainWriter's find-or-create, made explicit and exact,
+its multi-match refusal turning unreachable and coming out with the banner it
+cited; the equality and ordering tests, where the old shared-identity test
+inverted exactly as its own remark predicted; the as-of quote read, which now
+reads the deliverable because defaulting it would mint every stored contract
+as standard; the `Contract` record, which lost its copy of a fact identity now
+carries; and `ToString`, which renders the fifth component so two identities
+differing only in deliverable cannot stringify identically.
+
+**The mint is atomic both ways, observed.** The unchanged-tuple refusal writes
+nothing; a successor collision after the event insert rolls the event row back
+with it; the predecessor reads back byte-identical by row comparison.
+`corporate_actions` got its first writer three checkpoints after both
+vocabularies learned its columns.
+
+**The lineage read is timeless, its reasoning at the type.** Contracts carry
+no observation axis, so a by-name `asOf` member would claim a filter the
+schema cannot honour. The 1.1 recursive CTE became production in the shape the
+pin proved, the alias convention's dated revisit closed in all three passages,
+and resolution was never needed.
+
+**Left for Phase 3, recorded at its dividend obligation**: the corporate-action
+kind vocabulary is one entry with no CHECK on the table and no document
+enumerating the values; the fuller vocabulary and the CHECK decision must not
+ride a checkpoint silently as a rebuild migration.
 
 Detail for Phase 2 is authored when Phase 1 signs off.
 

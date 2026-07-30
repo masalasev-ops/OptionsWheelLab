@@ -4,9 +4,9 @@ Appended to, never rewritten. The repository is the authority on build state.
 
 ## Current state
 
-**Phase 0 complete and reviewed. Phase 1 in progress.** Checkpoints 0.1 to 0.8
-and 1.1 to 1.4 built and signed off; 1.5 building, the last of Phase 1.
-Phase 2 detail not written. The documentation corpus is at v1.26.0.
+**Phase 0 complete and reviewed. Phase 1 complete.** Checkpoints 0.1 to 0.8
+and 1.1 to 1.5 built and signed off. Phase 2 detail not written. The
+documentation corpus is at v1.27.0.
 
 ## Log
 
@@ -810,3 +810,38 @@ another, and the dividend gap stood for eight checkpoints before a
 conversation rather than a process surfaced it. Twelve obligations stood
 before the closure, eleven after it, twelve after the mechanics row,
 thirteen after the completeness row.
+
+### 2026-07-30 — corpus v1.27.0
+Checkpoint 1.5 built and signed off, and with it **Phase 1**. The
+corporate-action mint, the lineage walk, and identity's fifth component. 378
+tests, 253 across twenty-seven fixtures. Every Phase 1 obligation row closed;
+thirteen carried obligations stand, five of them Phase 3's.
+
+The fifth identity component touched six sites where three were known, and
+the two beyond the anticipated fourth are the instructive ones: the
+`Contract` record lost its deliverable copy the moment identity carried the
+fact, and `ToString` had to render the component so two identities differing
+only in deliverable cannot stringify identically, which the identity-order
+fixture pins.
+
+The mint is atomic both ways and observed: an adjustment that changes
+nothing writes nothing, a successor collision rolls the already-inserted
+event row back, and the predecessor reads back byte-identical by row
+comparison. D-W36's tripwire is exercised where it matters, the stated
+strike passing through the refusing decimal path inside the writer.
+
+The alias convention's dated cost resolved as the 1.1 pin predicted: the
+lineage walk shipped as the recursive CTE, no self-join was needed, and the
+convention survived the one query that appeared to forbid it, four
+checkpoints after the appearance.
+
+One drift owned at this sign-off: the document-level build-state marker in
+BUILD_PLAN went stale at 1.2 and three sign-off passes updated only the
+phase marker beneath it. Nothing inherited the error; the marker is
+corrected, and the archived prompt now carries the check that would have
+caught it.
+
+Phase 1 delivers a store that holds market data as it was known at any
+instant, membership as state, chain ingest through a refusing decimal seam,
+and corporate actions as stated successors with resolvable lineage, on
+synthetic chains throughout, which is what it said it would deliver.

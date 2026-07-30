@@ -1,5 +1,37 @@
 # CHANGELOG
 
+## [1.27.0] — 2026-07-30
+
+Checkpoint 1.5 signed off, and with it Phase 1.
+
+### Added
+- `prompts/spent/phase-1.md` carries 1.5's prompt with its review rounds
+  folded in, and Current state is overwritten with the measured present: 378
+  tests, 253 across twenty-seven fixtures and 125 across twenty-four
+  unregistered suites. Every Phase 1 obligation row closed.
+
+### Changed
+- `BUILD_PLAN.md` 1.5 is reconciled against what shipped: the six sites the
+  fifth identity component touched, the mint atomic both ways, the lineage
+  read timeless with its reasoning at the type, and the kind-vocabulary
+  finding recorded at Phase 3's dividend obligation.
+- The build-state markers say Phase 1 is complete, and the document-level
+  marker is corrected alongside the phase marker.
+
+### Fixed
+- `BUILD_PLAN.md`'s document-level build-state marker went stale at 1.2 and
+  stayed stale through three sign-offs, each of which updated only the phase
+  marker beneath it. Two statements of one fact drifted exactly as the corpus
+  says duplicated facts do; corrected, with the check folded into the
+  archived prompt.
+
+### Notes
+- Phase 1 delivers a store that holds market data as it was known at any
+  instant, membership as state, chain ingest through a refusing decimal
+  seam, and corporate actions as stated successors with resolvable lineage,
+  on synthetic chains throughout. Phase 2's detail is authored next, with
+  what Phase 1 taught folded in.
+
 ## [1.26.0] — 2026-07-30
 
 Checkpoint 1.5, the last of Phase 1.

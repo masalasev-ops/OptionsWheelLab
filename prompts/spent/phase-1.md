@@ -15,13 +15,13 @@ One file per phase. It closes when Phase 1 signs off; Phase 2 opens its own.
 
 # Current state
 
-Corpus v1.25.0.
+Corpus v1.27.0.
 
 | | |
 |---|---|
 | Phase 0 | complete and reviewed, 0.1 to 0.8 built and signed off |
-| Phase 1 | 1.1 to 1.4 built and signed off; 1.5 not built |
-| CI | green, 365 tests, guards then restore then build then test, on push to `main` and every pull request |
+| Phase 1 | complete, 1.1 to 1.5 built and signed off |
+| CI | green, 378 tests, guards then restore then build then test, on push to `main` and every pull request |
 
 Which branch the work sits on and which pull requests have merged are not recorded
 here. Git holds both exactly, and a fact kept in two places drifts.
@@ -83,12 +83,24 @@ frozen at migration 3 rather than from `AppendOnlyTables`, because an applied
 migration's SQL cannot change when that vocabulary grows. They hold against a writer
 the source detector cannot see; the detector reads `src/`.
 
-**Identity is unsettled and the schema records it.** §2 says a contract's identity is
-the tuple of underlying, expiry, right and strike. It is not: an adjusted series can
-share all four with a standard contract and differ only in the deliverable, which
-sources confirm and the built schema demonstrates. §2 carries a banner. The
-uniqueness constraint is on the tuple plus the deliverable, which is the strongest
-the answer allows and a floor under the decision rather than an answer to it.
+**Identity is five components, settled at 1.5** [§2, D-W36]. A contract's
+identity is underlying, expiry, right and strike together with the deliverable,
+which is what separates an adjusted series from the standard contract listing
+beside it at the same strike. `ContractIdentity` carries all five in equality,
+hashing and the total order; the uniqueness constraint has since 1.1. Adjusted
+terms are transcribed from what the adjusting authority states, never derived
+from a ratio [D-W36], and the refusing decimal path is the tripwire: a
+derivation producing a non-terminating value cannot be stored at all.
+
+**A corporate action mints a stated successor, atomic with its event row**
+[1.5]. `CorporateActionWriter` records the `corporate_actions` row and inserts
+the successor with its predecessor link in one transaction; an adjustment whose
+stated terms change nothing is refused, and the predecessor reads back
+byte-identical. `ContractLineage` walks the link as the recursive CTE the alias
+convention was proven to permit, timeless because contracts carry no
+observation axis. The corporate-action kind vocabulary is `split` only, with
+the fuller set and the CHECK question recorded at Phase 3's dividend
+obligation.
 
 **One read surface, `AsOfMarketData`, and no current-value counterpart exists at
 all** [1.2]. Market data has no operational current-read consumer anywhere in the
@@ -200,7 +212,7 @@ bands the list names.
 
 ## Tests
 
-365: 250 across twenty-six fixtures, and 115 across twenty-two unregistered
+378: 253 across twenty-seven fixtures, and 125 across twenty-four unregistered
 suites. The two guards are checks rather than tests and are counted in neither.
 
 | Fixture | Tests |
@@ -226,6 +238,7 @@ suites. The two guards are checks rather than tests and are counted in neither.
 | FX-MaxDteBelowTrialBound | 4 |
 | FX-WorkedExampleChainLoads | 4 |
 | FX-ApiCannotWrite | 3 |
+| FX-CorporateActionMintsSuccessor | 3 |
 | FX-EveryAppKeyBinds | 3 |
 | FX-NoCurrentConfigReadOnSimulatedPath | 3 |
 | FX-PitMembershipExcludesLaterJoiner | 3 |
@@ -245,8 +258,8 @@ append-only triggers make the tables impossible to clean between cases.
 Every table beyond the nine that exist. `decisions` and `candidates` are
 Phase 4's.
 
-`corporate_actions` and `earnings_calendar` have no writer and no reads; their
-first consumers are 1.5 and Phase 2.
+`corporate_actions` has its first writer, the mint, and no as-of read;
+`earnings_calendar` has neither. Their read consumers arrive at Phase 2.
 
 No operator entry point ingests a chain. `ChainWriter`'s only callers are tests
 until Phase 8's vendor ingest needs a verb, and a verb nothing calls is
@@ -261,11 +274,12 @@ obligations, which is where planning for the phase that owns it will look. It is
 copied here: two registers of one list is how an obligation comes to exist in the one
 nobody reads.
 
-Entries stand against Phase 1, 2, 3, 4, 8 and 11. The count is not restated here.
-1.1 discharged the SQL alias obligation, 1.2 closed the effective-dating question
-by decision [D-W35], and 1.4 closed the write-side seam. One Phase 1 row remains,
-the adjusted strike, which 1.5 owns. 1.3 raised the dividend obligation, owed at
-Phase 3.
+Entries stand against Phase 2, 3, 4, 8 and 11. The count is not restated here.
+Every Phase 1 row closed: 1.1 discharged the SQL alias obligation, 1.2 closed
+the effective-dating question by decision [D-W35], 1.4 closed the write-side
+seam, and 1.5 dissolved the adjusted strike [D-W36]. 1.3 raised the dividend
+obligation and 1.5 raised the settlement-mechanics and completeness rows, all
+owed at Phase 3.
 
 ## Working rules in force
 
@@ -686,3 +700,97 @@ No `double` or `float`. No ambient clock. Money is decimal in `TEXT`. Edit
 files with the file tools rather than a shell round trip, which mangles
 UTF-8 outside ASCII. Reconcile the detail and the archive at sign-off, not
 during the build.
+
+## 1.5 Corporate actions and the predecessor link
+
+Read `CLAUDE.md`, `BUILD_PLAN.md` §1.5 and the carried obligations,
+`DATA_AND_SCHEMA.md` §2 and §4.1, D-W8, D-W29, D-W30, D-W36,
+`ContractIdentity`, `ChainWriter`, the alias fixture's recorded 1.5 revisit
+and its recursive-CTE pin, the `FIXTURES.md` rows at 1.5, and Current state
+above.
+
+### The decision, before any code
+
+- **D-W36 lands first**: adjusted terms are transcribed from what the
+  adjusting authority states, never derived from a ratio. The methodology is
+  era-dependent rather than a formula, and the refusing decimal path is the
+  tripwire, so the adjusted-strike dilemma dissolves rather than being
+  decided: neither rounding nor ratio arithmetic ever runs. Close the
+  obligation on that ground and say so.
+- **§2's banner comes down in the commit that makes the claim true**, not the
+  docs commit: identity is the four-tuple together with its deliverable, and
+  the claim-bearing text may not precede the type change. The CHANGELOG's
+  Fixed story may.
+- Raise the two Phase 3 rows beside the closure: the settlement-mechanics
+  facts, every one wanting a primary source before its state-machine decision
+  is authored, and the domain-completeness pass, because every check in this
+  repository compares one part of the corpus against another and cannot see
+  absence. Report every count movement rather than the total.
+
+### Identity gains its fifth component, and every site is enumerated
+
+- `DeliverableShares`, default 100, in equality, hashing and the total order
+  as the final key. Validation positive; the factory's strike still goes
+  through the refusing path.
+- **Enumerate the touched sites and expect more than the known three.** The
+  comparer; the chain writer's find-or-create, which becomes explicit and
+  exact and loses its multi-match branch; the identity tests, where the
+  shared-identity pin inverts as its own remark predicted. Then the ones a
+  four-site claim would miss: the as-of quote read must read the deliverable
+  or every stored contract minted standard; the `Contract` record loses its
+  copy of the fact; `ToString` renders the fifth component, which the
+  identity-order fixture pins.
+- `SyntheticChainReader` is untouched: standard terms, and the default is the
+  statement of that.
+
+### The minting writer
+
+- `CorporateActionWriter` beside `ChainWriter`, one subject one folder. The
+  signature takes the predecessor id, the STATED successor terms, the event
+  as recorded fact, and the instant [D-W30]. No term is computed from
+  another, ever.
+- One transaction, both rows, and the atomicity observed both ways: the
+  unchanged-tuple refusal writes nothing, and a successor collision after
+  the event insert takes the event row down with it. The predecessor reads
+  back byte-identical, by row comparison rather than by the absence of an
+  exception.
+- The kind renders through a declared stored form carrying `split` only. The
+  fuller vocabulary and the CHECK question belong to Phase 3's dividend
+  decision; a rebuild migration must not ride this checkpoint silently, so
+  the finding is recorded there rather than built here.
+
+### The lineage read
+
+- `ContractLineage`, its own small reader, with the reasoning at the type:
+  contracts carry no observation axis, so lineage is timeless and a by-name
+  `asOf` member would claim a filter the schema cannot honour. The
+  point-in-time discipline lives at the quotes.
+- The walk is the recursive CTE the pin proved clean, with declared column
+  names and a generation counter, ordered by generation.
+- Close the alias convention's dated revisit in every passage that carries
+  it, moving each to resolved: the CTE sufficed as production, no self-join
+  was needed, the convention stands.
+
+### The registered fixture
+
+- FX-CorporateActionMintsSuccessor: three generations with STATED terms,
+  90/100 then 60/150 then 40/225, each step's terms written as transcribed
+  values with a comment saying so, the 9000 aggregate preserved because the
+  authority's statement preserved it. Distinct identities, resolving links,
+  originals unchanged by row comparison, the walk in order, and the adjusted
+  series admitted beside the standard contract at the same strike.
+- The marker counted from disk.
+
+### Definitions of done carried from 0.2
+
+- Every check registered against 1.5 exists in its kind.
+- No new table, no new decimal column, no config key: checked and reported
+  empty. `corporate_actions` and its decimal columns waited in both
+  vocabularies since 1.1 for this, their first writer.
+
+### Constraints
+
+No `double` or `float`. No ambient clock. Money is decimal in `TEXT`. The
+document-level build-state marker and the phase marker are two statements of
+one fact; when a checkpoint moves one, check the other. Reconcile the detail
+and the archive at sign-off, not during the build.
