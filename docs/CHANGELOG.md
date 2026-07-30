@@ -1,5 +1,81 @@
 # CHANGELOG
 
+## [1.27.0] — 2026-07-30
+
+Checkpoint 1.5 signed off, and with it Phase 1.
+
+### Added
+- `prompts/spent/phase-1.md` carries 1.5's prompt with its review rounds
+  folded in, and Current state is overwritten with the measured present: 378
+  tests, 253 across twenty-seven fixtures and 125 across twenty-four
+  unregistered suites. Every Phase 1 obligation row closed.
+
+### Changed
+- `BUILD_PLAN.md` 1.5 is reconciled against what shipped: the six sites the
+  fifth identity component touched, the mint atomic both ways, the lineage
+  read timeless with its reasoning at the type, and the kind-vocabulary
+  finding recorded at Phase 3's dividend obligation.
+- The build-state markers say Phase 1 is complete, and the document-level
+  marker is corrected alongside the phase marker.
+
+### Fixed
+- `BUILD_PLAN.md`'s document-level build-state marker went stale at 1.2 and
+  stayed stale through three sign-offs, each of which updated only the phase
+  marker beneath it. Two statements of one fact drifted exactly as the corpus
+  says duplicated facts do; corrected, with the check folded into the
+  archived prompt.
+
+### Notes
+- Phase 1 delivers a store that holds market data as it was known at any
+  instant, membership as state, chain ingest through a refusing decimal
+  seam, and corporate actions as stated successors with resolvable lineage,
+  on synthetic chains throughout. Phase 2's detail is authored next, with
+  what Phase 1 taught folded in.
+
+## [1.26.0] — 2026-07-30
+
+Checkpoint 1.5, the last of Phase 1.
+
+### Added
+- D-W36: adjusted contract terms are recorded, never derived. OCC states the
+  adjusted terms per event and the methodology is era-dependent rather than a
+  formula, so a lab that derives encodes one era's method, is wrong for the
+  others, and reproduces a documented source of silent economic error. The
+  refusing decimal path is the tripwire: a derivation producing a
+  non-terminating value cannot be stored at all, so record-not-derive is
+  enforced by the seam that already exists.
+- A carried obligation owed at Phase 3: verify the wheel's settlement
+  mechanics against OCC's own rules before the state machine's decisions are
+  authored, citing the rule in each decision. Exercise-by-exception and its
+  threshold, assignment knowledge versus occurrence, T+1 cash availability,
+  the ex-dividend early-assignment model, and dividend entitlement timing:
+  every item a mechanics fact wanting a primary source, the D-W36 treatment
+  applied forward.
+- FX-CorporateActionMintsSuccessor registered at 1.5: a split mints a stated
+  successor with its predecessor recorded, the original row unchanged, and
+  the lineage walk resolving all generations.
+- A carried obligation owed at Phase 3: a domain-completeness pass before the
+  state machine's decisions are authored. Every check this repository has
+  compares one part of the corpus against another, so an omission from the
+  domain model is invisible to all of them; the dividend gap stood for eight
+  checkpoints and surfaced from a conversation rather than from any process,
+  which is the demonstration that the class exists.
+
+### Fixed
+- §2 claimed the four-tuple was identity. The claim was demonstrated false at
+  1.1 and bannered, and the banner stood for four checkpoints. Resolved by
+  adding the deliverable to identity, which is what the uniqueness constraint
+  already enforced; the banner comes down in the commit that makes the claim
+  true rather than here.
+
+### Notes
+- The PR #3 adjusted-strike obligation closes dissolved rather than decided:
+  under D-W36 neither rounding nor ratio arithmetic ever runs. Twelve
+  obligations stood before the closure, eleven after it, twelve after the
+  settlement-mechanics row, and thirteen after the completeness-pass row.
+  A total alone would hide that a row closed and two different ones opened,
+  so all three movements are stated.
+
 ## [1.25.0] — 2026-07-30
 
 Checkpoint 1.4 signed off.

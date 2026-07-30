@@ -141,6 +141,7 @@ public sealed class AsOfMarketData
                 GROUP BY contract_id
             )
             SELECT contracts.expiry, contracts.right, contracts.strike,
+                   contracts.deliverable_shares,
                    contract_quotes.bid, contract_quotes.ask, contract_quotes.last,
                    contract_quotes.volume, contract_quotes.open_interest,
                    contract_quotes.iv, contract_quotes.delta, contract_quotes.gamma,
@@ -163,25 +164,29 @@ public sealed class AsOfMarketData
 
         while (reader.Read())
         {
+            // The deliverable is read, not defaulted: identity carries five
+            // components [§2], and a read that omitted the fifth would mint
+            // every stored contract as standard, adjusted series included.
             var identity = ContractIdentity.Of(
                 symbol,
                 StoreDate.ParseStored(reader.GetString(0)),
                 StoreOptionRight.ParseStored(reader.GetString(1)),
-                StoreDecimal.ParseStored(reader.GetString(2)));
+                StoreDecimal.ParseStored(reader.GetString(2)),
+                reader.GetInt32(3));
 
             quotes.Add(new ContractQuote(
                 identity,
                 snapshotDate,
-                Bid: StoreDecimal.ParseStored(reader.GetString(3)),
-                Ask: StoreDecimal.ParseStored(reader.GetString(4)),
-                Last: OptionalDecimal(reader, 5),
-                Volume: OptionalCount(reader, 6),
-                OpenInterest: OptionalCount(reader, 7),
-                ImpliedVolatility: OptionalDecimal(reader, 8),
-                Delta: OptionalDecimal(reader, 9),
-                Gamma: OptionalDecimal(reader, 10),
-                Theta: OptionalDecimal(reader, 11),
-                Vega: OptionalDecimal(reader, 12)));
+                Bid: StoreDecimal.ParseStored(reader.GetString(4)),
+                Ask: StoreDecimal.ParseStored(reader.GetString(5)),
+                Last: OptionalDecimal(reader, 6),
+                Volume: OptionalCount(reader, 7),
+                OpenInterest: OptionalCount(reader, 8),
+                ImpliedVolatility: OptionalDecimal(reader, 9),
+                Delta: OptionalDecimal(reader, 10),
+                Gamma: OptionalDecimal(reader, 11),
+                Theta: OptionalDecimal(reader, 12),
+                Vega: OptionalDecimal(reader, 13)));
         }
 
         return [.. quotes.OrderBy(quote => quote.Contract)];

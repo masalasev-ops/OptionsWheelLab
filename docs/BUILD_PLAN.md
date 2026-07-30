@@ -1,7 +1,7 @@
 # BUILD_PLAN
 
-Build state: **Phase 0 complete; Phase 1 in progress**. 0.1 to 0.8 and 1.1 built and
-signed off. 1.2 to 1.5 are live intent. Phase 2 detail not written.
+Build state: **Phase 0 and Phase 1 complete**. 0.1 to 0.8 and 1.1 to 1.5 built
+and signed off. Phase 2 detail not written.
 
 ## How this document works
 
@@ -610,7 +610,6 @@ admits only one origin costs.
 | Owed at | Obligation | Raised |
 |---|---|---|
 | Phase 11 | Re-add `Microsoft.AspNetCore.OpenApi` against a version whose `Microsoft.OpenApi` dependency clears the audit. Removed at 0.1 rather than suppressing the advisory; the reason is in the Api project file. | PR #1 |
-| Phase 1 | Decide what an adjusted strike does when a corporate action makes it non-terminating. Identity canonicalises through the refusing path, so a 3-for-2 split forces a choice between rounding a value that is part of a contract's identity and carrying the ratio. | PR #3 |
 | Phase 3 | Establish output-level determinism: a simulated run with a fixed clock produces byte-identical output across two invocations. 0.5 restated it as identical stored rows because no run existed to make. Compared as produced artefacts, never as a database file [D-W28]. | PR #4 |
 | Phase 3 | Decide what bars nondeterminism in SQL that is not a clock. Enumerating the bundled SQLite showed `random()` and `randomblob()` alongside the seven clock functions; they are outside FX-ClockIsNotADateSource by name but would break a byte-identical run just as surely. | PR #4 |
 | Phase 2 | Set the three `Risk:` fractions. 0.8 seeded nineteen rows-classed keys and left these because an equity-relative cap is the operator's risk appetite [D-W11], and the worked example illustrating one account is not the operator setting one. FX-GateRejectsAboveHeadroom needs them, so the phase that consumes them sets them. | PR #7 |
@@ -621,14 +620,17 @@ admits only one origin costs.
 | Phase 8 | Extract the market rules out of `SyntheticChainReader`, so one definition serves the synthetic reader and the vendor ingest. Refusing a negative bid, a negative ask and a crossed market are statements about what a market can be, not JSON concerns, and they sit as private statics on the reader, so a second producer of quotes can only duplicate them. Phase 8 is where that second producer arrives. **Coupled to the Phase 2 crossed-quote decision**: if the gate handles a crossed quote, the crossed rule moves to the gate rather than into the shared definition, so settle that first and extract what is left. Not extracted at 0.8 because there is one caller and the second does not exist. | PR #9 |
 | Phase 2 | Reconcile `WORKED_EXAMPLE.md` with [D-W22] to [D-W25]. Its 45.00 strike fails the 12 percent spread cap at 18.18 percent of mid, so the three-candidate feasible set it teaches renders as two and the random maker's choice disappears along with the regret arithmetic built on it; the 47.50 strike passes at 11.97 percent, three hundredths of a point of margin, which is too fragile for the document that defines correctness. The fix is a deliberate rewrite of the chain, ideally so one candidate fails the spread cap by an obvious margin and the example teaches the gate as well. Downstream: seven registered fixtures read its conclusions; FX-WorkedExampleChainLoads parses §2 and §5 as its oracle and fails on a quote revision, which is a tripwire rather than an exposure; `Costs:CommissionPerContract` is seeded from §1 and `Trial:MaxTrialDays` is justified partly by the example's 109-day trial. Raised at v1.6.0, banner in §3, and never carried here because this table did not exist yet. | v1.6.0 |
 | Phase 3 | Decide how dividends are recorded. Between assignment and call-away the account holds shares, and a dividend paid in that window is cash the trial received; omitting it understates every covered-call leg and misprices the buy-and-hold control [D-W13], which biases the exact comparison the lab exists to make. Needs a ledger `kind`, a source for ex-dates and amounts (`corporate_actions` already exists and lists `dividend` among its kinds), and a statement of whether the synthetic-chain format can express one. Raised from a review of what the wheel model omits, before Phase 3's detail is authored. | v1.22.0 |
+| Phase 3 | Verify the wheel's settlement mechanics against OCC's own rules before the state machine's decisions are authored, and cite the rule in each decision: exercise-by-exception and its in-the-money threshold at expiry; when assignment is known to the account versus when it occurred; when cash from an assignment or a call-away is usable again under T+1 settlement; the early-assignment model around ex-dividend that VALIDITY already names as modelled by rule; and dividend entitlement timing given that ex-date and record date coincide under T+1. Every item is a mechanics fact with a primary source, none is currently verified, and the corpus's posture is transcription from authorities rather than recollection [D-W36]. Raised at 1.5 when the adjustment question got this treatment and the remaining unverified mechanics were enumerated. | v1.26.0 |
+| Phase 3 | Run a domain-completeness pass before the state machine's decisions are authored, and record what it finds. Every check this repository has compares one part of the corpus against another, so an omission from the domain model is invisible to all of them: dividends were absent from `ledger_entries` and from D-W13's control for eight checkpoints, and surfaced from a conversation rather than from any process. The pass walks a wheel turn end to end against the corpus and asks what the strategy involves that no document mentions: cash movements between assignment and call-away, what a trial's economics include, what an account holds that the ledger does not name. Findings become their own rows. Raised at 1.5, after the dividend gap showed the class exists. | v1.26.0 |
 
 ---
 
 ## Phase 1 — Chain store and point-in-time invariants
 
-Build state: **1.1 to 1.4 built and signed off; 1.5 not built**. On synthetic chains;
-no vendor data until Phase 8. Delivers the market-data schema, the as-of read paths
-over it, and membership as state.
+Build state: **complete**. 1.1 to 1.5 built and signed off. On synthetic chains;
+no vendor data until Phase 8. Delivered the market-data schema, the as-of read
+paths over it, membership as state, chain ingest, and the corporate-action mint
+with its lineage walk.
 
 ### 1.1 The market-data schema
 The six tables of §4.1 with the observation stamp in the key [D-W8].
@@ -843,11 +845,45 @@ refactor before the persistence fixture consumed them.
 ### 1.5 Corporate actions and the predecessor link
 A split or special dividend mints a new contract identity with a recorded
 predecessor rather than editing the existing row [§2].
-- Settles what an adjusted strike does when the division is non-terminating. The
-  obligation names the choice as rounding a value inside identity against carrying
-  the ratio. This checkpoint owns it and the decision lands before the code.
+- The adjusted-strike question is settled by D-W36: terms are transcribed from
+  what the adjusting authority states and never computed, so the non-terminating
+  case cannot arise. The obligation's dilemma, rounding a value inside identity
+  against carrying the ratio, is dissolved rather than decided, and the refusing
+  decimal path is the tripwire that keeps it dissolved.
 - **DoD**: an adjusted contract is a new identity, its predecessor is recorded,
   and a historical join across the split resolves both.
+
+Reconciled at sign-off against what shipped. D-W36 dissolved the dilemma the
+detail was written around, and the refusing decimal path is exercised inside
+the minting writer: the stated strike runs through it on the way to identity,
+so a derivation that produced a non-terminating value could not be stored.
+
+**The fifth identity component touched six sites where three were known.** The
+comparer and equality; ChainWriter's find-or-create, made explicit and exact,
+its multi-match refusal turning unreachable and coming out with the banner it
+cited; the equality and ordering tests, where the old shared-identity test
+inverted exactly as its own remark predicted; the as-of quote read, which now
+reads the deliverable because defaulting it would mint every stored contract
+as standard; the `Contract` record, which lost its copy of a fact identity now
+carries; and `ToString`, which renders the fifth component so two identities
+differing only in deliverable cannot stringify identically.
+
+**The mint is atomic both ways, observed.** The unchanged-tuple refusal writes
+nothing; a successor collision after the event insert rolls the event row back
+with it; the predecessor reads back byte-identical by row comparison.
+`corporate_actions` got its first writer three checkpoints after both
+vocabularies learned its columns.
+
+**The lineage read is timeless, its reasoning at the type.** Contracts carry
+no observation axis, so a by-name `asOf` member would claim a filter the
+schema cannot honour. The 1.1 recursive CTE became production in the shape the
+pin proved, the alias convention's dated revisit closed in all three passages,
+and resolution was never needed.
+
+**Left for Phase 3, recorded at its dividend obligation**: the corporate-action
+kind vocabulary is one entry with no CHECK on the table and no document
+enumerating the values; the fuller vocabulary and the CHECK decision must not
+ride a checkpoint silently as a rebuild migration.
 
 Detail for Phase 2 is authored when Phase 1 signs off.
 

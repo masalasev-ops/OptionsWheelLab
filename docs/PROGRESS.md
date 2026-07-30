@@ -4,9 +4,9 @@ Appended to, never rewritten. The repository is the authority on build state.
 
 ## Current state
 
-**Phase 0 complete and reviewed. Phase 1 in progress.** Checkpoints 0.1 to 0.8
-and 1.1 to 1.4 built and signed off; 1.5 not built. Phase 2 detail not
-written. The documentation corpus is at v1.25.0.
+**Phase 0 complete and reviewed. Phase 1 complete.** Checkpoints 0.1 to 0.8
+and 1.1 to 1.5 built and signed off. Phase 2 detail not written. The
+documentation corpus is at v1.27.0.
 
 ## Log
 
@@ -781,3 +781,67 @@ having been shared since 0.6. The duplicated half was the header
 vocabularies, structural constants and chain-file load, which moved to a
 shared oracle helper in a pure refactor before the persistence fixture
 consumed them.
+
+### 2026-07-30 — corpus v1.26.0
+Checkpoint 1.5 scoped, the last of Phase 1, and the corpus's two oldest open
+questions get their answers before any code.
+
+D-W36 dissolves the adjusted-strike dilemma rather than deciding it.
+Adjusted terms are transcribed from what the adjusting authority states,
+never derived from a ratio: OCC publishes the terms per event, the
+methodology is era-dependent rather than a formula, and the SEC record of
+the 2007 change documents the rounding-to-eighths windfalls that deriving
+reproduces. The refusing decimal path is the tripwire, so record-not-derive
+is enforced by the seam that already exists. The PR #3 obligation closes
+with neither of its two options ever running.
+
+§2's identity claim resolves by adding the deliverable to identity, which
+the store's uniqueness constraint has enforced since 1.1. The banner comes
+down in the commit that makes the claim true.
+
+Two obligations are raised at Phase 3 beside the closure. The
+settlement-mechanics row applies the D-W36 treatment forward to every
+mechanics fact the state machine will rest on: exercise-by-exception,
+assignment knowledge versus occurrence, T+1 cash availability, the
+ex-dividend early-assignment model, and dividend entitlement timing. The
+completeness-pass row exists because consistency checks cannot see absence:
+every check the repository has compares one part of the corpus against
+another, and the dividend gap stood for eight checkpoints before a
+conversation rather than a process surfaced it. Twelve obligations stood
+before the closure, eleven after it, twelve after the mechanics row,
+thirteen after the completeness row.
+
+### 2026-07-30 — corpus v1.27.0
+Checkpoint 1.5 built and signed off, and with it **Phase 1**. The
+corporate-action mint, the lineage walk, and identity's fifth component. 378
+tests, 253 across twenty-seven fixtures. Every Phase 1 obligation row closed;
+thirteen carried obligations stand, five of them Phase 3's.
+
+The fifth identity component touched six sites where three were known, and
+the two beyond the anticipated fourth are the instructive ones: the
+`Contract` record lost its deliverable copy the moment identity carried the
+fact, and `ToString` had to render the component so two identities differing
+only in deliverable cannot stringify identically, which the identity-order
+fixture pins.
+
+The mint is atomic both ways and observed: an adjustment that changes
+nothing writes nothing, a successor collision rolls the already-inserted
+event row back, and the predecessor reads back byte-identical by row
+comparison. D-W36's tripwire is exercised where it matters, the stated
+strike passing through the refusing decimal path inside the writer.
+
+The alias convention's dated cost resolved as the 1.1 pin predicted: the
+lineage walk shipped as the recursive CTE, no self-join was needed, and the
+convention survived the one query that appeared to forbid it, four
+checkpoints after the appearance.
+
+One drift owned at this sign-off: the document-level build-state marker in
+BUILD_PLAN went stale at 1.2 and three sign-off passes updated only the
+phase marker beneath it. Nothing inherited the error; the marker is
+corrected, and the archived prompt now carries the check that would have
+caught it.
+
+Phase 1 delivers a store that holds market data as it was known at any
+instant, membership as state, chain ingest through a refusing decimal seam,
+and corporate actions as stated successors with resolvable lineage, on
+synthetic chains throughout, which is what it said it would deliver.

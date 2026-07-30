@@ -97,7 +97,11 @@ public sealed class FX_ChainLoadsInIdentityOrder
 
         Assert.Equal(3, quotes.Count);
         Assert.Equal(
-            ["2026-04-17 put 99.00000000", "2026-04-17 call 99.00000000", "2026-05-15 put 10.00000000"],
+            [
+                "2026-04-17 put 99.00000000 x100",
+                "2026-04-17 call 99.00000000 x100",
+                "2026-05-15 put 10.00000000 x100",
+            ],
             quotes.Select(quote => quote.Contract.ToString()["WDGT ".Length..]));
     }
 

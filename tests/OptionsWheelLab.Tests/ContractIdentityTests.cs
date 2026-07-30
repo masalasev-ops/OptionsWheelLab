@@ -51,7 +51,7 @@ public sealed class ContractIdentityTests
     }
 
     [Fact]
-    public void Any_part_of_the_tuple_differing_makes_a_different_contract()
+    public void Any_component_of_identity_differing_makes_a_different_contract()
     {
         var baseline = Identity(50m);
 
@@ -59,6 +59,9 @@ public sealed class ContractIdentityTests
         Assert.NotEqual(baseline, ContractIdentity.Of(Ticker.Normalise("AAPL"), Expiry.AddDays(7), OptionRight.Put, 50m));
         Assert.NotEqual(baseline, ContractIdentity.Of(Ticker.Normalise("AAPL"), Expiry, OptionRight.Call, 50m));
         Assert.NotEqual(baseline, Identity(52.50m));
+        Assert.NotEqual(
+            baseline,
+            ContractIdentity.Of(Ticker.Normalise("AAPL"), Expiry, OptionRight.Put, 50m, deliverableShares: 150));
     }
 
     /// <summary>
@@ -70,40 +73,36 @@ public sealed class ContractIdentityTests
     {
         var identity = Identity(50m);
 
-        var one = new Contract(identity, "AAPL260918P00050000", 100, 100);
-        var renamed = new Contract(identity, "AAPL260918P00050000-ADJ", 100, 100);
+        var one = new Contract(identity, "AAPL260918P00050000", 100);
+        var renamed = new Contract(identity, "AAPL260918P00050000-ADJ", 100);
 
         Assert.Equal(one.Identity, renamed.Identity);
         Assert.NotEqual(one, renamed);
     }
 
     /// <summary>
-    /// The multiplier and the deliverable are two quantities, and identity carries
-    /// neither.
+    /// An adjusted series and a standard contract at the same strike are
+    /// different identities, separated by the deliverable.
     /// </summary>
     /// <remarks>
-    /// This is the §2 finding in test form. A three-for-two split takes a 90 strike
-    /// to 60 with a 150-share deliverable, and a standard 60 strike with 100 shares
-    /// lists alongside it. The two contracts are economically different and share
-    /// one identity, which is why the tuple is not identity. Recorded here so the
-    /// claim is visible in the suite rather than only in a document banner.
-    /// <para>
-    /// It asserts the current behaviour, not the desired behaviour. When the
-    /// identity decision lands, this test is the one that has to change, and that
-    /// is the point of it.
-    /// </para>
+    /// This test's predecessor asserted the opposite, said it asserted current
+    /// rather than desired behaviour, and said it would be the one that has to
+    /// change when the identity decision landed. It landed: identity carries
+    /// the deliverable [§2, D-W36], so a three-for-two split's successor at a
+    /// 60 strike with 150 shares is a distinct identity from the standard 60
+    /// with 100 that lists alongside it, and a join by identity across the
+    /// pair returns the contract asked about rather than both.
     /// </remarks>
     [Fact]
-    public void An_adjusted_contract_and_a_standard_one_can_share_an_identity()
+    public void An_adjusted_contract_and_a_standard_one_are_different_identities()
     {
-        var identity = Identity(60m);
+        var adjusted = ContractIdentity.Of(
+            Ticker.Normalise("AAPL"), Expiry, OptionRight.Put, 60m, deliverableShares: 150);
+        var standard = Identity(60m);
 
-        var adjusted = new Contract(identity, "WDGT1260918P00060000", 100, 150);
-        var standard = new Contract(identity, "WDGT260918P00060000", 100, 100);
-
-        Assert.Equal(adjusted.Identity, standard.Identity);
-        Assert.Equal(adjusted.Multiplier, standard.Multiplier);
-        Assert.NotEqual(adjusted.DeliverableShares, standard.DeliverableShares);
+        Assert.NotEqual(adjusted, standard);
+        Assert.Equal(100, standard.DeliverableShares);
+        Assert.Equal(150, adjusted.DeliverableShares);
     }
 
     /// <summary>
@@ -175,6 +174,22 @@ public sealed class ContractIdentityTests
         var other = new[] { Identity(47.50m), Identity(50m), Identity(45m) }.Order();
 
         Assert.Equal(one, other);
+    }
+
+    /// <summary>
+    /// The deliverable is the final ordering key: two contracts equal on the
+    /// first four components order by what they deliver, so the total order
+    /// [D-W4] survives the fifth component.
+    /// </summary>
+    [Fact]
+    public void The_deliverable_breaks_the_tie_as_the_final_ordering_key()
+    {
+        var standard = Identity(60m);
+        var adjusted = ContractIdentity.Of(
+            Ticker.Normalise("AAPL"), Expiry, OptionRight.Put, 60m, deliverableShares: 150);
+
+        Assert.True(standard.CompareTo(adjusted) < 0);
+        Assert.True(adjusted.CompareTo(standard) > 0);
     }
 
     /// <summary>

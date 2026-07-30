@@ -6,8 +6,10 @@ paragraphs, its date-form paragraph, the money line of §4 and the permitted
 values of `right` are implemented at 0.4.
 §4.0 is implemented at 0.7 and §4.1 at 1.1, with its keys, constraints,
 triggers and indexes. §4.2 is implemented at 1.3, its shape settled by D-W35 as
-transitions; §2's corporate-action paragraph is 1.5. The rest is specification:
-decisions and trials Phase 4, scores Phase 5, pre-registration Phase 9.
+transitions; §2's corporate-action paragraph is implemented at 1.5, its
+identity paragraph corrected and implemented there too [D-W36]. The rest is
+specification: decisions and trials Phase 4, scores Phase 5, pre-registration
+Phase 9.
 
 ## 1. Sources
 
@@ -42,26 +44,15 @@ of helper as a timestamp. `InvariantGlobalization` makes the invariant short-dat
 form `MM/dd/yyyy`, so a date stringified without an explicit format is
 culture-independent and still wrong.
 
-> **Unresolved, added 2026-07-29 at checkpoint 1.1.** The identity claim below is
-> false and needs a decision. An adjusted series can share underlying, expiry, right
-> and strike with a standard contract, differing only in the deliverable: a
-> three-for-two split takes a 90 strike to 60 with a 150-share deliverable, and a
-> standard 60 strike with 100 shares lists alongside it. So the tuple maps two
-> different contracts to one identity, and the promise two paragraphs down that an
-> adjusted contract is a new identity with a predecessor link cannot be kept, because
-> the new identity equals an existing one.
->
-> It reaches [D-W29]'s reason for canonicalising the strike,
-> `ContractIdentity`'s equality, and checkpoint 1.5's predecessor link, so it wants a
-> decision rather than a migration. 1.1 added the strongest constraint the answer
-> allows, on the deliverable rather than the tuple, which is a floor under the
-> decision and not an answer to it. Nothing below is safe to build identity from
-> until this is settled.
-
-An option contract's identity is the tuple of underlying, expiry, right, and
-strike. The vendor's contract symbol is stored but is not the key, because
-contract symbol conventions change on splits and special dividends and a stored
-key that moves would silently break historical joins.
+An option contract's identity is the tuple of underlying, expiry, right and
+strike, **together with its deliverable**. An adjusted series can share all
+four of the first components with a standard contract, differing only in what
+it delivers: a three-for-two split's successor at a 60 strike with 150 shares
+lists alongside a standard 60 with 100. The store's uniqueness constraint has
+carried the five components since 1.1; the identity type carries them from
+1.5. The vendor's contract symbol is stored but is not the key, because symbol
+conventions change on adjustment and a stored key that moves would silently
+break historical joins.
 
 Underlying corporate actions adjust contracts. When a split or special dividend
 adjusts strikes and deliverables, the adjusted contract is a **new** identity

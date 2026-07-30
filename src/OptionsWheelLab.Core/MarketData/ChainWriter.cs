@@ -182,12 +182,15 @@ public sealed class ChainWriter
 
     private long FindOrCreate(SqliteTransaction transaction, ContractIdentity identity)
     {
+        // The deliverable is passed explicitly rather than left to the DDL
+        // default, so the writer and the five-component identity [§2] agree at
+        // the call rather than by coincidence of two hundreds.
         using var insert = _connection.CreateCommand();
         insert.Transaction = transaction;
         insert.CommandText =
             """
-            INSERT INTO contracts (symbol, expiry, right, strike)
-            VALUES ($symbol, $expiry, $right, $strike)
+            INSERT INTO contracts (symbol, expiry, right, strike, deliverable_shares)
+            VALUES ($symbol, $expiry, $right, $strike, $deliverable)
             ON CONFLICT (symbol, expiry, right, strike, deliverable_shares) DO NOTHING
             RETURNING contract_id;
             """;
@@ -195,17 +198,17 @@ public sealed class ChainWriter
         insert.Parameters.AddStored("$expiry", identity.Expiry);
         insert.Parameters.AddStored("$right", identity.Right);
         insert.Parameters.AddStored("$strike", identity.Strike);
+        insert.Parameters.AddWithValue("$deliverable", identity.DeliverableShares);
 
         if (insert.ExecuteScalar() is long created)
         {
             return created;
         }
 
-        // The conflict case: the contract exists. A synthetic chain cannot
-        // state a deliverable, so the lookup is by the four-tuple; two rows
-        // can match only once an adjusted series shares the tuple, which 1.5
-        // mints and §2's banner records as unsettled, so more than one match
-        // refuses rather than guesses.
+        // The conflict case: the contract exists. The lookup filters on all
+        // five identity components, which the uniqueness constraint makes
+        // single-row by construction; an adjusted series at the same strike is
+        // a different identity and a different row [§2].
         using var find = _connection.CreateCommand();
         find.Transaction = transaction;
         find.CommandText =
@@ -215,29 +218,16 @@ public sealed class ChainWriter
             WHERE symbol = $symbol
               AND expiry = $expiry
               AND right = $right
-              AND strike = $strike;
+              AND strike = $strike
+              AND deliverable_shares = $deliverable;
             """;
         find.Parameters.AddWithValue("$symbol", identity.Underlying.Value);
         find.Parameters.AddStored("$expiry", identity.Expiry);
         find.Parameters.AddStored("$right", identity.Right);
         find.Parameters.AddStored("$strike", identity.Strike);
+        find.Parameters.AddWithValue("$deliverable", identity.DeliverableShares);
 
-        var matches = new List<long>();
-        using var reader = find.ExecuteReader();
-
-        while (reader.Read())
-        {
-            matches.Add(reader.GetInt64(0));
-        }
-
-        return matches.Count == 1
-            ? matches[0]
-            : throw new InvalidOperationException(
-                $"{matches.Count} contracts share the identity tuple of '{identity.Underlying.Value}' "
-                + $"{StoreDate.ToStored(identity.Expiry)} {StoreOptionRight.ToStored(identity.Right)} "
-                + $"{StoreDecimal.ToStored(identity.Strike)}. A synthetic chain cannot state a "
-                + "deliverable to pick one, and §2 records the identity question as unsettled. "
-                + "Nothing was ingested.");
+        return (long)find.ExecuteScalar()!;
     }
 
     private void InsertQuote(
