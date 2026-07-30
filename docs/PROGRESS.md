@@ -799,9 +799,14 @@ with neither of its two options ever running.
 the store's uniqueness constraint has enforced since 1.1. The banner comes
 down in the commit that makes the claim true.
 
-The settlement-mechanics obligation is raised at Phase 3, the D-W36
-treatment applied forward to every mechanics fact the state machine will
-rest on: exercise-by-exception, assignment knowledge versus occurrence,
-T+1 cash availability, the ex-dividend early-assignment model, and dividend
-entitlement timing. Twelve obligations stood before the closure, eleven
-after it, twelve after the raise.
+Two obligations are raised at Phase 3 beside the closure. The
+settlement-mechanics row applies the D-W36 treatment forward to every
+mechanics fact the state machine will rest on: exercise-by-exception,
+assignment knowledge versus occurrence, T+1 cash availability, the
+ex-dividend early-assignment model, and dividend entitlement timing. The
+completeness-pass row exists because consistency checks cannot see absence:
+every check the repository has compares one part of the corpus against
+another, and the dividend gap stood for eight checkpoints before a
+conversation rather than a process surfaced it. Twelve obligations stood
+before the closure, eleven after it, twelve after the mechanics row,
+thirteen after the completeness row.

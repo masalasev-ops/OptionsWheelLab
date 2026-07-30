@@ -22,6 +22,12 @@ Checkpoint 1.5, the last of Phase 1.
 - FX-CorporateActionMintsSuccessor registered at 1.5: a split mints a stated
   successor with its predecessor recorded, the original row unchanged, and
   the lineage walk resolving all generations.
+- A carried obligation owed at Phase 3: a domain-completeness pass before the
+  state machine's decisions are authored. Every check this repository has
+  compares one part of the corpus against another, so an omission from the
+  domain model is invisible to all of them; the dividend gap stood for eight
+  checkpoints and surfaced from a conversation rather than from any process,
+  which is the demonstration that the class exists.
 
 ### Fixed
 - §2 claimed the four-tuple was identity. The claim was demonstrated false at
@@ -33,9 +39,10 @@ Checkpoint 1.5, the last of Phase 1.
 ### Notes
 - The PR #3 adjusted-strike obligation closes dissolved rather than decided:
   under D-W36 neither rounding nor ratio arithmetic ever runs. Twelve
-  obligations stood before the closure, eleven after it, and twelve after
-  the settlement-mechanics row was raised. A net-zero count would hide that
-  a row closed and a different one opened, so both movements are stated.
+  obligations stood before the closure, eleven after it, twelve after the
+  settlement-mechanics row, and thirteen after the completeness-pass row.
+  A total alone would hide that a row closed and two different ones opened,
+  so all three movements are stated.
 
 ## [1.25.0] — 2026-07-30
 
