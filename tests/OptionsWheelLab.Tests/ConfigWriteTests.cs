@@ -1,3 +1,4 @@
+using System.Globalization;
 using Microsoft.Data.Sqlite;
 using OptionsWheelLab.Core.Configuration;
 using OptionsWheelLab.Core.Storage;
@@ -33,6 +34,36 @@ public sealed class ConfigWriteTests
 
         Assert.Equal(1, writer.Append(Key, "2", SetAt));
         Assert.Equal(2, writer.Append(Key, "3", SetAt.AddDays(1)));
+    }
+
+    /// <summary>
+    /// The version returned is the one the inserted row carries, not the highest
+    /// in the table when the call finishes.
+    /// </summary>
+    /// <remarks>
+    /// Read back by key and value rather than by taking the maximum, because the
+    /// maximum is exactly what a following read would have returned and asserting
+    /// it would restate the defect as the expectation. The insert reports its own
+    /// version through <c>RETURNING</c>, inside the transaction that wrote it.
+    /// <para>
+    /// The distinction is unobservable while the store has one writer [D-W1] and
+    /// becomes observable when a second thing writes configuration. It would fail
+    /// by returning a plausible number rather than by raising.
+    /// </para>
+    /// </remarks>
+    [Fact]
+    public void The_returned_version_is_the_one_the_row_carries()
+    {
+        using var store = MigratedStore();
+        using var connection = store.Connections.Open(StoreAccess.Write);
+
+        var writer = new ConfigWriter(connection);
+
+        var first = writer.Append(Key, "2", SetAt);
+        var second = writer.Append(Key, "3", SetAt.AddDays(1));
+
+        Assert.Equal(first, VersionOfRowValued(connection, "2"));
+        Assert.Equal(second, VersionOfRowValued(connection, "3"));
     }
 
     [Fact]
@@ -199,6 +230,21 @@ public sealed class ConfigWriteTests
             new DateTimeOffset(2026, 1, 10, 12, 0, 0, TimeSpan.Zero));
 
         Assert.Equal(1, version);
+    }
+
+    /// <summary>
+    /// The version of the row for <see cref="Key"/> carrying
+    /// <paramref name="value"/>, found by its value rather than by its version.
+    /// </summary>
+    private static int VersionOfRowValued(SqliteConnection connection, string value)
+    {
+        using var command = connection.CreateCommand();
+        command.CommandText =
+            "SELECT version FROM config_rows WHERE key = $key AND value = $value;";
+        command.Parameters.AddWithValue("$key", Key);
+        command.Parameters.AddWithValue("$value", value);
+
+        return Convert.ToInt32(command.ExecuteScalar(), CultureInfo.InvariantCulture);
     }
 
     private static void Execute(SqliteConnection connection, string sql)

@@ -1,3 +1,4 @@
+using System.Globalization;
 using Microsoft.Data.Sqlite;
 using OptionsWheelLab.Core.Storage;
 
@@ -67,12 +68,7 @@ public sealed class ConfigWriter
         ArgumentException.ThrowIfNullOrWhiteSpace(key);
         ArgumentNullException.ThrowIfNull(value);
 
-        AppendAll([new ConfigEntry(key, value, note)], setAt);
-
-        using var read = _connection.CreateCommand();
-        read.CommandText = "SELECT MAX(version) FROM config_rows WHERE key = $key;";
-        read.Parameters.AddWithValue("$key", key);
-        return Convert.ToInt32(read.ExecuteScalar());
+        return WriteInOneTransaction([new ConfigEntry(key, value, note)], setAt)[0];
     }
 
     /// <summary>
@@ -85,18 +81,29 @@ public sealed class ConfigWriter
     /// invariants are checked over the complete set, with what is already stored,
     /// before the transaction commits.
     /// </remarks>
-    public void AppendAll(IReadOnlyList<ConfigEntry> entries, DateTimeOffset setAt)
+    public void AppendAll(IReadOnlyList<ConfigEntry> entries, DateTimeOffset setAt) =>
+        WriteInOneTransaction(entries, setAt);
+
+    /// <summary>
+    /// Writes every entry in one transaction and returns the versions written, in
+    /// the order the entries were given.
+    /// </summary>
+    private List<int> WriteInOneTransaction(
+        IReadOnlyList<ConfigEntry> entries,
+        DateTimeOffset setAt)
     {
         ArgumentNullException.ThrowIfNull(entries);
 
         if (entries.Count == 0)
         {
-            return;
+            return [];
         }
 
         using var transaction = _connection.BeginTransaction(deferred: false);
-        Write(transaction, entries, setAt);
+        var versions = Write(transaction, entries, setAt);
         transaction.Commit();
+
+        return versions;
     }
 
     /// <summary>
@@ -151,24 +158,42 @@ public sealed class ConfigWriter
         return new SeedOutcome(missing.Select(entry => entry.Key).ToList(), skipped);
     }
 
-    private void Write(
+    /// <summary>
+    /// The versions written, in the order the entries were given.
+    /// </summary>
+    private List<int> Write(
         SqliteTransaction transaction,
         IReadOnlyList<ConfigEntry> entries,
         DateTimeOffset setAt)
     {
+        var versions = new List<int>(entries.Count);
+
         foreach (var entry in entries)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(entry.Key);
             ArgumentNullException.ThrowIfNull(entry.Value);
 
             RefuseIfEarlierThanNewest(transaction, entry.Key, setAt);
-            Insert(transaction, entry, setAt);
+            versions.Add(Insert(transaction, entry, setAt));
         }
 
         RefuseIfInvariantsDoNotHold(transaction, entries);
+
+        return versions;
     }
 
-    private void Insert(SqliteTransaction transaction, ConfigEntry entry, DateTimeOffset setAt)
+    /// <summary>
+    /// Inserts one row and returns the version that row carries.
+    /// </summary>
+    /// <remarks>
+    /// <c>RETURNING</c> rather than a following <c>MAX(version)</c> read, so the
+    /// number returned is the one this statement wrote rather than whatever is
+    /// highest when the read happens. A separate read would be correct only while
+    /// the store has a single writer [D-W1], and it would fail by returning a
+    /// plausible number rather than by raising, which is the worst way for it to
+    /// fail. Available since SQLite 3.35 and the bundled engine is 3.53.3.
+    /// </remarks>
+    private int Insert(SqliteTransaction transaction, ConfigEntry entry, DateTimeOffset setAt)
     {
         using var insert = _connection.CreateCommand();
         insert.Transaction = transaction;
@@ -181,13 +206,15 @@ public sealed class ConfigWriter
                    $setAt,
                    $note
             FROM config_rows
-            WHERE key = $key;
+            WHERE key = $key
+            RETURNING version;
             """;
         insert.Parameters.AddWithValue("$key", entry.Key);
         insert.Parameters.AddWithValue("$value", entry.Value);
         insert.Parameters.AddWithValue("$setAt", StoreTimestamp.ToStored(setAt));
         insert.Parameters.AddWithValue("$note", entry.Note ?? (object)DBNull.Value);
-        insert.ExecuteNonQuery();
+
+        return Convert.ToInt32(insert.ExecuteScalar(), CultureInfo.InvariantCulture);
     }
 
     /// <summary>

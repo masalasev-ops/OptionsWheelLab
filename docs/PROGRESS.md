@@ -4,8 +4,8 @@ Appended to, never rewritten. The repository is the authority on build state.
 
 ## Current state
 
-**Phase 0 complete.** Checkpoints 0.1 to 0.8 built and signed off. Phase 1
-detail not written. The documentation corpus is at v1.15.1.
+**Phase 0 complete and reviewed.** Checkpoints 0.1 to 0.8 built and signed off.
+Phase 1 detail not written. The documentation corpus is at v1.16.0.
 
 ## Log
 
@@ -479,3 +479,31 @@ reader meeting the gap is looking. That note was proposed at 0.5 and not applied
 and four days later the clause raising this obligation cited v1.9.0 as the version
 that created the table. An unexplained gap is not inert: it reads as a missing
 entry, and a missing entry gets guessed at.
+
+### 2026-07-29 — corpus v1.16.0
+Phase 0 reviewed, the first pass over the code by a reader who went to the files
+rather than to a report. Five findings, one of them a defect and four of them
+things the code was right about and silent on. 268 tests.
+
+**The defect.** `ConfigWriter.Append` returned `MAX(version)` read after its own
+transaction committed, while claiming to return the version written. Sole-writer
+made it true [D-W1] and Phase 4 makes it false, and it would have failed by
+returning a plausible number. `RETURNING` inside the insert now.
+
+**The one that would have let a bad configuration through.**
+`PolicyBandCeilings` had no completeness check, and its own remarks already named
+the failure. An incomplete catch-list still catches what is on it; an incomplete
+band list makes D-W23's ceiling pass against fewer bands than exist. The learner's
+band arrives at Phase 4 and nothing would have failed had it been omitted.
+
+That produced a rule worth more than the fixture: **a declared vocabulary is
+checked standing in the direction in which absence causes the bad outcome.** For
+`DecimalColumns` and `AppendOnlyTables` that is list to document, a name with no
+table being the error. For `PolicyBandCeilings` it is document to list. The three
+looked inconsistent and are not, and nothing had said why.
+
+The other three are silences rather than errors: pooling disabled with no note of
+what it protects, an as-of read that cannot join a transaction where the current
+read can, and market rules living inside a JSON reader with no schedule for
+getting them out. Each is correct today and each has a phase at which it stops
+being, which is what the records now say.
