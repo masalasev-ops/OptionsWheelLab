@@ -1,7 +1,7 @@
 # BUILD_PLAN
 
-Build state: **Phase 0 complete**. 0.1 to 0.8 built and signed off. Phase 1
-detail not written.
+Build state: **Phase 0 complete; Phase 1 not built**. 0.1 to 0.8 built and signed
+off. Phase 1 detail written and live intent. Phase 2 detail not written.
 
 ## How this document works
 
@@ -619,15 +619,70 @@ admits only one origin costs.
 | Phase 2 | Set the three `Risk:` fractions. 0.8 seeded nineteen rows-classed keys and left these because an equity-relative cap is the operator's risk appetite [D-W11], and the worked example illustrating one account is not the operator setting one. FX-GateRejectsAboveHeadroom needs them, so the phase that consumes them sets them. | PR #7 |
 | Phase 3 | Set `Costs:AssignmentFee`. No document states it, and zero inferred from an absent ledger line is weaker than a stated number and invisible when wrong. Phase 3's assignment path is the first thing that computes with it. | PR #7 |
 | Phase 2 | Decide whether the gate handles a crossed quote. 0.6's loader refuses bid above ask, which is the one domain rule it enforces, and that makes a crossed or locked market unwritable as a synthetic chain, so nothing can exercise the gate against one. D-W22's spread cap is a fraction of mid, so a crossed quote gives a negative numerator and passes a cap that exists to reject wide markets. If the gate handles it, the loader stops refusing it. | PR #5 |
+| Phase 4 | Store one feasible set per name and date rather than one per decision. `candidates` is keyed on `decision_id`, so three makers acting on one set write it three times, while [D-W4] requires the three to be byte-identical and `FX-ThreeMakersSameFeasibleSet` asserts it. Storing once and referencing thrice makes it true by construction and divides the largest uncertain table by three. Raised while estimating store size over a ten-year lifetime, before the table exists. | v1.17.0 |
 | Phase 8 | Extract the market rules out of `SyntheticChainReader`, so one definition serves the synthetic reader and the vendor ingest. Refusing a negative bid, a negative ask and a crossed market are statements about what a market can be, not JSON concerns, and they sit as private statics on the reader, so a second producer of quotes can only duplicate them. Phase 8 is where that second producer arrives. **Coupled to the Phase 2 crossed-quote decision**: if the gate handles a crossed quote, the crossed rule moves to the gate rather than into the shared definition, so settle that first and extract what is left. Not extracted at 0.8 because there is one caller and the second does not exist. | PR #9 |
 | Phase 2 | Reconcile `WORKED_EXAMPLE.md` with [D-W22] to [D-W25]. Its 45.00 strike fails the 12 percent spread cap at 18.18 percent of mid, so the three-candidate feasible set it teaches renders as two and the random maker's choice disappears along with the regret arithmetic built on it; the 47.50 strike passes at 11.97 percent, three hundredths of a point of margin, which is too fragile for the document that defines correctness. The fix is a deliberate rewrite of the chain, ideally so one candidate fails the spread cap by an obvious margin and the example teaches the gate as well. Downstream: seven registered fixtures read its conclusions; FX-WorkedExampleChainLoads parses §2 and §5 as its oracle and fails on a quote revision, which is a tripwire rather than an exposure; `Costs:CommissionPerContract` is seeded from §1 and `Trial:MaxTrialDays` is justified partly by the example's 109-day trial. Raised at v1.6.0, banner in §3, and never carried here because this table did not exist yet. | v1.6.0 |
 
 ---
 
-## Phase 1 and beyond
+## Phase 1 — Chain store and point-in-time invariants
 
-Not yet written. Phase 1 checkpoint detail is authored when Phase 0 signs off,
-with whatever Phase 0 taught already folded in.
+Build state: **not built**. On synthetic chains; no vendor data until Phase 8.
+Delivers the market-data schema, the as-of read paths over it, and membership as
+state.
+
+### 1.1 The market-data schema
+The six tables of §4.1 with the observation stamp in the key [D-W8]. Both declared
+vocabularies extended: `AppendOnlyTables` gains the six, and `DecimalColumns`
+gains every decimal column they carry.
+- **Test** FX-SnapshotNeverRewritten: a correction appends and both rows survive
+  with their own stamps.
+- **DoD**: migrating from empty produces the schema, and both guards report the
+  new tables and columns rather than passing over them.
+- Discharges the SQL alias obligation. Both detectors are touched here and the
+  tables they will scan first appear here.
+
+### 1.2 As-of reads
+Every read serving a simulated date filters `observed_at <= as_of` and takes the
+latest, which is `AsOfConfiguration`'s shape with a stamp in place of a version.
+- **DoD**: a correction recorded after a simulated date is invisible to a read at
+  that date and visible after it.
+- **DoD**: no read serving a simulated date returns current data, checked as the
+  configuration surfaces already are.
+- `ResolveAtOrBefore` gains the optional transaction its remarks predict, if 1.4
+  needs it. Report which.
+
+### 1.3 Watchlist membership as state
+Append-only and versioned [D-W35]. A departure appends; a re-entry appends again.
+- **Test** FX-PitMembershipExcludesLaterJoiner.
+- **Test**: a name that left and returned resolves correctly at a date in each of
+  the three intervals.
+- **DoD**: no query resolves membership from the latest row alone.
+
+### 1.4 Chain ingest
+0.6 built a loader producing objects and nothing persists them. 1.4 does.
+- **DoD**: the worked example's chain loads into the store and reads back
+  identical, against the same oracle 0.6's fixture uses.
+- Discharges D-W29's write-side seam. This writes the first real decimal columns,
+  which the obligation names as its trigger.
+
+### 1.5 Corporate actions and the predecessor link
+A split or special dividend mints a new contract identity with a recorded
+predecessor rather than editing the existing row [§2].
+- Settles what an adjusted strike does when the division is non-terminating. The
+  obligation names the choice as rounding a value inside identity against carrying
+  the ratio. This checkpoint owns it and the decision lands before the code.
+- **DoD**: an adjusted contract is a new identity, its predecessor is recorded,
+  and a historical join across the split resolves both.
+
+Detail for Phase 2 is authored when Phase 1 signs off.
+
+---
+
+## Phase 2 and beyond
+
+Not yet written. Detail for Phase 2 is authored when Phase 1 signs off, with
+whatever Phase 1 taught already folded in.
 
 The phase map in `SYSTEM_DESIGN.md` §7 states what each phase delivers and where
 the data purchase boundary falls.

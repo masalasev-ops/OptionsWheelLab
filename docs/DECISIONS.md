@@ -16,7 +16,7 @@ predates this file and cannot be relied on.
 
 **Purpose and measurement**: D-W2, D-W3, D-W5, D-W17, D-W18, D-W20, D-W21
 **Isolation and controls**: D-W1, D-W4, D-W6, D-W13
-**Data and identity**: D-W7, D-W8, D-W9, D-W15, D-W26, D-W27, D-W28, D-W29, D-W30, D-W31, D-W32, D-W34
+**Data and identity**: D-W7, D-W8, D-W9, D-W15, D-W26, D-W27, D-W28, D-W29, D-W30, D-W31, D-W32, D-W34, D-W35
 **Risk**: D-W10, D-W11, D-W14, D-W19, D-W23, D-W25
 **Gate constraints**: D-W10, D-W22, D-W23, D-W24, D-W25
 **Scope**: D-W12, D-W16
@@ -801,3 +801,35 @@ unrelated key for a reason that has nothing to do with it.
 
 Test FX-ConfigWriteRefusesInvariantBreach: extended to cover the unevaluable
 case, not only the violating one.
+
+---
+
+### D-W35 Records are append-only; projections may be rebuilt
+`active` · 2026-07-29
+
+A **record** is the only place a fact is held. Rewriting it destroys the fact, so
+a record is append-only: a change appends a new version and nothing already
+written is altered. `watchlist_membership` is a record.
+
+A **projection** is derived from an append-only source. Rewriting it destroys
+nothing, because it can be rebuilt. `trials` and `positions` are projections of
+`ledger_entries` and may carry a nullable close column and be updated in place.
+
+Rationale. The lab exists so a decision can be re-scored later from what stood at
+the time, which holds only if what stood at the time is still there. That argument
+reaches a record and does not reach a projection, and treating both alike would
+cost query complexity everywhere for a guarantee only one of them needs.
+
+**The condition, and it is not free.** A projection may be rewritten only where a
+test discards it, rebuilds it from its source, and gets the same rows. Without
+that test it is not a projection, it is a rewritable table with a flattering name.
+The test also proves the ledger's `kind` vocabulary carries enough to rebuild
+from, which nothing else checks.
+
+Membership on re-entry. A name that leaves and returns appends a further version,
+so the key is the symbol and a version as `config_rows` has. Keying on the symbol
+alone cannot express it.
+
+Test FX-PitMembershipExcludesLaterJoiner: covered.
+Test FX-ProjectionRebuildsFromLedger: registered at Phase 3, where
+`ledger_entries` first has entries to rebuild from.

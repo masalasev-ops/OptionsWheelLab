@@ -4,8 +4,9 @@ Appended to, never rewritten. The repository is the authority on build state.
 
 ## Current state
 
-**Phase 0 complete and reviewed.** Checkpoints 0.1 to 0.8 built and signed off.
-Phase 1 detail not written. The documentation corpus is at v1.16.0.
+**Phase 0 complete and reviewed. Phase 1 detail written, not built.** Checkpoints
+0.1 to 0.8 built and signed off. Phase 2 detail not written. The documentation
+corpus is at v1.17.0.
 
 ## Log
 
@@ -507,3 +508,35 @@ what it protects, an as-of read that cannot join a transaction where the current
 read can, and market rules living inside a JSON reader with no schedule for
 getting them out. Each is correct today and each has a phase at which it stops
 being, which is what the records now say.
+
+### 2026-07-29 — corpus v1.17.0
+Phase 1 checkpoint detail authored, five checkpoints: the market-data schema,
+as-of reads, membership as state, chain ingest, and corporate actions with the
+predecessor link. Documentation only; no code.
+
+Phase 1 is the first phase whose detail was written after its preconditions were
+settled rather than alongside them. The effective-dating question forced that
+order, because it decides a column shape, and a detail written before it would
+have described a schema that might be wrong.
+
+D-W35 settles that question. A record is the only place a fact is held, so
+rewriting it destroys the fact and it is append-only; a projection is derived from
+an append-only source and may be rewritten, because it can be rebuilt.
+`watchlist_membership` is a record; `trials` and `positions` are projections of
+`ledger_entries`. The condition is not free: a projection may be rewritten only
+where a test discards it, rebuilds it and gets the same rows, and that test also
+proves the ledger's `kind` vocabulary carries enough to rebuild from, which
+nothing else checks.
+
+**Three snapshot tables could not have accepted a correction.**
+`underlying_bars`, `chain_snapshots` and `contract_quotes` were keyed without
+`observed_at`, so a second row for the same bar violated the key and the only way
+to record a vendor correction was an update, which D-W8 forbids and the
+append-only guard now refuses. §3 has said corrections arrive as new rows since
+v1.0.0, so the prose was right and the keys contradicted it for eleven versions.
+Nothing noticed because none of the three tables exists yet, and
+FX-SnapshotNeverRewritten is registered against Phase 1, so the first thing that
+would have caught it is the checkpoint this detail describes.
+
+Found by reading the schema against what rests on it, which is the method that
+found three wrong citations at 0.7 and is now the third time it has paid.

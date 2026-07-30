@@ -1,5 +1,43 @@
 # CHANGELOG
 
+## [1.17.0] — 2026-07-29
+
+Phase 1 checkpoint detail authored. Documentation only; no code.
+
+### Added
+- D-W35: records are append-only, projections may be rebuilt. A record is the only
+  place a fact is held, so rewriting it destroys the fact;
+  `watchlist_membership` is one. A projection is derived from an append-only source
+  and may be updated in place, `trials` and `positions` being projections of
+  `ledger_entries`. **The condition is not free**: a projection may be rewritten
+  only where a test discards it, rebuilds it from its source and gets the same
+  rows, without which it is a rewritable table with a flattering name. This
+  answers the question the Phase 1 effective-dating obligation asks; the schema and
+  vocabulary work it implies is still Phase 1's.
+- Fixture FX-ProjectionRebuildsFromLedger at Phase 3, which D-W35 names as the
+  condition on rewriting a projection at all. Registered because a decision naming
+  a fixture the registry does not carry is a citation resting on nothing.
+- Phase 1 checkpoint detail, five checkpoints: the market-data schema, as-of reads,
+  membership as state, chain ingest, and corporate actions with the predecessor
+  link. "Phase 1 and beyond" becomes "Phase 2 and beyond".
+- A carried obligation owed at Phase 4: store one feasible set per name and date
+  rather than one per decision. `candidates` is keyed on `decision_id`, so three
+  makers acting on one set write it three times while [D-W4] requires the three to
+  be byte-identical. Storing once and referencing thrice makes that true by
+  construction and divides the largest uncertain table by three.
+
+### Fixed
+- Three snapshot tables were keyed so a correction could not append, contradicting
+  D-W8 and the fixture registered to test it. `underlying_bars`,
+  `chain_snapshots` and `contract_quotes` take `observed_at` into the key. Found by
+  reading the schema against what rests on it, before any of the three existed.
+
+### Notes
+- Phase 1 is the first phase whose detail was written after its preconditions were
+  settled rather than alongside them. The effective-dating question forced that
+  order, because it decides a column shape and a detail written before it would
+  have described a schema that might be wrong.
+
 ## [1.16.0] — 2026-07-29
 
 Findings from a review of Phase 0, the first independent pass over the code.
