@@ -1,5 +1,25 @@
 # CHANGELOG
 
+## [1.20.0] — 2026-07-30
+
+Checkpoint 1.2.
+
+### Fixed
+- `FIXTURES.md`'s build-state marker said twenty-one entries were implemented.
+  Twenty-six are, being twenty-four fixtures and two guards against 0.2 through
+  1.1. Counted from the registry rather than transcribed.
+- `DATA_AND_SCHEMA.md`'s build-state paragraph said market data is Phase 1
+  specification. §4.1 landed at 1.1 with its keys, constraints, triggers and
+  indexes, and the paragraph now maps each section to its checkpoint.
+- `BUILD_PLAN.md` 1.2 said the market-data read is `AsOfConfiguration`'s shape
+  with a stamp in place of a version. It is not: that shape filters on one axis,
+  the version in force at a date, where a market-data read filters on two
+  independent ones, which session the row describes and when it was observed.
+  "The bar for 2 March, as known on 5 March" is neither axis alone, and the
+  second axis is the whole reason 1.1 put `observed_at` in the key. The detail
+  now states the two-filter shape and why no `version` column is needed to break
+  a tie that the primary key makes impossible.
+
 ## [1.19.0] — 2026-07-30
 
 Checkpoint 1.1 signed off.

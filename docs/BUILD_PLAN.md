@@ -681,8 +681,18 @@ second table of every join went unscanned. Both were found by running the conven
 against real statements rather than synthetic ones.
 
 ### 1.2 As-of reads
-Every read serving a simulated date filters `observed_at <= as_of` and takes the
-latest, which is `AsOfConfiguration`'s shape with a stamp in place of a version.
+Every read serving a simulated date takes the row for the date it asks about, at
+the greatest `observed_at` at or before the instant it is asked as of. Two filters,
+not one: which session the data describes, and when it was observed. A correction
+is a second row on the same date with a later stamp, so a read as of before the
+correction still returns what was believed then.
+
+No tie is possible on the second axis, because `observed_at` is in the primary
+key, so two observations of one row at one instant cannot both exist. `config_rows`
+needs `version` to break that tie and these tables do not.
+
+No check is registered against 1.2; its tests land as unregistered suites, and this
+sentence is what rule 2 asks for in place of discharging on nothing.
 - **DoD**: a correction recorded after a simulated date is invisible to a read at
   that date and visible after it.
 - **DoD**: no read serving a simulated date returns current data, checked as the

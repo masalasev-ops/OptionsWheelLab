@@ -5,8 +5,8 @@ Appended to, never rewritten. The repository is the authority on build state.
 ## Current state
 
 **Phase 0 complete and reviewed. Phase 1 in progress.** Checkpoints 0.1 to 0.8 and
-1.1 built and signed off; 1.2 to 1.5 not built. Phase 2 detail not written. The
-documentation corpus is at v1.19.0.
+1.1 built and signed off; 1.2 building; 1.3 to 1.5 not built. Phase 2 detail not
+written. The documentation corpus is at v1.20.0.
 
 ## Log
 
@@ -621,3 +621,19 @@ the built schema.
 after the fact, all introduced by this checkpoint. Nothing parses §4.1 as a schema,
 so no check caught them, and the one that mattered was nullability: the document
 marked ten columns `NOT NULL` by omission that the migration makes nullable.
+
+### 2026-07-30 — corpus v1.20.0
+Checkpoint 1.2 scoped. Three corrections land ahead of the code.
+
+The fixture registry's build-state marker undercounted by five, still describing
+0.7's close. The schema document's build-state paragraph still called market data
+specification after 1.1 built it, and now maps each §4 section to its checkpoint.
+
+BUILD_PLAN 1.2's detail was wrong about the read's shape, and it mattered: it said
+the market-data read is `AsOfConfiguration`'s shape with a stamp in place of a
+version, but that shape filters on one axis and a market-data read filters on two
+independent ones, which session the row describes and when it was observed. The
+second axis is the whole reason 1.1 put `observed_at` in the key. The detail now
+states the two-filter shape, and why the absence of a `version` column is not an
+omission: `observed_at` is in the primary key, so the tie `version` exists to break
+cannot occur.

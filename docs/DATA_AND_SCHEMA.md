@@ -3,8 +3,10 @@
 Build state: **partly built**. The Time section and §4.5 are implemented at 0.3,
 along with the point-in-time config rule of §3. §2's ticker and identity
 paragraphs, its date-form paragraph, the money line of §4 and the permitted
-values of `right` are implemented at 0.4; §2's corporate-action paragraph is
-Phase 1. Every other table is specification: market data is Phase 1, decisions
+values of `right` are implemented at 0.4.
+§4.0 is implemented at 0.7 and §4.1 at 1.1, with its keys, constraints,
+triggers and indexes. §4.2 is 1.3 and its shape is unsettled; §2's
+corporate-action paragraph is 1.5. The rest is specification: decisions
 and trials Phase 4, scores Phase 5, pre-registration Phase 9.
 
 ## 1. Sources
