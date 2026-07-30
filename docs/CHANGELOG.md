@@ -5,6 +5,12 @@
 Checkpoint 1.2.
 
 ### Notes
+- Found at 1.2 and landing at 1.4: migration 3's `underlying_bars` makes `open`,
+  `high`, `low` and `adj_close` NOT NULL while `UnderlyingBar` requires only the
+  close and WORKED_EXAMPLE §5 supplies only dates and closes, so the chain 1.4's
+  own DoD loads cannot be persisted into the table as it stands. 1.1's claim that
+  "a chain the loader accepts is a chain this schema can hold" was verified against
+  `ContractQuote` only. 1.4's detail carries the fix as its first item.
 - The interval-per-version shape for membership was tried first and fails on
   re-entry, which is why the row records a transition. A name that joined in
   March, left in August and returned in January has a newest version that cannot

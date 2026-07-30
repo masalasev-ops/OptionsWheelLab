@@ -715,6 +715,16 @@ membership question.
 
 ### 1.4 Chain ingest
 0.6 built a loader producing objects and nothing persists them. 1.4 does.
+
+Migration 4 first: `underlying_bars` makes `open`, `high`, `low` and
+`adj_close` NOT NULL while `UnderlyingBar` declares them optional and
+WORKED_EXAMPLE §5 supplies only dates and closes, so the chain this
+checkpoint's own DoD loads cannot be persisted into the table as it
+stands. Relax the columns the record makes optional, enumerating from the
+record rather than from this sentence, and correct §4.1 to match. Found
+at 1.2 by reading the migration against the record; 1.1's claim that "a
+chain the loader accepts is a chain this schema can hold" was verified
+against ContractQuote only.
 - **DoD**: the worked example's chain loads into the store and reads back
   identical, against the same oracle 0.6's fixture uses.
 - Discharges D-W29's write-side seam. This writes the first real decimal columns,
