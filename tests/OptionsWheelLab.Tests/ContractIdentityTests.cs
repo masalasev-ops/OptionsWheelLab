@@ -70,11 +70,40 @@ public sealed class ContractIdentityTests
     {
         var identity = Identity(50m);
 
-        var one = new Contract(identity, "AAPL260918P00050000", 100);
-        var renamed = new Contract(identity, "AAPL260918P00050000-ADJ", 100);
+        var one = new Contract(identity, "AAPL260918P00050000", 100, 100);
+        var renamed = new Contract(identity, "AAPL260918P00050000-ADJ", 100, 100);
 
         Assert.Equal(one.Identity, renamed.Identity);
         Assert.NotEqual(one, renamed);
+    }
+
+    /// <summary>
+    /// The multiplier and the deliverable are two quantities, and identity carries
+    /// neither.
+    /// </summary>
+    /// <remarks>
+    /// This is the §2 finding in test form. A three-for-two split takes a 90 strike
+    /// to 60 with a 150-share deliverable, and a standard 60 strike with 100 shares
+    /// lists alongside it. The two contracts are economically different and share
+    /// one identity, which is why the tuple is not identity. Recorded here so the
+    /// claim is visible in the suite rather than only in a document banner.
+    /// <para>
+    /// It asserts the current behaviour, not the desired behaviour. When the
+    /// identity decision lands, this test is the one that has to change, and that
+    /// is the point of it.
+    /// </para>
+    /// </remarks>
+    [Fact]
+    public void An_adjusted_contract_and_a_standard_one_can_share_an_identity()
+    {
+        var identity = Identity(60m);
+
+        var adjusted = new Contract(identity, "WDGT1260918P00060000", 100, 150);
+        var standard = new Contract(identity, "WDGT260918P00060000", 100, 100);
+
+        Assert.Equal(adjusted.Identity, standard.Identity);
+        Assert.Equal(adjusted.Multiplier, standard.Multiplier);
+        Assert.NotEqual(adjusted.DeliverableShares, standard.DeliverableShares);
     }
 
     /// <summary>
