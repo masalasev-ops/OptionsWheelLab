@@ -626,7 +626,7 @@ admits only one origin costs.
 
 ## Phase 1 — Chain store and point-in-time invariants
 
-Build state: **1.1 built and signed off; 1.2 to 1.5 not built**. On synthetic chains;
+Build state: **1.1 and 1.2 built and signed off; 1.3 to 1.5 not built**. On synthetic chains;
 no vendor data until Phase 8. Delivers the market-data schema, the as-of read paths
 over it, and membership as state.
 
@@ -702,6 +702,44 @@ was written and 1.3 cannot be prompted without it.
   configuration surfaces already are.
 - `ResolveAtOrBefore` gains the optional transaction its remarks predict, if 1.4
   needs it. Report which.
+
+Reconciled at sign-off against what shipped. The read surface is one type,
+`AsOfMarketData`, and no current-value market-data type exists at all, which is
+stronger than the configuration split rather than half of it: configuration has an
+operational consumer for current values [D-W26] and market data has none, so a
+current-reading type would be a second path with no consumer to justify it. The
+strongest form of "cannot read current" is that no current-reading type exists to
+cast to. The shape check asserts the as-of parameter by name and type on every
+value-returning member, because a two-axis read can take the session date and
+still leak the latest observation, which a check asking only for a date would
+pass.
+
+**1.4 was checked rather than predicted, and `ResolveAtOrBefore` gains nothing.**
+Its detail persists what the loader yields and verifies by reading back after
+commit, so no as-of read happens inside a write transaction. The remark that
+predicted otherwise had also named the wrong ender: membership resolution is not
+a config read and would never pass through `ConfigRowQuery`. Corrected at the
+site.
+
+**The alias detector was blind to every parenthesised expression**, measured
+before the chain read was written: the source arm was an identifier class and
+cannot end at `)`, so `MAX(observed_at) AS latest` was invisible, and the
+aggregate form is exactly what a naive chain read writes. Widened, swept over the
+tree, zero flags. What keeps a CTE clean is the alias group rather than an
+exemption: the token after `AS` in a CTE header is `(`, which no identifier can
+match. The chain read is written as a CTE with declared column names, the
+convention's own shape.
+
+**The join 1.1 deferred is settled by measurement.** `contract_quotes` reaches
+identity through `contracts` on `contract_id` filtered by symbol, and
+`EXPLAIN QUERY PLAN` shows the uniqueness constraint's own index serving the
+lookup, so there is no migration 4 for indexing. Identity order is imposed in C#
+on the parsed identities, because the stored decimal form does not sort and the
+convention refuses ordering a decimal column in SQL; the test pins the
+9-versus-10 strike pair that text ordering gets backwards.
+
+**One finding left for 1.4, recorded in its detail rather than here**: migration
+3's `underlying_bars` cannot hold the bars the worked example supplies.
 
 ### 1.3 Watchlist membership as state
 Append-only and versioned [D-W35]. A departure appends; a re-entry appends again.

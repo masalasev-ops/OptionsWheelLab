@@ -4,9 +4,9 @@ Appended to, never rewritten. The repository is the authority on build state.
 
 ## Current state
 
-**Phase 0 complete and reviewed. Phase 1 in progress.** Checkpoints 0.1 to 0.8 and
-1.1 built and signed off; 1.2 building; 1.3 to 1.5 not built. Phase 2 detail not
-written. The documentation corpus is at v1.20.0.
+**Phase 0 complete and reviewed. Phase 1 in progress.** Checkpoints 0.1 to 0.8,
+1.1 and 1.2 built and signed off; 1.3 to 1.5 not built. Phase 2 detail not
+written. The documentation corpus is at v1.21.0.
 
 ## Log
 
@@ -637,3 +637,39 @@ second axis is the whole reason 1.1 put `observed_at` in the key. The detail now
 states the two-filter shape, and why the absence of a `version` column is not an
 omission: `observed_at` is in the primary key, so the tie `version` exists to break
 cannot occur.
+
+### 2026-07-30 — corpus v1.21.0
+Checkpoint 1.2 built and signed off. The as-of read surface over the market data,
+one type with no current-value counterpart, and §4.2's membership schema settled by
+D-W35 and carried here because 1.3 could not be prompted without it. 318 tests, 244
+across twenty-four fixtures.
+
+Market data gets one read surface where configuration got two, and the difference
+is argued rather than inherited: configuration has an operational consumer for
+current values and market data has none, so no current-reading type exists to cast
+to, which is the strongest form of the rule. The shape check asserts the as-of
+parameter by name and type on every value-returning member, because a two-axis
+read can take the session date and still leak the latest observation, which a
+check asking only for a date would pass.
+
+The column-alias rule was blind to every parenthesised expression, measured before
+the chain read was written: the source arm was an identifier class, and the
+character before `AS` in `MAX(observed_at) AS latest` is `)`, which that class
+cannot match. The aggregate form is exactly what a naive chain read writes, so the
+blindness would have been exercised this checkpoint. Widened, swept over the tree,
+zero flags. A CTE header stays clean under the widened rule because its alias
+group requires an identifier and the token after `AS` there is `(`, so the
+distinguisher is in the pattern rather than in an exemption, and the chain read is
+written as a CTE with declared column names.
+
+The join 1.1 deferred is settled by measurement rather than migration:
+`EXPLAIN QUERY PLAN` shows the uniqueness constraint's own index serving the
+lookup, so there is no migration 4 for indexing. One is owed for a different
+reason, found by reading the migration against the record: `underlying_bars`
+refuses the bars the worked example supplies, and 1.4's detail carries the fix as
+its first item.
+
+`ResolveAtOrBefore` does not gain the transaction its remark predicted. 1.4 was
+read rather than guessed: its read-back is verification after commit, and the
+remark's ender was doubly wrong, naming a membership resolution 1.4 does not
+contain and that would never pass through a config reader if it did.

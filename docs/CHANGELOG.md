@@ -1,5 +1,30 @@
 # CHANGELOG
 
+## [1.21.0] — 2026-07-30
+
+Checkpoint 1.2 signed off.
+
+### Added
+- `prompts/spent/phase-1.md` carries 1.2's prompt with its review rounds folded
+  in, and Current state is overwritten with the measured present: 318 tests, 244
+  across twenty-four fixtures and 74 across fifteen unregistered suites.
+
+### Changed
+- `BUILD_PLAN.md` 1.2 is reconciled against what shipped: the one-surface
+  decision and why it is stronger than configuration's split, the alias
+  detector's widening, the join settled by measurement rather than migration,
+  and 1.4 checked rather than predicted for the transaction question.
+- The build-state markers say 1.1 and 1.2 are built and signed off, 1.3 to 1.5
+  being live intent.
+
+### Notes
+- Zero checks were registered against 1.2 and none were invented for it. The ten
+  new behaviour and shape tests land as unregistered suites, the same standing
+  `ConfigWriteTests` has.
+- The one defect fixed mid-checkpoint was in a detector rather than in the
+  deliverable: the column-alias rule could not see a parenthesised source, and
+  the shape it was blind to is the shape the chain read takes.
+
 ## [1.20.0] — 2026-07-30
 
 Checkpoint 1.2.
