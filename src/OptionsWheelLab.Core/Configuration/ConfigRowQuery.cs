@@ -21,10 +21,13 @@ internal static class ConfigRowQuery
     /// Microsoft.Data.Sqlite refuses a command with no transaction while one is
     /// pending on the connection.
     /// <para>
-    /// What ends it is a writer that also resolves as-of while its transaction is
-    /// open, and Phase 1's ingest is the first: it writes chains while resolving
-    /// watchlist membership as of the query date [D-W9]. At that point this takes
-    /// the same optional parameter for the same reason.
+    /// What ends it is a CONFIG as-of read inside a write transaction, and 1.4 was
+    /// checked rather than predicted: its detail persists what the loader yields
+    /// and verifies by reading back after commit, with no as-of read of anything
+    /// inside the write. The remark used to name ingest resolving watchlist
+    /// membership as the ender, which was doubly wrong: 1.4's detail contains no
+    /// membership resolution, and membership is not a config read, so it would
+    /// never pass through this method at all.
     /// </para>
     /// </remarks>
     internal static string? ResolveAtOrBefore(
