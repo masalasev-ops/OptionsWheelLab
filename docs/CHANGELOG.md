@@ -47,9 +47,13 @@ Checkpoint 1.1.
   detector needs the detector to know which table a column belongs to, because the
   vocabulary is unqualified column names, and that is the problem 1.1 declined when
   it kept `DecimalColumns` unqualified. Both known-miss tests are deleted, which the
-  obligation named as part of closing it. **What it costs**: a self-join is
-  unexpressible in `src/`, and comparing two observations of one bar is a plausible
-  self-join now that a correction appends.
+  obligation named as part of closing it. **What it costs**: a self-join must alias
+  one side, so the convention forbids one, and 1.5's definition of done requires a
+  historical join across a split. The cost is recorded against 1.5 by name rather
+  than against a hypothetical, so it is revisited with a real query. Measured: the
+  walk is expressible without an alias as a recursive CTE, which names the working
+  set rather than renaming the table, and it runs against migration 3 over a
+  three-generation chain.
 
 ### Removed
 - The Phase 1 carried obligation on SQL aliases, discharged by FX-NoSqlAliases.

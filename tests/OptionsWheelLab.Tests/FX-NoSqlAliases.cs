@@ -12,19 +12,30 @@ namespace OptionsWheelLab.Tests;
 /// <c>UPDATE config_rows AS c SET</c> both passed while being exactly what the
 /// vocabulary forbids.
 /// <para>
-/// <b>The convention, not resolution.</b> Resolving an alias in
-/// FX-NoDecimalOrderingInSql needs the detector to know which table a column
-/// belongs to, because the vocabulary is unqualified column names. That is the
-/// problem 1.1 declined when it kept <c>DecimalColumns</c> unqualified, and solving
-/// it here would be solving it twice over. Forbidding the alias makes both
-/// detectors sound without either of them learning any schema.
+/// <b>The convention, not resolution.</b> Resolution is the obligation's other
+/// answer and remains available; the convention is cheaper and needs no detector to
+/// learn any schema. It is worth being accurate about how much cheaper, because 1.5
+/// weighs the two again: column-alias resolution would be enough for
+/// FX-NoDecimalOrderingInSql, since mapping <c>s</c> back to <c>strike</c> answers
+/// an unqualified vocabulary without knowing which table anything belongs to. It is
+/// a QUALIFIED vocabulary that would need table resolution, and 1.1 declined that
+/// separately.
 /// </para>
 /// <para>
-/// <b>What it costs, recorded rather than discovered later.</b> A self-join becomes
-/// unexpressible in <c>src/</c>, and comparing two observations of one bar is a
-/// plausible self-join now that a correction appends. If a phase needs one, this
-/// convention is what gets revisited, and the obligation's other answer, real alias
-/// resolution, is still available.
+/// <b>What it costs, and the case is dated rather than hypothetical.</b> A self-join
+/// must alias at least one side, so the convention forbids one. 1.5's definition of
+/// done requires a historical join across a split to resolve both contracts, and 1.1
+/// added the index on <c>predecessor_contract_id</c> that serves it. So the
+/// convention adopted here and the join it appears to forbid arrive in the same
+/// migration, four checkpoints apart.
+/// </para>
+/// <para>
+/// <b>Measured, and the collision is softer than it looks.</b> The walk is
+/// expressible without an alias, as a recursive CTE: a CTE names the working set
+/// rather than renaming the table, so nothing has two names. It was run against
+/// migration 3's schema over a three-generation chain and returned all three. So 1.5
+/// revisits this with a real query in front of it and an option that keeps both, not
+/// with a choice between a convention and a definition of done.
 /// </para>
 /// <para>
 /// The two known-miss tests are deleted with this, per the obligation: they pinned
@@ -179,6 +190,54 @@ public sealed class FX_NoSqlAliases
             """;
 
         Assert.Empty(SqlAliases.Offences(Sql));
+    }
+
+    /// <summary>
+    /// The predecessor walk 1.5 needs, written as a recursive CTE, is not an alias.
+    /// </summary>
+    /// <remarks>
+    /// 1.5's definition of done requires a historical join across a split to resolve
+    /// both contracts, and this checkpoint added the index that serves it. A
+    /// self-join must alias at least one side, so the convention appears to forbid
+    /// the one query a definition of done four checkpoints ahead requires.
+    /// <para>
+    /// <b>It does not.</b> A recursive CTE names the working set instead of aliasing
+    /// the table, and a CTE name is a declaration rather than a rename: nothing has
+    /// two names. So the walk is expressible, and this test is here so 1.5 finds that
+    /// out from the suite rather than from a failing build.
+    /// </para>
+    /// </remarks>
+    [Fact]
+    public void The_predecessor_walk_as_a_recursive_cte_is_not_an_alias()
+    {
+        const string Sql =
+            """
+            WITH RECURSIVE chain AS (
+                SELECT contract_id, predecessor_contract_id
+                FROM contracts
+                WHERE contract_id = $id
+                UNION ALL
+                SELECT contracts.contract_id, contracts.predecessor_contract_id
+                FROM contracts
+                JOIN chain ON contracts.contract_id = chain.predecessor_contract_id
+            )
+            SELECT contract_id FROM chain;
+            """;
+
+        Assert.Empty(SqlAliases.Offences(Sql));
+    }
+
+    /// <summary>
+    /// A self-join written the ordinary way is still reported, which is the half of
+    /// the collision that is real.
+    /// </summary>
+    [Fact]
+    public void A_self_join_written_with_aliases_is_reported()
+    {
+        const string Sql =
+            "SELECT a.contract_id FROM contracts a JOIN contracts b ON a.predecessor_contract_id = b.contract_id;";
+
+        Assert.Equal(2, SqlAliases.Offences(Sql).Count);
     }
 
     private static IReadOnlyList<string> SourceFiles() =>
