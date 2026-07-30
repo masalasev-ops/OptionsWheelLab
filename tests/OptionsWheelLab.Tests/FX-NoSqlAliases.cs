@@ -15,27 +15,28 @@ namespace OptionsWheelLab.Tests;
 /// <b>The convention, not resolution.</b> Resolution is the obligation's other
 /// answer and remains available; the convention is cheaper and needs no detector to
 /// learn any schema. It is worth being accurate about how much cheaper, because 1.5
-/// weighs the two again: column-alias resolution would be enough for
-/// FX-NoDecimalOrderingInSql, since mapping <c>s</c> back to <c>strike</c> answers
-/// an unqualified vocabulary without knowing which table anything belongs to. It is
-/// a QUALIFIED vocabulary that would need table resolution, and 1.1 declined that
-/// separately.
+/// weighed the two again and kept the convention: column-alias resolution would be
+/// enough for FX-NoDecimalOrderingInSql, since mapping <c>s</c> back to
+/// <c>strike</c> answers an unqualified vocabulary without knowing which table
+/// anything belongs to. It is a QUALIFIED vocabulary that would need table
+/// resolution, and 1.1 declined that separately.
 /// </para>
 /// <para>
-/// <b>What it costs, and the case is dated rather than hypothetical.</b> A self-join
-/// must alias at least one side, so the convention forbids one. 1.5's definition of
-/// done requires a historical join across a split to resolve both contracts, and 1.1
-/// added the index on <c>predecessor_contract_id</c> that serves it. So the
-/// convention adopted here and the join it appears to forbid arrive in the same
-/// migration, four checkpoints apart.
+/// <b>What it costs, and the dated case is resolved.</b> A self-join must alias at
+/// least one side, so the convention forbids one. 1.5's definition of done requires
+/// a historical join across a split to resolve both contracts, and 1.1 added the
+/// index on <c>predecessor_contract_id</c> that serves it. So the convention
+/// adopted here and the join it appears to forbid arrived in the same migration,
+/// four checkpoints apart, and at 1.5 the join shipped without a self-join:
+/// <c>ContractLineage</c> walks the link as a recursive CTE.
 /// </para>
 /// <para>
-/// <b>Measured, and the collision is softer than it looks.</b> The walk is
+/// <b>Measured, and the collision dissolved as predicted.</b> The walk is
 /// expressible without an alias, as a recursive CTE: a CTE names the working set
 /// rather than renaming the table, so nothing has two names. It was run against
-/// migration 3's schema over a three-generation chain and returned all three. So 1.5
-/// revisits this with a real query in front of it and an option that keeps both, not
-/// with a choice between a convention and a definition of done.
+/// migration 3's schema over a three-generation chain and returned all three, and
+/// 1.5 made exactly that shape production. The convention stands; resolution was
+/// never needed.
 /// </para>
 /// <para>
 /// The two known-miss tests are deleted with this, per the obligation: they pinned
@@ -253,18 +254,19 @@ public sealed class FX_NoSqlAliases
     }
 
     /// <summary>
-    /// The predecessor walk 1.5 needs, written as a recursive CTE, is not an alias.
+    /// The predecessor walk 1.5 needed, written as a recursive CTE, is not an alias.
     /// </summary>
     /// <remarks>
     /// 1.5's definition of done requires a historical join across a split to resolve
-    /// both contracts, and this checkpoint added the index that serves it. A
-    /// self-join must alias at least one side, so the convention appears to forbid
-    /// the one query a definition of done four checkpoints ahead requires.
+    /// both contracts, and 1.1 added the index that serves it. A self-join must
+    /// alias at least one side, so the convention appeared to forbid the one query a
+    /// definition of done four checkpoints ahead required.
     /// <para>
-    /// <b>It does not.</b> A recursive CTE names the working set instead of aliasing
+    /// <b>It did not.</b> A recursive CTE names the working set instead of aliasing
     /// the table, and a CTE name is a declaration rather than a rename: nothing has
-    /// two names. So the walk is expressible, and this test is here so 1.5 finds that
-    /// out from the suite rather than from a failing build.
+    /// two names. 1.5 found exactly that here and shipped the walk as
+    /// <c>ContractLineage</c>'s CTE with declared column names; this pin now guards
+    /// the production shape rather than predicting it.
     /// </para>
     /// </remarks>
     [Fact]
