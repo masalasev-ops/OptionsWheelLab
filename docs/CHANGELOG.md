@@ -1,5 +1,42 @@
 # CHANGELOG
 
+## [1.26.0] — 2026-07-30
+
+Checkpoint 1.5, the last of Phase 1.
+
+### Added
+- D-W36: adjusted contract terms are recorded, never derived. OCC states the
+  adjusted terms per event and the methodology is era-dependent rather than a
+  formula, so a lab that derives encodes one era's method, is wrong for the
+  others, and reproduces a documented source of silent economic error. The
+  refusing decimal path is the tripwire: a derivation producing a
+  non-terminating value cannot be stored at all, so record-not-derive is
+  enforced by the seam that already exists.
+- A carried obligation owed at Phase 3: verify the wheel's settlement
+  mechanics against OCC's own rules before the state machine's decisions are
+  authored, citing the rule in each decision. Exercise-by-exception and its
+  threshold, assignment knowledge versus occurrence, T+1 cash availability,
+  the ex-dividend early-assignment model, and dividend entitlement timing:
+  every item a mechanics fact wanting a primary source, the D-W36 treatment
+  applied forward.
+- FX-CorporateActionMintsSuccessor registered at 1.5: a split mints a stated
+  successor with its predecessor recorded, the original row unchanged, and
+  the lineage walk resolving all generations.
+
+### Fixed
+- §2 claimed the four-tuple was identity. The claim was demonstrated false at
+  1.1 and bannered, and the banner stood for four checkpoints. Resolved by
+  adding the deliverable to identity, which is what the uniqueness constraint
+  already enforced; the banner comes down in the commit that makes the claim
+  true rather than here.
+
+### Notes
+- The PR #3 adjusted-strike obligation closes dissolved rather than decided:
+  under D-W36 neither rounding nor ratio arithmetic ever runs. Twelve
+  obligations stood before the closure, eleven after it, and twelve after
+  the settlement-mechanics row was raised. A net-zero count would hide that
+  a row closed and a different one opened, so both movements are stated.
+
 ## [1.25.0] — 2026-07-30
 
 Checkpoint 1.4 signed off.

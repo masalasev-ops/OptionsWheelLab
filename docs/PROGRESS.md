@@ -5,8 +5,8 @@ Appended to, never rewritten. The repository is the authority on build state.
 ## Current state
 
 **Phase 0 complete and reviewed. Phase 1 in progress.** Checkpoints 0.1 to 0.8
-and 1.1 to 1.4 built and signed off; 1.5 not built. Phase 2 detail not
-written. The documentation corpus is at v1.25.0.
+and 1.1 to 1.4 built and signed off; 1.5 building, the last of Phase 1.
+Phase 2 detail not written. The documentation corpus is at v1.26.0.
 
 ## Log
 
@@ -781,3 +781,27 @@ having been shared since 0.6. The duplicated half was the header
 vocabularies, structural constants and chain-file load, which moved to a
 shared oracle helper in a pure refactor before the persistence fixture
 consumed them.
+
+### 2026-07-30 — corpus v1.26.0
+Checkpoint 1.5 scoped, the last of Phase 1, and the corpus's two oldest open
+questions get their answers before any code.
+
+D-W36 dissolves the adjusted-strike dilemma rather than deciding it.
+Adjusted terms are transcribed from what the adjusting authority states,
+never derived from a ratio: OCC publishes the terms per event, the
+methodology is era-dependent rather than a formula, and the SEC record of
+the 2007 change documents the rounding-to-eighths windfalls that deriving
+reproduces. The refusing decimal path is the tripwire, so record-not-derive
+is enforced by the seam that already exists. The PR #3 obligation closes
+with neither of its two options ever running.
+
+§2's identity claim resolves by adding the deliverable to identity, which
+the store's uniqueness constraint has enforced since 1.1. The banner comes
+down in the commit that makes the claim true.
+
+The settlement-mechanics obligation is raised at Phase 3, the D-W36
+treatment applied forward to every mechanics fact the state machine will
+rest on: exercise-by-exception, assignment knowledge versus occurrence,
+T+1 cash availability, the ex-dividend early-assignment model, and dividend
+entitlement timing. Twelve obligations stood before the closure, eleven
+after it, twelve after the raise.

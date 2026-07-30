@@ -16,7 +16,7 @@ predates this file and cannot be relied on.
 
 **Purpose and measurement**: D-W2, D-W3, D-W5, D-W17, D-W18, D-W20, D-W21
 **Isolation and controls**: D-W1, D-W4, D-W6, D-W13
-**Data and identity**: D-W7, D-W8, D-W9, D-W15, D-W26, D-W27, D-W28, D-W29, D-W30, D-W31, D-W32, D-W34, D-W35
+**Data and identity**: D-W7, D-W8, D-W9, D-W15, D-W26, D-W27, D-W28, D-W29, D-W30, D-W31, D-W32, D-W34, D-W35, D-W36
 **Risk**: D-W10, D-W11, D-W14, D-W19, D-W23, D-W25
 **Gate constraints**: D-W10, D-W22, D-W23, D-W24, D-W25
 **Scope**: D-W12, D-W16
@@ -833,3 +833,41 @@ alone cannot express it.
 Test FX-PitMembershipExcludesLaterJoiner: covered.
 Test FX-ProjectionRebuildsFromLedger: registered at Phase 3, where
 `ledger_entries` first has entries to rebuild from.
+
+---
+
+### D-W36 Adjusted contract terms are recorded, never derived
+`active` · 2026-07-30
+
+When a corporate action adjusts a contract, the successor's strike,
+deliverable and multiplier are transcribed from what the adjusting
+authority states. Nothing in this lab computes an adjusted term from a
+ratio, at ingest, at minting, or anywhere else. The `corporate_actions` row
+records the event; the successor contract row records the stated terms; the
+ratio is a recorded fact about the event and never an input to arithmetic.
+
+Rationale, from the primary record. OCC publishes the adjusted terms per
+event in an Information Memo: the 2026 StoneX 3-for-2 sequence (memos 58376
+and 59086) states the new 150-share deliverable and a table of adjusted
+strikes. The methodology is era-dependent, not a formula: memo 26853
+records the September 2007 change made precisely to eliminate strike
+rounding for splits other than 2-for-1 and 4-for-1, and the SEC notice
+preceding it records that the earlier rounding to eighths produced windfall
+profits for one side and losses for the other. A lab that derives encodes
+one era's method, is wrong for the others, and reproduces a documented
+source of silent economic error. This project also derived twice during
+design and was wrong both times, which is the local demonstration.
+
+**The refusing decimal path becomes the tripwire.** A stated strike is an
+exact decimal and stores through `StoreDecimal.ToStored` unchanged. A
+derivation that produces a non-terminating value cannot be stored at all,
+so record-not-derive is enforced by the seam that already exists rather
+than by review. The obligation's dilemma, round a value inside identity or
+carry the ratio, is dissolved rather than decided: neither operation ever
+runs.
+
+Scope. The Phase 3 metric question, whether committed capital uses the
+multiplier or the deliverable, is unaffected and stays open: both columns
+are recorded as stated, so either answer reads a transcribed value.
+
+Test FX-CorporateActionMintsSuccessor: covered.
