@@ -614,7 +614,6 @@ admits only one origin costs.
 | Phase 1 | Decide what an adjusted strike does when a corporate action makes it non-terminating. Identity canonicalises through the refusing path, so a 3-for-2 split forces a choice between rounding a value that is part of a contract's identity and carrying the ratio. | PR #3 |
 | Phase 3 | Establish output-level determinism: a simulated run with a fixed clock produces byte-identical output across two invocations. 0.5 restated it as identical stored rows because no run existed to make. Compared as produced artefacts, never as a database file [D-W28]. | PR #4 |
 | Phase 3 | Decide what bars nondeterminism in SQL that is not a clock. Enumerating the bundled SQLite showed `random()` and `randomblob()` alongside the seven clock functions; they are outside FX-ClockIsNotADateSource by name but would break a byte-identical run just as surely. | PR #4 |
-| Phase 1 | Decide whether effective-dating counts as append-only, for `watchlist_membership` (`left_on`), `positions` (`effective_to`) and `trials` (`closed_on`). §4.2 says rows are never deleted while a nullable close column makes a state change an update, so the schema and the rule disagree in three places for one reason. If append-only, a change is a new row and the tables join the vocabulary as flat entries; if not, the vocabulary needs per-table statement kinds it does not have today, and that shape is the cost of the decision rather than a reason to defer it. Raised at 0.7, where drawing the vocabulary made the disagreement visible; widened by PR #6's own report, which found the second and third instances. | PR #6 |
 | Phase 2 | Set the three `Risk:` fractions. 0.8 seeded nineteen rows-classed keys and left these because an equity-relative cap is the operator's risk appetite [D-W11], and the worked example illustrating one account is not the operator setting one. FX-GateRejectsAboveHeadroom needs them, so the phase that consumes them sets them. | PR #7 |
 | Phase 3 | Set `Costs:AssignmentFee`. No document states it, and zero inferred from an absent ledger line is weaker than a stated number and invisible when wrong. Phase 3's assignment path is the first thing that computes with it. | PR #7 |
 | Phase 2 | Decide whether the gate handles a crossed quote. 0.6's loader refuses bid above ask, which is the one domain rule it enforces, and that makes a crossed or locked market unwritable as a synthetic chain, so nothing can exercise the gate against one. D-W22's spread cap is a fraction of mid, so a crossed quote gives a negative numerator and passes a cap that exists to reject wide markets. If the gate handles it, the loader stops refusing it. | PR #5 |
@@ -693,6 +692,10 @@ needs `version` to break that tie and these tables do not.
 
 No check is registered against 1.2; its tests land as unregistered suites, and this
 sentence is what rule 2 asks for in place of discharging on nothing.
+
+Corrections this checkpoint carries: §4.2's membership schema, which D-W35 settled
+and which blocked 1.3, fixed here because 1.2 is the checkpoint open when the fix
+was written and 1.3 cannot be prompted without it.
 - **DoD**: a correction recorded after a simulated date is invisible to a read at
   that date and visible after it.
 - **DoD**: no read serving a simulated date returns current data, checked as the
@@ -702,6 +705,9 @@ sentence is what rule 2 asks for in place of discharging on nothing.
 
 ### 1.3 Watchlist membership as state
 Append-only and versioned [D-W35]. A departure appends; a re-entry appends again.
+Each version records one transition, `joined` or `left` effective on a date, not an
+interval: §4.2 states the shape and why an interval per version cannot answer the
+membership question.
 - **Test** FX-PitMembershipExcludesLaterJoiner.
 - **Test**: a name that left and returned resolves correctly at a date in each of
   the three intervals.

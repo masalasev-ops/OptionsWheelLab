@@ -4,7 +4,26 @@
 
 Checkpoint 1.2.
 
+### Notes
+- The interval-per-version shape for membership was tried first and fails on
+  re-entry, which is why the row records a transition. A name that joined in
+  March, left in August and returned in January has a newest version that cannot
+  say what June was, and the version covering June says no departure and so covers
+  September too.
+- The effective-dating obligation closed by decision rather than by lapsing, and
+  each half landed somewhere recorded: membership is a record and becomes
+  transitions here; `positions` and `trials` are projections and keep their
+  nullable close columns, conditional on FX-ProjectionRebuildsFromLedger at
+  Phase 3. Twelve carried obligations stand after it, down from thirteen, and
+  Phase 1's three become two.
+
 ### Fixed
+- §4.2 carried a nullable `left_on` that D-W35 forbids and no version column that
+  D-W35 requires, so 1.3 had no schema to build. Raised at PR #10, carried through
+  1.1 and into 1.2's findings, fixed here. `watchlist_membership` joins
+  `AppendOnlyTables` as a forward declaration, the same shape the six snapshot
+  tables had at 0.7; creating the table and discharging the reverse direction is
+  1.3's.
 - `FIXTURES.md`'s build-state marker said twenty-one entries were implemented.
   Twenty-six are, being twenty-four fixtures and two guards against 0.2 through
   1.1. Counted from the registry rather than transcribed.
