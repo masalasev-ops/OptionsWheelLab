@@ -38,18 +38,18 @@ public static class AppendOnlyTables
     /// Tables that are never rewritten, as of the schema that is documented.
     /// </summary>
     /// <remarks>
-    /// <b>Eight of these exist and two do not.</b> The six snapshot tables landed
-    /// at 1.1; `decisions` and `candidates` are Phase 4. That the constraint lands
-    /// before the tables it guards was the point rather than a defect, and 1.1 is
-    /// where it paid: the vocabulary was already right when the tables arrived, so
-    /// the checkpoint added no names.
+    /// <b>Eight of these exist and three do not.</b> The six snapshot tables landed
+    /// at 1.1; `watchlist_membership` is 1.3, `decisions` and `candidates` Phase 4.
+    /// That the constraint lands before the tables it guards was the point rather
+    /// than a defect, and 1.1 is where it paid: the vocabulary was already right
+    /// when the tables arrived, so the checkpoint added no names.
     /// <para>
-    /// <b><c>watchlist_membership</c> is deliberately absent.</b> §4.2 says its
-    /// rows are never deleted, while a nullable <c>left_on</c> makes a departure
-    /// an update, so the schema and the rule disagree. Putting it here would
-    /// settle that by implication, which is not this list's to settle; it is
-    /// owed at Phase 1. The seven tables the corpus says nothing about are absent
-    /// for the weaker version of the same reason.
+    /// <b><c>watchlist_membership</c> is a record</b>: the only place its facts are
+    /// held, correcting by appending a transition, so it is append-only [D-W35].
+    /// <c>trials</c> and <c>positions</c> stay out for that decision's other half:
+    /// they are projections of <c>ledger_entries</c> and may be rebuilt, so
+    /// append-only is not their rule, conditional on the rebuild test registered at
+    /// Phase 3.
     /// </para>
     /// </remarks>
     public static IReadOnlySet<string> All { get; } = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
@@ -64,6 +64,9 @@ public static class AppendOnlyTables
         "chain_snapshots",
         "contracts",
         "contract_quotes",
+
+        // The membership record [D-W35]. 1.3 creates it.
+        "watchlist_membership",
 
         // The decision record [D-W3]. Phase 4 adds them.
         "decisions",

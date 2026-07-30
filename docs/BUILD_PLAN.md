@@ -614,7 +614,6 @@ admits only one origin costs.
 | Phase 1 | Decide what an adjusted strike does when a corporate action makes it non-terminating. Identity canonicalises through the refusing path, so a 3-for-2 split forces a choice between rounding a value that is part of a contract's identity and carrying the ratio. | PR #3 |
 | Phase 3 | Establish output-level determinism: a simulated run with a fixed clock produces byte-identical output across two invocations. 0.5 restated it as identical stored rows because no run existed to make. Compared as produced artefacts, never as a database file [D-W28]. | PR #4 |
 | Phase 3 | Decide what bars nondeterminism in SQL that is not a clock. Enumerating the bundled SQLite showed `random()` and `randomblob()` alongside the seven clock functions; they are outside FX-ClockIsNotADateSource by name but would break a byte-identical run just as surely. | PR #4 |
-| Phase 1 | Decide whether effective-dating counts as append-only, for `watchlist_membership` (`left_on`), `positions` (`effective_to`) and `trials` (`closed_on`). §4.2 says rows are never deleted while a nullable close column makes a state change an update, so the schema and the rule disagree in three places for one reason. If append-only, a change is a new row and the tables join the vocabulary as flat entries; if not, the vocabulary needs per-table statement kinds it does not have today, and that shape is the cost of the decision rather than a reason to defer it. Raised at 0.7, where drawing the vocabulary made the disagreement visible; widened by PR #6's own report, which found the second and third instances. | PR #6 |
 | Phase 2 | Set the three `Risk:` fractions. 0.8 seeded nineteen rows-classed keys and left these because an equity-relative cap is the operator's risk appetite [D-W11], and the worked example illustrating one account is not the operator setting one. FX-GateRejectsAboveHeadroom needs them, so the phase that consumes them sets them. | PR #7 |
 | Phase 3 | Set `Costs:AssignmentFee`. No document states it, and zero inferred from an absent ledger line is weaker than a stated number and invisible when wrong. Phase 3's assignment path is the first thing that computes with it. | PR #7 |
 | Phase 2 | Decide whether the gate handles a crossed quote. 0.6's loader refuses bid above ask, which is the one domain rule it enforces, and that makes a crossed or locked market unwritable as a synthetic chain, so nothing can exercise the gate against one. D-W22's spread cap is a fraction of mid, so a crossed quote gives a negative numerator and passes a cap that exists to reject wide markets. If the gate handles it, the loader stops refusing it. | PR #5 |
@@ -627,7 +626,7 @@ admits only one origin costs.
 
 ## Phase 1 — Chain store and point-in-time invariants
 
-Build state: **1.1 built and signed off; 1.2 to 1.5 not built**. On synthetic chains;
+Build state: **1.1 and 1.2 built and signed off; 1.3 to 1.5 not built**. On synthetic chains;
 no vendor data until Phase 8. Delivers the market-data schema, the as-of read paths
 over it, and membership as state.
 
@@ -681,8 +680,22 @@ second table of every join went unscanned. Both were found by running the conven
 against real statements rather than synthetic ones.
 
 ### 1.2 As-of reads
-Every read serving a simulated date filters `observed_at <= as_of` and takes the
-latest, which is `AsOfConfiguration`'s shape with a stamp in place of a version.
+Every read serving a simulated date takes the row for the date it asks about, at
+the greatest `observed_at` at or before the instant it is asked as of. Two filters,
+not one: which session the data describes, and when it was observed. A correction
+is a second row on the same date with a later stamp, so a read as of before the
+correction still returns what was believed then.
+
+No tie is possible on the second axis, because `observed_at` is in the primary
+key, so two observations of one row at one instant cannot both exist. `config_rows`
+needs `version` to break that tie and these tables do not.
+
+No check is registered against 1.2; its tests land as unregistered suites, and this
+sentence is what rule 2 asks for in place of discharging on nothing.
+
+Corrections this checkpoint carries: §4.2's membership schema, which D-W35 settled
+and which blocked 1.3, fixed here because 1.2 is the checkpoint open when the fix
+was written and 1.3 cannot be prompted without it.
 - **DoD**: a correction recorded after a simulated date is invisible to a read at
   that date and visible after it.
 - **DoD**: no read serving a simulated date returns current data, checked as the
@@ -690,8 +703,49 @@ latest, which is `AsOfConfiguration`'s shape with a stamp in place of a version.
 - `ResolveAtOrBefore` gains the optional transaction its remarks predict, if 1.4
   needs it. Report which.
 
+Reconciled at sign-off against what shipped. The read surface is one type,
+`AsOfMarketData`, and no current-value market-data type exists at all, which is
+stronger than the configuration split rather than half of it: configuration has an
+operational consumer for current values [D-W26] and market data has none, so a
+current-reading type would be a second path with no consumer to justify it. The
+strongest form of "cannot read current" is that no current-reading type exists to
+cast to. The shape check asserts the as-of parameter by name and type on every
+value-returning member, because a two-axis read can take the session date and
+still leak the latest observation, which a check asking only for a date would
+pass.
+
+**1.4 was checked rather than predicted, and `ResolveAtOrBefore` gains nothing.**
+Its detail persists what the loader yields and verifies by reading back after
+commit, so no as-of read happens inside a write transaction. The remark that
+predicted otherwise had also named the wrong ender: membership resolution is not
+a config read and would never pass through `ConfigRowQuery`. Corrected at the
+site.
+
+**The alias detector was blind to every parenthesised expression**, measured
+before the chain read was written: the source arm was an identifier class and
+cannot end at `)`, so `MAX(observed_at) AS latest` was invisible, and the
+aggregate form is exactly what a naive chain read writes. Widened, swept over the
+tree, zero flags. What keeps a CTE clean is the alias group rather than an
+exemption: the token after `AS` in a CTE header is `(`, which no identifier can
+match. The chain read is written as a CTE with declared column names, the
+convention's own shape.
+
+**The join 1.1 deferred is settled by measurement.** `contract_quotes` reaches
+identity through `contracts` on `contract_id` filtered by symbol, and
+`EXPLAIN QUERY PLAN` shows the uniqueness constraint's own index serving the
+lookup, so there is no migration 4 for indexing. Identity order is imposed in C#
+on the parsed identities, because the stored decimal form does not sort and the
+convention refuses ordering a decimal column in SQL; the test pins the
+9-versus-10 strike pair that text ordering gets backwards.
+
+**One finding left for 1.4, recorded in its detail rather than here**: migration
+3's `underlying_bars` cannot hold the bars the worked example supplies.
+
 ### 1.3 Watchlist membership as state
 Append-only and versioned [D-W35]. A departure appends; a re-entry appends again.
+Each version records one transition, `joined` or `left` effective on a date, not an
+interval: §4.2 states the shape and why an interval per version cannot answer the
+membership question.
 - **Test** FX-PitMembershipExcludesLaterJoiner.
 - **Test**: a name that left and returned resolves correctly at a date in each of
   the three intervals.
@@ -699,6 +753,16 @@ Append-only and versioned [D-W35]. A departure appends; a re-entry appends again
 
 ### 1.4 Chain ingest
 0.6 built a loader producing objects and nothing persists them. 1.4 does.
+
+Migration 4 first: `underlying_bars` makes `open`, `high`, `low` and
+`adj_close` NOT NULL while `UnderlyingBar` declares them optional and
+WORKED_EXAMPLE §5 supplies only dates and closes, so the chain this
+checkpoint's own DoD loads cannot be persisted into the table as it
+stands. Relax the columns the record makes optional, enumerating from the
+record rather than from this sentence, and correct §4.1 to match. Found
+at 1.2 by reading the migration against the record; 1.1's claim that "a
+chain the loader accepts is a chain this schema can hold" was verified
+against ContractQuote only.
 - **DoD**: the worked example's chain loads into the store and reads back
   identical, against the same oracle 0.6's fixture uses.
 - Discharges D-W29's write-side seam. This writes the first real decimal columns,

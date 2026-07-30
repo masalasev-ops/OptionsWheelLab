@@ -1,5 +1,75 @@
 # CHANGELOG
 
+## [1.21.0] — 2026-07-30
+
+Checkpoint 1.2 signed off.
+
+### Added
+- `prompts/spent/phase-1.md` carries 1.2's prompt with its review rounds folded
+  in, and Current state is overwritten with the measured present: 318 tests, 244
+  across twenty-four fixtures and 74 across fifteen unregistered suites.
+
+### Changed
+- `BUILD_PLAN.md` 1.2 is reconciled against what shipped: the one-surface
+  decision and why it is stronger than configuration's split, the alias
+  detector's widening, the join settled by measurement rather than migration,
+  and 1.4 checked rather than predicted for the transaction question.
+- The build-state markers say 1.1 and 1.2 are built and signed off, 1.3 to 1.5
+  being live intent.
+
+### Notes
+- Zero checks were registered against 1.2 and none were invented for it. The ten
+  new behaviour and shape tests land as unregistered suites, the same standing
+  `ConfigWriteTests` has.
+- The one defect fixed mid-checkpoint was in a detector rather than in the
+  deliverable: the column-alias rule could not see a parenthesised source, and
+  the shape it was blind to is the shape the chain read takes.
+
+## [1.20.0] — 2026-07-30
+
+Checkpoint 1.2.
+
+### Notes
+- Found at 1.2 and landing at 1.4: migration 3's `underlying_bars` makes `open`,
+  `high`, `low` and `adj_close` NOT NULL while `UnderlyingBar` requires only the
+  close and WORKED_EXAMPLE §5 supplies only dates and closes, so the chain 1.4's
+  own DoD loads cannot be persisted into the table as it stands. 1.1's claim that
+  "a chain the loader accepts is a chain this schema can hold" was verified against
+  `ContractQuote` only. 1.4's detail carries the fix as its first item.
+- The interval-per-version shape for membership was tried first and fails on
+  re-entry, which is why the row records a transition. A name that joined in
+  March, left in August and returned in January has a newest version that cannot
+  say what June was, and the version covering June says no departure and so covers
+  September too.
+- The effective-dating obligation closed by decision rather than by lapsing, and
+  each half landed somewhere recorded: membership is a record and becomes
+  transitions here; `positions` and `trials` are projections and keep their
+  nullable close columns, conditional on FX-ProjectionRebuildsFromLedger at
+  Phase 3. Twelve carried obligations stand after it, down from thirteen, and
+  Phase 1's three become two.
+
+### Fixed
+- §4.2 carried a nullable `left_on` that D-W35 forbids and no version column that
+  D-W35 requires, so 1.3 had no schema to build. Raised at PR #10, carried through
+  1.1 and into 1.2's findings, fixed here. `watchlist_membership` joins
+  `AppendOnlyTables` as a forward declaration, the same shape the six snapshot
+  tables had at 0.7; creating the table and discharging the reverse direction is
+  1.3's.
+- `FIXTURES.md`'s build-state marker said twenty-one entries were implemented.
+  Twenty-six are, being twenty-four fixtures and two guards against 0.2 through
+  1.1. Counted from the registry rather than transcribed.
+- `DATA_AND_SCHEMA.md`'s build-state paragraph said market data is Phase 1
+  specification. §4.1 landed at 1.1 with its keys, constraints, triggers and
+  indexes, and the paragraph now maps each section to its checkpoint.
+- `BUILD_PLAN.md` 1.2 said the market-data read is `AsOfConfiguration`'s shape
+  with a stamp in place of a version. It is not: that shape filters on one axis,
+  the version in force at a date, where a market-data read filters on two
+  independent ones, which session the row describes and when it was observed.
+  "The bar for 2 March, as known on 5 March" is neither axis alone, and the
+  second axis is the whole reason 1.1 put `observed_at` in the key. The detail
+  now states the two-filter shape and why no `version` column is needed to break
+  a tie that the primary key makes impossible.
+
 ## [1.19.0] — 2026-07-30
 
 Checkpoint 1.1 signed off.

@@ -15,13 +15,13 @@ One file per phase. It closes when Phase 1 signs off; Phase 2 opens its own.
 
 # Current state
 
-Corpus v1.19.0.
+Corpus v1.21.0.
 
 | | |
 |---|---|
 | Phase 0 | complete and reviewed, 0.1 to 0.8 built and signed off |
-| Phase 1 | 1.1 built and signed off; 1.2 to 1.5 not built |
-| CI | green, 304 tests, guards then restore then build then test, on push to `main` and every pull request |
+| Phase 1 | 1.1 and 1.2 built and signed off; 1.3 to 1.5 not built |
+| CI | green, 318 tests, guards then restore then build then test, on push to `main` and every pull request |
 
 Which branch the work sits on and which pull requests have merged are not recorded
 here. Git holds both exactly, and a fact kept in two places drifts.
@@ -32,8 +32,8 @@ here. Git holds both exactly, and a fact kept in two places drifts.
 nullable is on, `InvariantGlobalization` is on, code style is enforced in the build.
 Central package management with transitive pinning.
 
-`Core` has five folders: `Configuration`, `Storage`, `Identity`, `Time` and
-`Synthetic`.
+`Core` has six folders: `Configuration`, `Storage`, `Identity`, `Time`,
+`Synthetic` and `MarketData`.
 
 Repository root holds `README.md`, `CLAUDE.md`, `migrate.ps1`, `seed.ps1` and
 `guards.ps1`. Every document is in `docs/`, spent prompts in `prompts/spent/`,
@@ -86,6 +86,33 @@ sources confirm and the built schema demonstrates. §2 carries a banner. The
 uniqueness constraint is on the tuple plus the deliverable, which is the strongest
 the answer allows and a floor under the decision rather than an answer to it.
 
+**One read surface, `AsOfMarketData`, and no current-value counterpart exists at
+all** [1.2]. Market data has no operational current-read consumer anywhere in the
+design, so the strongest form of "cannot read current" is that no current-reading
+type exists to cast to. Every value-returning member takes the as-of date by name
+and type, asserted by a shape suite, because a read here filters on two independent
+axes, which session the row describes and when it was observed, and a member taking
+only the session date would leak the latest observation. A correction recorded
+after a simulated date is invisible to a read at that date and visible after it.
+
+The chain read reaches identity through `contracts` on `contract_id`, the latest
+observation per contract is a CTE with declared column names, and the uniqueness
+constraint's own index serves the symbol lookup, measured with `EXPLAIN QUERY
+PLAN`. Identity order is imposed in C# on the parsed identities, because the
+stored decimal form does not sort. `corporate_actions` and `earnings_calendar`
+have no reads yet; their first consumers are 1.5 and Phase 2.
+
+`underlying_bars` cannot yet hold the bars the worked example supplies: it makes
+`open`, `high`, `low` and `adj_close` NOT NULL while `UnderlyingBar` requires only
+the close. 1.4's detail carries the fix as its first item, and `BarFor` already
+reads the optional fields null-tolerantly so the correction will not touch the
+read.
+
+`watchlist_membership` is declared forward and 1.3 creates it. Each version
+records one transition, `joined` or `left` effective on a date, not an interval
+[D-W35]; §4.2 states the shape and why an interval per version cannot answer the
+membership question.
+
 ## Configuration
 
 Two sections bound, `Eodhd` and `Storage`, both verified. Six sections deliberately
@@ -127,7 +154,10 @@ named checks, no exemption mechanism, self-testing on their own samples.
 Three SQL detectors, all reading `src/` only: no decimal ordering, no rewrite of an
 append-only table, and no alias of a table or a column. The third is the convention
 that discharges the alias obligation, and it is what makes the other two sound
-without either resolving aliases.
+without either resolving aliases. Its source arm admits a parenthesised expression
+as of 1.2, so an aggregate acquiring a name is reported; a CTE header stays clean
+because the alias group requires an identifier and the token after `AS` there is
+`(`, which no identifier can match.
 
 **A declared vocabulary is checked standing in the direction in which absence causes
 the bad outcome.** `DecimalColumns` and `AppendOnlyTables` run list to document, a
@@ -137,7 +167,7 @@ bands the list names.
 
 ## Tests
 
-304: 240 across twenty-four fixtures, and 64 across thirteen unregistered suites.
+318: 244 across twenty-four fixtures, and 74 across fifteen unregistered suites.
 The two guards are checks rather than tests and are counted in neither.
 
 | Fixture | Tests |
@@ -148,10 +178,10 @@ The two guards are checks rather than tests and are counted in neither.
 | FX-MalformedChainFailsWhole | 17 |
 | FX-MoneyRoundTrip | 17 |
 | FX-ConfigWriteRefusesInvariantBreach | 16 |
+| FX-NoSqlAliases | 15 |
 | FX-NoDecimalOrderingInSql | 14 |
 | FX-ConfigStoreClassHonoured | 12 |
 | FX-TickerDashForm | 12 |
-| FX-NoSqlAliases | 11 |
 | FX-CeilingNotInsidePolicyBand | 7 |
 | FX-ConfigResolvesAsOf | 6 |
 | FX-EveryConfigSectionBinds | 6 |
@@ -177,13 +207,12 @@ append-only triggers make the tables impossible to clean between cases.
 
 ## Not built
 
-Every table beyond the eight that exist. `decisions` and `candidates` are Phase 4.
+Every table beyond the eight that exist. `watchlist_membership` is 1.3's,
+`decisions` and `candidates` are Phase 4's.
 
-Nothing reads market data as-of yet: 1.2 builds the read paths, and the only as-of
-read over a market-data table is inside FX-SnapshotNeverRewritten.
-
-A loaded chain still reaches nothing. 0.6 built the loader and 1.4 persists what it
-yields.
+A loaded chain still reaches nothing. 0.6 built the loader, 1.2 built the as-of
+reads, and 1.4 persists what the loader yields, which is the first thing the reads
+will serve that a test did not insert by hand.
 
 Nothing runs, so nothing produces output. Determinism is asserted over stored rows.
 
@@ -195,7 +224,8 @@ copied here: two registers of one list is how an obligation comes to exist in th
 nobody reads.
 
 Entries stand against Phase 1, 2, 3, 4, 8 and 11. The count is not restated here.
-1.1 discharged the SQL alias obligation, the first Phase 1 row to close.
+1.1 discharged the SQL alias obligation and 1.2 closed the effective-dating
+question by decision [D-W35], the two Phase 1 closures so far.
 
 ## Working rules in force
 
@@ -298,3 +328,100 @@ declared vocabulary has a live subject.
 
 No `double` or `float`. No ambient clock. Money is decimal in `TEXT`. Reconcile the
 detail and the archive at sign-off, not during the build.
+
+## 1.2 As-of reads
+
+Read `CLAUDE.md`, `BUILD_PLAN.md` §1.2 and the carried obligations,
+`DATA_AND_SCHEMA.md` §3, §4.1 and §4.2, D-W8, D-W26, D-W35, `AsOfConfiguration`,
+`AsOfBoundary`, `ConfigRowQuery`, the alias fixture, the `FIXTURES.md` rows at 1,
+and Current state above.
+
+1.1 put `observed_at` into three keys so a correction could append, and nothing
+reads it: the only as-of read over a market-data table is inside a fixture's own
+SQL. Give the read a home in `src/`, which is also where the join 1.1 deferred
+gets its answer.
+
+### One surface, argued rather than copied
+
+- Configuration has two types because two consumers exist: operational paths read
+  current [D-W26] and simulated paths read as-of. Market data has no operational
+  current-read consumer anywhere in the design, so do not build the counterpart.
+  The strongest form of "cannot read current" is that no current-reading type
+  exists to cast to.
+- **"Every member takes a date" is too weak here.** A market-data read filters on
+  two independent axes, which session the row describes and when it was observed,
+  so a member taking the session date alone would satisfy "takes a date" while
+  leaking the latest observation. Assert the as-of parameter by name and type on
+  every value-returning member, and assert the absence of a current type by a
+  tripwire that says what it can and cannot catch.
+
+### Fix the detector before writing the read that would trip on it
+
+- **The column-alias rule's source arm is an identifier class**, and the character
+  before `AS` in `MAX(observed_at) AS latest` is `)`, which that class cannot
+  match. The aggregate form is exactly what a naive chain read writes, so widen
+  the arm first and write the read against the honest detector.
+- What keeps a CTE clean is the alias group, not an exemption: the token after
+  `AS` in a CTE header is `(`, which no identifier can match. Test both CTE forms
+  against the widened rule, sweep the tree, and report what it flags rather than
+  predicting zero.
+- **A comment beside a detector describes what the detector does, not what it was
+  meant to do.** The loop comment named two forms as ignored that the rule would
+  report. Correct it to say both would be reported, neither appears, and the rule
+  stands on absence rather than on narrowness, which is the recoverable direction.
+
+### The reads
+
+- One folder `Core/MarketData`, one type. `BarFor(symbol, sessionDate, asOf)` and
+  `QuotesFor(symbol, snapshotDate, asOf)`, returning the `Synthetic` records so
+  1.4's round trip uses one vocabulary and the same oracle 0.6's fixture parses.
+- The latest observation per contract is a CTE with declared column names, the
+  convention's own shape. The chain reaches identity through `contracts` on
+  `contract_id` filtered by symbol; measure with `EXPLAIN QUERY PLAN` whether the
+  uniqueness constraint's index serves the lookup before adding any index.
+- **Identity order is imposed in C# on the parsed identities, never in SQL**, and
+  the test pins a 9-versus-10 strike pair whose stored forms sort backwards as
+  text.
+- Read the optional bar fields null-tolerantly, so the nullability correction 1.4
+  owes does not touch the read.
+- `corporate_actions` and `earnings_calendar` reads are deliberately absent: their
+  first consumers are 1.5 and Phase 2, and a member nothing calls is speculation.
+  Say so in the detail rather than leaving it to be read as an omission.
+- `AsOfBoundary` is expected to fit unchanged, one widening of `asOf` to its last
+  instant, the session axis being date against date. If it does not fit, that is a
+  finding.
+- **Test**: a correction recorded after a simulated date is invisible at that date
+  and visible after it, for a bar and for a quote; three as-of dates spanning two
+  corrections return three answers in order; before the first observation there is
+  nothing rather than the earliest row; an observation on the as-of date itself is
+  visible.
+
+### The membership schema, carried
+
+- Apply §4.2's replacement in its own commit: each row records one transition,
+  `joined` or `left` effective on a date, keyed `(symbol, version)` [D-W35], with
+  the re-entry case showing why an interval per version cannot answer the
+  membership question. `watchlist_membership` joins `AppendOnlyTables` as a
+  forward declaration. Close the effective-dating obligation by decision rather
+  than by lapsing, and record the counts before and after.
+
+### 1.4, read rather than guessed
+
+- `ResolveAtOrBefore`'s remark predicts 1.4 may need a transaction. Read 1.4's
+  detail and answer it: its read-back is verification after commit, not a read
+  inside the write, and membership resolution would never pass through
+  `ConfigRowQuery` because it is not a config read. Correct the remark at the
+  site.
+
+### Definitions of done carried from 0.2
+
+- No check is registered against 1.2; the detail says so per rule 2, and the
+  behaviour and shape suites land unregistered.
+- 1.2 adds no tables, no decimal columns and no keys, checked and empty.
+
+### Constraints
+
+No `double` or `float`. No ambient clock. Money is decimal in `TEXT`. A finding
+goes where planning for the work will read it, never only in the pull request,
+and it is read back off disk after the edit. Reconcile the detail and the archive
+at sign-off, not during the build.

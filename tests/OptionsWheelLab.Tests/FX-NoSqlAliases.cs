@@ -87,6 +87,66 @@ public sealed class FX_NoSqlAliases
         Assert.Contains("strike", offence, StringComparison.Ordinal);
     }
 
+    /// <summary>
+    /// The primary widened case: an aggregate given a second name, which is the
+    /// form a naive chain read would write this checkpoint.
+    /// </summary>
+    /// <remarks>
+    /// The first pattern was blind to every parenthesised expression, because its
+    /// source arm was an identifier class and the character before <c>AS</c> here
+    /// is <c>)</c>. The comment claimed the pattern was anchored on AS so the
+    /// expression could be anything; the pattern did not do what the comment said.
+    /// </remarks>
+    [Fact]
+    public void An_aggregate_given_a_second_name_is_reported()
+    {
+        const string Sql =
+            "SELECT contract_id, MAX(observed_at) AS latest FROM contract_quotes GROUP BY contract_id;";
+
+        var offence = Assert.Single(SqlAliases.Offences(Sql));
+
+        Assert.Contains("MAX(observed_at)", offence, StringComparison.Ordinal);
+        Assert.Contains("latest", offence, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void A_count_star_given_a_second_name_is_reported()
+    {
+        const string Sql = "SELECT COUNT(*) AS n FROM contracts;";
+
+        Assert.Single(SqlAliases.Offences(Sql));
+    }
+
+    [Fact]
+    public void A_window_function_given_a_second_name_is_reported()
+    {
+        const string Sql =
+            "SELECT ROW_NUMBER() OVER (ORDER BY observed_at) AS rn FROM underlying_bars;";
+
+        Assert.Single(SqlAliases.Offences(Sql));
+    }
+
+    /// <summary>
+    /// A CTE with declared column names is not an alias, and it is the chain
+    /// read's own shape: the aggregate lands in a declared column, so nothing
+    /// acquires a second name and no alias is needed at all.
+    /// </summary>
+    [Fact]
+    public void A_cte_with_declared_column_names_is_not_reported()
+    {
+        const string Sql =
+            """
+            WITH latest(contract_id, observed_at) AS (
+                SELECT contract_id, MAX(observed_at)
+                FROM contract_quotes
+                GROUP BY contract_id
+            )
+            SELECT contract_id FROM latest;
+            """;
+
+        Assert.Empty(SqlAliases.Offences(Sql));
+    }
+
     [Fact]
     public void A_table_alias_written_with_as_is_reported()
     {
@@ -261,8 +321,22 @@ internal static class SqlAliases
 {
     // A column alias: an expression, AS, a name. Anchored on AS rather than on the
     // expression, because the expression can be anything.
+    //
+    // Three source arms. A call with a simple argument list, so the offence can
+    // name MAX(observed_at) rather than a bare parenthesis; an identifier run; and
+    // a lone closing parenthesis, the fallback that makes any parenthesised
+    // expression a source. The first pattern held only the identifier arm, so
+    // MAX(observed_at) AS latest, COUNT(*) AS n and ROW_NUMBER() OVER (...) AS rn
+    // all passed: the character before AS is `)`, which an identifier class cannot
+    // match. Found at 1.2, whose chain read is exactly the aggregate case.
+    //
+    // What keeps a CTE clean is the ALIAS group, not the source: in
+    // `WITH latest(a, b) AS (` and `WITH RECURSIVE chain AS (` the token after AS
+    // is `(`, which no identifier can match, so neither arm binds. That is the
+    // right distinguisher rather than an exemption, because a CTE names its result
+    // instead of renaming anything.
     private static readonly Regex ColumnAlias = new(
-        @"\b(?<source>[A-Za-z_][A-Za-z0-9_.]*)\s+AS\s+(?<alias>[A-Za-z_][A-Za-z0-9_]*)",
+        @"(?<source>[A-Za-z_][A-Za-z0-9_.]*\s*\([^()]*\)|\b[A-Za-z_][A-Za-z0-9_.]*|\))\s+AS\s+(?<alias>[A-Za-z_][A-Za-z0-9_]*)",
         RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
 
     // A table reference: FROM, JOIN, INTO or UPDATE, the table, then a token that
@@ -302,8 +376,15 @@ internal static class SqlAliases
 
         foreach (Match match in ColumnAlias.Matches(sql))
         {
-            // AS in a CREATE TABLE ... AS SELECT is not a column alias, and neither
-            // is a cast. Neither form appears here, so the plain rule stands.
+            // AS in a CREATE TABLE ... AS SELECT and AS in a cast are not column
+            // aliases, and BOTH WOULD BE REPORTED: the cast by the identifier arm
+            // (CAST(x AS TEXT) binds source x, alias TEXT), the CREATE by the
+            // parenthesis arm after its column list. Neither appears in the tree,
+            // so the rule stands on absence rather than on being narrow. If either
+            // ever lands, this fires loudly, which is the recoverable direction
+            // and the reason to leave it: an unreachable false positive named here
+            // costs nothing, and the same one discovered by a failing build under
+            // a comment claiming it cannot happen costs an hour.
             offences.Add(
                 $"column alias {match.Groups["source"].Value} AS {match.Groups["alias"].Value}");
         }
