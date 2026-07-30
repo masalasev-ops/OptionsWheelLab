@@ -73,7 +73,10 @@ Three, and they are the ones that make historical runs capable of failing.
 **Snapshots are append-only.** A stored snapshot records what was observable that
 date and is never rewritten [D-W8]. Vendor corrections arrive as new rows with
 their own `observed_at`. A delete or an update against a snapshot table fails the
-build.
+build, and from 1.1 it also fails in the store: each of the six carries a pair of
+triggers refusing `UPDATE` and `DELETE`. The two guards cover different writers. The
+build check reads `src/` and cannot see a hand-written statement at a `sqlite3`
+prompt; the triggers hold against any writer and say nothing about source.
 
 **Membership is state.** Watchlist membership carries entry and exit dates, and a
 query about a past date resolves membership as of that date [D-W9].
@@ -150,7 +153,8 @@ underlying_bars
   PK (symbol, session_date, observed_at)
 
 corporate_actions
-  symbol TEXT, ex_date TEXT, kind TEXT, ratio TEXT, amount TEXT, observed_at TEXT
+  symbol TEXT, ex_date TEXT, kind TEXT, ratio TEXT NULL, amount TEXT NULL,
+  observed_at TEXT
 
 earnings_calendar
   symbol TEXT, report_date TEXT, session TEXT, observed_at TEXT
@@ -161,16 +165,30 @@ chain_snapshots
 
 contracts
   contract_id INTEGER PK, symbol TEXT, expiry TEXT, right TEXT, strike TEXT,
-  vendor_symbol TEXT NULL, predecessor_contract_id INTEGER NULL,
+  vendor_symbol TEXT NULL, predecessor_contract_id INTEGER NULL -> contracts,
   multiplier INTEGER, deliverable_shares INTEGER
+  CHECK (right IN ('put', 'call'))
   UNIQUE (symbol, expiry, right, strike, deliverable_shares)
 
 contract_quotes
-  contract_id INTEGER, snapshot_date TEXT, bid TEXT, ask TEXT, last TEXT,
-  volume INTEGER, open_interest INTEGER, iv TEXT, delta TEXT, gamma TEXT,
-  theta TEXT, vega TEXT, observed_at TEXT
+  contract_id INTEGER -> contracts, snapshot_date TEXT, bid TEXT, ask TEXT,
+  last TEXT NULL, volume INTEGER NULL, open_interest INTEGER NULL, iv TEXT NULL,
+  delta TEXT NULL, gamma TEXT NULL, theta TEXT NULL, vega TEXT NULL,
+  observed_at TEXT
   PK (contract_id, snapshot_date, observed_at)
 ```
+
+Unmarked columns are `NOT NULL`. **Nullability follows what a chain can express.**
+Bid and ask are required; last, both counts and the five greeks are absent rather
+than zero, because a gamma of zero is a false observation and not a missing one, and
+`ContractQuote` is the same shape. A split carries a ratio and a special dividend an
+amount, so `corporate_actions` has one of each. A chain the loader accepts is a chain
+this schema holds.
+
+`->` marks a foreign key. **They are enforced**, not decorative:
+Microsoft.Data.Sqlite turns foreign keys on by default, which a bare `sqlite3`
+prompt does not, so a quote cannot point at a contract that does not exist and a
+predecessor link cannot dangle.
 
 The observation stamp is part of the key because a correction appends rather than
 replaces [D-W8]. Without it a second row for the same bar violates the key, the

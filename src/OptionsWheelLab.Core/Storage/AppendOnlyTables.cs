@@ -38,9 +38,11 @@ public static class AppendOnlyTables
     /// Tables that are never rewritten, as of the schema that is documented.
     /// </summary>
     /// <remarks>
-    /// <b>Two of these exist and eight do not.</b> That is the point rather than
-    /// a defect: the constraint lands before the tables it guards, so Phase 1
-    /// inherits it instead of rediscovering it.
+    /// <b>Eight of these exist and two do not.</b> The six snapshot tables landed
+    /// at 1.1; `decisions` and `candidates` are Phase 4. That the constraint lands
+    /// before the tables it guards was the point rather than a defect, and 1.1 is
+    /// where it paid: the vocabulary was already right when the tables arrived, so
+    /// the checkpoint added no names.
     /// <para>
     /// <b><c>watchlist_membership</c> is deliberately absent.</b> §4.2 says its
     /// rows are never deleted, while a nullable <c>left_on</c> makes a departure
@@ -52,7 +54,10 @@ public static class AppendOnlyTables
     /// </remarks>
     public static IReadOnlySet<string> All { get; } = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
     {
-        // The snapshot tables of §4.1 [D-W8]. None exists yet; Phase 1 adds them.
+        // The snapshot tables of §4.1 [D-W8], created by migration 3 at 1.1, which
+        // also gave each a pair of triggers refusing UPDATE and DELETE. This list is
+        // what the source detector checks against; those triggers are what holds
+        // against a writer the detector cannot see.
         "underlying_bars",
         "corporate_actions",
         "earnings_calendar",

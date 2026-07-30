@@ -323,7 +323,8 @@ update one. Six are the snapshot tables of §4.1 [D-W8], defined there because t
 phrase was used in four documents and defined in none; `contracts` is one despite
 carrying no `observed_at`, since a corporate action mints a new identity rather
 than editing a row. Then `decisions` and `candidates` [D-W3], `config_rows`
-[D-W26] and `schema_migrations` [D-W32]. Two exist and eight do not.
+[D-W26] and `schema_migrations` [D-W32]. Eight exist and two do not: the six
+snapshot tables landed at 1.1 and `decisions` and `candidates` are Phase 4.
 
 Every entry rests on a decision that states the property rather than on the list's
 own existence. Three citations had to be corrected to make that true, which is

@@ -54,6 +54,21 @@ Checkpoint 1.1.
 ### Removed
 - The Phase 1 carried obligation on SQL aliases, discharged by FX-NoSqlAliases.
 
+### Reconciled
+- `DATA_AND_SCHEMA.md` §4.1 now records nullability, the foreign keys and the
+  `CHECK`, which the schema block did not carry. The document marks `NULL`
+  explicitly where it means it, so ten columns the migration makes nullable read as
+  `NOT NULL`: `corporate_actions.ratio` and `.amount`, and eight of
+  `contract_quotes`. That is the difference between a chain having to supply a gamma
+  and being allowed to omit one, which is what `ContractQuote` settled at 0.6.
+- §3 said a delete or an update against a snapshot table fails the build. It also
+  fails in the store from 1.1. The two guards cover different writers, and the
+  sentence described only the one that reads `src/`.
+- `AppendOnlyTables` said two of its ten tables exist and eight do not. Eight exist
+  and two do not; `decisions` and `candidates` are Phase 4. Its inline comment still
+  said none of the snapshot tables existed yet.
+- Current state in `prompts/spent/phase-0.md` carried the same count.
+
 ### Fixed
 - `DATA_AND_SCHEMA.md` §2 says an option contract's identity is the tuple of
   underlying, expiry, right and strike. **It is not.** An adjusted series can share
