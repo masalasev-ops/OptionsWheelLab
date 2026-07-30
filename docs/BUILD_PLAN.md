@@ -621,6 +621,7 @@ admits only one origin costs.
 | Phase 4 | Store one feasible set per name and date rather than one per decision. `candidates` is keyed on `decision_id`, so three makers acting on one set write it three times, while [D-W4] requires the three to be byte-identical and `FX-ThreeMakersSameFeasibleSet` asserts it. Storing once and referencing thrice makes it true by construction and divides the largest uncertain table by three. Raised while estimating store size over a ten-year lifetime, before the table exists. | v1.17.0 |
 | Phase 8 | Extract the market rules out of `SyntheticChainReader`, so one definition serves the synthetic reader and the vendor ingest. Refusing a negative bid, a negative ask and a crossed market are statements about what a market can be, not JSON concerns, and they sit as private statics on the reader, so a second producer of quotes can only duplicate them. Phase 8 is where that second producer arrives. **Coupled to the Phase 2 crossed-quote decision**: if the gate handles a crossed quote, the crossed rule moves to the gate rather than into the shared definition, so settle that first and extract what is left. Not extracted at 0.8 because there is one caller and the second does not exist. | PR #9 |
 | Phase 2 | Reconcile `WORKED_EXAMPLE.md` with [D-W22] to [D-W25]. Its 45.00 strike fails the 12 percent spread cap at 18.18 percent of mid, so the three-candidate feasible set it teaches renders as two and the random maker's choice disappears along with the regret arithmetic built on it; the 47.50 strike passes at 11.97 percent, three hundredths of a point of margin, which is too fragile for the document that defines correctness. The fix is a deliberate rewrite of the chain, ideally so one candidate fails the spread cap by an obvious margin and the example teaches the gate as well. Downstream: seven registered fixtures read its conclusions; FX-WorkedExampleChainLoads parses §2 and §5 as its oracle and fails on a quote revision, which is a tripwire rather than an exposure; `Costs:CommissionPerContract` is seeded from §1 and `Trial:MaxTrialDays` is justified partly by the example's 109-day trial. Raised at v1.6.0, banner in §3, and never carried here because this table did not exist yet. | v1.6.0 |
+| Phase 3 | Decide how dividends are recorded. Between assignment and call-away the account holds shares, and a dividend paid in that window is cash the trial received; omitting it understates every covered-call leg and misprices the buy-and-hold control [D-W13], which biases the exact comparison the lab exists to make. Needs a ledger `kind`, a source for ex-dates and amounts (`corporate_actions` already exists and lists `dividend` among its kinds), and a statement of whether the synthetic-chain format can express one. Raised from a review of what the wheel model omits, before Phase 3's detail is authored. | v1.22.0 |
 
 ---
 
@@ -746,6 +747,11 @@ Append-only and versioned [D-W35]. A departure appends; a re-entry appends again
 Each version records one transition, `joined` or `left` effective on a date, not an
 interval: §4.2 states the shape and why an interval per version cannot answer the
 membership question.
+
+Corrections this checkpoint carries: the dividend obligation, raised from a review
+of what the wheel model omits, and 1.4's migration ordinal, which this checkpoint's
+own migration would have made false. Neither was caused by 1.3; it is the
+checkpoint open when they were found.
 - **Test** FX-PitMembershipExcludesLaterJoiner.
 - **Test**: a name that left and returned resolves correctly at a date in each of
   the three intervals.
@@ -754,7 +760,7 @@ membership question.
 ### 1.4 Chain ingest
 0.6 built a loader producing objects and nothing persists them. 1.4 does.
 
-Migration 4 first: `underlying_bars` makes `open`, `high`, `low` and
+A migration first, before any ingest code: `underlying_bars` makes `open`, `high`, `low` and
 `adj_close` NOT NULL while `UnderlyingBar` declares them optional and
 WORKED_EXAMPLE §5 supplies only dates and closes, so the chain this
 checkpoint's own DoD loads cannot be persisted into the table as it
