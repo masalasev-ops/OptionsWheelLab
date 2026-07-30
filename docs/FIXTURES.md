@@ -84,6 +84,7 @@ fail even when the build does not.
 | FX-GrossBasisBindsCallStrike | fixture | 2 | a call strike admitted by net basis and refused by gross basis is refused | WORKED_EXAMPLE §6.3 |
 | FX-TrialCompleteIncludesAssignment | fixture | 3 | the assigned trial totals 498.05 | WORKED_EXAMPLE §6.3 |
 | FX-RollCapCloses | fixture | 3 | a trial reaching the roll bound closes at market and resolves | authored |
+| FX-ProjectionRebuildsFromLedger | fixture | 3 | `trials` and `positions` discarded and rebuilt from `ledger_entries` give the same rows, which is the condition on rewriting them at all [D-W35] | authored |
 | FX-ThreeMakersSameFeasibleSet | fixture | 4 | all makers receive byte-identical candidate sets | WORKED_EXAMPLE §3 |
 | FX-RecordCarriesFeasibleSet | fixture | 4 | a decision is re-scorable from its record alone | authored |
 | FX-ExcursionRecordedOnWin | fixture | 5 | a positive outcome still carries its adverse excursion | WORKED_EXAMPLE §6.2 |

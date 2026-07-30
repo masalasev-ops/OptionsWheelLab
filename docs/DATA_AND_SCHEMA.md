@@ -131,7 +131,7 @@ documents and this is where it is defined.
 underlying_bars
   symbol TEXT, session_date TEXT, open TEXT, high TEXT, low TEXT, close TEXT,
   adj_close TEXT, volume INTEGER, observed_at TEXT
-  PK (symbol, session_date)
+  PK (symbol, session_date, observed_at)
 
 corporate_actions
   symbol TEXT, ex_date TEXT, kind TEXT, ratio TEXT, amount TEXT, observed_at TEXT
@@ -141,7 +141,7 @@ earnings_calendar
 
 chain_snapshots
   symbol TEXT, snapshot_date TEXT, observed_at TEXT
-  PK (symbol, snapshot_date)
+  PK (symbol, snapshot_date, observed_at)
 
 contracts
   contract_id INTEGER PK, symbol TEXT, expiry TEXT, right TEXT, strike TEXT,
@@ -151,8 +151,15 @@ contract_quotes
   contract_id INTEGER, snapshot_date TEXT, bid TEXT, ask TEXT, last TEXT,
   volume INTEGER, open_interest INTEGER, iv TEXT, delta TEXT, gamma TEXT,
   theta TEXT, vega TEXT, observed_at TEXT
-  PK (contract_id, snapshot_date)
+  PK (contract_id, snapshot_date, observed_at)
 ```
+
+The observation stamp is part of the key because a correction appends rather than
+replaces [D-W8]. Without it a second row for the same bar violates the key, the
+only way to record a vendor correction is an update, and
+`FX-NoRewriteOfAppendOnlyTables` refuses it. An as-of read takes the latest
+`observed_at` at or before the as-of instant, which is `config_rows`' shape with
+an observation stamp in place of a version.
 
 `right` is `put` or `call`, lower case, matching the house convention for
 enumerated text elsewhere in this schema.
