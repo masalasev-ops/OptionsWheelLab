@@ -9,15 +9,17 @@ checkpoint's prompt rather than appended as further entries, so replaying the
 prompts in order against the corpus reproduces the current state without
 replaying the mistakes.
 
-One file per phase. **No further prompt is appended to this one.** Phase 0 signed
-off at corpus v1.15.0; Phase 1 opens its own. Current state below stays the
-description of the present until that file exists, so it is still corrected.
+One file per phase. **This file is closed.** Phase 0 signed off at corpus v1.15.0,
+and `phase-1.md` holds the description of the present from 1.1's sign-off.
 
 ---
 
-# Current state
+# Current state, as it stood when Phase 0 closed
 
-Corpus v1.16.0.
+Corpus v1.16.0. **Frozen.** This described the present until `phase-1.md` opened at
+1.1's sign-off, and records Phase 0's close from then on. Checkpoint 1.1 changed
+several of the facts below, including the schema version, how many tables exist and
+the test count. The current ones are in `phase-1.md`.
 
 | | |
 |---|---|
@@ -323,8 +325,7 @@ update one. Six are the snapshot tables of §4.1 [D-W8], defined there because t
 phrase was used in four documents and defined in none; `contracts` is one despite
 carrying no `observed_at`, since a corporate action mints a new identity rather
 than editing a row. Then `decisions` and `candidates` [D-W3], `config_rows`
-[D-W26] and `schema_migrations` [D-W32]. Eight exist and two do not: the six
-snapshot tables landed at 1.1 and `decisions` and `candidates` are Phase 4.
+[D-W26] and `schema_migrations` [D-W32]. Two exist and eight do not.
 
 Every entry rests on a decision that states the property rather than on the list's
 own existence. Three citations had to be corrected to make that true, which is

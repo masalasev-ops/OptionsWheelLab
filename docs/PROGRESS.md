@@ -4,9 +4,9 @@ Appended to, never rewritten. The repository is the authority on build state.
 
 ## Current state
 
-**Phase 0 complete and reviewed. Phase 1 in progress.** Checkpoints 0.1 to 0.8
-built and signed off; 1.1 building. Phase 2 detail not written. The documentation
-corpus is at v1.18.0.
+**Phase 0 complete and reviewed. Phase 1 in progress.** Checkpoints 0.1 to 0.8 and
+1.1 built and signed off; 1.2 to 1.5 not built. Phase 2 detail not written. The
+documentation corpus is at v1.19.0.
 
 ## Log
 
@@ -579,3 +579,45 @@ Phase 1's two registered rows move to checkpoint granularity, and `FIXTURES.md` 
 2 now says when a row belongs at phase granularity and when that becomes a defect. A
 row left at phase granularity after its detail exists makes every checkpoint's
 definition of done resolve to nothing.
+
+### 2026-07-30 — corpus v1.19.0
+Checkpoint 1.1 built and signed off. Schema 3: the six market-data tables, three
+indexes, twelve triggers, a `CHECK` and a uniqueness constraint. 304 tests, 240
+across twenty-four fixtures. `prompts/spent/phase-1.md` opens and Phase 0's file is
+closed.
+
+**Three findings came from a measurement answering a different question than the one
+asked.** Measuring the decimal vocabulary's false-positive surface, which was zero,
+found a false negative instead: the detector filtered `LAST` as an order keyword
+before consulting the vocabulary, so `ORDER BY last` would have been dropped the
+moment `last` became a column. Running the alias convention over real statements
+rather than synthetic ones found two defects in the new detector, one of which would
+have flagged thirteen legitimate trigger bodies. Demonstrating the twelve refusals
+against a real store, rather than reading the twelve assertions that pass on either
+wording, found a trigger message telling an operator to append a row carrying a
+column that table does not have.
+
+That is the same shape three times: the check that finds something is the one run
+against the real subject rather than the one reasoned about.
+
+**§2's identity claim is false and is recorded rather than corrected.** An adjusted
+series can share underlying, expiry, right and strike with a standard contract and
+differ only in the deliverable. Verified against Fidelity, Schwab and OCC's own
+symbology memo, then demonstrated against the built schema: two contracts, one
+tuple, both admitted by a constraint designed to admit exactly that pair. It reaches
+D-W29, `ContractIdentity` and 1.5, so it wants a decision.
+
+D-W17's two quantities were split into two columns. Which one committed capital uses
+was deliberately not settled, and the arithmetic favouring the deliverable is in the
+Phase 3 obligation rather than in a decision, because a reverse split may behave
+differently and `WORKED_EXAMPLE.md` cannot adjudicate it either way.
+
+The SQL alias obligation is discharged by convention, the first Phase 1 row to
+close. Its cost is dated to 1.5, whose definition of done needs a self-join, and the
+walk turns out to be expressible without one as a recursive CTE, measured against
+the built schema.
+
+**Six divergences between the schema document and the migration** were reconciled
+after the fact, all introduced by this checkpoint. Nothing parses §4.1 as a schema,
+so no check caught them, and the one that mattered was nullability: the document
+marked ten columns `NOT NULL` by omission that the migration makes nullable.

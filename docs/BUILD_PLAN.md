@@ -1,7 +1,7 @@
 # BUILD_PLAN
 
-Build state: **Phase 0 complete; Phase 1 not built**. 0.1 to 0.8 built and signed
-off. Phase 1 detail written and live intent. Phase 2 detail not written.
+Build state: **Phase 0 complete; Phase 1 in progress**. 0.1 to 0.8 and 1.1 built and
+signed off. 1.2 to 1.5 are live intent. Phase 2 detail not written.
 
 ## How this document works
 
@@ -627,9 +627,9 @@ admits only one origin costs.
 
 ## Phase 1 — Chain store and point-in-time invariants
 
-Build state: **not built**. On synthetic chains; no vendor data until Phase 8.
-Delivers the market-data schema, the as-of read paths over it, and membership as
-state.
+Build state: **1.1 built and signed off; 1.2 to 1.5 not built**. On synthetic chains;
+no vendor data until Phase 8. Delivers the market-data schema, the as-of read paths
+over it, and membership as state.
 
 ### 1.1 The market-data schema
 The six tables of §4.1 with the observation stamp in the key [D-W8].
@@ -644,6 +644,41 @@ the vocabulary, which was unmeetable at 0.7 because none of them existed.
   new tables and columns rather than passing over them.
 - Discharges the SQL alias obligation. Both detectors are touched here and the
   tables they will scan first appear here.
+
+Reconciled at sign-off against what shipped. Five things were larger than the scope
+above, and three of them were found by measuring something the detail assumed.
+
+**The schema gained what the document did not specify.** Twelve triggers refusing
+`UPDATE` and `DELETE`, three indexes, a `CHECK` on `right`, a uniqueness constraint,
+and two foreign keys. Only the tables were in the detail. The triggers exist because
+the source detector reads `src/` and cannot see a writer at a `sqlite3` prompt, which
+is the same argument the `config_rows` triggers already rest on; the foreign keys
+were not asked for by any document and are raised for that reason.
+
+**§2's identity claim is false, and 1.1 is where it had to be settled or recorded.**
+An adjusted series can share underlying, expiry, right and strike with a standard
+contract and differ only in the deliverable. Checked against Fidelity, Schwab and
+OCC's own symbology memo rather than reasoned about, then demonstrated against the
+built schema: two contracts, one tuple. §2 carries a banner and the constraint went
+on the deliverable, which is a floor under the decision rather than an answer to it.
+
+**The multiplier and the deliverable were one column.** Splitting them was 1.1's;
+deciding which one committed capital uses is Phase 3's and was deliberately not
+settled here. The arithmetic favours the deliverable, and a reverse split may behave
+differently, which is why it is owed against OCC's memos rather than closed on one
+worked case.
+
+**Measuring the decimal vocabulary's false-positive surface found a false negative.**
+The detector filtered `LAST` as an order keyword before consulting the vocabulary, so
+`ORDER BY last` would have been dropped the moment `last` became a column here. The
+checkpoint asked for one measurement and the other defect was what the measurement
+turned up.
+
+**The alias convention's first run flagged a legitimate statement**, and would have
+flagged thirteen once migration 3 landed: `BEFORE UPDATE ON config_rows BEGIN` reads
+as a table followed by an alias. A second defect in the same detector meant the
+second table of every join went unscanned. Both were found by running the convention
+against real statements rather than synthetic ones.
 
 ### 1.2 As-of reads
 Every read serving a simulated date filters `observed_at <= as_of` and takes the

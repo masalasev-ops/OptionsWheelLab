@@ -1,5 +1,32 @@
 # CHANGELOG
 
+## [1.19.0] — 2026-07-30
+
+Checkpoint 1.1 signed off.
+
+### Added
+- `prompts/spent/phase-1.md`, carrying 1.1's prompt with its review rounds folded in
+  and the Current state that describes the present. Phase 0's file is closed and its
+  Current state is frozen as a record of that phase's close.
+
+### Changed
+- `BUILD_PLAN.md` 1.1 is reconciled against what shipped. Five things were larger
+  than its scope, and three of them were found by measuring something the detail
+  assumed rather than by reviewing what was written.
+- The build-state markers say Phase 1 is in progress and that 1.1 is built and
+  signed off, 1.2 to 1.5 being live intent.
+
+### Notes
+- 1.1 shipped a schema the document did not fully specify: twelve triggers, three
+  indexes, a `CHECK`, a uniqueness constraint and two foreign keys, where only the
+  tables were in the detail. The foreign keys were asked for by nothing and are
+  raised rather than assumed.
+- Three of the checkpoint's findings came from measurement answering a question other
+  than the one asked. Measuring the decimal vocabulary's false-positive surface found
+  a false negative; running the alias convention over real statements found two
+  detector defects; demonstrating the twelve refusals found a trigger message that
+  claimed a column its table does not have.
+
 ## [1.18.0] — 2026-07-29
 
 Checkpoint 1.1.

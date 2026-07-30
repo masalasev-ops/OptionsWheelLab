@@ -3,12 +3,12 @@
 A paper-trading laboratory that studies whether a decision-maker's decisions
 improve over time, using the options wheel as its task environment.
 
-Corpus version 1.18.0. The corpus was regenerated from scratch at v1.0.0 on
+Corpus version 1.19.0. The corpus was regenerated from scratch at v1.0.0 on
 2026-07-26, superseding the lost v0.1 entirely.
 
-Phase 0 is complete and reviewed. The repository compiles, tests, migrates and
-seeds its configuration, and holds no market data and no domain logic. Phase 1 is
-in progress.
+Phase 0 is complete and reviewed. Phase 1 is in progress: the market-data schema
+exists as of checkpoint 1.1, and nothing writes to it yet. The repository compiles,
+tests, migrates and seeds its configuration, and holds no market data.
 
 ## What this lab is not
 
