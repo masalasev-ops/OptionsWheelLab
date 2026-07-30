@@ -4,15 +4,24 @@ namespace OptionsWheelLab.Core.Identity;
 
 /// <summary>
 /// What makes two option contracts the same contract: the tuple of underlying,
-/// expiry, right and strike.
+/// expiry, right and strike, together with the deliverable.
 /// </summary>
 /// <remarks>
+/// <b>Five components, not four, per §2 as corrected at 1.5.</b> An adjusted
+/// series can share underlying, expiry, right and strike with a standard
+/// contract, differing only in what it delivers: a three-for-two split's
+/// successor at a 60 strike with 150 shares lists alongside a standard 60 with
+/// 100. The store's uniqueness constraint has carried all five since 1.1; this
+/// type carries them from 1.5, and the adjusted terms it carries are transcribed
+/// from what the adjusting authority states, never derived [D-W36].
+/// <para>
 /// The vendor's contract symbol is stored but is not the key, because symbol
 /// conventions change on splits and special dividends and a stored key that
 /// moves would silently break historical joins. It therefore lives on
 /// <see cref="Contract"/> and not here: a record's synthesised equality covers
 /// every declared member, so "carried alongside but not part of identity" is not
 /// something this type could express about one of its own members.
+/// </para>
 /// <para>
 /// <b>A reference type with a private constructor, not a record struct.</b>
 /// A struct admits <c>default</c>, which would produce an identity with a null
@@ -31,12 +40,18 @@ namespace OptionsWheelLab.Core.Identity;
 /// </remarks>
 public sealed record ContractIdentity : IComparable<ContractIdentity>
 {
-    private ContractIdentity(Ticker underlying, DateOnly expiry, OptionRight right, decimal strike)
+    private ContractIdentity(
+        Ticker underlying,
+        DateOnly expiry,
+        OptionRight right,
+        decimal strike,
+        int deliverableShares)
     {
         Underlying = underlying;
         Expiry = expiry;
         Right = right;
         Strike = strike;
+        DeliverableShares = deliverableShares;
     }
 
     public Ticker Underlying { get; }
@@ -47,6 +62,13 @@ public sealed record ContractIdentity : IComparable<ContractIdentity>
 
     /// <summary>The strike, in the canonical stored form.</summary>
     public decimal Strike { get; }
+
+    /// <summary>
+    /// What one contract conveys on exercise, a stated term [D-W36]. One
+    /// hundred for a standard contract, and the component that separates an
+    /// adjusted series from a standard one at the same strike [§2].
+    /// </summary>
+    public int DeliverableShares { get; }
 
     /// <summary>
     /// The identity of a contract, with the strike canonicalised.
@@ -68,7 +90,8 @@ public sealed record ContractIdentity : IComparable<ContractIdentity>
         Ticker underlying,
         DateOnly expiry,
         OptionRight right,
-        decimal strike)
+        decimal strike,
+        int deliverableShares = 100)
     {
         ArgumentNullException.ThrowIfNull(underlying);
 
@@ -80,12 +103,23 @@ public sealed record ContractIdentity : IComparable<ContractIdentity>
                 "A contract is a put or a call. This is most likely an uninitialised value.");
         }
 
-        return new ContractIdentity(underlying, expiry, right, StoreDecimal.Canonicalise(strike));
+        if (deliverableShares <= 0)
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(deliverableShares),
+                deliverableShares,
+                "A contract conveys a positive number of shares. The default is the "
+                + "standard 100; an adjusted deliverable is transcribed from what the "
+                + "adjusting authority states [D-W36].");
+        }
+
+        return new ContractIdentity(
+            underlying, expiry, right, StoreDecimal.Canonicalise(strike), deliverableShares);
     }
 
     /// <summary>
     /// Total order over identity: underlying, then expiry, then right, then
-    /// strike.
+    /// strike, then deliverable.
     /// </summary>
     /// <remarks>
     /// <b>A requirement rather than a convenience.</b> Three decision-makers
@@ -122,12 +156,19 @@ public sealed record ContractIdentity : IComparable<ContractIdentity>
 
         var byRight = Right.CompareTo(other.Right);
 
-        return byRight != 0 ? byRight : Strike.CompareTo(other.Strike);
+        if (byRight != 0)
+        {
+            return byRight;
+        }
+
+        var byStrike = Strike.CompareTo(other.Strike);
+
+        return byStrike != 0 ? byStrike : DeliverableShares.CompareTo(other.DeliverableShares);
     }
 
     public override string ToString() =>
         $"{Underlying.Value} {StoreDate.ToStored(Expiry)} {StoreOptionRight.ToStored(Right)} "
-        + StoreDecimal.ToStored(Strike);
+        + $"{StoreDecimal.ToStored(Strike)} x{DeliverableShares}";
 }
 
 /// <summary>
@@ -139,30 +180,23 @@ public sealed record ContractIdentity : IComparable<ContractIdentity>
 /// because record equality covers every declared member, so putting it there
 /// would make it part of the key, which is the one thing the schema forbids.
 /// <para>
-/// <b><c>Multiplier</c> and <c>DeliverableShares</c> are two quantities, and this
-/// record said they were one.</b> The multiplier is what a quoted premium
-/// multiplies by to give the cash paid for one contract, and an adjustment does not
-/// change it. The deliverable is what one contract conveys on exercise, and an
-/// adjustment does: a three-for-two split takes a 90 strike to 60 and the
-/// deliverable to 150. Both are one hundred for a standard contract, which is why
-/// one column read as sufficient.
+/// <b>The deliverable is not here, because identity carries it</b> [§2, as
+/// corrected at 1.5]. It was, until the five-component identity landed; keeping
+/// a second copy beside the identity's would be a fact in two places. The
+/// multiplier stays: what a quoted premium multiplies by to give the cash paid
+/// for one contract, which an adjustment does not change, where the deliverable
+/// is what one contract conveys on exercise, which an adjustment does. Both are
+/// stated terms, transcribed and never derived [D-W36].
 /// </para>
 /// <para>
 /// <b>Which of the two the outcome metric uses is open.</b> D-W17's first paragraph
 /// says the contract multiplier and its third says the deliverable. That is a
 /// carried obligation owed at Phase 3, which computes committed capital, and
-/// nothing here presumes the answer.
-/// </para>
-/// <para>
-/// Neither is part of identity, and after the §2 finding that is a statement about
-/// what this record holds rather than an argument. The deliverable is what
-/// distinguishes an adjusted series from a standard one at the same strike, so
-/// identity not carrying it is precisely why the tuple maps two contracts to one
-/// identity. §2 records that; it is not settled here.
+/// nothing here presumes the answer: the metric reads the multiplier from this
+/// record or the deliverable from the identity, both transcribed values.
 /// </para>
 /// </remarks>
 public sealed record Contract(
     ContractIdentity Identity,
     string? VendorSymbol,
-    int Multiplier,
-    int DeliverableShares);
+    int Multiplier);
