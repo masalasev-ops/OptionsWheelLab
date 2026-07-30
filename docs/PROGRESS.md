@@ -5,8 +5,8 @@ Appended to, never rewritten. The repository is the authority on build state.
 ## Current state
 
 **Phase 0 complete and reviewed. Phase 1 in progress.** Checkpoints 0.1 to 0.8
-and 1.1 to 1.3 built and signed off; 1.4 building; 1.5 not built. Phase 2
-detail not written. The documentation corpus is at v1.24.0.
+and 1.1 to 1.4 built and signed off; 1.5 not built. Phase 2 detail not
+written. The documentation corpus is at v1.25.0.
 
 ## Log
 
@@ -745,3 +745,39 @@ ingest needs an operator entry point.
 migration 5 is scoped to `underlying_bars` alone. The 1.2 finding that raised
 the migration was itself a lesson in verifying one record and claiming both,
 which is why the reconfirmation was done rather than assumed.
+
+### 2026-07-30 — corpus v1.25.0
+Checkpoint 1.4 built and signed off. Migration 5's rebuild, the write-side
+seam, the chain writer, and the round trip against the document's own tables.
+365 tests, 250 across twenty-six fixtures. Twelve carried obligations stand.
+
+The enumeration rule paid immediately. The 1.2 finding named four columns and
+`UnderlyingBar` makes five optional, `volume` being the fifth, so a migration
+written from the sentence would have relaxed four and still refused the
+record. A standing record-to-schema test keeps the enumeration a property:
+pragma nullability against the record's optional properties, so a record
+change names the migration owed.
+
+The rebuild's triggers are demonstrated rather than assumed, because DROP
+TABLE takes them with it and a forgotten recreation passes every schema
+check. The refusals are asserted against the rebuilt table on a seeded row,
+and a hand-populated schema-4 store is carried through the copy.
+
+The write-side obligation closed with its teeth stated honestly: `AddStored`
+renders every typed value through its stored form, the decimal path refusing
+rather than rounding, and the chain writer binds exclusively through it;
+exclusivity is review's to hold, a type-level check having been declined at
+D-W33.
+
+The writer demonstrates both second-run behaviours and its own atomicity: a
+same-instant re-ingest is refused with the correction path named, a new
+instant appends alongside with each observation visible to its own as-of,
+and a mid-transaction collision after the header insert leaves no header
+row. An upsert is impossible by construction, the append-only trigger
+refusing the update half.
+
+One premise correction: the markdown-table parser needed no extraction,
+having been shared since 0.6. The duplicated half was the header
+vocabularies, structural constants and chain-file load, which moved to a
+shared oracle helper in a pure refactor before the persistence fixture
+consumed them.

@@ -1,5 +1,31 @@
 # CHANGELOG
 
+## [1.25.0] — 2026-07-30
+
+Checkpoint 1.4 signed off.
+
+### Added
+- `prompts/spent/phase-1.md` carries 1.4's prompt with its review rounds folded
+  in, and Current state is overwritten with the measured present: 365 tests,
+  250 across twenty-six fixtures and 115 across twenty-two unregistered
+  suites. Schema 5.
+
+### Changed
+- `BUILD_PLAN.md` 1.4 is reconciled against what shipped: the fifth relaxed
+  column the sentence did not name, the trigger recreation demonstrated on a
+  seeded row, the writer beside the reader with the upsert impossible by
+  construction, and the extraction premise corrected to the half that was
+  actually duplicated.
+- The build-state markers say 1.1 to 1.4 are built and signed off, 1.5 being
+  live intent.
+
+### Notes
+- The chain the lab teaches from now survives its own store: the worked
+  example loads, persists, and reads back to the cent against the document's
+  tables, absence staying absence. 1.5, corporate actions and the predecessor
+  link, is Phase 1's last checkpoint and owns the two questions the schema
+  carries banners for.
+
 ## [1.24.0] — 2026-07-30
 
 Checkpoint 1.4.

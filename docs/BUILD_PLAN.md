@@ -626,7 +626,7 @@ admits only one origin costs.
 
 ## Phase 1 — Chain store and point-in-time invariants
 
-Build state: **1.1 to 1.3 built and signed off; 1.4 and 1.5 not built**. On synthetic chains;
+Build state: **1.1 to 1.4 built and signed off; 1.5 not built**. On synthetic chains;
 no vendor data until Phase 8. Delivers the market-data schema, the as-of read paths
 over it, and membership as state.
 
@@ -809,6 +809,36 @@ The first consumer with an operational need is Phase 8's vendor ingest.
   identical, against the same oracle 0.6's fixture uses.
 - Discharges D-W29's write-side seam. This writes the first real decimal columns,
   which the obligation names as its trigger.
+
+Reconciled at sign-off against what shipped. Migration 5 relaxed five columns
+where the paragraph above names four: `UnderlyingBar` also makes `volume`
+optional, which is exactly what "enumerating from the record rather than from
+this sentence" was for. A standing record-to-schema test keeps the enumeration
+a property rather than authoring-time care, comparing the table's pragma
+nullability against the record's optional properties, so a record change names
+the migration owed.
+
+**The rebuild's triggers are demonstrated, not assumed.** DROP TABLE takes
+them with it and a forgotten recreation passes every schema check, so the
+refusals are asserted against the rebuilt table on a seeded row, and a
+hand-populated schema-4 store is carried through the copy. The alias detector
+was checked against the rebuild's grammar before the SQL was written; the
+clause anchor never reaches ALTER TABLE or DROP TABLE, so nothing widened.
+
+**The writer lives beside the reader**, `ChainWriter` in `Core/MarketData` on
+the membership precedent, and the seam closed the write-side obligation with
+its teeth stated honestly: the refusing decimal path, exclusivity held by
+review rather than the type system [D-W33]. An upsert is impossible by
+construction, the append-only trigger refusing the update half, so
+find-or-create is DO NOTHING with a follow-up lookup that refuses rather than
+guesses if the four-tuple ever stops being unique, which is 1.5's question and
+§2's banner. The transaction's rollback is observed rather than assumed: a
+collision after the header insert leaves no header row.
+
+**The oracle's extraction premise was half true.** The parser has been shared
+since 0.6; the header vocabularies, structural constants and chain-file load
+were the duplicated half, and they moved to a shared oracle helper in a pure
+refactor before the persistence fixture consumed them.
 
 ### 1.5 Corporate actions and the predecessor link
 A split or special dividend mints a new contract identity with a recorded
