@@ -610,7 +610,6 @@ admits only one origin costs.
 | Owed at | Obligation | Raised |
 |---|---|---|
 | Phase 11 | Re-add `Microsoft.AspNetCore.OpenApi` against a version whose `Microsoft.OpenApi` dependency clears the audit. Removed at 0.1 rather than suppressing the advisory; the reason is in the Api project file. | PR #1 |
-| Phase 1 | Give D-W29's write-side rule teeth. Every decimal reaching a `TEXT` column should pass through the canonical form, and nothing enforces that: `ConfigWriter.Append` takes a string. A decimal-typed parameter-binding seam is the likely mechanism, when the first real decimal column exists. | PR #3 |
 | Phase 1 | Decide what an adjusted strike does when a corporate action makes it non-terminating. Identity canonicalises through the refusing path, so a 3-for-2 split forces a choice between rounding a value that is part of a contract's identity and carrying the ratio. | PR #3 |
 | Phase 3 | Establish output-level determinism: a simulated run with a fixed clock produces byte-identical output across two invocations. 0.5 restated it as identical stored rows because no run existed to make. Compared as produced artefacts, never as a database file [D-W28]. | PR #4 |
 | Phase 3 | Decide what bars nondeterminism in SQL that is not a clock. Enumerating the bundled SQLite showed `random()` and `randomblob()` alongside the seven clock functions; they are outside FX-ClockIsNotADateSource by name but would break a byte-identical run just as surely. | PR #4 |
@@ -627,7 +626,7 @@ admits only one origin costs.
 
 ## Phase 1 — Chain store and point-in-time invariants
 
-Build state: **1.1 to 1.3 built and signed off; 1.4 and 1.5 not built**. On synthetic chains;
+Build state: **1.1 to 1.4 built and signed off; 1.5 not built**. On synthetic chains;
 no vendor data until Phase 8. Delivers the market-data schema, the as-of read paths
 over it, and membership as state.
 
@@ -797,10 +796,49 @@ record rather than from this sentence, and correct §4.1 to match. Found
 at 1.2 by reading the migration against the record; 1.1's claim that "a
 chain the loader accepts is a chain this schema can hold" was verified
 against ContractQuote only.
+
+What a second ingest does is settled. Re-loading a chain with the same
+observation instant is refused by the primary keys and the refusal says so;
+recording the same chain with a new instant appends alongside the old, which
+is the correction model arriving at the ingest level [D-W8]. Both are tested.
+
+No Worker verb. Ingest is a Core writer; tests are its only caller until a
+phase needs an operator entry point, and a verb nothing calls is speculation.
+The first consumer with an operational need is Phase 8's vendor ingest.
 - **DoD**: the worked example's chain loads into the store and reads back
   identical, against the same oracle 0.6's fixture uses.
 - Discharges D-W29's write-side seam. This writes the first real decimal columns,
   which the obligation names as its trigger.
+
+Reconciled at sign-off against what shipped. Migration 5 relaxed five columns
+where the paragraph above names four: `UnderlyingBar` also makes `volume`
+optional, which is exactly what "enumerating from the record rather than from
+this sentence" was for. A standing record-to-schema test keeps the enumeration
+a property rather than authoring-time care, comparing the table's pragma
+nullability against the record's optional properties, so a record change names
+the migration owed.
+
+**The rebuild's triggers are demonstrated, not assumed.** DROP TABLE takes
+them with it and a forgotten recreation passes every schema check, so the
+refusals are asserted against the rebuilt table on a seeded row, and a
+hand-populated schema-4 store is carried through the copy. The alias detector
+was checked against the rebuild's grammar before the SQL was written; the
+clause anchor never reaches ALTER TABLE or DROP TABLE, so nothing widened.
+
+**The writer lives beside the reader**, `ChainWriter` in `Core/MarketData` on
+the membership precedent, and the seam closed the write-side obligation with
+its teeth stated honestly: the refusing decimal path, exclusivity held by
+review rather than the type system [D-W33]. An upsert is impossible by
+construction, the append-only trigger refusing the update half, so
+find-or-create is DO NOTHING with a follow-up lookup that refuses rather than
+guesses if the four-tuple ever stops being unique, which is 1.5's question and
+§2's banner. The transaction's rollback is observed rather than assumed: a
+collision after the header insert leaves no header row.
+
+**The oracle's extraction premise was half true.** The parser has been shared
+since 0.6; the header vocabularies, structural constants and chain-file load
+were the duplicated half, and they moved to a shared oracle helper in a pure
+refactor before the persistence fixture consumed them.
 
 ### 1.5 Corporate actions and the predecessor link
 A split or special dividend mints a new contract identity with a recorded

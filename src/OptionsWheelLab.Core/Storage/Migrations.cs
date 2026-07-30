@@ -7,7 +7,8 @@ public sealed record Migration(int Id, string Name, string Sql);
 /// Every migration, in order.
 /// </summary>
 /// <remarks>
-/// Configuration at 0.3, the market-data tables at 1.1, membership at 1.3.
+/// Configuration at 0.3, the market-data tables at 1.1, membership at 1.3,
+/// the bars nullability rebuild at 1.4.
 /// </remarks>
 public static class Migrations
 {
@@ -152,6 +153,60 @@ public static class Migrations
             WHEN NEW.observed_at < (SELECT MAX(observed_at) FROM watchlist_membership WHERE symbol = NEW.symbol)
             BEGIN
                 SELECT RAISE(ABORT, 'watchlist_membership observed_at moves forward: a new version cannot predate the newest version of the same symbol');
+            END;
+            """),
+
+        new Migration(
+            5,
+            "underlying_bars_nullability",
+            """
+            -- underlying_bars relaxed to what UnderlyingBar can express: only
+            -- the close is required, and open, high, low, adj_close and volume
+            -- are absent rather than zero. Five columns, enumerated from the
+            -- record; the 1.2 finding that raised this named four, and the
+            -- record's fifth is volume.
+            --
+            -- SQLite cannot alter a column's nullability in place, so this is
+            -- a rebuild: create the replacement, copy rows across, drop the
+            -- old, rename, and recreate both triggers, which DROP TABLE takes
+            -- with it. Rebuilding an append-only table is not a rewrite: no
+            -- writer for bars existed before this checkpoint, so no store can
+            -- hold rows, and the copy is carried anyway so a hand-populated
+            -- store survives. DROP TABLE sits outside the append-only rule's
+            -- banned statements deliberately: the rule governs observations,
+            -- not schema.
+            CREATE TABLE underlying_bars_relaxed (
+                symbol       TEXT    NOT NULL,
+                session_date TEXT    NOT NULL,
+                open         TEXT    NULL,
+                high         TEXT    NULL,
+                low          TEXT    NULL,
+                close        TEXT    NOT NULL,
+                adj_close    TEXT    NULL,
+                volume       INTEGER NULL,
+                observed_at  TEXT    NOT NULL,
+                PRIMARY KEY (symbol, session_date, observed_at)
+            );
+
+            INSERT INTO underlying_bars_relaxed
+                (symbol, session_date, open, high, low, close, adj_close, volume, observed_at)
+            SELECT symbol, session_date, open, high, low, close, adj_close, volume, observed_at
+            FROM underlying_bars;
+
+            DROP TABLE underlying_bars;
+
+            ALTER TABLE underlying_bars_relaxed RENAME TO underlying_bars;
+
+            CREATE TRIGGER underlying_bars_no_update
+            BEFORE UPDATE ON underlying_bars
+            BEGIN
+                SELECT RAISE(ABORT, 'underlying_bars is append-only: a correction appends a row with its own observed_at');
+            END;
+
+            CREATE TRIGGER underlying_bars_no_delete
+            BEFORE DELETE ON underlying_bars
+            BEGIN
+                SELECT RAISE(ABORT, 'underlying_bars is append-only: rows are never deleted');
             END;
             """),
     ];

@@ -1,6 +1,6 @@
 using OptionsWheelLab.Core.Identity;
 using OptionsWheelLab.Core.Storage;
-using OptionsWheelLab.Core.Synthetic;
+using static OptionsWheelLab.Tests.WorkedExampleOracle;
 
 namespace OptionsWheelLab.Tests;
 
@@ -21,26 +21,19 @@ namespace OptionsWheelLab.Tests;
 /// quietly until Phase 2 reads it.
 /// </para>
 /// <para>
-/// <b>Where the line is drawn.</b> Symbol, snapshot date, expiry and right are
-/// constants below. They are structural and stated once in prose: if any changed
-/// the example would be a different example and every fixture reading it would
-/// fail anyway. The per-strike values are what a revision actually moves, and
-/// they are the only thing a second copy could silently disagree about. No prose
-/// is parsed.
+/// The parsed tables and the structural constants come from
+/// <see cref="WorkedExampleOracle"/>, stated once for every fixture that
+/// compares against the document, including where the constant-versus-parsed
+/// line is drawn and why.
 /// </para>
 /// </remarks>
 public sealed class FX_WorkedExampleChainLoads
 {
-    private const string Symbol = "WDGT";
-    private static readonly DateOnly SnapshotDate = new(2026, 3, 2);
-    private static readonly DateOnly Expiry = new(2026, 4, 17);
-    private const OptionRight Right = OptionRight.Put;
-
     [Fact]
     public void The_chain_carries_the_strikes_the_document_states()
     {
         var expected = StrikeTable();
-        var chain = Load();
+        var chain = LoadChain();
 
         // A table that matched nothing would let every comparison below pass
         // while comparing nothing.
@@ -67,7 +60,7 @@ public sealed class FX_WorkedExampleChainLoads
     public void The_bars_carry_the_closes_the_document_states()
     {
         var expected = BarTable();
-        var chain = Load();
+        var chain = LoadChain();
 
         Assert.NotEmpty(expected);
         Assert.NotEmpty(chain.Bars);
@@ -95,7 +88,7 @@ public sealed class FX_WorkedExampleChainLoads
     [Fact]
     public void What_the_document_does_not_state_is_absent_rather_than_zero()
     {
-        var chain = Load();
+        var chain = LoadChain();
 
         Assert.All(chain.Quotes, quote =>
         {
@@ -130,31 +123,11 @@ public sealed class FX_WorkedExampleChainLoads
     [Fact]
     public void The_close_on_the_snapshot_date_comes_from_the_bar()
     {
-        var chain = Load();
+        var chain = LoadChain();
         var bar = Assert.Single(chain.Bars, b => b.SessionDate == SnapshotDate);
 
         var stated = BarTable().Single(row => StoreDate.ParseStored(row[0]) == SnapshotDate);
 
         Assert.Equal(StoreDecimal.ParseStored(stated[1]), bar.Close);
     }
-
-    private static SyntheticChain Load() =>
-        SyntheticChainReader.Read(File.ReadAllText(RepoRoot.WorkedExampleChainPath));
-
-    /// <summary>§2's chain snapshot: strike, delta, bid, ask.</summary>
-    /// <remarks>
-    /// The fifth column, "Committed if 1 contract", is derived, being strike
-    /// times the multiplier, so it is not an observation and is not compared.
-    /// </remarks>
-    private static IReadOnlyList<IReadOnlyList<string>> StrikeTable() =>
-        MarkdownTable.Rows(
-            Document(),
-            "Strike", "Delta", "Bid", "Ask", "Committed if 1 contract");
-
-    /// <summary>§5's underlying path: date, close.</summary>
-    /// <remarks>The third column is commentary rather than an observation.</remarks>
-    private static IReadOnlyList<IReadOnlyList<string>> BarTable() =>
-        MarkdownTable.Rows(Document(), "Date", "Close", "Note");
-
-    private static string Document() => File.ReadAllText(RepoRoot.WorkedExamplePath);
 }

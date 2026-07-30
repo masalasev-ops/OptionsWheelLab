@@ -1,5 +1,65 @@
 # CHANGELOG
 
+## [1.25.0] — 2026-07-30
+
+Checkpoint 1.4 signed off.
+
+### Added
+- `prompts/spent/phase-1.md` carries 1.4's prompt with its review rounds folded
+  in, and Current state is overwritten with the measured present: 365 tests,
+  250 across twenty-six fixtures and 115 across twenty-two unregistered
+  suites. Schema 5.
+
+### Changed
+- `BUILD_PLAN.md` 1.4 is reconciled against what shipped: the fifth relaxed
+  column the sentence did not name, the trigger recreation demonstrated on a
+  seeded row, the writer beside the reader with the upsert impossible by
+  construction, and the extraction premise corrected to the half that was
+  actually duplicated.
+- The build-state markers say 1.1 to 1.4 are built and signed off, 1.5 being
+  live intent.
+
+### Notes
+- The chain the lab teaches from now survives its own store: the worked
+  example loads, persists, and reads back to the cent against the document's
+  tables, absence staying absence. 1.5, corporate actions and the predecessor
+  link, is Phase 1's last checkpoint and owns the two questions the schema
+  carries banners for.
+
+## [1.24.0] — 2026-07-30
+
+Checkpoint 1.4.
+
+### Added
+- FX-WorkedExampleChainPersists registered at 1.4: the worked example's chain
+  persists and reads back identical to the document's tables, which is the
+  checkpoint's definition of done as a standing check rather than a one-time
+  demonstration.
+
+### Changed
+- BUILD_PLAN 1.4's detail settles what it left open. A second ingest at the
+  same observation instant is refused by the primary keys with a refusal that
+  says so; the same chain at a new instant appends alongside the old, the
+  correction model arriving at the ingest level. And no Worker verb ships:
+  ingest is a Core writer, tests are its only caller until a phase needs an
+  operator entry point, and the first consumer with an operational need is
+  Phase 8's vendor ingest.
+
+### Notes
+- `contract_quotes` was reconfirmed against `ContractQuote` by direct read
+  before migration 5 was scoped: bid and ask NOT NULL, the rest NULL, so the
+  migration touches `underlying_bars` only. The 1.2 finding's own lesson was
+  that 1.1 verified one record and claimed both.
+- D-W29's write-side obligation closes with the teeth it got stated honestly.
+  `AddStored` renders every typed value through its stored form, the decimal
+  path refusing rather than rounding, and the chain writer binds exclusively
+  through it. Nothing structural prevents a future call site bypassing the
+  seam, a type-level check having been declined at D-W33, so exclusivity is
+  review's to hold. `ConfigWriter`'s string parameter is out of scope:
+  `config_rows.value` is polymorphic by design and the obligation named
+  decimal-typed columns. Twelve carried obligations stand, down from
+  thirteen.
+
 ## [1.23.0] — 2026-07-30
 
 Checkpoint 1.3 signed off.

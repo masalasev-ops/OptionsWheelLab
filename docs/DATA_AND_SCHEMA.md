@@ -150,8 +150,9 @@ documents and this is where it is defined.
 
 ```
 underlying_bars
-  symbol TEXT, session_date TEXT, open TEXT, high TEXT, low TEXT, close TEXT,
-  adj_close TEXT, volume INTEGER, observed_at TEXT
+  symbol TEXT, session_date TEXT, open TEXT NULL, high TEXT NULL,
+  low TEXT NULL, close TEXT, adj_close TEXT NULL, volume INTEGER NULL,
+  observed_at TEXT
   PK (symbol, session_date, observed_at)
 
 corporate_actions

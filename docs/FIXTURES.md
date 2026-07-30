@@ -4,8 +4,8 @@ The single registry of test fixtures and source guards. Prompts and checkpoints
 reference the entries registered against them here; they never enumerate names
 inline.
 
-Build state: **partly built**. The twenty-seven entries registered against
-0.2 to 1.3 are implemented, being twenty-five fixtures and two guards; the
+Build state: **partly built**. The twenty-eight entries registered against
+0.2 to 1.4 are implemented, being twenty-six fixtures and two guards; the
 rest belong to checkpoints not yet reached. 1.2 registered none, which its
 detail states.
 
@@ -81,6 +81,7 @@ fail even when the build does not.
 | FX-SnapshotRestoresIdentically | fixture | 0.3 | a store restored from its snapshot resolves the values it did before the mutation | authored |
 | FX-PitMembershipExcludesLaterJoiner | fixture | 1.3 | as-of membership excludes later joiners | authored |
 | FX-SnapshotNeverRewritten | fixture | 1.1 | a vendor correction appends rather than updates | authored |
+| FX-WorkedExampleChainPersists | fixture | 1.4 | the worked example's chain persists and reads back identical to the document's tables | authored |
 | FX-GateRejectsAboveHeadroom | fixture | 2 | candidates breaching per-name headroom are rejected with a reason | WORKED_EXAMPLE §3 |
 | FX-OffWatchlistRejected | fixture | 2 | no candidates for a non-member symbol | authored |
 | FX-SpreadCapRejects | fixture | 2 | a candidate above the spread cap is rejected with its reason | authored |

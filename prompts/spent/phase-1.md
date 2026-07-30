@@ -15,13 +15,13 @@ One file per phase. It closes when Phase 1 signs off; Phase 2 opens its own.
 
 # Current state
 
-Corpus v1.23.0.
+Corpus v1.25.0.
 
 | | |
 |---|---|
 | Phase 0 | complete and reviewed, 0.1 to 0.8 built and signed off |
-| Phase 1 | 1.1 to 1.3 built and signed off; 1.4 and 1.5 not built |
-| CI | green, 346 tests, guards then restore then build then test, on push to `main` and every pull request |
+| Phase 1 | 1.1 to 1.4 built and signed off; 1.5 not built |
+| CI | green, 365 tests, guards then restore then build then test, on push to `main` and every pull request |
 
 Which branch the work sits on and which pull requests have merged are not recorded
 here. Git holds both exactly, and a fact kept in two places drifts.
@@ -55,8 +55,9 @@ Snapshot-first migrations. The runner takes a `VACUUM INTO` snapshot before appl
 Schema version comes from `schema_migrations` rather than `PRAGMA user_version`
 [D-W32].
 
-**Schema 4.** Migration 1 is `config_rows`, 2 its monotonic `set_at` trigger, 3 the
-six market-data tables of §4.1 [1.1], 4 the membership record [1.3].
+**Schema 5.** Migration 1 is `config_rows`, 2 its monotonic `set_at` trigger, 3 the
+six market-data tables of §4.1 [1.1], 4 the membership record [1.3], 5 the bars
+nullability rebuild [1.4].
 
 ## Market data
 
@@ -72,7 +73,10 @@ does not change, and `deliverable_shares`, what one contract conveys, which it d
 
 Nullability follows what a chain can express rather than what the schema document
 leaves unmarked. Bid and ask are required; last, both counts and the five greeks are
-absent rather than zero, matching `ContractQuote`.
+absent rather than zero, matching `ContractQuote`. Only a bar's close is required as
+of migration 5, matching `UnderlyingBar`, and a standing test compares the table's
+pragma nullability against the record's optional properties, so a record change
+names the migration owed.
 
 Twelve triggers refuse `UPDATE` and `DELETE`, two per table, generated from a list
 frozen at migration 3 rather than from `AppendOnlyTables`, because an applied
@@ -102,11 +106,20 @@ PLAN`. Identity order is imposed in C# on the parsed identities, because the
 stored decimal form does not sort. `corporate_actions` and `earnings_calendar`
 have no reads yet; their first consumers are 1.5 and Phase 2.
 
-`underlying_bars` cannot yet hold the bars the worked example supplies: it makes
-`open`, `high`, `low` and `adj_close` NOT NULL while `UnderlyingBar` requires only
-the close. 1.4's detail carries the fix as its first item, and `BarFor` already
-reads the optional fields null-tolerantly so the correction will not touch the
-read.
+**`ChainWriter` persists one chain, whole, at one instant** [1.4]. The chain
+carries no instant and the writer takes one, stamped on every row. Same-instant
+re-ingest is refused with the correction path named, the primary keys remaining
+the enforcer; a new instant appends alongside, each observation visible to its
+own as-of. Contracts are found or created on the unique tuple, an upsert being
+impossible by construction under the append-only trigger, and a multi-match on
+the four-tuple refuses rather than guesses, naming §2's unsettled identity
+question. FX-WorkedExampleChainPersists holds the round trip against the
+document's own tables, to the cent.
+
+Every rendered value binds through `AddStored`, the write-side seam [D-W29]:
+decimals through the refusing entry point, dates, instants and rights through
+their stored forms, nulls as DBNull. Exclusivity is review's to hold, a
+type-level check having been declined [D-W33].
 
 ## Membership
 
@@ -161,9 +174,10 @@ entry point and a rounding one, lenient on padding and strict on precision.
 The form is not order-preserving, so no SQL orders, ranges over or aggregates a
 decimal column. `DecimalColumns` holds seventeen names as of 1.1.
 
-Nothing writes a decimal through a typed path yet. `ConfigWriter` takes strings and
-1.4 is where the first real decimal column is written, which is what the D-W29
-obligation names as its trigger.
+Decimals reach `TEXT` columns through `AddStored`, rendering through the refusing
+entry point; rounding is a deliberate call visible at a site, never a default
+inside the seam. `ConfigWriter` still takes strings, `config_rows.value` being
+polymorphic by design.
 
 ## Guards and detectors
 
@@ -186,8 +200,8 @@ bands the list names.
 
 ## Tests
 
-346: 247 across twenty-five fixtures, and 99 across nineteen unregistered suites.
-The two guards are checks rather than tests and are counted in neither.
+365: 250 across twenty-six fixtures, and 115 across twenty-two unregistered
+suites. The two guards are checks rather than tests and are counted in neither.
 
 | Fixture | Tests |
 |---|---|
@@ -216,6 +230,7 @@ The two guards are checks rather than tests and are counted in neither.
 | FX-NoCurrentConfigReadOnSimulatedPath | 3 |
 | FX-PitMembershipExcludesLaterJoiner | 3 |
 | FX-SnapshotRestoresIdentically | 3 |
+| FX-WorkedExampleChainPersists | 3 |
 
 The suite parses `CONFIG_REFERENCE.md`, `FIXTURES.md`, `DATA_AND_SCHEMA.md`,
 `WORKED_EXAMPLE.md` and `guards.ps1`, so all five are load-bearing rather than
@@ -230,9 +245,12 @@ append-only triggers make the tables impossible to clean between cases.
 Every table beyond the nine that exist. `decisions` and `candidates` are
 Phase 4's.
 
-A loaded chain still reaches nothing. 0.6 built the loader, 1.2 built the as-of
-reads, and 1.4 persists what the loader yields, which is the first thing the reads
-will serve that a test did not insert by hand.
+`corporate_actions` and `earnings_calendar` have no writer and no reads; their
+first consumers are 1.5 and Phase 2.
+
+No operator entry point ingests a chain. `ChainWriter`'s only callers are tests
+until Phase 8's vendor ingest needs a verb, and a verb nothing calls is
+speculation.
 
 Nothing runs, so nothing produces output. Determinism is asserted over stored rows.
 
@@ -244,9 +262,10 @@ copied here: two registers of one list is how an obligation comes to exist in th
 nobody reads.
 
 Entries stand against Phase 1, 2, 3, 4, 8 and 11. The count is not restated here.
-1.1 discharged the SQL alias obligation and 1.2 closed the effective-dating
-question by decision [D-W35], the two Phase 1 closures so far. 1.3 raised the
-dividend obligation, owed at Phase 3.
+1.1 discharged the SQL alias obligation, 1.2 closed the effective-dating question
+by decision [D-W35], and 1.4 closed the write-side seam. One Phase 1 row remains,
+the adjusted strike, which 1.5 owns. 1.3 raised the dividend obligation, owed at
+Phase 3.
 
 ## Working rules in force
 
@@ -569,3 +588,101 @@ No `double` or `float`. No ambient clock. Money is decimal in `TEXT`. Measure
 with `EXPLAIN QUERY PLAN` before adding any index. A finding goes where
 planning for the work will read it, then is read back off disk. Reconcile the
 detail and the archive at sign-off, not during the build.
+
+## 1.4 Chain ingest
+
+Read `CLAUDE.md`, `BUILD_PLAN.md` §1.4 and the carried obligations rows raised
+by PR #3, `DATA_AND_SCHEMA.md` §4.1 and the Time section, D-W8, D-W29, D-W30,
+D-W31, `SyntheticChainReader` and its records, `AsOfMarketData`,
+FX-WorkedExampleChainLoads, `Migrations`, and Current state above.
+
+### Docs before any code
+
+- Register FX-WorkedExampleChainPersists at 1.4: the worked example's chain
+  persists and reads back identical to the document's tables. The marker moves
+  when the fixture exists.
+- **Reconfirm `contract_quotes` against `ContractQuote` by direct quote of the
+  DDL before scoping the migration**, and say so in the report: the finding
+  that raised the migration was itself a lesson in verifying one record and
+  claiming both.
+- Settle the detail's two open questions as live intent: same-instant
+  re-ingest refused by the keys with a refusal that says so, a new instant
+  appending alongside [D-W8]; and no Worker verb, tests being the only caller
+  until Phase 8's vendor ingest.
+
+### Migration 5, the bars rebuild
+
+- **Enumerate the relaxed columns from `UnderlyingBar`, not from any
+  sentence.** The record makes five optional where the finding's sentence
+  named four; `volume` is the fifth. Then make the enumeration standing: a
+  record-to-schema test comparing pragma nullability against the record's
+  optional properties through a guarded map, so a record change names the
+  migration owed.
+- SQLite cannot alter nullability in place: create the replacement, copy rows
+  across, drop, rename, and **recreate both triggers, which DROP TABLE takes
+  with it**. Demonstrate the recreation on a seeded row; carry a
+  hand-populated previous-schema store through the copy.
+- State in the migration comment why rebuilding an append-only table is not a
+  rewrite, and that DROP TABLE sits outside the banned statements
+  deliberately: the rule governs observations, not schema.
+- §4.1's markers change in the same commit, so the document and the DDL agree
+  at every landed state.
+- **Check the detectors against the rebuild's grammar before writing the
+  SQL.** The clause anchor never reaches ALTER TABLE or DROP TABLE, so
+  nothing widens, but that is measured, not assumed.
+
+### The seam
+
+- `AddStored` on the parameter collection, one overload per stored-form type,
+  decimals through the refusing entry point [D-W31], nulls as DBNull. Each
+  overload's rendering asserted equal to its Store* form's.
+- The writer binds every rendered value through it; counts bind directly,
+  having no stored form.
+- Close the write-side obligation and state the teeth honestly: exclusivity
+  is review's to hold [D-W33], and `ConfigWriter` is out of scope,
+  `config_rows.value` being polymorphic by design.
+
+### The writer
+
+- `ChainWriter` beside `AsOfMarketData`, on the membership precedent: reader
+  and writer of one subject in one folder.
+- `Ingest(chain, observedAt)`: the chain carries no instant and the writer
+  takes one [D-W30], stamped on every row. One transaction, all or nothing,
+  and **observe the rollback rather than assuming it**: a collision after the
+  header insert must leave no header row.
+- One header row per distinct snapshot date; the format admits several per
+  file. Contracts before quotes for the foreign key, with 1.1's note at the
+  site. Find-or-create is ON CONFLICT DO NOTHING with a follow-up lookup —
+  an upsert is impossible by construction, the append-only trigger refusing
+  the update half — and a multi-match on the four-tuple refuses rather than
+  guesses, naming §2's unsettled identity question.
+- **Test both second-run behaviours**: same instant refused with the
+  correction path named and counts unchanged; a new instant alongside, each
+  observation visible to its own as-of, contracts found rather than
+  recreated.
+
+### The oracle
+
+- **The parser is already shared**; check what is actually duplicated before
+  extracting. The header vocabularies, structural constants and chain-file
+  load are the duplicated half: move them to a shared oracle helper in a pure
+  refactor, behaviour unchanged, before the new fixture consumes them.
+- FX-WorkedExampleChainPersists: load, persist, read back at the recorded
+  instant's date, compare against §2 and §5 to the cent, pairwise in identity
+  order, delta included, non-empty asserted first. Absence survives the
+  store: what the document does not state reads back null rather than zero.
+- The marker counted from disk.
+
+### Definitions of done carried from 0.2
+
+- Every check registered against 1.4 exists in its kind.
+- No new table, no new decimal column, no config key: each checked and
+  reported empty. Migration 5 changes nullability, not names, so both
+  vocabularies stand unchanged, said rather than skipped.
+
+### Constraints
+
+No `double` or `float`. No ambient clock. Money is decimal in `TEXT`. Edit
+files with the file tools rather than a shell round trip, which mangles
+UTF-8 outside ASCII. Reconcile the detail and the archive at sign-off, not
+during the build.
