@@ -41,6 +41,19 @@ Checkpoint 1.1.
   is the one a synthetic chain cannot supply, and everything before Phase 8 runs on
   synthetic chains.
 
+- Fixture FX-NoSqlAliases (1.1): no SQL in `src/` aliases a table or a column. This
+  discharges the alias obligation raised at 0.4 and widened at 0.7, by the
+  convention half of it rather than by resolution. Resolving an alias in the decimal
+  detector needs the detector to know which table a column belongs to, because the
+  vocabulary is unqualified column names, and that is the problem 1.1 declined when
+  it kept `DecimalColumns` unqualified. Both known-miss tests are deleted, which the
+  obligation named as part of closing it. **What it costs**: a self-join is
+  unexpressible in `src/`, and comparing two observations of one bar is a plausible
+  self-join now that a correction appends.
+
+### Removed
+- The Phase 1 carried obligation on SQL aliases, discharged by FX-NoSqlAliases.
+
 ### Fixed
 - `DATA_AND_SCHEMA.md` §2 says an option contract's identity is the tuple of
   underlying, expiry, right and strike. **It is not.** An adjusted series can share

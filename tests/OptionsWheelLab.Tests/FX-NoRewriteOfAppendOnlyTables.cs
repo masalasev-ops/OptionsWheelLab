@@ -205,25 +205,6 @@ public sealed class FX_NoRewriteOfAppendOnlyTables
     }
 
     /// <summary>
-    /// The known limit, pinned rather than left in a comment.
-    /// </summary>
-    /// <remarks>
-    /// A table alias puts something between the name and <c>SET</c>. Widening the
-    /// pattern to skip it invites ambiguity about which token is the table, and
-    /// the same gap exists one level down in <see cref="DecimalOrderingInSql"/>,
-    /// whose alias miss is pinned the same way. Not an endorsement: when Phase 1
-    /// resolves aliases for the decimal detector, this one comes with it, and
-    /// deleting both tests is part of closing that obligation.
-    /// </remarks>
-    [Fact]
-    public void An_aliased_table_is_a_known_miss()
-    {
-        const string Sql = "UPDATE config_rows AS c SET value = '1' WHERE c.key = $key;";
-
-        Assert.Empty(AppendOnlyRewritesInSql.Offences(Sql, Vocabulary("config_rows")));
-    }
-
-    /// <summary>
     /// The other known limit: a banned statement written in <c>tests/</c> by
     /// mistake, rather than to prove a trigger, is not caught.
     /// </summary>

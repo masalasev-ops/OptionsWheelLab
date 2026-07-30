@@ -68,6 +68,7 @@ fail even when the build does not.
 | FX-ChainLoadsInIdentityOrder | fixture | 0.6 | quotes are yielded in contract identity order, and loading twice gives one sequence | authored |
 | FX-MalformedChainFailsWhole | fixture | 0.6 | a chain with one malformed contract yields nothing rather than the valid ones before it | authored |
 | FX-NoRewriteOfAppendOnlyTables | fixture | 0.7 | no statement in `src/` deletes from or updates a table the append-only vocabulary covers | authored |
+| FX-NoSqlAliases | fixture | 1.1 | no SQL in `src/` aliases a table or a column, which is what makes both SQL detectors sound without either resolving aliases | authored |
 | FX-RegistryMatchesDisk | fixture | 0.2 | every fixture file on disk has an entry here and is named for it | authored |
 | FX-EveryBoundKeyIsDocumented | fixture | 0.2 | every settable key on a bound options type has a row in CONFIG_REFERENCE.md | authored |
 | FX-ConfigStoreClassHonoured | fixture | 0.2 | parses the Store column from CONFIG_REFERENCE.md and asserts no appsettings section has a root classed `rows` | authored |

@@ -239,24 +239,6 @@ public sealed class FX_NoDecimalOrderingInSql
         Assert.Single(DecimalOrderingInSql.Offences(Sql, Vocabulary("last")));
     }
 
-    /// <summary>
-    /// The known limit, pinned rather than left in a comment.
-    /// </summary>
-    /// <remarks>
-    /// An alias defeats the detector. This test asserts the miss so the gap is
-    /// visible in the suite rather than only in prose, and it is NOT an
-    /// endorsement: when Phase 1 resolves aliases, or adopts a convention that a
-    /// decimal column is never aliased, this test fails and that failure is the
-    /// signal to delete it.
-    /// </remarks>
-    [Fact]
-    public void An_aliased_decimal_column_is_a_known_miss()
-    {
-        const string Sql = "SELECT strike AS s FROM contracts ORDER BY s DESC;";
-
-        Assert.Empty(DecimalOrderingInSql.Offences(Sql, Vocabulary("strike")));
-    }
-
     private static IReadOnlyList<string> SourceFiles() =>
         RepoRoot.SourceFilesUnder(RepoRoot.SourcePath);
 
