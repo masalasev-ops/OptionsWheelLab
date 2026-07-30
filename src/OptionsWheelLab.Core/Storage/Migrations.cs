@@ -239,13 +239,20 @@ public static class Migrations
         // because these tables correct by appending an observation.
         foreach (var table in MarketDataTables)
         {
+            // contracts is the one snapshot table with no observed_at [4.1], so the
+            // message that fits the other five would overclaim for it: a corporate
+            // action mints a new identity rather than restating an old row.
+            var correction = table == "contracts"
+                ? "a corporate action mints a new identity rather than editing this row"
+                : "a correction appends a row with its own observed_at";
+
             sql.Append(
                 $"""
 
                 CREATE TRIGGER {table}_no_update
                 BEFORE UPDATE ON {table}
                 BEGIN
-                    SELECT RAISE(ABORT, '{table} is append-only: a correction appends a row with its own observed_at');
+                    SELECT RAISE(ABORT, '{table} is append-only: {correction}');
                 END;
 
                 CREATE TRIGGER {table}_no_delete
