@@ -5,9 +5,9 @@ along with the point-in-time config rule of §3. §2's ticker and identity
 paragraphs, its date-form paragraph, the money line of §4 and the permitted
 values of `right` are implemented at 0.4.
 §4.0 is implemented at 0.7 and §4.1 at 1.1, with its keys, constraints,
-triggers and indexes. §4.2 is 1.3, its shape settled by D-W35 as transitions;
-§2's corporate-action paragraph is 1.5. The rest is specification: decisions
-and trials Phase 4, scores Phase 5, pre-registration Phase 9.
+triggers and indexes. §4.2 is implemented at 1.3, its shape settled by D-W35 as
+transitions; §2's corporate-action paragraph is 1.5. The rest is specification:
+decisions and trials Phase 4, scores Phase 5, pre-registration Phase 9.
 
 ## 1. Sources
 

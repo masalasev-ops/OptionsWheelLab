@@ -38,11 +38,13 @@ public static class AppendOnlyTables
     /// Tables that are never rewritten, as of the schema that is documented.
     /// </summary>
     /// <remarks>
-    /// <b>Eight of these exist and three do not.</b> The six snapshot tables landed
-    /// at 1.1; `watchlist_membership` is 1.3, `decisions` and `candidates` Phase 4.
-    /// That the constraint lands before the tables it guards was the point rather
-    /// than a defect, and 1.1 is where it paid: the vocabulary was already right
-    /// when the tables arrived, so the checkpoint added no names.
+    /// The six snapshot tables landed at 1.1 and <c>watchlist_membership</c> at
+    /// 1.3; <c>decisions</c> and <c>candidates</c> are Phase 4's. No count
+    /// sentence: the created-tables sweep is what knows which exist, and the
+    /// arithmetic went stale on schedule every time a checkpoint landed. That the
+    /// constraint lands before the tables it guards was the point rather than a
+    /// defect, and 1.1 is where it paid: the vocabulary was already right when
+    /// the tables arrived, so the checkpoint added no names.
     /// <para>
     /// <b><c>watchlist_membership</c> is a record</b>: the only place its facts are
     /// held, correcting by appending a transition, so it is append-only [D-W35].
@@ -65,7 +67,7 @@ public static class AppendOnlyTables
         "contracts",
         "contract_quotes",
 
-        // The membership record [D-W35]. 1.3 creates it.
+        // The membership record [D-W35], created by migration 4 at 1.3.
         "watchlist_membership",
 
         // The decision record [D-W3]. Phase 4 adds them.
