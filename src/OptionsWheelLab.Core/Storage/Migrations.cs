@@ -7,7 +7,7 @@ public sealed record Migration(int Id, string Name, string Sql);
 /// Every migration, in order.
 /// </summary>
 /// <remarks>
-/// Configuration at 0.3, the market-data tables at 1.1.
+/// Configuration at 0.3, the market-data tables at 1.1, membership at 1.3.
 /// </remarks>
 public static class Migrations
 {
@@ -100,6 +100,60 @@ public static class Migrations
         // Called rather than referencing a property, because a static field
         // initialiser runs in declaration order and this array is declared first.
         new Migration(3, "market_data", BuildMarketDataSql()),
+
+        new Migration(
+            4,
+            "watchlist_membership",
+            """
+            -- The membership record of DATA_AND_SCHEMA.md 4.2 [D-W35]: the only
+            -- place watchlist facts are held, so it corrects by appending a
+            -- further transition and is never rewritten. Keyed on symbol and
+            -- version, config_rows' own key shape, because keying on the symbol
+            -- alone cannot express re-entry.
+            --
+            -- kind carries a CHECK for the same reason right does in contracts:
+            -- a stored form the database does not enforce has one guard.
+            -- reason is nullable on config_rows.note's precedent [4.2].
+            CREATE TABLE watchlist_membership (
+                symbol       TEXT    NOT NULL,
+                version      INTEGER NOT NULL,
+                effective_on TEXT    NOT NULL,
+                kind         TEXT    NOT NULL CHECK (kind IN ('joined', 'left')),
+                reason       TEXT    NULL,
+                observed_at  TEXT    NOT NULL,
+                PRIMARY KEY (symbol, version)
+            );
+
+            CREATE TRIGGER watchlist_membership_no_update
+            BEFORE UPDATE ON watchlist_membership
+            BEGIN
+                SELECT RAISE(ABORT, 'watchlist_membership is append-only: a correction appends a further transition');
+            END;
+
+            CREATE TRIGGER watchlist_membership_no_delete
+            BEFORE DELETE ON watchlist_membership
+            BEGIN
+                SELECT RAISE(ABORT, 'watchlist_membership is append-only: rows are never deleted');
+            END;
+
+            -- observed_at moves forward per symbol, as set_at does per key
+            -- [D-W26], and version ordering is no substitute: version constrains
+            -- versions, not visibility. The as-of read filters on observed_at,
+            -- so an append carrying a stamp earlier than the symbol's newest
+            -- would change what was believed at a past instant after the fact.
+            -- With this trigger, each symbol's visible history at any instant
+            -- is a prefix of its versions. The snapshot tables deliberately
+            -- carry no analogue: they have no version axis crossing the stamp,
+            -- and backfill legitimately supplies historical stamps. Equal is
+            -- allowed: two transitions can share an instant, and version breaks
+            -- the tie.
+            CREATE TRIGGER watchlist_membership_observed_at_not_earlier
+            BEFORE INSERT ON watchlist_membership
+            WHEN NEW.observed_at < (SELECT MAX(observed_at) FROM watchlist_membership WHERE symbol = NEW.symbol)
+            BEGIN
+                SELECT RAISE(ABORT, 'watchlist_membership observed_at moves forward: a new version cannot predate the newest version of the same symbol');
+            END;
+            """),
     ];
 
     /// <summary>

@@ -4,9 +4,9 @@ Appended to, never rewritten. The repository is the authority on build state.
 
 ## Current state
 
-**Phase 0 complete and reviewed. Phase 1 in progress.** Checkpoints 0.1 to 0.8,
-1.1 and 1.2 built and signed off; 1.3 to 1.5 not built. Phase 2 detail not
-written. The documentation corpus is at v1.21.0.
+**Phase 0 complete and reviewed. Phase 1 in progress.** Checkpoints 0.1 to 0.8
+and 1.1 to 1.3 built and signed off; 1.4 and 1.5 not built. Phase 2 detail not
+written. The documentation corpus is at v1.23.0.
 
 ## Log
 
@@ -673,3 +673,62 @@ its first item.
 read rather than guessed: its read-back is verification after commit, and the
 remark's ender was doubly wrong, naming a membership resolution 1.4 does not
 contain and that would never pass through a config reader if it did.
+
+### 2026-07-30 — corpus v1.22.0
+Checkpoint 1.3 scoped. One obligation raised, two authored corrections to §4.2,
+and 1.4's migration ordinal corrected while its detail is live intent.
+
+The dividend gap becomes a carried obligation owed at Phase 3. Dividends appear
+in the corpus three times, as an ingest source, a `corporate_actions` kind and an
+early-exercise risk, and nowhere as a ledger entry, while D-W13's buy-and-hold
+control names capital and window but not the dividends the held shares pay.
+Between assignment and call-away the account holds shares, so omitting the
+dividend understates every covered-call leg and misprices the control, which
+biases the exact comparison the lab exists to make. Thirteen obligations stand.
+
+§4.2 now names the resolution axis it left as "the latest row": the row with the
+greatest (`effective_on`, `version`) governs. The axis matters because the
+alternatives disagree on a real case: under latest-version, a correction fixing
+an old join date would silently override a genuine later departure. The same
+edit marks `reason` nullable, which the document's own convention otherwise
+denies, on `config_rows.note`'s precedent.
+
+1.4's "Migration 4 first" becomes "A migration first, before any ingest code",
+because 1.3 takes migration 4 and the property was always the ordering rather
+than the number.
+
+### 2026-07-30 — corpus v1.23.0
+Checkpoint 1.3 built and signed off. Migration 4 creates the membership record
+with three triggers, the writer appends transitions in the config writer's
+shape, and the as-of read resolves the sequence on both axes. 346 tests, 247
+across twenty-five fixtures.
+
+The read is its own type rather than a member of the market-data surface. The
+one-surface guarantee there rests on market data having no operational
+current-read consumer, which was never argued for membership and is probably
+false for it: the watchlist is operator-managed state and Phase 8's ingest
+plausibly reads current membership to know what to fetch. The mirrored
+no-current tripwire says a current surface arrives as a decision that amends
+it, which makes the addition deliberate rather than a drive-by.
+
+The governing axis was measured rather than asserted. Latest version and
+latest effective date agree except when a correction carries an earlier
+effective date than a later genuine transition; flipping the window ordering
+to version alone fails exactly the divergence test and passes the other five.
+Under the chosen axis a correction supersedes a transition only by tying its
+date, and correcting a date is a compensating pair.
+
+The monotonic stamp question was answered yes, inside the migration, because
+an applied migration's SQL is frozen. Version ordering constrains versions,
+not visibility, so without the trigger an appended correction with a backdated
+stamp would change what was believed at a past instant after the fact. The
+snapshot tables deliberately carry no analogue; membership has `config_rows`'
+geometry, version order crossing stamp order.
+
+Two things the build found rather than planned. No from-previous-schema
+migration test existed in the suite, because every store in the tree was
+either empty or current until this checkpoint created a real gap; the upgrade
+test now builds its previous-schema store from the frozen migration list
+itself. And the alias detector flagged this checkpoint's own migration
+comment, "version as config_rows", which was reworded rather than the detector
+narrowed: prose inside a SQL literal is inside the scanner's jurisdiction.

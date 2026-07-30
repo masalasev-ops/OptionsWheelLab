@@ -15,13 +15,13 @@ One file per phase. It closes when Phase 1 signs off; Phase 2 opens its own.
 
 # Current state
 
-Corpus v1.21.0.
+Corpus v1.23.0.
 
 | | |
 |---|---|
 | Phase 0 | complete and reviewed, 0.1 to 0.8 built and signed off |
-| Phase 1 | 1.1 and 1.2 built and signed off; 1.3 to 1.5 not built |
-| CI | green, 318 tests, guards then restore then build then test, on push to `main` and every pull request |
+| Phase 1 | 1.1 to 1.3 built and signed off; 1.4 and 1.5 not built |
+| CI | green, 346 tests, guards then restore then build then test, on push to `main` and every pull request |
 
 Which branch the work sits on and which pull requests have merged are not recorded
 here. Git holds both exactly, and a fact kept in two places drifts.
@@ -32,8 +32,8 @@ here. Git holds both exactly, and a fact kept in two places drifts.
 nullable is on, `InvariantGlobalization` is on, code style is enforced in the build.
 Central package management with transitive pinning.
 
-`Core` has six folders: `Configuration`, `Storage`, `Identity`, `Time`,
-`Synthetic` and `MarketData`.
+`Core` has seven folders: `Configuration`, `Storage`, `Identity`, `Time`,
+`Synthetic`, `MarketData` and `Membership`.
 
 Repository root holds `README.md`, `CLAUDE.md`, `migrate.ps1`, `seed.ps1` and
 `guards.ps1`. Every document is in `docs/`, spent prompts in `prompts/spent/`,
@@ -55,8 +55,8 @@ Snapshot-first migrations. The runner takes a `VACUUM INTO` snapshot before appl
 Schema version comes from `schema_migrations` rather than `PRAGMA user_version`
 [D-W32].
 
-**Schema 3.** Migration 1 is `config_rows`, 2 its monotonic `set_at` trigger, 3 the
-six market-data tables of §4.1 [1.1].
+**Schema 4.** Migration 1 is `config_rows`, 2 its monotonic `set_at` trigger, 3 the
+six market-data tables of §4.1 [1.1], 4 the membership record [1.3].
 
 ## Market data
 
@@ -108,10 +108,29 @@ the close. 1.4's detail carries the fix as its first item, and `BarFor` already
 reads the optional fields null-tolerantly so the correction will not touch the
 read.
 
-`watchlist_membership` is declared forward and 1.3 creates it. Each version
-records one transition, `joined` or `left` effective on a date, not an interval
-[D-W35]; §4.2 states the shape and why an interval per version cannot answer the
-membership question.
+## Membership
+
+`watchlist_membership` records transitions, `joined` or `left` effective on a
+date, keyed on symbol and version [D-W35]; an interval per version cannot answer
+the membership question, which §4.2 demonstrates on re-entry. Three triggers
+hold it: two append-only refusals and a monotonic `observed_at` per symbol,
+which is `config_rows`' geometry, because version order crosses stamp order here
+and does not in the snapshot tables.
+
+`MembershipWriter` is `ConfigWriter`'s shape: `MAX(version) + 1` computed inside
+the insert, `RETURNING`, both instants as parameters. The kind renders through
+`StoreMembershipKind`, declared not derived, and the read's filter is rendered
+through the same declaration rather than restating it as a literal.
+
+`AsOfMembership.MembersOn(date, asOf)` resolves the sequence: among rows visible
+at the as-of instant and effective at or before the date, the greatest
+(`effective_on`, `version`) governs. Latest-version resolution fails when a
+correction carries an earlier effective date than a later genuine transition,
+measured by a test that fails under it. A correction supersedes a transition
+only by tying its date; a wrong date is a compensating pair. Its own type
+rather than a member of the market-data surface, because the one-surface
+guarantee there rests on a premise never argued for membership, and its shape
+suite and no-current tripwire are mirrored copies.
 
 ## Configuration
 
@@ -167,7 +186,7 @@ bands the list names.
 
 ## Tests
 
-318: 244 across twenty-four fixtures, and 74 across fifteen unregistered suites.
+346: 247 across twenty-five fixtures, and 99 across nineteen unregistered suites.
 The two guards are checks rather than tests and are counted in neither.
 
 | Fixture | Tests |
@@ -195,6 +214,7 @@ The two guards are checks rather than tests and are counted in neither.
 | FX-ApiCannotWrite | 3 |
 | FX-EveryAppKeyBinds | 3 |
 | FX-NoCurrentConfigReadOnSimulatedPath | 3 |
+| FX-PitMembershipExcludesLaterJoiner | 3 |
 | FX-SnapshotRestoresIdentically | 3 |
 
 The suite parses `CONFIG_REFERENCE.md`, `FIXTURES.md`, `DATA_AND_SCHEMA.md`,
@@ -207,8 +227,8 @@ append-only triggers make the tables impossible to clean between cases.
 
 ## Not built
 
-Every table beyond the eight that exist. `watchlist_membership` is 1.3's,
-`decisions` and `candidates` are Phase 4's.
+Every table beyond the nine that exist. `decisions` and `candidates` are
+Phase 4's.
 
 A loaded chain still reaches nothing. 0.6 built the loader, 1.2 built the as-of
 reads, and 1.4 persists what the loader yields, which is the first thing the reads
@@ -225,7 +245,8 @@ nobody reads.
 
 Entries stand against Phase 1, 2, 3, 4, 8 and 11. The count is not restated here.
 1.1 discharged the SQL alias obligation and 1.2 closed the effective-dating
-question by decision [D-W35], the two Phase 1 closures so far.
+question by decision [D-W35], the two Phase 1 closures so far. 1.3 raised the
+dividend obligation, owed at Phase 3.
 
 ## Working rules in force
 
@@ -425,3 +446,126 @@ No `double` or `float`. No ambient clock. Money is decimal in `TEXT`. A finding
 goes where planning for the work will read it, never only in the pull request,
 and it is read back off disk after the edit. Reconcile the detail and the archive
 at sign-off, not during the build.
+
+## 1.3 Watchlist membership as state
+
+Read `CLAUDE.md`, `BUILD_PLAN.md` §1.3 and the carried obligations,
+`DATA_AND_SCHEMA.md` §4.2 and the Time section, D-W9, D-W26, D-W30, D-W35,
+`ConfigWriter`, `AsOfMarketData` and its surface tests, `Migrations`, the
+`FIXTURES.md` rows at 1.3, and Current state above.
+
+### Docs before any code
+
+- **The dividend gap becomes an obligation, carried by this checkpoint.**
+  Reconfirm the premise by grep before writing the row: dividends appear as an
+  ingest source, a `corporate_actions` kind and an early-exercise risk, and
+  nowhere as a ledger entry, while D-W13 names capital and window only. Owed at
+  Phase 3. Report the obligation count before and after, measured.
+- **Correct 1.4's migration ordinal while its detail is live intent.** This
+  checkpoint takes migration 4, so "Migration 4 first" becomes "A migration
+  first, before any ingest code": the property is the ordering, not the number,
+  which changes whenever a checkpoint between them adds one.
+- **Author §4.2's two corrections now rather than carrying them as findings**,
+  so no landed state has the DDL contradicting the document: name the governing
+  axis as the greatest (`effective_on`, `version`) with the correction-semantics
+  sentences, and mark `reason` nullable, which the document's own convention
+  otherwise denies.
+- 1.3's detail names what it carries, per the standing rule.
+
+### Migration 4, and it carries three triggers
+
+- Frozen literal DDL per §4.2 exactly, with the `CHECK` on `kind` for the
+  reason `right` has one, and two append-only triggers carrying this table's
+  own correction story.
+- **The monotonic `observed_at` trigger goes in this migration, answered rather
+  than deferred**, because an applied migration's SQL is frozen and deferring
+  costs a migration. Version ordering is no substitute: it constrains versions,
+  not visibility, and a backdated stamp changes what was believed at a past
+  instant after the fact. Per symbol, equal allowed. The snapshot tables
+  deliberately carry no analogue, because they have no version axis crossing
+  the stamp; membership has `config_rows`' geometry exactly.
+- **Test**: migrating a previous-schema store applies only the new migration,
+  snapshot first, with the previous-schema store built from the frozen
+  migration list itself. Check whether a from-previous-schema test exists
+  before assuming it does; until this checkpoint every store in the tree was
+  either empty or current, so none did.
+- **Test**: the refusals, seeded first, per the trigger-is-per-row lesson; the
+  `CHECK`; the backdated stamp refused by the store; the equal stamp allowed; a
+  second symbol unbound by another symbol's stamp.
+- Drop the vocabulary count sentence in `AppendOnlyTables` rather than editing
+  it a second time: the by-name listing carries the information and the
+  created-tables sweep is what knows which exist.
+- **Expect the alias detector to read prose in SQL comments.** It flagged
+  "version as config_rows" in this migration's own comment; reword the comment
+  rather than narrowing the detector, because prose inside a SQL literal is
+  inside the scanner's jurisdiction and narrowing is the unrecoverable
+  direction.
+
+### The writer
+
+- `Core/Membership/MembershipWriter`, `ConfigWriter`'s shape: `MAX(version) + 1`
+  computed inside the insert, `RETURNING`, both instants as parameters [D-W30],
+  one transaction.
+- The kind takes the domain type, rendered through `StoreMembershipKind` in
+  `Core/Storage`, mirroring `StoreOptionRight` including the
+  declared-not-derived rule. No raw string at any call site.
+- The backdated-stamp refusal in C# names both instants, which `RAISE` cannot;
+  the trigger is what holds against any writer.
+- **Test**: versions n and n+1 for one symbol; a second symbol versioned
+  independently; the kind lands in the declared form; the reason optional and
+  stored when given.
+
+### The read
+
+- `AsOfMembership` in `Core/Membership`, its own type rather than a member of
+  `AsOfMarketData`, for three reasons stated in the code: that type documents
+  itself as the only read surface over the snapshot tables and membership is
+  not a snapshot; the one-surface guarantee rests on no operational
+  current-read consumer existing, never argued for membership and probably
+  false for it at Phase 8; and a mirrored shape suite is a check, not a fact,
+  so two copies do not drift.
+- One member, `MembersOn(date, asOf)`, tickers in symbol order. A per-symbol
+  read has no consumer until Phase 2 decides how the gate asks.
+- **The governing axis is the greatest (`effective_on`, `version`)**, resolved
+  by a window function inside a CTE with declared column names, ranking over
+  every visible transition, which makes the no-latest-row-alone DoD
+  structural. The `joined` filter is a parameter rendered through
+  `StoreMembershipKind`, never a literal restating the declared form.
+- **Test the axis by divergence**: joined 3/1, left 8/1, a correction fixing
+  the join date to 2/15 as the highest version; latest-version answers member
+  on 9/1 and latest-effective answers left. Flip the window ordering to
+  version alone and confirm exactly this test fails, so the choice is
+  exercised rather than asserted.
+- **Test**: the three-interval re-entry case; the correction invisible as of
+  an instant before its stamp and visible after, tying the date so version
+  breaks the tie; before anything was observed the set is empty; symbol order
+  pinned.
+- The declared stored forms are pinned against migration 4's frozen `CHECK`
+  vocabulary, which is where the coupling lives.
+- Mirror the surface suite: every value-returning member takes `DateOnly asOf`
+  by name, guard-the-guard, and a no-current tripwire whose message says a
+  current surface arrives as a decision that amends it.
+
+### The registered fixture
+
+- FX-PitMembershipExcludesLaterJoiner holds on both axes: a name that joined
+  after the queried date, and a join backfilled with an earlier effective date
+  but recorded after the as-of instant, are both excluded; boundaries pinned
+  inclusive.
+- The registry marker is counted from disk, with 1.2's zero registrations
+  noted where the range would otherwise read as a gap.
+
+### Definitions of done carried from 0.2
+
+- Every check registered against 1.3 exists in its kind.
+- The forward-declared vocabulary entry is live and the created-tables sweep
+  covers the new table with no edit.
+- `DecimalColumns` gains nothing and 1.3's sections introduce no keys, both
+  checked and empty.
+
+### Constraints
+
+No `double` or `float`. No ambient clock. Money is decimal in `TEXT`. Measure
+with `EXPLAIN QUERY PLAN` before adding any index. A finding goes where
+planning for the work will read it, then is read back off disk. Reconcile the
+detail and the archive at sign-off, not during the build.

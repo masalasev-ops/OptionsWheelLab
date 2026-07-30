@@ -5,9 +5,9 @@ along with the point-in-time config rule of §3. §2's ticker and identity
 paragraphs, its date-form paragraph, the money line of §4 and the permitted
 values of `right` are implemented at 0.4.
 §4.0 is implemented at 0.7 and §4.1 at 1.1, with its keys, constraints,
-triggers and indexes. §4.2 is 1.3, its shape settled by D-W35 as transitions;
-§2's corporate-action paragraph is 1.5. The rest is specification: decisions
-and trials Phase 4, scores Phase 5, pre-registration Phase 9.
+triggers and indexes. §4.2 is implemented at 1.3, its shape settled by D-W35 as
+transitions; §2's corporate-action paragraph is 1.5. The rest is specification:
+decisions and trials Phase 4, scores Phase 5, pre-registration Phase 9.
 
 ## 1. Sources
 
@@ -257,15 +257,22 @@ than complete.
 ```
 watchlist_membership
   symbol TEXT, version INTEGER, effective_on TEXT, kind TEXT,
-  reason TEXT, observed_at TEXT
+  reason TEXT NULL, observed_at TEXT
   PK (symbol, version)
 ```
 
+`reason` is nullable on `config_rows.note`'s precedent, an operator
+annotation, and forcing one onto every correction manufactures noise.
+
 Each row records one transition, not an interval. `kind` is `joined` or
 `left`, lower case, matching `right` in §4.1. Membership on a date, as known
-at an instant, is the latest row for that symbol whose `effective_on` is at
-or before the date and whose `observed_at` is at or before the instant: a
-member when that row is a `joined`, not when it is a `left`.
+at an instant, is resolved among rows whose `effective_on` is at or before
+the date and whose `observed_at` is at or before the instant: the row with
+the greatest (`effective_on`, `version`) governs, and the name is a member
+when that row is a `joined`. Version breaks ties on one date, so an appended
+correction supersedes a transition only by tying its date; correcting a
+transition's date is a compensating pair, a counter-transition at the false
+date plus the true transition at the true date.
 
 **An interval per version cannot answer the question.** Stating
 `entered_on` and `left_on` on each version, the way `config_rows` states a

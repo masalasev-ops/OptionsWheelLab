@@ -1,5 +1,54 @@
 # CHANGELOG
 
+## [1.23.0] — 2026-07-30
+
+Checkpoint 1.3 signed off.
+
+### Added
+- `prompts/spent/phase-1.md` carries 1.3's prompt with its review rounds folded
+  in, and Current state is overwritten with the measured present: 346 tests,
+  247 across twenty-five fixtures and 99 across nineteen unregistered suites.
+
+### Changed
+- `BUILD_PLAN.md` 1.3 is reconciled against what shipped: the reader-placement
+  decision, the governing axis measured by divergence, the third trigger the
+  detail implied it would not have, and the first from-previous-schema
+  migration test in the suite.
+- The build-state markers say 1.1 to 1.3 are built and signed off, 1.4 and 1.5
+  being live intent.
+
+### Notes
+- The one check registered against 1.3 holds on both axes: a later joiner is
+  excluded whether it is later on the effective date or later in what was
+  known at the as-of instant, and the backfilled-join case is the second.
+- 1.4 is next and its detail already carries its first item: relax the
+  `underlying_bars` columns the record makes optional, as migration 5, and
+  correct §4.1 to match.
+
+## [1.22.0] — 2026-07-30
+
+Checkpoint 1.3.
+
+### Added
+- A carried obligation owed at Phase 3: decide how dividends are recorded.
+  Between assignment and call-away the account holds shares, and a dividend paid
+  in that window is cash the trial received; omitting it understates every
+  covered-call leg and misprices the buy-and-hold control, which biases the
+  exact comparison the lab exists to make. Dividends appear in the corpus as an
+  ingest source, a `corporate_actions` kind and an early-exercise risk, and
+  nowhere as a ledger entry. Thirteen obligations stand, up from twelve.
+
+### Fixed
+- §4.2 said "the latest row" without naming the axis, and left `reason`'s
+  nullability unmarked in a document that marks it. Both settled by building
+  the resolution; the divergence case is the argument. The governing axis is
+  the greatest (`effective_on`, `version`), and `reason` is nullable on
+  `config_rows.note`'s precedent.
+- BUILD_PLAN 1.4 opened "Migration 4 first". 1.3 creates `watchlist_membership`
+  as migration 4, so the bars relaxation becomes 5 and the sentence now says "A
+  migration first, before any ingest code": the property is the ordering, not
+  the number, which changes whenever a checkpoint between them adds one.
+
 ## [1.21.0] — 2026-07-30
 
 Checkpoint 1.2 signed off.
