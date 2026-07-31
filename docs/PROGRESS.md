@@ -5,8 +5,9 @@ Appended to, never rewritten. The repository is the authority on build state.
 ## Current state
 
 **Phase 0 complete and reviewed. Phase 1 complete.** Checkpoints 0.1 to 0.8
-and 1.1 to 1.5 built and signed off. Phase 2's detail is written and no
-Phase 2 checkpoint is built. The documentation corpus is at v1.28.0.
+and 1.1 to 1.5 built and signed off. Phase 2 is open: 2.1 is built and
+signed off, and 2.2 to 2.5 are not started. The documentation corpus is at
+v1.30.0.
 
 ## Log
 
@@ -869,3 +870,47 @@ delivered work. §5 was deliberately left unmarked: its two clocks are the
 fast and slow loops, which nothing has built, and GLOSSARY already records
 that 0.5's clock is unrelated, so marking it would have asserted the exact
 collision the glossary entry exists to prevent.
+
+### 2026-07-30 — corpus v1.29.0
+Checkpoint 2.1. The worked example's chain is reconciled with the gate it
+teaches. The three surviving strikes' asks tighten to spreads of 6.12 to
+7.02 percent of mid against the twelve percent cap, where 45.00 failed at
+18.18 and 47.50 passed by three hundredths; the ladder extends downward at
+its 2.50 spacing with a 42.50 failing the spread cap alone at 37.84 percent
+and a 40.00 failing the premium floor alone at half of it; 52.50 and 55.00
+stand unchanged as the two-reason case. No bid changed, so nothing
+downstream of the fill moved and the feasible set is still the three the
+later sections depend on. §3's banner comes down and its table carries
+every constraint operand and every failing reason; the expiry window and
+earnings clearance, which one snapshot cannot demonstrate, are stated as
+checkpoint 2.3's. The v1.6.0 obligation, the table's oldest row, is
+discharged: thirteen become twelve.
+
+Both pinning fixtures passed with zero test-code change, which is the
+oracle working as designed: it pins the symbol, the date, the expiry and
+the right, and parses everything else from the document.
+
+Two corrections rode along. `ContractQuote.cs` and the synthetic chain's
+delta comments deferred to Phase 2 a question D-W23 had settled the day it
+was written, the ceiling comparing absolute delta; both corrected, comment
+only [BE1]. And 1.28.0's record said 2.1's detail states that it registers
+no fixtures when the detail did not say it; the sentence is now on disk
+where the record claimed it was.
+
+### 2026-07-30 — corpus v1.30.0
+Checkpoint 2.1 signed off. `prompts/spent/phase-2.md` opens with 2.1's
+prompt and takes over the description of the present, and `phase-1.md` is
+closed with its Current state frozen, stamped both with Phase 1's closing
+version and with the version at which it stopped describing the present.
+2.1's detail is reconciled against what shipped.
+
+The archive's own build-state claim was wrong in both closed files. Each
+opened by saying its Current state was the whole state of the repository and
+the only description of the present, which stops being true the moment the
+next phase's file opens, and `phase-0.md` had carried that sentence directly
+above its own **Frozen** marker since 1.1's sign-off. Both now point at the
+open phase's file. This is the same defect 1.28.0 fixed in the BUILD_PLAN
+header and README, in the one pair of documents that round did not sweep,
+because the sweep was for phase build state and this is present state. The
+two designated present-state records were the thing being counted, so the
+count was right and one of the two was lying about which it was.

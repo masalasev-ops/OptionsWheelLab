@@ -1,21 +1,23 @@
 # Phase 1 Chain store and point-in-time invariants: spent prompts
 
-Current state below is the whole state of the repository and the only description
-of the present. Phase 0's file holds the state as it stood at that phase's close and
-is not corrected further.
+Current state below is frozen at this phase's close and is not corrected further.
+The description of the present lives in the open phase's file.
 
 One prompt per checkpoint, being the prompt that produces the checkpoint as it now
 stands. Corrections found while building are folded back into the checkpoint's
 prompt rather than appended as further entries, so replaying the prompts in order
 against the corpus reproduces the current state without replaying the mistakes.
 
-One file per phase. It closes when Phase 1 signs off; Phase 2 opens its own.
+One file per phase. **This file is closed.** Phase 1 signed off at corpus v1.27.0,
+and `phase-2.md` holds the description of the present from 2.1's sign-off.
 
 ---
 
-# Current state
+# Current state, as it stood when Phase 1 closed
 
-Corpus v1.27.0.
+Corpus v1.27.0, Phase 1's close. **Frozen** at v1.30.0, when `phase-2.md` opened.
+Checkpoint 2.1 changed the worked example's chain and nothing else described
+below; the current description is in `phase-2.md`.
 
 | | |
 |---|---|
