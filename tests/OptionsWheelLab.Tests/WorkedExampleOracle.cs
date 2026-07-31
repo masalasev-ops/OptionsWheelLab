@@ -48,5 +48,24 @@ internal static class WorkedExampleOracle
     public static IReadOnlyList<IReadOnlyList<string>> BarTable() =>
         MarkdownTable.Rows(Document(), "Date", "Close", "Note");
 
+    /// <summary>
+    /// §3's gate table: strike, spread, bid, delta, committed, verdict.
+    /// </summary>
+    /// <remarks>
+    /// <b>§3's claim rather than §2's data.</b> §2 states what the chain
+    /// carried; §3 states what the generator does with it, opening "All seven
+    /// strikes are enumerated". That sentence is prose and nothing here parses
+    /// prose, so the claim is read as the rows of the table beneath it, which
+    /// is the same seven.
+    /// <para>
+    /// The two tables are independently maintained halves of one document and
+    /// nothing before 2.2 compared them. A revision that added a strike to §2
+    /// and not to §3, or the reverse, was previously invisible.
+    /// </para>
+    /// </remarks>
+    public static IReadOnlyList<IReadOnlyList<string>> GateTable() =>
+        MarkdownTable.Rows(
+            Document(), "Strike", "Spread, % of mid", "Bid", "Delta", "Committed", "Gate");
+
     private static string Document() => File.ReadAllText(RepoRoot.WorkedExamplePath);
 }

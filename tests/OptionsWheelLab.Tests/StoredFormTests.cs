@@ -1,10 +1,11 @@
 using OptionsWheelLab.Core.Identity;
+using OptionsWheelLab.Core.Positions;
 using OptionsWheelLab.Core.Storage;
 
 namespace OptionsWheelLab.Tests;
 
 /// <summary>
-/// The stored forms of a date and a contract right.
+/// The stored forms of a date, a contract right and a position state.
 /// </summary>
 /// <remarks>
 /// Not registered fixtures, so deliberately not named <c>FX-*</c>:
@@ -91,5 +92,107 @@ public sealed class StoredFormTests
             () => StoreOptionRight.ToStored(default));
 
         Assert.Contains("not a contract right", thrown.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void A_position_state_stores_the_schemas_tag_and_round_trips()
+    {
+        Assert.Equal("cash", StorePositionState.ToStored(PositionState.Cash));
+        Assert.Equal("short_put", StorePositionState.ToStored(PositionState.ShortPut));
+        Assert.Equal("holding_shares", StorePositionState.ToStored(PositionState.HoldingShares));
+        Assert.Equal("short_call", StorePositionState.ToStored(PositionState.ShortCall));
+
+        Assert.All(
+            Enum.GetValues<PositionState>(),
+            state => Assert.Equal(
+                state, StorePositionState.ParseStored(StorePositionState.ToStored(state))));
+    }
+
+    /// <summary>
+    /// The enum's own spelling is not the stored form, and two of the four are
+    /// unreachable from it by any casing rule.
+    /// </summary>
+    /// <remarks>
+    /// This is the case that makes "declared, not derived" concrete rather than
+    /// conventional. A lower-casing derivation would have produced <c>put</c>
+    /// and <c>joined</c> correctly and would produce <c>holdingshares</c> here.
+    /// </remarks>
+    [Fact]
+    public void The_stored_state_is_not_the_enum_spelling()
+    {
+        Assert.NotEqual(
+            nameof(PositionState.HoldingShares),
+            StorePositionState.ToStored(PositionState.HoldingShares));
+
+        Assert.NotEqual(
+            nameof(PositionState.HoldingShares).ToLowerInvariant(),
+            StorePositionState.ToStored(PositionState.HoldingShares));
+
+        Assert.Throws<FormatException>(() => StorePositionState.ParseStored("HoldingShares"));
+        Assert.Throws<FormatException>(() => StorePositionState.ParseStored("holdingshares"));
+    }
+
+    /// <summary>
+    /// An unrecognised value is refused rather than defaulting, which is why
+    /// <see cref="PositionState"/> starts at one: a default reading as
+    /// <see cref="PositionState.Cash"/> would enumerate puts against an account
+    /// holding shares.
+    /// </summary>
+    [Fact]
+    public void An_unrecognised_state_is_refused_rather_than_defaulted()
+    {
+        Assert.Throws<FormatException>(() => StorePositionState.ParseStored("assigned"));
+        Assert.Throws<FormatException>(() => StorePositionState.ParseStored(""));
+
+        var thrown = Assert.Throws<ArgumentOutOfRangeException>(
+            () => StorePositionState.ToStored(default));
+
+        Assert.Contains("not a position state", thrown.Message, StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    /// The four tags are exactly what §4.3 names, read from the document rather
+    /// than restated here.
+    /// </summary>
+    /// <remarks>
+    /// The schema document is prose about <c>state</c> rather than a table, so
+    /// this reads the one sentence that lists the tags. It is the narrowest
+    /// thing that would notice §4.3 and this type disagreeing, and 1.1's
+    /// divergence is why noticing matters: nothing parses §4.1 as a schema, and
+    /// the document and the migration drifted in six places.
+    /// </remarks>
+    [Fact]
+    public void The_declared_tags_are_the_ones_the_schema_document_names()
+    {
+        var schema = File.ReadAllText(RepoRoot.SchemaDocumentPath);
+
+        var declared = Enum
+            .GetValues<PositionState>()
+            .Select(StorePositionState.ToStored)
+            .ToList();
+
+        // The paragraph in §4.3 that names the union's tags, not the line: the
+        // sentence wraps, and reading one line would silently drop the tag that
+        // fell past the wrap.
+        var marker = schema.IndexOf(
+            "is the discriminated union tag", StringComparison.Ordinal);
+
+        Assert.NotEqual(-1, marker);
+
+        var paragraph = Paragraph(schema, marker);
+
+        var named = declared.Where(tag => paragraph.Contains($"`{tag}`", StringComparison.Ordinal));
+
+        Assert.Equal(declared, named);
+    }
+
+    /// <summary>
+    /// From <paramref name="from"/> to the end of the paragraph containing it.
+    /// </summary>
+    private static string Paragraph(string document, int from)
+    {
+        var end = document.IndexOf("\n\n", from, StringComparison.Ordinal);
+
+        return end == -1 ? document[from..] : document[from..end];
     }
 }

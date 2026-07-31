@@ -23,6 +23,8 @@ public sealed class AsOfMembershipTests
 {
     private static readonly Ticker Symbol = Ticker.Normalise("WDGT");
 
+    private static readonly Ticker Other = Ticker.Normalise("ACME");
+
     private static DateOnly Day(int year, int month, int day) => new(year, month, day);
 
     private static DateTimeOffset EveningOf(DateOnly day) =>
@@ -151,6 +153,112 @@ public sealed class AsOfMembershipTests
     {
         Assert.Equal("joined", StoreMembershipKind.ToStored(MembershipKind.Joined));
         Assert.Equal("left", StoreMembershipKind.ToStored(MembershipKind.Left));
+    }
+
+    /// <summary>
+    /// The per-symbol read and the set read give the same answer everywhere.
+    /// </summary>
+    /// <remarks>
+    /// <b>Evidence, not the property.</b> The property is that there is one
+    /// ranking and the per-symbol member narrows its input rather than restating
+    /// its rule, which no test can assert. This is the tripwire if that choice is
+    /// ever undone: a second copy of the query would pass every case above and
+    /// fail here the moment the two drifted.
+    /// <para>
+    /// Swept over a grid rather than checked at chosen points, because a second
+    /// copy would agree at the points its author thought of. The probe dates are
+    /// every transition and observation date in the history with its immediate
+    /// neighbours, since an inclusive boundary that slipped a day is invisible to
+    /// a coarse sweep, plus a coarse sweep so agreement is not asserted only
+    /// where the history has an event.
+    /// </para>
+    /// </remarks>
+    [Fact]
+    public void The_per_symbol_read_agrees_with_the_set_read_across_the_whole_history()
+    {
+        using var store = MigratedStore();
+        using var connection = store.Connections.Open(StoreAccess.Write);
+        var writer = new MembershipWriter(connection);
+
+        // Every shape the cases above exercise, in one history: a departure and
+        // a return, a correction carrying an earlier effective date than a later
+        // genuine transition, and on the second symbol a correction that governs
+        // by tying a date.
+        writer.Append(Symbol, MembershipKind.Joined, Day(2026, 3, 1), EveningOf(Day(2026, 3, 1)));
+        writer.Append(Symbol, MembershipKind.Left, Day(2026, 8, 1), EveningOf(Day(2026, 8, 1)));
+        writer.Append(
+            Symbol,
+            MembershipKind.Joined,
+            Day(2026, 2, 15),
+            EveningOf(Day(2026, 8, 15)),
+            reason: "the join date was recorded two weeks late");
+        writer.Append(Symbol, MembershipKind.Joined, Day(2027, 1, 10), EveningOf(Day(2027, 1, 10)));
+
+        writer.Append(Other, MembershipKind.Joined, Day(2026, 5, 1), EveningOf(Day(2026, 5, 1)));
+        writer.Append(
+            Other,
+            MembershipKind.Left,
+            Day(2026, 5, 1),
+            EveningOf(Day(2026, 6, 1)),
+            reason: "the join was recorded in error");
+
+        var reads = new AsOfMembership(connection);
+        var probes = Probes();
+
+        // A sweep in which nobody was ever a member would agree vacuously, and
+        // a sweep in which nobody was ever absent would agree for the other
+        // vacuous reason.
+        var everMember = false;
+        var everAbsent = false;
+
+        foreach (var date in probes)
+        {
+            foreach (var asOf in probes)
+            {
+                var members = reads.MembersOn(date, asOf);
+
+                foreach (var symbol in (Ticker[])[Symbol, Other])
+                {
+                    var inSet = members.Contains(symbol);
+
+                    everMember |= inSet;
+                    everAbsent |= !inSet;
+
+                    Assert.Equal(inSet, reads.WasMemberOn(symbol, date, asOf));
+                }
+            }
+        }
+
+        Assert.True(everMember);
+        Assert.True(everAbsent);
+    }
+
+    /// <summary>
+    /// The dates the agreement sweep asks about.
+    /// </summary>
+    private static IReadOnlyList<DateOnly> Probes()
+    {
+        DateOnly[] events =
+        [
+            Day(2026, 2, 15), Day(2026, 3, 1), Day(2026, 5, 1), Day(2026, 6, 1),
+            Day(2026, 8, 1), Day(2026, 8, 15), Day(2027, 1, 10),
+        ];
+
+        var days = new List<DateOnly>();
+
+        foreach (var day in events)
+        {
+            days.Add(day.AddDays(-1));
+            days.Add(day);
+            days.Add(day.AddDays(1));
+        }
+
+        for (var day = Day(2026, 1, 1); day < Day(2027, 4, 1); day = day.AddDays(37))
+        {
+            days.Add(day);
+        }
+
+        return [.. days.Distinct().Order()];
     }
 
     private static TempStore MigratedStore()
