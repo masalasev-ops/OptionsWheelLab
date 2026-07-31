@@ -5,8 +5,8 @@ Appended to, never rewritten. The repository is the authority on build state.
 ## Current state
 
 **Phase 0 complete and reviewed. Phase 1 complete.** Checkpoints 0.1 to 0.8
-and 1.1 to 1.5 built and signed off. Phase 2 detail not written. The
-documentation corpus is at v1.27.0.
+and 1.1 to 1.5 built and signed off. Phase 2's detail is written and no
+Phase 2 checkpoint is built. The documentation corpus is at v1.28.0.
 
 ## Log
 
@@ -845,3 +845,27 @@ Phase 1 delivers a store that holds market data as it was known at any
 instant, membership as state, chain ingest through a refusing decimal seam,
 and corporate actions as stated successors with resolvable lineage, on
 synthetic chains throughout, which is what it said it would deliver.
+
+### 2026-07-30 — corpus v1.28.0
+Phase 2's detail authored, five checkpoints: the worked example reconciled,
+enumeration and membership, the contract constraints, the portfolio
+constraints, and the feasible set. All three of the phase's carried
+obligations are preconditions rather than work items, which is why 2.1 is a
+checkpoint that writes no code: the same shape as the membership schema
+blocking 1.3, one phase later and three times over. The nine Phase 2
+fixtures move to checkpoint granularity; thirteen rows stay at phase
+granularity across Phases 3 to 9, correct while their detail is unwritten.
+
+The marker drift got its structural fix rather than better synchronisation.
+BUILD_PLAN's header and README both restated phase build state and both now
+point; each phase's state is written once in its own section, and the
+present state twice by design, in this log's Current state and the
+archive's. The sweep the fix demanded found two more stale claims:
+SYSTEM_DESIGN said "not built" as a whole while promising per-section
+markers it never gained, and ORIENTATION said nothing had shipped five
+checkpoints after the store beneath it had. Both now state what is true,
+and SYSTEM_DESIGN's §3.1, §3.2 and §8 carry markers enumerated from the
+delivered work. §5 was deliberately left unmarked: its two clocks are the
+fast and slow loops, which nothing has built, and GLOSSARY already records
+that 0.5's clock is unrelated, so marking it would have asserted the exact
+collision the glossary entry exists to prevent.

@@ -894,10 +894,76 @@ Detail for Phase 2 is authored when Phase 1 signs off.
 
 ---
 
-## Phase 2 and beyond
+## Phase 2 — Candidate generator and risk gate
 
-Not yet written. Detail for Phase 2 is authored when Phase 1 signs off, with
-whatever Phase 1 taught already folded in.
+Build state: **not built**. Delivers one feasible set per name and date,
+produced by enumeration and filtered by a gate that sits inside the
+generator [D-W10], with every rejection reason recorded [D-W5]. On
+synthetic chains; no vendor data until Phase 8.
 
-The phase map in `SYSTEM_DESIGN.md` §7 states what each phase delivers and where
-the data purchase boundary falls.
+All three of this phase's carried obligations are preconditions rather than
+work items, and that shapes the order. The worked example must be
+reconciled before any fixture reads it, the crossed-quote question decides
+what test data can express before the liquidity constraints are built, and
+the risk fractions must exist before a capital cap can be tested against
+anything.
+
+### 2.1 The worked example, reconciled
+Not code. Seven registered fixtures read this document's conclusions, and
+its own chain contradicts the constraints this phase builds: the 45.00
+strike fails the twelve percent spread cap at 18.18 percent of mid, so the
+three-candidate feasible set it teaches renders as two, and the 47.50
+passes by three hundredths of a point.
+- Rewrite the chain deliberately, so the example teaches the gate as well as
+  the wheel: at least one enumerated contract fails a named constraint by an
+  obvious margin, and the surviving feasible set is the three the example's
+  later sections depend on.
+- **DoD**: FX-WorkedExampleChainLoads and FX-WorkedExampleChainPersists pass
+  against the revised tables, which is what makes the document the oracle
+  rather than a description. A revision that breaks them has changed
+  something the store's own tests were pinning.
+- Discharges the reconciliation obligation raised at v1.6.0.
+
+### 2.2 Enumeration and membership
+What a candidate is: a contract sellable on a name that was a watchlist
+member at the simulated date [D-W9], read through 1.3's as-of membership,
+given the position's state.
+- **Test** FX-OffWatchlistRejected.
+- **DoD**: enumeration is a pure function of the chain, the membership
+  answer and the position state, so the same inputs enumerate the same
+  candidates in the same order [D-W4].
+
+### 2.3 The contract constraints
+The four families of [D-W22] to [D-W25]: liquidity as a spread cap and a
+premium floor, the delta ceiling, the expiry window, and earnings
+clearance.
+- **Test** FX-SpreadCapRejects, FX-PremiumFloorRejects,
+  FX-DeltaCeilingRejects, FX-DteWindowRejects, FX-EarningsClearanceRejects.
+- Settles the crossed-quote obligation, which is this checkpoint's because
+  the spread cap is what a crossed quote defeats: a negative numerator
+  passes a cap meant to reject wide markets. If the gate handles one, 0.6's
+  loader stops refusing it and the synthetic format can express the case.
+- **DoD**: every constraint reads its bound from configuration as-of the
+  simulated date [D-W26], never from a constant.
+
+### 2.4 The portfolio constraints
+The three caps of [D-W11], and the gross-basis rule of [D-W19] binding an
+admissible call strike.
+- Sets the three `Risk:` fractions, discharging that obligation. They are
+  the operator's [D-W11], so record what each value means rather than
+  choosing one and moving on.
+- **Test** FX-GateRejectsAboveHeadroom, FX-GrossBasisBindsCallStrike.
+- **DoD**: a cap is evaluated against committed capital as the store
+  records it, not against a recomputed figure. The Phase 3 metric question
+  is still open, so state which quantity this checkpoint reads and why.
+
+### 2.5 The feasible set
+Assembly and ordering, and the record of what the gate refused.
+- **Test** FX-GateRecordsAllReasons: a candidate failing two constraints
+  carries both, which is why the gate evaluates every constraint rather
+  than short-circuiting.
+- **DoD**: the set is ordered by contract identity, so three makers
+  receiving it receive the same bytes [D-W4]. This is the first consumer of
+  the total order 1.5 completed.
+
+Detail for Phase 3 is authored when Phase 2 signs off.
