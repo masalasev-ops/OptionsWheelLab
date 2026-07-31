@@ -965,10 +965,53 @@ and the record is true a version after it was made.
 What a candidate is: a contract sellable on a name that was a watchlist
 member at the simulated date [D-W9], read through 1.3's as-of membership,
 given the position's state.
-- **Test** FX-OffWatchlistRejected.
+
+Three things that sentence leaves open, each a judgement rather than a
+transcription.
+
+**A candidate carries the quote and no economics.** §4.3's `candidates` row
+carries `contracts_qty`, `committed_capital`, `credit` and `feature_json`,
+and 2.2 declines all four. None of 2.3's constraint families needs them: the
+spread cap, the premium floor and the delta ceiling read the quote and the
+expiry window reads a date. Only 2.4's caps need committed capital, and the
+quantity that computes it is the open Phase 3 obligation, so building the
+economics here means choosing between the multiplier and the deliverable at
+the checkpoint with no reason to, three checkpoints before the obligation
+that settles it. The type is not the `candidates` row, which is Phase 4's;
+nothing persists at 2.2.
+
+**The simulated date is used on both axes, and that is a choice.** A read
+takes a snapshot or effective date and an as-of instant, and 1.2 made them
+independent deliberately. On a simulated date the generator wants the chain
+for that date as known at that date, so one date reaches four parameters
+across two reads. It is stated at the call sites rather than left to one
+variable landing in two parameters unremarked, because the two axes exist
+because they can differ: collapsing them is correct for a simulated run and
+would be wrong for a backfill, and the next reader should not have to work
+out which.
+
+**Enumeration filters on nothing but position state and membership.** A deep
+in-the-money put is sellable and will be rejected by every constraint.
+Enumerating it anyway is what makes the gate's effect auditable [D-W5,
+D-W10], and §3 of the worked example demonstrates it: seven strikes
+enumerated, three feasible, and the four rejections are the lesson. A
+generator that pre-filters produces a smaller enumerated set and a smaller
+record of what the gate did, which is the property Phase 4's decision record
+exists to hold. Nothing about basis or moneyness happens at 2.2, which is
+why the gross-basis constraint on a call strike is registered against 2.4.
+
+Cash sells puts and shares sell calls, which is the wheel [D-W16, D-W19]. A
+short leg enumerates nothing: rolling is permitted and bounded [D-W14], but
+no document states which contracts a roll enumerates, the bounds are Phase
+3's, and enumerating a guess would put an unrecorded rule into the decision
+path.
+- **Test** FX-OffWatchlistRejected, FX-WorkedExampleEnumerates.
 - **DoD**: enumeration is a pure function of the chain, the membership
   answer and the position state, so the same inputs enumerate the same
   candidates in the same order [D-W4].
+- **DoD**: the position state reaches the filter, shown on a chain carrying
+  both rights. Every chain in the repository is puts, so a generator ignoring
+  its state argument would pass every other check this checkpoint has.
 
 ### 2.3 The contract constraints
 The four families of [D-W22] to [D-W25]: liquidity as a spread cap and a
