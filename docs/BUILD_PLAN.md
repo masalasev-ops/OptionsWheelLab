@@ -1,7 +1,9 @@
 # BUILD_PLAN
 
-Build state: **Phase 0 and Phase 1 complete**. 0.1 to 0.8 and 1.1 to 1.5 built
-and signed off. Phase 2 detail not written.
+Each phase section below carries its own build state, and this document
+states it nowhere else. A summary here would be a second statement of a
+fact stated below, which is how the header went stale at 1.2 and stayed
+stale through three sign-offs.
 
 ## How this document works
 
@@ -93,6 +95,9 @@ that has already happened once in a sibling project.
 ---
 
 ## Phase 0 — Foundations
+
+Build state: **complete**. 0.1 to 0.8 built and signed off. No market data
+and no domain logic, which is what it said it would deliver.
 
 Delivers a repository that compiles, tests, migrates, and runs deterministically,
 with no market data and no domain logic.

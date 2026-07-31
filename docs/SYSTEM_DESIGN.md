@@ -7,8 +7,12 @@ This is the narrative design, read start to finish. The numbered register lives
 in `DECISIONS.md` and is not duplicated here. Prose states each rule; the bracket
 is a pointer.
 
-Build state for the whole document: **not built**. Every section below is a
-design, not a description. Sections gain a per-section marker as phases land.
+Build state: stated per section, not for the document. A section carries
+a marker once part of what it describes is built, and the sections
+without one describe designs nothing has yet implemented. This document
+said "not built" as a whole and promised per-section markers as phases
+landed; none was ever added, so the claim went stale at 1.1 and stayed
+stale for five checkpoints.
 
 ---
 
@@ -54,6 +58,9 @@ each candidate were an independent observation will be wildly overconfident.
 
 ### 3.1 Watchlist
 
+Build state: membership as state is **built at 1.3**, resolved as of both
+axes. The universe itself is the operator's curation and has no build content.
+
 The universe is restricted to names the lab would accept holding, because
 assignment is a designed leg rather than an exit to be avoided [D-W16].
 General premium selling on whatever is richest is out of scope.
@@ -65,6 +72,10 @@ that survived and did well, which removes precisely the cases the risk machinery
 exists to catch, and would make any historical run incapable of failing.
 
 ### 3.2 Chain store
+
+Build state: **built across 1.1 to 1.5**, on synthetic chains: the schema,
+point-in-time reads, chain ingest, and corporate actions as stated successors
+with resolvable lineage. The earnings calendar has its table and no writer yet.
 
 A daily end-of-day snapshot of the option chains for watchlist names, plus
 underlying bars, dividends, and the earnings calendar. Snapshots are append-only
@@ -314,6 +325,9 @@ waited for. The subscription clock and the evidence clock are the same clock, so
 paying before Phase 8 buys nothing.
 
 ## 8. Open parameters, closed at 0.8
+
+Build state: **closed at 0.8**. The values are config rows in the store; the
+four keys still unset are owed to the phases that first consume them.
 
 The roll bounds [D-W14], the divergence threshold and window [D-W20] and the six
 gate constraints [D-W22 to D-W25] were left unset in this document deliberately,

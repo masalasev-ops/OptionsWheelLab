@@ -3,8 +3,11 @@
 Plain language. Read this start to finish. No decision numbers inside the
 pictures, and one job per picture.
 
-Build state for this whole document: describes a design that is **not yet built**.
-Nothing here has shipped.
+Build state: this document explains the whole design, most of which is
+not built. What has shipped is the store beneath it: the market-data
+schema, point-in-time reads, membership as state, chain ingest and
+corporate actions, all on synthetic chains. No decision has ever been
+made, no trial run, no score computed.
 
 This document assumes you know what a put, a call, a strike, and assignment are,
 and roughly how the wheel behaves. If any of that is unfamiliar, read

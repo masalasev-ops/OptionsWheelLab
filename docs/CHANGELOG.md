@@ -1,5 +1,26 @@
 # CHANGELOG
 
+## [1.28.0] — 2026-07-30
+
+Phase 2's detail, and the marker drift.
+
+### Fixed
+- The BUILD_PLAN header restated each phase's build state and went stale at
+  1.2, surviving three sign-offs because each corrected only the phase marker
+  beneath it. The header now states the rule rather than the fact, and
+  Phase 0's section gains the marker it never carried, so each phase's state
+  is written once.
+- README restated phase state too, hand-synchronised at every corpus commit,
+  and now points instead: BUILD_PLAN carries each phase's build state in its
+  own section and PROGRESS carries the present state. The present state is
+  written twice by design rather than three times by hand.
+- SYSTEM_DESIGN and ORIENTATION claimed whole-document build states that went
+  stale at 1.1 and stayed stale for five checkpoints, SYSTEM_DESIGN promising
+  per-section markers it never gained. Its rule paragraph now says so, §3.1,
+  §3.2 and §8 carry markers naming what built them, and ORIENTATION states
+  what has shipped beneath the design it explains. Found by the sweep the
+  detail round's report question asked for.
+
 ## [1.27.0] — 2026-07-30
 
 Checkpoint 1.5 signed off, and with it Phase 1.
