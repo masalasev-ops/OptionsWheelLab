@@ -19,8 +19,9 @@ namespace OptionsWheelLab.Core.Synthetic;
 /// <para>
 /// <b>Delta carries the sign the chain states.</b> §2 writes a put's delta as
 /// <c>-0.24</c> while §1 and §4 quote the same quantity unsigned, so a sign rule
-/// here would bake that disagreement into the loader. Whether the delta ceiling
-/// compares magnitude is Phase 2's to settle [D-W23].
+/// here would bake that disagreement into the loader. The ceiling compares
+/// absolute delta [D-W23], so the sign is the loader's to preserve and the
+/// gate's to drop.
 /// </para>
 /// <para>
 /// The vendor symbol and the multiplier are not here. They belong to

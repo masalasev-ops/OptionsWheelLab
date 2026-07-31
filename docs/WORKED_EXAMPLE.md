@@ -43,9 +43,11 @@ Puts expiring 2026-04-17, which is 46 days out:
 
 | Strike | Delta | Bid | Ask | Committed if 1 contract |
 |---|---|---|---|---|
-| 45.00 | -0.10 | 0.30 | 0.36 | 4,500.00 |
-| 47.50 | -0.16 | 0.55 | 0.62 | 4,750.00 |
-| 50.00 | -0.24 | 0.95 | 1.05 | 5,000.00 |
+| 40.00 | -0.05 | 0.15 | 0.16 | 4,000.00 |
+| 42.50 | -0.07 | 0.30 | 0.44 | 4,250.00 |
+| 45.00 | -0.10 | 0.30 | 0.32 | 4,500.00 |
+| 47.50 | -0.16 | 0.55 | 0.59 | 4,750.00 |
+| 50.00 | -0.24 | 0.95 | 1.01 | 5,000.00 |
 | 52.50 | -0.44 | 2.05 | 2.20 | 5,250.00 |
 | 55.00 | -0.62 | 3.60 | 3.85 | 5,500.00 |
 
@@ -55,35 +57,47 @@ Committed capital is `strike x 100 x contracts` [D-W17].
 
 ## 3. Enumeration and the risk gate
 
-> **Unresolved against [D-W22] to [D-W25], added 2026-07-27.** This example was
-> written before the contract-level gate constraints existed and has not been
-> reconciled with them. Under the proposed defaults the 45.00 strike fails the
-> spread cap at 18.18 percent of mid, which removes it from the feasible set and
-> from the random maker's choice; the 47.50 strike passes at 11.97 percent, by
-> three hundredths of a percentage point; and the 52.50 and 55.00 strikes fail
-> the delta ceiling in addition to the capital cap they already fail.
->
-> The arithmetic below therefore describes a three-candidate feasible set that the
-> current design would render as two. Nothing here is safe to build from until
-> that is resolved, and seven registered fixtures depend on it.
+All seven strikes are enumerated. The gate then evaluates each against every
+constraint this snapshot gives it something to read: the spread cap of twelve
+percent of mid and the premium floor of `0.30` [D-W22], the delta ceiling of
+`0.35` [D-W23], and the `5,100.00` per-name headroom [D-W10]. Every failing
+reason is recorded, not the first. The ceiling compares absolute delta
+[D-W23], which is why this table carries magnitudes where §2 carries the sign
+the chain stated.
 
-All five strikes are enumerated. The gate then evaluates each against the
-`5,100.00` per-name headroom [D-W10].
-
-| Strike | Committed | Headroom | Gate |
-|---|---|---|---|
-| 45.00 | 4,500.00 | 5,100.00 | feasible |
-| 47.50 | 4,750.00 | 5,100.00 | feasible |
-| 50.00 | 5,000.00 | 5,100.00 | feasible |
-| 52.50 | 5,250.00 | 5,100.00 | rejected, per-name cap |
-| 55.00 | 5,500.00 | 5,100.00 | rejected, per-name cap |
+| Strike | Spread, % of mid | Bid | Delta | Committed | Gate |
+|---|---|---|---|---|---|
+| 40.00 | 6.45 | 0.15 | 0.05 | 4,000.00 | rejected: premium floor |
+| 42.50 | 37.84 | 0.30 | 0.07 | 4,250.00 | rejected: spread cap |
+| 45.00 | 6.45 | 0.30 | 0.10 | 4,500.00 | feasible |
+| 47.50 | 7.02 | 0.55 | 0.16 | 4,750.00 | feasible |
+| 50.00 | 6.12 | 0.95 | 0.24 | 5,000.00 | feasible |
+| 52.50 | 7.06 | 2.05 | 0.44 | 5,250.00 | rejected: delta ceiling, per-name cap |
+| 55.00 | 6.71 | 3.60 | 0.62 | 5,500.00 | rejected: delta ceiling, per-name cap |
 
 **The feasible set is {45.00, 47.50, 50.00}.**
 
-Note what the gate did. It removed the two highest-premium candidates, which are
-also the two with the largest downside exposure. That is the gate working as
-designed rather than an accident of this example. Rejected candidates are stored
-with their reason so the gate's effect is auditable.
+Note what the gate did. It removed the two highest-premium candidates, which
+are also the two with the largest downside exposure, and each carries both of
+its failing reasons rather than the first found [D-W22]. It removed one
+candidate quoted too wide to transact and one too cheap for its commission,
+neither of which this example demonstrated before. Rejected candidates are
+stored with their reasons so the gate's effect is auditable.
+
+The 42.50 and 45.00 rows carry the same bid and opposite verdicts, which is
+deliberate. A bid alone does not say whether a quote is transactable; the
+spread does, and the 42.50's wide market puts its mid above the 45.00's,
+which is what a stale quote looks like and why an unfiltered mid-derived
+figure would corrupt the counterfactual [D-W22]. Both bids sit exactly at the
+`0.30` floor and pass it, because the floor rejects a bid below it, not at
+it.
+
+Two constraints have nothing to read on this snapshot, and their absence from
+the table is that rather than a gap. The expiry window [D-W24] cannot be
+shown by one snapshot with one expiry, every candidate here being 46 days out
+inside the 7 to 70 window; earnings clearance [D-W25] has no report date to
+read, because this example states none. Both belong to checkpoint 2.3's
+fixtures rather than to this example.
 
 All three makers now receive this identical set [D-W4].
 

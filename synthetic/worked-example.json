@@ -41,12 +41,13 @@
           "right": "put",
 
           // Delta carries the sign section 2 states. Sections 1 and 4 quote the
-          // same quantity unsigned, and whether the ceiling compares magnitude
-          // is Phase 2's to settle.
+          // same quantity unsigned; the ceiling compares absolute delta [D-W23].
           "quotes": [
-            { "strike": "45.00", "delta": "-0.10", "bid": "0.30", "ask": "0.36" },
-            { "strike": "47.50", "delta": "-0.16", "bid": "0.55", "ask": "0.62" },
-            { "strike": "50.00", "delta": "-0.24", "bid": "0.95", "ask": "1.05" },
+            { "strike": "40.00", "delta": "-0.05", "bid": "0.15", "ask": "0.16" },
+            { "strike": "42.50", "delta": "-0.07", "bid": "0.30", "ask": "0.44" },
+            { "strike": "45.00", "delta": "-0.10", "bid": "0.30", "ask": "0.32" },
+            { "strike": "47.50", "delta": "-0.16", "bid": "0.55", "ask": "0.59" },
+            { "strike": "50.00", "delta": "-0.24", "bid": "0.95", "ask": "1.01" },
             { "strike": "52.50", "delta": "-0.44", "bid": "2.05", "ask": "2.20" },
             { "strike": "55.00", "delta": "-0.62", "bid": "3.60", "ask": "3.85" }
           ]
