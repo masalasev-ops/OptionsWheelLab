@@ -7,7 +7,7 @@ Appended to, never rewritten. The repository is the authority on build state.
 **Phase 0 complete and reviewed. Phase 1 complete.** Checkpoints 0.1 to 0.8
 and 1.1 to 1.5 built and signed off. Phase 2 is open: 2.1 and 2.2 are built
 and signed off, and 2.3 to 2.5 are not started. The documentation corpus is at
-v1.31.0.
+v1.31.1.
 
 ## Log
 
@@ -960,3 +960,31 @@ claims only that its seven rows are registered, and rule 4 says adding a
 fixture requires no propagation. A claim this log carried in draft, that §10
 had gone silently incomplete, was withdrawn on that reading before it was
 recorded here.
+
+### 2026-07-31 — corpus v1.31.1
+Two citations corrected, both raised by 2.2's audit and neither belonging to
+that checkpoint, so they land after it merges rather than inside it.
+
+`VALIDITY.md` §7 item 1 named `FX-PreRegRequired` for a risk
+`FX-LearningBoundaryLagRespected` guards. Fifth instance of the citation
+pattern, and the first inside a checklist that says of itself that it is
+reviewed at every phase sign-off, so this one had been read past repeatedly
+rather than sitting unread. The survival mechanism is worth recording: the
+sentence gestured at the right test as "the boundary test in Phase 7" while
+naming the wrong one, so a reader checking the clause found a true statement
+beside the false one and stopped.
+
+`FX-WorkedExampleChainPersists`' Source said `authored` where its expectations
+are read out of the document through the same oracle calls its sibling makes.
+Measured before the fix: nine rows named the worked example as their origin and
+three fixtures reached it through `WorkedExampleOracle`, of which two said
+`authored`, one corrected at 1.31.0 and one here. The cell was wrong more often
+than right among the fixtures the column exists to describe, which is what
+turned a second fix into a stated convention: Source records where expectations
+come from, not whether a document is parsed. Ten rows name it now.
+
+The convention had never been written down and was recovered by auditing the
+column against what each fixture actually reads. An audit that started from the
+plausible reading, that `authored` means no document is parsed, produced eight
+false findings against the configuration and registry fixtures before the real
+rule surfaced.
