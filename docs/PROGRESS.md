@@ -5,9 +5,9 @@ Appended to, never rewritten. The repository is the authority on build state.
 ## Current state
 
 **Phase 0 complete and reviewed. Phase 1 complete.** Checkpoints 0.1 to 0.8
-and 1.1 to 1.5 built and signed off. Phase 2 is open: 2.1's reconciliation
-of the worked example is built and under review, and no other Phase 2
-checkpoint is started. The documentation corpus is at v1.29.0.
+and 1.1 to 1.5 built and signed off. Phase 2 is open: 2.1 is built and
+signed off, and 2.2 to 2.5 are not started. The documentation corpus is at
+v1.30.0.
 
 ## Log
 
@@ -896,3 +896,21 @@ was written, the ceiling comparing absolute delta; both corrected, comment
 only [BE1]. And 1.28.0's record said 2.1's detail states that it registers
 no fixtures when the detail did not say it; the sentence is now on disk
 where the record claimed it was.
+
+### 2026-07-30 — corpus v1.30.0
+Checkpoint 2.1 signed off. `prompts/spent/phase-2.md` opens with 2.1's
+prompt and takes over the description of the present, and `phase-1.md` is
+closed with its Current state frozen, stamped both with Phase 1's closing
+version and with the version at which it stopped describing the present.
+2.1's detail is reconciled against what shipped.
+
+The archive's own build-state claim was wrong in both closed files. Each
+opened by saying its Current state was the whole state of the repository and
+the only description of the present, which stops being true the moment the
+next phase's file opens, and `phase-0.md` had carried that sentence directly
+above its own **Frozen** marker since 1.1's sign-off. Both now point at the
+open phase's file. This is the same defect 1.28.0 fixed in the BUILD_PLAN
+header and README, in the one pair of documents that round did not sweep,
+because the sweep was for phase build state and this is present state. The
+two designated present-state records were the thing being counted, so the
+count was right and one of the two was lying about which it was.

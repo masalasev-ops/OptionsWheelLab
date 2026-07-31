@@ -1,5 +1,32 @@
 # CHANGELOG
 
+## [1.30.0] — 2026-07-30
+
+Checkpoint 2.1 signed off, and Phase 2 opens its archive.
+
+### Added
+- `prompts/spent/phase-2.md` carries 2.1's prompt with its review round folded
+  in, and Current state moves there: 378 tests unchanged across twenty-seven
+  fixtures, schema 5, the gate's six bounds seeded and unread, no generator and
+  no gate.
+
+### Changed
+- `BUILD_PLAN.md` 2.1 is reconciled against what shipped: the rewrite confined
+  to asks because every figure from §4 onward derives from a bid, the premium
+  floor equalling a bid that could not move, the stale deferral corrected, and
+  the record that ran ahead of the disk.
+- `prompts/spent/phase-1.md` is closed and its Current state frozen, stamped
+  with both the version of Phase 1's close and the version at which it stopped
+  describing the present.
+
+### Fixed
+- Both closed archives claimed their Current state was the only description of
+  the present, which stopped being true the moment each closed;
+  `phase-0.md` had carried the claim beside its own **Frozen** marker since
+  1.1's sign-off. Both now point at the open phase's file instead of restating
+  what they no longer hold, which is the same fix the header and README got at
+  1.28.0.
+
 ## [1.29.0] — 2026-07-30
 
 Checkpoint 2.1: the worked example, reconciled.

@@ -925,6 +925,42 @@ passes by three hundredths of a point.
   something the store's own tests were pinning.
 - Discharges the reconciliation obligation raised at v1.6.0.
 
+Reconciled at sign-off against what shipped. Three things the detail did not
+anticipate, and one record that had run ahead of the disk.
+
+**The rewrite was smaller than "rewrite the chain" implies, and structurally
+so.** Every figure from §4 onward derives from a bid or a close, established
+by reading each section in full rather than by searching for a column name,
+so the revision is confined to asks and added candidates. No bid moved,
+which is why nothing downstream of the fill moved and the fixtures pinning
+§5 never came into it. The three surviving strikes' spreads went to 6.12,
+7.02 and 6.45 percent of mid against a twelve percent cap, from 18.18 for
+the strike that failed and three hundredths of margin for the one that
+passed.
+
+**The premium floor equals a frozen bid, which bounds what this example can
+demonstrate.** 45.00's bid is 0.30 and the floor is 0.30, and the bid could
+not move. A candidate below 45.00 that fails the spread cap and nothing else
+must therefore post exactly 0.30 and, once its spread is wide enough to fail
+by an obvious margin, carries a mid above 45.00's. The 42.50 is D-W22's
+untransactable quote by construction rather than by choice, so §3 states it
+as the case the cap exists for. Two rows now pass the floor with no margin
+at all, and no revision that leaves bids alone can widen that.
+
+**A comment cited a decision as leaving open what it settled.**
+`ContractQuote.cs` deferred the magnitude question to Phase 2 citing D-W23,
+which had said absolute delta from the day it was written; the synthetic
+chain's delta comment carried the same deferral uncited. Both corrected,
+comment only. This is the fourth instance of the citation pattern in this
+corpus and the first of its inverse, the earlier three having cited a
+decision for a property it did not state, and the same method found it:
+reading the decision because something rested on it.
+
+**The zero-registration sentence rule 2 requires was recorded before it was
+written.** v1.28.0's entry said 2.1's detail states that it registers no
+fixtures; the detail did not say it. The sentence is in the detail above,
+and the record is true a version after it was made.
+
 ### 2.2 Enumeration and membership
 What a candidate is: a contract sellable on a name that was a watchlist
 member at the simulated date [D-W9], read through 1.3's as-of membership,

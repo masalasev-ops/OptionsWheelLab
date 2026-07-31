@@ -1,7 +1,7 @@
 # Phase 0 Foundations: spent prompts
 
-Current state below is the whole state of the repository and the only
-description of the present.
+Current state below is frozen at this phase's close and is not corrected
+further. The description of the present lives in the open phase's file.
 
 One prompt per checkpoint, being the prompt that produces the checkpoint as it
 now stands. Corrections found while building are folded back into the
