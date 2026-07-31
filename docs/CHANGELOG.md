@@ -1,5 +1,41 @@
 # CHANGELOG
 
+## [1.28.0] — 2026-07-30
+
+Phase 2's detail, and the marker drift.
+
+### Added
+- Phase 2's detail, five checkpoints: the worked example reconciled (2.1, not
+  code), enumeration and membership (2.2), the contract constraints (2.3),
+  the portfolio constraints (2.4), and the feasible set (2.5), which is the
+  first consumer of the total order 1.5 completed.
+- The nine Phase 2 fixtures move to checkpoint granularity per rule 2: one to
+  2.2, five to 2.3, two to 2.4, one to 2.5. 2.1 registers none and its detail
+  says so, changing a document two existing fixtures already pin.
+
+### Notes
+- All three of Phase 2's carried obligations are preconditions rather than
+  work items, which is why 2.1 is a checkpoint that writes no code. The same
+  shape as the membership schema blocking 1.3, one phase later and three
+  times over.
+
+### Fixed
+- The BUILD_PLAN header restated each phase's build state and went stale at
+  1.2, surviving three sign-offs because each corrected only the phase marker
+  beneath it. The header now states the rule rather than the fact, and
+  Phase 0's section gains the marker it never carried, so each phase's state
+  is written once.
+- README restated phase state too, hand-synchronised at every corpus commit,
+  and now points instead: BUILD_PLAN carries each phase's build state in its
+  own section and PROGRESS carries the present state. The present state is
+  written twice by design rather than three times by hand.
+- SYSTEM_DESIGN and ORIENTATION claimed whole-document build states that went
+  stale at 1.1 and stayed stale for five checkpoints, SYSTEM_DESIGN promising
+  per-section markers it never gained. Its rule paragraph now says so, §3.1,
+  §3.2 and §8 carry markers naming what built them, and ORIENTATION states
+  what has shipped beneath the design it explains. Found by the sweep the
+  detail round's report question asked for.
+
 ## [1.27.0] — 2026-07-30
 
 Checkpoint 1.5 signed off, and with it Phase 1.

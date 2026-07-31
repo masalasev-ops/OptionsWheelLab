@@ -83,17 +83,17 @@ fail even when the build does not.
 | FX-SnapshotNeverRewritten | fixture | 1.1 | a vendor correction appends rather than updates | authored |
 | FX-WorkedExampleChainPersists | fixture | 1.4 | the worked example's chain persists and reads back identical to the document's tables | authored |
 | FX-CorporateActionMintsSuccessor | fixture | 1.5 | a split mints a stated successor with its predecessor recorded, the original row unchanged, and the lineage walk resolving all generations | authored |
-| FX-GateRejectsAboveHeadroom | fixture | 2 | candidates breaching per-name headroom are rejected with a reason | WORKED_EXAMPLE §3 |
-| FX-OffWatchlistRejected | fixture | 2 | no candidates for a non-member symbol | authored |
-| FX-SpreadCapRejects | fixture | 2 | a candidate above the spread cap is rejected with its reason | authored |
-| FX-PremiumFloorRejects | fixture | 2 | a candidate below the premium floor is rejected with its reason | authored |
-| FX-GateRecordsAllReasons | fixture | 2 | a candidate failing two constraints carries both reasons | authored |
-| FX-DeltaCeilingRejects | fixture | 2 | a candidate above the delta ceiling is rejected with its reason | authored |
-| FX-DteWindowRejects | fixture | 2 | candidates on either side of the expiry window are rejected | authored |
-| FX-EarningsClearanceRejects | fixture | 2 | a candidate whose life spans a buffered report date is rejected | authored |
+| FX-GateRejectsAboveHeadroom | fixture | 2.4 | candidates breaching per-name headroom are rejected with a reason | WORKED_EXAMPLE §3 |
+| FX-OffWatchlistRejected | fixture | 2.2 | no candidates for a non-member symbol | authored |
+| FX-SpreadCapRejects | fixture | 2.3 | a candidate above the spread cap is rejected with its reason | authored |
+| FX-PremiumFloorRejects | fixture | 2.3 | a candidate below the premium floor is rejected with its reason | authored |
+| FX-GateRecordsAllReasons | fixture | 2.5 | a candidate failing two constraints carries both reasons | authored |
+| FX-DeltaCeilingRejects | fixture | 2.3 | a candidate above the delta ceiling is rejected with its reason | authored |
+| FX-DteWindowRejects | fixture | 2.3 | candidates on either side of the expiry window are rejected | authored |
+| FX-EarningsClearanceRejects | fixture | 2.3 | a candidate whose life spans a buffered report date is rejected | authored |
 | FX-CeilingNotInsidePolicyBand | fixture | 0.2 | the predicate holds that the delta ceiling is no tighter than any policy band | authored |
 | FX-MaxDteBelowTrialBound | fixture | 0.2 | the predicate holds that MaxDte is below MaxTrialDays | authored |
-| FX-GrossBasisBindsCallStrike | fixture | 2 | a call strike admitted by net basis and refused by gross basis is refused | WORKED_EXAMPLE §6.3 |
+| FX-GrossBasisBindsCallStrike | fixture | 2.4 | a call strike admitted by net basis and refused by gross basis is refused | WORKED_EXAMPLE §6.3 |
 | FX-TrialCompleteIncludesAssignment | fixture | 3 | the assigned trial totals 498.05 | WORKED_EXAMPLE §6.3 |
 | FX-RollCapCloses | fixture | 3 | a trial reaching the roll bound closes at market and resolves | authored |
 | FX-ProjectionRebuildsFromLedger | fixture | 3 | `trials` and `positions` discarded and rebuilt from `ledger_entries` give the same rows, which is the condition on rewriting them at all [D-W35] | authored |
