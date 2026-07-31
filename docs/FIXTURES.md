@@ -54,6 +54,15 @@ Every entry carries a **Kind**. `fixture` means a C# test, one `FX-*.cs` file in
 the test project. `guard` means a named check inside `guards.ps1`, which must
 fail even when the build does not.
 
+**Source** records where a fixture's expectations come from, not whether it
+parses a document. A fixture that parses `CONFIG_REFERENCE.md` to check its own
+consistency is `authored`, because the expectation is the rule rather than the
+document's content. A fixture whose expected values are read out of
+`WORKED_EXAMPLE.md` names the sections they come from. This was unstated until
+v1.31.1 and had to be recovered by auditing the column against what each fixture
+reads, which is how two of the three fixtures that read the worked example came
+to carry the wrong cell.
+
 | Fixture | Kind | Checkpoint | Asserts | Source |
 |---|---|---|---|---|
 | FX-EveryConfigSectionBinds | fixture | 0.2 | no configuration section binds to nothing | authored |
@@ -81,7 +90,7 @@ fail even when the build does not.
 | FX-SnapshotRestoresIdentically | fixture | 0.3 | a store restored from its snapshot resolves the values it did before the mutation | authored |
 | FX-PitMembershipExcludesLaterJoiner | fixture | 1.3 | as-of membership excludes later joiners | authored |
 | FX-SnapshotNeverRewritten | fixture | 1.1 | a vendor correction appends rather than updates | authored |
-| FX-WorkedExampleChainPersists | fixture | 1.4 | the worked example's chain persists and reads back identical to the document's tables | authored |
+| FX-WorkedExampleChainPersists | fixture | 1.4 | the worked example's chain persists and reads back identical to the document's tables | WORKED_EXAMPLE §2, §5 |
 | FX-CorporateActionMintsSuccessor | fixture | 1.5 | a split mints a stated successor with its predecessor recorded, the original row unchanged, and the lineage walk resolving all generations | authored |
 | FX-GateRejectsAboveHeadroom | fixture | 2.4 | candidates breaching per-name headroom are rejected with a reason | WORKED_EXAMPLE §3 |
 | FX-OffWatchlistRejected | fixture | 2.2 | no candidates for a non-member symbol | authored |

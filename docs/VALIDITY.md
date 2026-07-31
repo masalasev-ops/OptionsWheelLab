@@ -115,7 +115,10 @@ Written as a list because it is a checklist, reviewed at every phase sign-off.
 
 1. **Learning-boundary leakage.** The learner learns from trials that opened
    before the boundary rather than closed before it, and reads the future.
-   Guarded by FX-PreRegRequired and by the boundary test in Phase 7.
+   Guarded by FX-LearningBoundaryLagRespected, which asserts the learner sees
+   only trials closed before the boundary. FX-PreRegRequired guards a different
+   risk: it refuses to start a forward run without a committed pre-registration
+   [D-W15].
 2. **Survivorship in the watchlist.** Today's watchlist applied to past dates
    removes the names the risk machinery exists to catch [D-W9].
 3. **Annualization in the objective.** Short trades win on arithmetic [D-W18].

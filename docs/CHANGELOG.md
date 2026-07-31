@@ -1,5 +1,39 @@
 # CHANGELOG
 
+## [1.31.1] — 2026-07-31
+
+Two citations corrected, both raised by 2.2's audit and neither belonging to
+that checkpoint.
+
+### Fixed
+- `VALIDITY.md` §7 item 1 named `FX-PreRegRequired` for a risk
+  `FX-LearningBoundaryLagRespected` guards. The item describes learning-boundary
+  leakage, trials that opened before the boundary rather than closed before it;
+  the fixture it named refuses to start a forward run without a committed
+  pre-registration [D-W15], which is a different risk. Fifth instance of the
+  citation pattern and the first inside a checklist reviewed at every phase
+  sign-off, so it had been read past repeatedly rather than sitting unread. What
+  let it survive is that the sentence gestured at the right test as "the
+  boundary test in Phase 7" while naming the wrong one, so a reader checking the
+  clause found a true statement beside the false one.
+- `FX-WorkedExampleChainPersists`' Source said `authored` where its expectations
+  come from `WORKED_EXAMPLE` §2 and §5, read through the same `StrikeTable()`
+  and `BarTable()` calls its sibling `FX-WorkedExampleChainLoads` makes.
+
+### Notes
+- The Source column's meaning was never stated and had to be recovered by
+  auditing the column against what each fixture reads, so `FIXTURES.md` now
+  states it: Source records where a fixture's expectations come from, not
+  whether it parses a document. A fixture parsing `CONFIG_REFERENCE.md` to check
+  its own consistency is `authored`, because the expectation is the rule rather
+  than the document's content.
+- Measured before this change: nine rows named the worked example as their
+  origin, and three fixtures reached it through `WorkedExampleOracle`. Two of
+  those three said `authored`, one corrected at 1.31.0 and one here, so the cell
+  was wrong more often than right among the fixtures the column exists to
+  describe. That is why the column gets a stated meaning rather than a second
+  quiet fix. Ten rows name it now, and none of the three says `authored`.
+
 ## [1.31.0] — 2026-07-31
 
 Checkpoint 2.2 signed off, and the fixture-naming rule narrowed to the half
