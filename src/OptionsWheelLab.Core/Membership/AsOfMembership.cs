@@ -43,6 +43,74 @@ namespace OptionsWheelLab.Core.Membership;
 /// </remarks>
 public sealed class AsOfMembership
 {
+    /// <summary>
+    /// The resolution, stated once. Every read on this surface runs this text.
+    /// </summary>
+    /// <remarks>
+    /// <b>One statement rather than one per member.</b> Two copies of this
+    /// ranking would drift the way two copies of one fact do, which is why 1.5
+    /// removed <c>Contract.DeliverableShares</c> once identity carried it. A
+    /// member answering a narrower question narrows the input, never the rule.
+    /// <para>
+    /// <b>Narrowing to one symbol cannot change that symbol's answer</b>, which
+    /// is what makes the shared text sound rather than merely tidy. The window
+    /// partitions by symbol, so a row's rank is computed against its own
+    /// symbol's transitions and against nothing else; removing other symbols'
+    /// rows removes rows from no partition that matters.
+    /// </para>
+    /// <para>
+    /// <b>The symbol predicate is substituted, not bound, and that was
+    /// measured.</b> Writing it as <c>($symbol IS NULL OR symbol = $symbol)</c>
+    /// would keep the text literally constant, and <c>EXPLAIN QUERY PLAN</c>
+    /// reports <c>SCAN watchlist_membership</c> for it where the direct
+    /// predicate reports <c>SEARCH ... (symbol=?)</c>: SQLite will not seek an
+    /// index through an <c>OR</c> on a parameter's nullness. A scan per call is
+    /// most of what a per-symbol read exists to avoid, so the predicate varies
+    /// and the ranking does not. The placeholder is a SQL comment, which keeps
+    /// the template valid SQL as written.
+    /// </para>
+    /// <para>
+    /// The ranking runs over every visible transition rather than any single
+    /// latest row, which is what makes "no query resolves membership from the
+    /// latest row alone" structural. The window's <c>ORDER BY</c> names both
+    /// axes where the choice is visible; neither is a decimal column, so the
+    /// decimal-ordering rule is untouched.
+    /// </para>
+    /// <para>
+    /// The <c>joined</c> filter is a parameter rendered through
+    /// <see cref="StoreMembershipKind"/>, never a literal restating the
+    /// declared form: a literal would return empty rather than fail if the
+    /// declared form ever moved.
+    /// </para>
+    /// </remarks>
+    private const string RankedMembership =
+        """
+        WITH ranked(symbol, kind, recency) AS (
+            SELECT symbol, kind,
+                   ROW_NUMBER() OVER (
+                       PARTITION BY symbol
+                       ORDER BY effective_on DESC, version DESC)
+            FROM watchlist_membership
+            WHERE effective_on <= $date
+              AND observed_at <= $asOf
+              /*symbol*/
+        )
+        SELECT symbol
+        FROM ranked
+        WHERE recency = 1 AND kind = $joined
+        ORDER BY symbol;
+        """;
+
+    /// <summary>
+    /// The placeholder the symbol predicate replaces, and the two things it
+    /// becomes.
+    /// </summary>
+    private const string SymbolPlaceholder = "/*symbol*/";
+
+    private const string EverySymbol = "";
+
+    private const string OneSymbol = "AND symbol = $symbol";
+
     private readonly SqliteConnection _connection;
 
     public AsOfMembership(SqliteConnection connection)
@@ -56,42 +124,30 @@ public sealed class AsOfMembership
     /// end of <paramref name="asOf"/>, in symbol order, empty when nothing had
     /// been observed by then.
     /// </summary>
-    /// <remarks>
-    /// The ranking runs over every visible transition rather than any single
-    /// latest row, which is what makes "no query resolves membership from the
-    /// latest row alone" structural. The window's <c>ORDER BY</c> names both
-    /// axes where the choice is visible; neither is a decimal column, so the
-    /// decimal-ordering rule is untouched.
-    /// <para>
-    /// The <c>joined</c> filter is a parameter rendered through
-    /// <see cref="StoreMembershipKind"/>, never a literal restating the
-    /// declared form: a literal would return empty rather than fail if the
-    /// declared form ever moved.
-    /// </para>
-    /// </remarks>
-    public IReadOnlyList<Ticker> MembersOn(DateOnly date, DateOnly asOf)
+    public IReadOnlyList<Ticker> MembersOn(DateOnly date, DateOnly asOf) =>
+        Resolve(date, asOf, symbol: null);
+
+    /// <summary>
+    /// The members the resolution returns, restricted to
+    /// <paramref name="symbol"/> when one is given and unrestricted when it is
+    /// not.
+    /// </summary>
+    private IReadOnlyList<Ticker> Resolve(DateOnly date, DateOnly asOf, Ticker? symbol)
     {
         using var command = _connection.CreateCommand();
-        command.CommandText =
-            """
-            WITH ranked(symbol, kind, recency) AS (
-                SELECT symbol, kind,
-                       ROW_NUMBER() OVER (
-                           PARTITION BY symbol
-                           ORDER BY effective_on DESC, version DESC)
-                FROM watchlist_membership
-                WHERE effective_on <= $date
-                  AND observed_at <= $asOf
-            )
-            SELECT symbol
-            FROM ranked
-            WHERE recency = 1 AND kind = $joined
-            ORDER BY symbol;
-            """;
+        command.CommandText = RankedMembership.Replace(
+            SymbolPlaceholder,
+            symbol is null ? EverySymbol : OneSymbol,
+            StringComparison.Ordinal);
         command.Parameters.AddWithValue("$date", StoreDate.ToStored(date));
         command.Parameters.AddWithValue("$asOf", AsOfBoundary.LastInstantOf(asOf));
         command.Parameters.AddWithValue(
             "$joined", StoreMembershipKind.ToStored(MembershipKind.Joined));
+
+        if (symbol is not null)
+        {
+            command.Parameters.AddWithValue("$symbol", symbol.Value);
+        }
 
         var members = new List<Ticker>();
         using var reader = command.ExecuteReader();
