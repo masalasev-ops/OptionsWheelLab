@@ -5,8 +5,9 @@ Appended to, never rewritten. The repository is the authority on build state.
 ## Current state
 
 **Phase 0 complete and reviewed. Phase 1 complete.** Checkpoints 0.1 to 0.8
-and 1.1 to 1.5 built and signed off. Phase 2's detail is written and no
-Phase 2 checkpoint is built. The documentation corpus is at v1.28.0.
+and 1.1 to 1.5 built and signed off. Phase 2 is open: 2.1's reconciliation
+of the worked example is built and under review, and no other Phase 2
+checkpoint is started. The documentation corpus is at v1.29.0.
 
 ## Log
 
@@ -869,3 +870,29 @@ delivered work. §5 was deliberately left unmarked: its two clocks are the
 fast and slow loops, which nothing has built, and GLOSSARY already records
 that 0.5's clock is unrelated, so marking it would have asserted the exact
 collision the glossary entry exists to prevent.
+
+### 2026-07-30 — corpus v1.29.0
+Checkpoint 2.1. The worked example's chain is reconciled with the gate it
+teaches. The three surviving strikes' asks tighten to spreads of 6.12 to
+7.02 percent of mid against the twelve percent cap, where 45.00 failed at
+18.18 and 47.50 passed by three hundredths; the ladder extends downward at
+its 2.50 spacing with a 42.50 failing the spread cap alone at 37.84 percent
+and a 40.00 failing the premium floor alone at half of it; 52.50 and 55.00
+stand unchanged as the two-reason case. No bid changed, so nothing
+downstream of the fill moved and the feasible set is still the three the
+later sections depend on. §3's banner comes down and its table carries
+every constraint operand and every failing reason; the expiry window and
+earnings clearance, which one snapshot cannot demonstrate, are stated as
+checkpoint 2.3's. The v1.6.0 obligation, the table's oldest row, is
+discharged: thirteen become twelve.
+
+Both pinning fixtures passed with zero test-code change, which is the
+oracle working as designed: it pins the symbol, the date, the expiry and
+the right, and parses everything else from the document.
+
+Two corrections rode along. `ContractQuote.cs` and the synthetic chain's
+delta comments deferred to Phase 2 a question D-W23 had settled the day it
+was written, the ceiling comparing absolute delta; both corrected, comment
+only [BE1]. And 1.28.0's record said 2.1's detail states that it registers
+no fixtures when the detail did not say it; the sentence is now on disk
+where the record claimed it was.

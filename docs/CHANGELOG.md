@@ -1,5 +1,37 @@
 # CHANGELOG
 
+## [1.29.0] — 2026-07-30
+
+Checkpoint 2.1: the worked example, reconciled.
+
+### Changed
+- The v1.6.0 reconciliation obligation is discharged and its row removed,
+  the oldest in the table, open for twenty-three corpus versions: thirteen
+  carried obligations become twelve.
+- 2.1's detail gains the sentence rule 2 requires of a checkpoint that
+  registers no fixtures: the two that pin the document are registered at 0.6
+  and 1.4, which is the coverage.
+
+### Fixed
+- The example was written before the contract-level gate existed and taught
+  a three-candidate feasible set the gate would render as two. Reconciled by
+  tightening the quoted markets on the three surviving strikes, and by
+  adding candidates that fail the constraints the example never
+  demonstrated. No bid changed, so nothing downstream of the fill moved.
+- §3's banner comes down, replaced with nothing, and its gate table carries
+  every constraint operand and every failing reason rather than the capital
+  cap alone. The two constraints one snapshot cannot demonstrate, the expiry
+  window and earnings clearance, are stated in §3 as checkpoint 2.3's.
+- Two comments deferred to Phase 2 a question D-W23 settled the day it was
+  written, the ceiling comparing absolute delta: `ContractQuote.cs` cited
+  the decision as leaving open what it settled, and the synthetic chain's
+  delta comment carried the same deferral uncited. Both corrected, comment
+  only, no behaviour change [BE1].
+- 1.28.0's entry said 2.1's detail states that it registers no fixtures, and
+  the detail did not say it: the record asserted a sentence never read back
+  off disk. The sentence is now in the detail, and the claim is true a
+  version after it was recorded.
+
 ## [1.28.0] — 2026-07-30
 
 Phase 2's detail, and the marker drift.
