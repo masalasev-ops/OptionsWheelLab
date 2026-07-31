@@ -161,11 +161,12 @@ Every figure from §4 onward derives from a bid or a close. That is what made th
 reconciliation small, and it is the property to check before revising the chain
 again.
 
-**§10's list of derived fixtures is not maintained by anything** and has gone
-incomplete twice, naming seven where the registry now cites this document in
-nine rows. It is a live listing of the kind `CLAUDE.md` §5 now forbids in
-checkpoint detail, and it is raised rather than corrected because the list is
-authored.
+**§10 lists seven derived fixtures where the registry cites this document in
+nine rows, and that is not a defect.** Its sentence claims that everything in
+its table is registered, which is true of all seven; it makes no claim in the
+other direction, and `FIXTURES.md` rule 4 says adding a fixture is not a doc
+change requiring propagation. The two absent rows are the chain loader's, out
+since Phase 0, and the enumerator's.
 
 ## Membership
 

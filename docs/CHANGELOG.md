@@ -1,5 +1,63 @@
 # CHANGELOG
 
+## [1.31.0] — 2026-07-31
+
+Checkpoint 2.2 signed off, and the fixture-naming rule narrowed to the half
+that was right.
+
+### Added
+- `prompts/spent/phase-2.md` carries 2.2's prompt with its three review rounds
+  folded in, and Current state is measured afresh: 401 tests, 261 across
+  twenty-nine fixtures and 140 across twenty-five unregistered suites, schema
+  still 5, twelve carried obligations. A `Lessons that transfer` section is new,
+  led by the mutation check.
+- `FIXTURES.md` registers `FX-WorkedExampleEnumerates` against 2.2, and its
+  build-state marker moves to thirty-one entries against 0.2 to 2.2, counted
+  from disk: twenty-nine fixtures and two guards.
+
+### Changed
+- `BUILD_PLAN.md` 2.2 is reconciled against what shipped, with three things
+  larger than scope: the per-symbol membership read that became one shared
+  ranking whose form a query plan chose, the two-right chain that closed a gap
+  every other check would have missed, and this round's rule change.
+- 2.2's detail records the three decisions its one-sentence scope left open:
+  what a candidate carries and what waits for 2.4, why one simulated date
+  reaching four parameters is a choice, and why enumeration filters on nothing
+  but position state and membership.
+
+### Fixed
+- `CLAUDE.md` §5 forbade naming fixtures in a prompt as well as in checkpoint
+  detail, and the prompt half was wrong, so the rule was followed in neither
+  place. Narrowed to checkpoint detail, with the reason stated: a detail is
+  living and a spent prompt is not. Four live **Test** lines now describe what
+  they test rather than naming fixtures; four names in three built checkpoints
+  stay as records of what was built, because editing a record to satisfy a rule
+  written after it is the failure the three-states rule exists to prevent.
+- `FX-WorkedExampleEnumerates`' Source column said `authored` where its
+  expectations come from `WORKED_EXAMPLE` §2 and §3.
+
+### Notes
+- The rule's predicted failure occurred exactly as predicted. 2.2's detail
+  named one of its two fixtures and went silently incomplete when the second was
+  registered, which is the incident the narrowed rule's closing words refer to
+  happening again.
+- One further Source cell disagrees with its fixture and is raised rather than
+  corrected, being authored: `FX-WorkedExampleChainPersists` reads `authored`
+  where it parses §2 and §5 through the same oracle calls as
+  `FX-WorkedExampleChainLoads`, which carries `WORKED_EXAMPLE §2, §5`. One
+  wrong cell in a supplied row is a transcription slip; a second in a row
+  nobody supplied means the convention is unchecked by anything.
+- The rest of the Source column was audited against what each fixture actually
+  reads and holds. `authored` does not mean "parses no document": the
+  configuration and registry fixtures parse `CONFIG_REFERENCE.md`,
+  `FIXTURES.md`, `DATA_AND_SCHEMA.md` and `guards.ps1` and are correctly
+  `authored`, because the column records whether the worked example is the
+  origin of the expectations rather than whether a file is read at runtime.
+  `WORKED_EXAMPLE.md` §10 was examined on the same suspicion and cleared: its
+  sentence claims only that its seven rows are registered, which is true, and
+  rule 4 states that adding a fixture is not a doc change requiring
+  propagation.
+
 ## [1.30.0] — 2026-07-30
 
 Checkpoint 2.1 signed off, and Phase 2 opens its archive.

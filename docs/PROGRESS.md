@@ -5,9 +5,9 @@ Appended to, never rewritten. The repository is the authority on build state.
 ## Current state
 
 **Phase 0 complete and reviewed. Phase 1 complete.** Checkpoints 0.1 to 0.8
-and 1.1 to 1.5 built and signed off. Phase 2 is open: 2.1 is built and
-signed off, and 2.2 to 2.5 are not started. The documentation corpus is at
-v1.30.0.
+and 1.1 to 1.5 built and signed off. Phase 2 is open: 2.1 and 2.2 are built
+and signed off, and 2.3 to 2.5 are not started. The documentation corpus is at
+v1.31.0.
 
 ## Log
 
@@ -914,3 +914,49 @@ header and README, in the one pair of documents that round did not sweep,
 because the sweep was for phase build state and this is present state. The
 two designated present-state records were the thing being counted, so the
 count was right and one of the two was lying about which it was.
+
+### 2026-07-31 — corpus v1.31.0
+Checkpoint 2.2, the first Phase 2 checkpoint that writes code, and the
+fixture-naming rule narrowed. The generator enumerates and stops there: a
+symbol, a simulated date and a position state in, contracts in identity order
+out, filtered on membership and position state and on nothing else. 401 tests,
+up twenty-three; schema unchanged at 5; no table, no decimal column and no
+config key, because enumeration reads no bound.
+
+Three decisions the detail's one sentence had left open are recorded in it. A
+candidate carries the quote and declines the four economics columns, since the
+quantity that computes committed capital is the open Phase 3 obligation and
+building it here means choosing between the multiplier and the deliverable at
+the checkpoint with no reason to. One simulated date reaches four parameters
+across two reads, written out at the call sites because the two axes exist in
+order to be able to differ. Enumeration is broad on purpose, which is what
+leaves the gate a record to be audited against.
+
+Two things review found that the detail had not thought to ask for. The
+per-symbol membership read had to be unable to disagree with the set read
+structurally rather than by agreeing across chosen cases, so one ranking serves
+both; measuring then chose its form, because holding the text literally
+constant through an `OR` on a parameter's nullness costs the index seek, `SCAN`
+where the direct predicate gives `SEARCH`. And every chain in this repository
+is puts, so three of the four position states were reported and none was
+tested; a two-right chain fixed that, and reintroducing the defect showed five
+of ten cases failing against a state-blind enumerator and four of four against
+a membership read that always answers yes.
+
+`CLAUDE.md` §5's rule against naming fixtures was followed in neither of its
+two halves, because one of them was wrong: a spent prompt is frozen and records
+what was asked, so naming fixtures there cannot go stale, where a checkpoint
+detail is read for years and gains fixtures after it is written. Narrowed to
+detail. Its predicted failure had already happened a second time, in 2.2's own
+detail, which named one of its two fixtures.
+
+The Source column was then audited against what each fixture reads, and the
+first reading of it was wrong. `authored` does not mean "parses no document":
+the configuration and registry fixtures parse four corpus files and are
+correctly `authored`, because the column records whether the worked example is
+the origin of the expectations. On that reading one further cell disagrees,
+`FX-WorkedExampleChainPersists`, and `WORKED_EXAMPLE.md` §10 does not: it
+claims only that its seven rows are registered, and rule 4 says adding a
+fixture requires no propagation. A claim this log carried in draft, that §10
+had gone silently incomplete, was withdrawn on that reading before it was
+recorded here.
