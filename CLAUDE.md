@@ -176,9 +176,12 @@ precedent.
   correction stated, not quietly overwritten. A reader must be able to see that
   a number changed and why.
 - **Fixtures live in `FIXTURES.md` and are referenced from there.** Do not
-  enumerate fixture names inline in a prompt or checkpoint. A prompt that lists
-  fixtures goes silently incomplete the moment one is added elsewhere, which has
-  happened.
+  enumerate fixture names in checkpoint detail. A detail that lists them goes
+  silently incomplete the moment one is registered elsewhere, which has happened
+  twice: once before this rule was written, and again at 2.2, whose detail named
+  one of its two fixtures. A prompt may name them, because a prompt is spent and
+  archived and records what was asked rather than what is true; that is the half
+  of this rule that was wrong and was ignored for it.
 
 ---
 

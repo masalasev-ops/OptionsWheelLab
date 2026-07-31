@@ -1005,7 +1005,8 @@ short leg enumerates nothing: rolling is permitted and bounded [D-W14], but
 no document states which contracts a roll enumerates, the bounds are Phase
 3's, and enumerating a guess would put an unrecorded rule into the decision
 path.
-- **Test** FX-OffWatchlistRejected, FX-WorkedExampleEnumerates.
+- **Test**: a non-member symbol enumerates nothing, and the worked example's
+  chain enumerates exactly the strikes its own tables state.
 - **DoD**: enumeration is a pure function of the chain, the membership
   answer and the position state, so the same inputs enumerate the same
   candidates in the same order [D-W4].
@@ -1013,12 +1014,49 @@ path.
   both rights. Every chain in the repository is puts, so a generator ignoring
   its state argument would pass every other check this checkpoint has.
 
+Reconciled at sign-off against what shipped. Three things were larger than the
+scope above. Two came out of review and one out of the build, and the
+difference matters: review found what the detail had not thought to ask for,
+and the build found a rule this corpus had been unable to follow.
+
+**The per-symbol read became one ranking, and measuring it chose the form.**
+The detail asked only that the gate be able to ask about one name. Review
+required the two members be unable to disagree structurally rather than by
+agreeing across chosen cases, which is the distinction between a property and
+evidence for one. The build then found that the obvious way to hold one text
+constant, an `OR` on the parameter's nullness, costs the seek: `EXPLAIN QUERY
+PLAN` reports a scan where the direct predicate reports a search on the
+symbol, and a scan per call is most of what a per-symbol read exists to avoid.
+So the ranking is stated once and only the predicate varies. The measurement
+changed the answer, which is why it was run rather than reasoned about.
+
+**The two-right chain closed a gap every other check would have missed.**
+Every chain in this repository is puts, so the four position states had one
+tested and three merely reported. An enumerator ignoring its state argument
+would have passed the registered fixtures, the worked-example oracle and the
+determinism suite alike. Review named the gap; the build answered it by
+reintroducing the defect, and five of the ten cases fail against a generator
+returning puts unconditionally, four of four against a membership read that
+always answers yes. The rolling states are asserted empty deliberately, so the
+day Phase 3 gives rolling a rule the suite says that 2.2 assumed otherwise.
+
+**The fixture-naming rule was half wrong, and this detail is the second
+incident.** The build reported that `CLAUDE.md` §5 forbade naming fixtures in
+a prompt as well as in checkpoint detail, and that every prompt in the project
+named them anyway, so the rule was followed in neither half. The prompt half
+was the wrong half: a spent prompt is frozen and records what was asked, where
+a detail is read for years and gains fixtures after it is written. The rule is
+now narrowed to detail, and this checkpoint's own Test line is the evidence
+for it, having named one of its two fixtures and gone incomplete when the
+second was registered. The remaining live Test lines describe what they test;
+the built ones keep their names as records of what was built.
+
 ### 2.3 The contract constraints
 The four families of [D-W22] to [D-W25]: liquidity as a spread cap and a
 premium floor, the delta ceiling, the expiry window, and earnings
 clearance.
-- **Test** FX-SpreadCapRejects, FX-PremiumFloorRejects,
-  FX-DeltaCeilingRejects, FX-DteWindowRejects, FX-EarningsClearanceRejects.
+- **Test**: each contract constraint rejects a candidate that breaches it and
+  admits one that does not.
 - Settles the crossed-quote obligation, which is this checkpoint's because
   the spread cap is what a crossed quote defeats: a negative numerator
   passes a cap meant to reject wide markets. If the gate handles one, 0.6's
@@ -1032,16 +1070,16 @@ admissible call strike.
 - Sets the three `Risk:` fractions, discharging that obligation. They are
   the operator's [D-W11], so record what each value means rather than
   choosing one and moving on.
-- **Test** FX-GateRejectsAboveHeadroom, FX-GrossBasisBindsCallStrike.
+- **Test**: a candidate whose committed capital exceeds the per-name headroom
+  is rejected, and a covered-call strike below gross basis is not admissible.
 - **DoD**: a cap is evaluated against committed capital as the store
   records it, not against a recomputed figure. The Phase 3 metric question
   is still open, so state which quantity this checkpoint reads and why.
 
 ### 2.5 The feasible set
 Assembly and ordering, and the record of what the gate refused.
-- **Test** FX-GateRecordsAllReasons: a candidate failing two constraints
-  carries both, which is why the gate evaluates every constraint rather
-  than short-circuiting.
+- **Test**: a candidate failing two constraints carries both, which is why
+  the gate evaluates every constraint rather than short-circuiting.
 - **DoD**: the set is ordered by contract identity, so three makers
   receiving it receive the same bytes [D-W4]. This is the first consumer of
   the total order 1.5 completed.
