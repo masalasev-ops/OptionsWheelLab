@@ -37,8 +37,13 @@ namespace OptionsWheelLab.Core.Membership;
 /// after a simulated instant is invisible to a read as of that instant.
 /// </para>
 /// <para>
-/// One member. A per-symbol read has no consumer until Phase 2 decides how the
-/// gate asks, and a member nothing calls is speculation.
+/// <b>Two members since 2.2, which is the checkpoint that decided how the gate
+/// asks.</b> The per-symbol read was withheld through Phase 1 on the grounds
+/// that a member nothing calls is speculation; the candidate generator is
+/// per-symbol, so it now has a caller. Answering it through
+/// <c>MembersOn(...).Contains(...)</c> would read the whole watchlist once per
+/// name per day, and both members resolve through one ranking, so the second
+/// member is a narrower question rather than a second answer.
 /// </para>
 /// </remarks>
 public sealed class AsOfMembership
@@ -126,6 +131,26 @@ public sealed class AsOfMembership
     /// </summary>
     public IReadOnlyList<Ticker> MembersOn(DateOnly date, DateOnly asOf) =>
         Resolve(date, asOf, symbol: null);
+
+    /// <summary>
+    /// Whether <paramref name="symbol"/> was a member on <paramref name="date"/>,
+    /// as known at the end of <paramref name="asOf"/>.
+    /// </summary>
+    /// <remarks>
+    /// The same resolution as <see cref="MembersOn"/>, asked of one name. It
+    /// cannot answer differently, because there is one ranking and this narrows
+    /// its input rather than restating its rule.
+    /// <para>
+    /// The candidate generator is this member's caller and asks per symbol,
+    /// which is why the narrower question exists at all [2.2].
+    /// </para>
+    /// </remarks>
+    public bool WasMemberOn(Ticker symbol, DateOnly date, DateOnly asOf)
+    {
+        ArgumentNullException.ThrowIfNull(symbol);
+
+        return Resolve(date, asOf, symbol).Count != 0;
+    }
 
     /// <summary>
     /// The members the resolution returns, restricted to
