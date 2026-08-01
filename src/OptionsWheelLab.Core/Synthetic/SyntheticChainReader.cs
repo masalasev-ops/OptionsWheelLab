@@ -453,25 +453,29 @@ public static class SyntheticChainReader
     }
 
     /// <summary>
-    /// The domain rules this reader enforces, and enforcing them here is
-    /// deliberate.
+    /// The domain rules this reader still enforces: a price cannot be negative.
     /// </summary>
     /// <remarks>
-    /// A crossed market is not an observation that existed, and a hand-written
-    /// one is a transposition. It matters more than it looks: the spread cap is a
-    /// fraction of mid [D-W22], so a crossed quote gives a negative numerator and
-    /// passes a cap that exists to reject wide markets.
-    /// <para>
     /// They are statements about what a market can be rather than about JSON, so
     /// a second producer of quotes could only duplicate them. Extracting them is
     /// a carried obligation owed at Phase 8, where the vendor ingest becomes that
     /// second producer, and it waits because there is one caller today.
+    /// <para>
+    /// <b>The crossed-market refusal was here until 2.3 and has moved to the
+    /// gate</b> [D-W22, as amended]. The 0.6 argument for keeping it here was
+    /// right about the risk and wrong about the venue. It is right that a crossed
+    /// quote defeats a spread cap taken as a fraction of mid, since the numerator
+    /// comes out negative and a cap meant to reject wide markets admits it. It
+    /// was wrong that this reader is where that is caught: Phase 8's vendor
+    /// ingest reaches the store without passing through here, so a refusal in
+    /// this file protects hand-written scenarios and nothing else, and would be
+    /// absent exactly when real data arrives. The gate sees every quote whatever
+    /// produced it, so the rule lives there and records its own reason.
     /// </para>
     /// <para>
-    /// The cost is recorded in carried obligations rather than here, because it
-    /// is real: no synthetic chain can now express a crossed or locked market, so
-    /// nothing can exercise the gate against one. Phase 2 decides whether the
-    /// gate handles it, and if it does this refusal moves there.
+    /// The consequence is that a crossed quote now loads, which is what lets a
+    /// fixture express one. A locked market, bid equal to ask, was never refused
+    /// here and still is not.
     /// </para>
     /// </remarks>
     private static void RefuseImpossibleMarket(
@@ -490,14 +494,6 @@ public static class SyntheticChainReader
             problems.Add($"{path}.ask: {ask} is negative, which is not a market that existed.");
         }
 
-        if (bid is not null && ask is not null && bid > ask)
-        {
-            problems.Add(
-                $"{path}: the bid {bid} is above the ask {ask}, which is a crossed market and "
-                + "is almost always a transposition. It is refused rather than carried, because "
-                + "a spread taken as a fraction of mid would come out negative and pass a cap "
-                + "meant to reject wide markets.");
-        }
     }
 
     private static void RefuseDuplicateBars(List<UnderlyingBar> bars, List<string> problems)
