@@ -6,7 +6,7 @@ Appended to, never rewritten. The repository is the authority on build state.
 
 **Phase 0 complete and reviewed. Phases 1 and 2 complete.** Checkpoints 0.1 to
 0.8, 1.1 to 1.5 and 2.1 to 2.5 built and signed off. Phase 3 is not started and
-its detail is not yet authored. The documentation corpus is at v1.34.1.
+its detail is authored. The documentation corpus is at v1.35.0.
 
 ## Log
 
@@ -1179,3 +1179,36 @@ marker describes the thing its section describes. Here it describes a second
 thing entirely, and a reader applying the usual reading gets a true sentence and
 the wrong picture, which is the same survival mechanism v1.31.1 recorded for a
 citation: a true statement beside a misleading one stops the reader checking.
+
+### 2026-08-01 — corpus v1.35.0
+Phase 3's checkpoint detail authored, five checkpoints: the mechanics settled
+before the machine, the completeness pass, the state machine and the ledger, the
+fill model and the costs, and determinism end to end. Documentation only; no
+code, and the suite is unchanged at 503.
+
+**Two of the five write no code, and the reason is the phase's load rather than
+its shape.** Eight of the thirteen standing obligations are owed at Phase 3, and
+five of those eight determine what the state machine does rather than sitting
+inside it: which quantity committed capital uses, what a covered call commits,
+how dividends are recorded, the settlement mechanics, and the completeness pass
+itself. A precondition answered late is a schema or a transition built twice,
+which is why 3.1 and 3.2 come first. That is the shape membership's schema had at
+1.3 and the worked example had at 2.1, at the largest scale it has appeared: one
+phase, three times over, and now five.
+
+**The mechanics are transcribed from OCC rather than recalled**, on D-W36's
+precedent. This project reasoned twice from a secondary source about contract
+adjustment and was wrong both times, so 3.1 requires each answer to cite a
+primary rule and 3.3's definition of done is that every transition cites a
+decision settled at 3.1.
+
+3.4's test line called the assigned-trial fixture the fourth pin on
+`WORKED_EXAMPLE.md`, and it is the seventh fixture to read that document and the
+first to read its ledger. Corrected before the detail landed rather than after,
+because a checkpoint's test line is acted on rather than read past.
+
+**A figure carried forward from when it was true rather than measured when it was
+written.** That is the shape, and it is the reason this corpus keeps removing
+counts and ordinals from prose that would otherwise have to be revisited every
+time the thing beneath it moves. The number of instances is the one figure this
+entry does not assert.

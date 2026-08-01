@@ -1,5 +1,33 @@
 # CHANGELOG
 
+## [1.35.0] — 2026-08-01
+
+Phase 3's checkpoint detail. Documentation only; no code, no schema, no config
+key, and the suite is unchanged at 503.
+
+### Added
+- Phase 3's detail, its five checkpoints, and the three fixtures moved to
+  checkpoint granularity. 3.1 settles the mechanics against OCC's own rules, 3.2
+  runs the completeness pass, 3.3 builds the state machine and the ledger, 3.4
+  the fill model and the costs, and 3.5 establishes end-to-end determinism.
+- The trailer moves on: detail for Phase 4 is authored when Phase 3 signs off.
+
+### Notes
+- Five of Phase 3's eight obligations determine what the state machine does
+  rather than sitting inside it, so 3.1 and 3.2 write no code. The same shape as
+  membership's schema blocking 1.3 and the worked example blocking Phase 2, at
+  the largest scale it has appeared.
+- 3.4's test line called the assigned-trial fixture the fourth pin on
+  `WORKED_EXAMPLE.md`. Six implemented fixtures already cite that document, and
+  eleven rows do once unbuilt checkpoints are counted, so it is the seventh to
+  read it and the first to read its ledger. Corrected before transcription
+  rather than after, because the sentence is what a reader of 3.4 acts on.
+- **The shape, which is what recurs: a figure carried forward from when it was
+  true rather than measured when it was written.** This corpus has removed
+  counts and ordinals for that reason repeatedly, and the number of instances is
+  the one figure this note must not assert, since the fix for a wrong count is
+  not a right count but not stating one.
+
 ## [1.34.1] — 2026-08-01
 
 One marker corrected, raised by 2.5's sweep and belonging to no checkpoint, so
