@@ -5,9 +5,9 @@ Appended to, never rewritten. The repository is the authority on build state.
 ## Current state
 
 **Phase 0 complete and reviewed. Phase 1 complete.** Checkpoints 0.1 to 0.8
-and 1.1 to 1.5 built and signed off. Phase 2 is open: 2.1 to 2.3 are built
-and signed off, and 2.4 and 2.5 are not started. The documentation corpus is at
-v1.32.0.
+and 1.1 to 1.5 built and signed off. Phase 2 is open: 2.1 to 2.4 are built
+and signed off, and 2.5 is not started. The documentation corpus is at
+v1.33.0.
 
 ## Log
 
@@ -1030,3 +1030,60 @@ the two are told apart only by defeating every site the behaviour has. The same
 class-versus-instance error appeared four times this checkpoint, in three
 searches and that mutation; what caught the ones that were caught was a
 compiler or an assertion counting, not a better search.
+
+### 2026-08-01 — corpus v1.33.0
+Checkpoint 2.4, the three portfolio caps and the gross-basis rule. 492 tests,
+up thirty-seven; schema unchanged at 5; four config keys added and their
+consumers verified; forty-two registry entries implemented against 0.2 to 2.4,
+counted from disk. The gate is whole apart from assembly, and both families can
+now fail one candidate.
+
+**The obligation was four keys rather than three, and finding that was the
+checkpoint's first work.** Every cap is a fraction of an account value that no
+key, column or table held: `WORKED_EXAMPLE.md` §1 states 100,000 in prose and
+nothing read it. It is configuration rather than a derived figure, and D-W11's
+own rationale is the argument, since a denominator computed from the run's own
+state moves with the run and a drawdown would loosen every cap at the moment it
+should bind. The detail asking for three fractions was corrected before the code.
+
+**Three of the four values are transcribed and only one is chosen, which is 0.8's
+distinction applied rather than restated.** §1 states the equity and both cap
+percentages and derives §3's headrooms from them. The simultaneous-assignment
+fraction is the choice, and its reason is arithmetic rather than appetite: a
+cash-secured put's committed capital is its assignment exposure, so a lower value
+makes the total cap unreachable and a higher one never binds. 0.8's argument for
+leaving these keys was about who decides, and it does not stop the decided values
+coinciding with the example's. Calling them proposals would have been that
+distinction inverted.
+
+**Two kinds of vacuity face in opposite directions and neither implies the
+other.** A cap tested against an empty portfolio passes whether or not it works,
+which is 1.1's empty-table shape, so every cap fixture carries a book and turns
+it off to show the exposure reaches the constraint. A cap whose bound is never
+reached also passes whether or not it is wired, and §1 derives two headrooms
+where only the per-name one reaches §3, so a total cap reading the wrong exposure
+reproduces §3 exactly. Both headrooms are now asserted through the functions the
+constraint compares against.
+
+**One mutation of thirteen passed everything, and the seeded values were what
+hid it.** The assignment limit reading `TotalCapFraction` instead of its own key
+is undetectable while the two are held equal, and nothing forbids an operator
+setting them apart, since no invariant ties them and the relationship changes at
+Phase 3. Two assertions were added at a configuration the store does not hold and
+could. That is 2.3's lesson one level up: there a mutation confined to one site
+left another site still raising, and here a value equal to its neighbour left a
+field unreadable from any verdict. Defaulting only the decimal half of the shared
+bound resolution reproduced 2.3's original result exactly, the integer half
+keeping `GateBoundsTests` green.
+
+**The citation pattern reaches six, and the method is now the finding.** §3 cited
+the per-name headroom to D-W10, which states where the gate lives, where every
+other constraint in that sentence cites the decision that states it. Found the
+same way as the other five, by building the thing that rests on the citation.
+Reading the documents alone has found none of the six.
+
+D-W19 gains its boundary. It said "above basis" and left a strike exactly at
+basis unsaid; a strike at basis recovers the outlay exactly, so excluding it
+would forbid the break-even strike for no stated reason. §3's verdicts, written
+at 2.1 before any gate existed, held on the first run of the completed gate with
+nothing stripped.

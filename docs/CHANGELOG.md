@@ -1,5 +1,75 @@
 # CHANGELOG
 
+## [1.33.0] — 2026-08-01
+
+Checkpoint 2.4: the three portfolio caps and the gross-basis rule, and the
+account value every cap divides by.
+
+### Added
+- `Risk:Equity`, a configuration key rather than a figure derived from cash and
+  open positions. D-W11's own rationale is the argument: the caps are structural
+  because the sample cannot price the tail, and a denominator computed from the
+  run's own state moves with the run, so a drawdown would loosen every cap at
+  the moment it should bind. `rows`-classed under [D-W27], since a cap is read
+  while producing a simulated decision.
+- The four `Risk:` keys are set at version 1, discharging the PR #7 obligation.
+  Three are transcribed from `WORKED_EXAMPLE.md` section 1 and only the
+  simultaneous-assignment fraction is chosen; each Note says which. Twelve
+  carried obligations stand.
+- `PortfolioBounds`, a second bound record rather than four more fields on
+  `GateBounds`. The two families are evaluated apart, so widening would make
+  every contract-constraint site supply numbers that family cannot read.
+- `CommittedCapital`, one site, because which quantity D-W17 means is Phase 3's
+  open obligation. It reads the deliverable and says why rather than deciding:
+  identity has carried it since 1.5, the multiplier never reaches a quote, and
+  for a standard contract both are one hundred.
+- `BookState`, the exposure and basis the caps read, taken as a parameter
+  because `positions` is Phase 3's. Assignment exposure is not a field on it: it
+  is committed capital today, derived where it is compared and stated there.
+- Four gate reasons and their stored forms, contract grounds then portfolio
+  grounds. `FX-TotalCapRejectsAboveHeadroom` and `FX-AssignmentStressRejects`
+  registered against 2.4, and the two already registered there get their files.
+  The marker moves to forty-two entries against 0.2 to 2.4, counted from disk.
+
+### Changed
+- D-W19 states its own boundary. It said "above basis" and the registry said
+  "below gross basis is refused", which left a strike exactly at basis unsaid. A
+  strike at basis recovers the outlay exactly, so excluding it would forbid the
+  break-even strike for no stated reason.
+- `GateFor` takes the book required rather than defaulted. An omitted book
+  carries nothing and a cap against an empty book admits everything, so
+  forgetting one would drop three structural risk controls silently.
+- `FX-WorkedExampleGateVerdicts` stops stripping the per-name cap and
+  reproduces section 3 whole. It also asserts both headrooms section 1 derives,
+  because a cap whose bound is never reached passes whether or not it is wired:
+  no candidate on that chain comes within 16,500.00 of the total headroom.
+- D-W37's refusal moved out of `GateBounds` into an internal helper both records
+  call, so the message an operator reads when a run stops exists once.
+
+### Fixed
+- `WORKED_EXAMPLE.md` section 3 cited the per-name headroom to [D-W10], which
+  states where the gate lives; the cap is [D-W11]'s. Sixth instance of this
+  pattern and found the same way as the other five, by building the thing that
+  rests on the citation. The count is now large enough that the method is the
+  finding rather than the individual error: reading a decision because something
+  rests on it has found a wrong citation six times, and reading the documents
+  alone found none of them.
+
+### Notes
+- Section 3's verdicts held on the first run of the completed gate, both reasons
+  on 52.50 and 55.00, nothing stripped. They were written at 2.1 before any gate
+  existed and have now been met twice.
+- Thirteen mutations were run and one passed everything: the assignment limit
+  reading `TotalCapFraction` instead of its own key. Not a weak test so much as
+  the seeded values hiding the binding, the two fractions being held equal by
+  choice. Two assertions were added at a configuration the store does not hold
+  and could. This is 2.3's lesson one level up, where a mutation confined to one
+  site left another still raising; here a value equal to its neighbour left a
+  field unreadable from any verdict.
+- Defaulting only the decimal half of the shared bound resolution still left
+  `GateBoundsTests` passing, because the integer half kept raising. The same
+  shape 2.3 recorded, reproduced through the helper that now serves two records.
+
 ## [1.32.0] — 2026-07-31
 
 Checkpoint 2.3: the four contract constraints, each reading its bound as of the
