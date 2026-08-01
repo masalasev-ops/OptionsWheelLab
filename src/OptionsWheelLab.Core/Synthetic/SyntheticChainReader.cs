@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Text.Json;
 using OptionsWheelLab.Core.Identity;
+using OptionsWheelLab.Core.MarketData;
 using OptionsWheelLab.Core.Storage;
 
 namespace OptionsWheelLab.Core.Synthetic;
@@ -47,7 +48,9 @@ public static class SyntheticChainReader
         AllowTrailingCommas = true,
     };
 
-    private static readonly string[] RootProperties = ["symbol", "bars", "chains"];
+    private static readonly string[] RootProperties = ["symbol", "bars", "chains", "earnings"];
+
+    private static readonly string[] EarningsProperties = ["date", "session"];
 
     private static readonly string[] BarProperties =
         ["date", "close", "open", "high", "low", "adjustedClose", "volume"];
@@ -111,6 +114,7 @@ public static class SyntheticChainReader
         var symbol = ReadSymbol(root, problems);
         var bars = ReadBars(root, symbol, problems);
         var quotes = ReadChains(root, symbol, problems);
+        var earnings = ReadEarnings(root, problems);
 
         if (symbol is null)
         {
@@ -119,13 +123,110 @@ public static class SyntheticChainReader
 
         RefuseDuplicateBars(bars, problems);
         RefuseDuplicateQuotes(quotes, problems);
+        RefuseDuplicateEarnings(earnings, problems);
 
         return new SyntheticChain(
             symbol,
             [.. bars.OrderBy(bar => bar.SessionDate)],
             [.. quotes
                 .OrderBy(quote => quote.SnapshotDate)
-                .ThenBy(quote => quote.Contract)]);
+                .ThenBy(quote => quote.Contract)],
+            [.. earnings.OrderBy(report => report.ReportDate)]);
+    }
+
+    /// <summary>
+    /// The scheduled reports the file states, or none when it states no
+    /// <c>earnings</c> array at all.
+    /// </summary>
+    /// <remarks>
+    /// <b>Optional, where <c>bars</c> and <c>chains</c> are not.</b> Every
+    /// scenario written before 2.3 predates this property, and a scenario with
+    /// no scheduled report is the ordinary case rather than an incomplete file.
+    /// Absence and emptiness therefore mean the same thing here, which
+    /// <see cref="SyntheticChain"/> records as the cost of the choice.
+    /// </remarks>
+    private static List<EarningsReport> ReadEarnings(JsonElement root, List<string> problems)
+    {
+        var reports = new List<EarningsReport>();
+
+        if (!root.TryGetProperty("earnings", out var array))
+        {
+            return reports;
+        }
+
+        if (array.ValueKind != JsonValueKind.Array)
+        {
+            problems.Add("the file.earnings: expected an array.");
+            return reports;
+        }
+
+        var index = 0;
+
+        foreach (var element in array.EnumerateArray())
+        {
+            var path = $"the file.earnings[{index++}]";
+
+            if (!IsObject(element, path, problems))
+            {
+                continue;
+            }
+
+            RefuseUnknown(element, EarningsProperties, path, problems);
+
+            var date = RequiredDate(element, "date", path, problems);
+            var session = RequiredSession(element, path, problems);
+
+            if (date is null || session is null)
+            {
+                continue;
+            }
+
+            reports.Add(new EarningsReport(date.Value, session.Value));
+        }
+
+        return reports;
+    }
+
+    /// <summary>
+    /// The session, rendered through its declared stored form rather than
+    /// parsed by name [DATA_AND_SCHEMA §4.1].
+    /// </summary>
+    private static EarningsSession? RequiredSession(
+        JsonElement element,
+        string path,
+        List<string> problems)
+    {
+        var raw = RequiredString(element, "session", path, problems);
+
+        if (raw is null)
+        {
+            return null;
+        }
+
+        try
+        {
+            return StoreEarningsSession.ParseStored(raw);
+        }
+        catch (FormatException exception)
+        {
+            problems.Add($"{path}.session: {exception.Message}");
+            return null;
+        }
+    }
+
+    private static void RefuseDuplicateEarnings(
+        List<EarningsReport> reports,
+        List<string> problems)
+    {
+        foreach (var duplicate in reports
+            .GroupBy(report => report.ReportDate)
+            .Where(group => group.Count() > 1)
+            .OrderBy(group => group.Key))
+        {
+            problems.Add(
+                $"the file.earnings: {StoreDate.ToStored(duplicate.Key)} is stated "
+                + $"{duplicate.Count()} times. One date carries one scheduled report.");
+        }
     }
 
     private static Ticker? ReadSymbol(JsonElement root, List<string> problems)
@@ -352,25 +453,29 @@ public static class SyntheticChainReader
     }
 
     /// <summary>
-    /// The domain rules this reader enforces, and enforcing them here is
-    /// deliberate.
+    /// The domain rules this reader still enforces: a price cannot be negative.
     /// </summary>
     /// <remarks>
-    /// A crossed market is not an observation that existed, and a hand-written
-    /// one is a transposition. It matters more than it looks: the spread cap is a
-    /// fraction of mid [D-W22], so a crossed quote gives a negative numerator and
-    /// passes a cap that exists to reject wide markets.
-    /// <para>
     /// They are statements about what a market can be rather than about JSON, so
     /// a second producer of quotes could only duplicate them. Extracting them is
     /// a carried obligation owed at Phase 8, where the vendor ingest becomes that
     /// second producer, and it waits because there is one caller today.
+    /// <para>
+    /// <b>The crossed-market refusal was here until 2.3 and has moved to the
+    /// gate</b> [D-W22, as amended]. The 0.6 argument for keeping it here was
+    /// right about the risk and wrong about the venue. It is right that a crossed
+    /// quote defeats a spread cap taken as a fraction of mid, since the numerator
+    /// comes out negative and a cap meant to reject wide markets admits it. It
+    /// was wrong that this reader is where that is caught: Phase 8's vendor
+    /// ingest reaches the store without passing through here, so a refusal in
+    /// this file protects hand-written scenarios and nothing else, and would be
+    /// absent exactly when real data arrives. The gate sees every quote whatever
+    /// produced it, so the rule lives there and records its own reason.
     /// </para>
     /// <para>
-    /// The cost is recorded in carried obligations rather than here, because it
-    /// is real: no synthetic chain can now express a crossed or locked market, so
-    /// nothing can exercise the gate against one. Phase 2 decides whether the
-    /// gate handles it, and if it does this refusal moves there.
+    /// The consequence is that a crossed quote now loads, which is what lets a
+    /// fixture express one. A locked market, bid equal to ask, was never refused
+    /// here and still is not.
     /// </para>
     /// </remarks>
     private static void RefuseImpossibleMarket(
@@ -389,14 +494,6 @@ public static class SyntheticChainReader
             problems.Add($"{path}.ask: {ask} is negative, which is not a market that existed.");
         }
 
-        if (bid is not null && ask is not null && bid > ask)
-        {
-            problems.Add(
-                $"{path}: the bid {bid} is above the ask {ask}, which is a crossed market and "
-                + "is almost always a transposition. It is refused rather than carried, because "
-                + "a spread taken as a fraction of mid would come out negative and pass a cap "
-                + "meant to reject wide markets.");
-        }
     }
 
     private static void RefuseDuplicateBars(List<UnderlyingBar> bars, List<string> problems)

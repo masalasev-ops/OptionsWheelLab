@@ -103,21 +103,45 @@ public sealed class FX_MalformedChainFailsWhole
     }
 
     /// <summary>
-    /// The one domain rule the loader enforces, and what it costs is carried at
-    /// Phase 2.
+    /// A crossed quote loads, because the rule moved to the gate at 2.3.
     /// </summary>
     /// <remarks>
-    /// A crossed market is not an observation that existed. The spread cap is a
-    /// fraction of mid [D-W22], so a crossed quote gives a negative numerator and
-    /// passes a cap that exists to reject wide markets.
+    /// <b>This case asserted the opposite until 2.3 and is inverted rather than
+    /// deleted</b>, because what the loader enforces is smaller than it was and
+    /// a silent removal would leave nothing saying so. The refusal was right
+    /// about the risk and wrong about the venue: Phase 8's vendor ingest reaches
+    /// the store without passing this reader, so the gate rejects a crossed
+    /// quote with its own reason [D-W22, as amended] and the loader carries it
+    /// through. That is what lets a fixture express one at all.
+    /// <para>
+    /// The negative-price refusals below are unchanged, so this suite still
+    /// holds that the reader enforces something about what a market can be.
+    /// </para>
     /// </remarks>
     [Fact]
-    public void A_bid_above_its_ask_is_refused()
+    public void A_bid_above_its_ask_now_loads_because_the_gate_owns_that_rule()
     {
-        var problems = Refused(Chain(
+        var chain = SyntheticChainReader.Read(Chain(
             """{ "strike": "45.00", "bid": "0.40", "ask": "0.36" }"""));
 
-        Assert.Contains(problems, problem => problem.Contains("crossed", StringComparison.Ordinal));
+        var quote = Assert.Single(chain.Quotes);
+
+        Assert.Equal(0.40m, quote.Bid);
+        Assert.Equal(0.36m, quote.Ask);
+    }
+
+    /// <summary>
+    /// A locked market was never refused here and still is not.
+    /// </summary>
+    [Fact]
+    public void A_locked_market_loads()
+    {
+        var chain = SyntheticChainReader.Read(Chain(
+            """{ "strike": "45.00", "bid": "0.36", "ask": "0.36" }"""));
+
+        var quote = Assert.Single(chain.Quotes);
+
+        Assert.Equal(quote.Ask, quote.Bid);
     }
 
     [Fact]

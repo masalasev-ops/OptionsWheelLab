@@ -17,7 +17,7 @@ predates this file and cannot be relied on.
 **Purpose and measurement**: D-W2, D-W3, D-W5, D-W17, D-W18, D-W20, D-W21
 **Isolation and controls**: D-W1, D-W4, D-W6, D-W13
 **Data and identity**: D-W7, D-W8, D-W9, D-W15, D-W26, D-W27, D-W28, D-W29, D-W30, D-W31, D-W32, D-W34, D-W35, D-W36
-**Risk**: D-W10, D-W11, D-W14, D-W19, D-W23, D-W25
+**Risk**: D-W10, D-W11, D-W14, D-W19, D-W23, D-W25, D-W37
 **Gate constraints**: D-W10, D-W22, D-W23, D-W24, D-W25
 **Scope**: D-W12, D-W16
 **Verification mechanisms**: D-W28, D-W33
@@ -347,6 +347,14 @@ The gate rejects a candidate whose quoted spread exceeds
 `Gate:MinPremium`. Proposed defaults are 0.12, being twelve percent of mid, and
 0.30, both Phase 0.8 config.
 
+It also rejects a quote whose bid exceeds its ask. A crossed market is not a
+quote at a bad price but an artefact of a stale or broken feed, and it is the
+sharpest case of the rationale below: its spread as a fraction of mid is
+negative, so a cap meant to reject wide markets admits it, and it can present as
+the best available while being untransactable. Recorded as its own reason rather
+than as the spread cap, because a negative spread is not a spread above a cap and
+the audit trail should not say it was.
+
 Rationale, and the first reason matters more than the second. **The filter
 protects the measurement, not only the trade.** The scorer computes an outcome
 for every candidate in the feasible set [D-W5], and regret is measured against
@@ -365,6 +373,8 @@ Consequence: the gate rejects on both grounds independently and records every
 failing reason rather than the first, so a candidate failing two constraints
 shows both.
 
+Test FX-CrossedQuoteRejected: a quote whose bid exceeds its ask is rejected with
+the crossed reason recorded.
 Test FX-SpreadCapRejects: a candidate whose spread exceeds the cap is rejected
 with the spread reason recorded.
 Test FX-PremiumFloorRejects: a candidate whose bid falls below the floor is
@@ -425,8 +435,9 @@ no tighter than any configured policy band's upper bound.
 ### D-W24 Days-to-expiry window in the gate
 `active` · 2026-07-27, amended 2026-07-27 (enforcement point)
 
-The gate rejects a candidate whose days to expiry fall outside
-`Gate:MinDte` to `Gate:MaxDte`. Proposed defaults 7 and 70, Phase 0.8 config.
+The gate rejects a candidate whose days to expiry fall outside the inclusive
+range `Gate:MinDte` to `Gate:MaxDte`. Proposed defaults 7 and 70, Phase 0.8
+config.
 
 Rationale for the upper bound: capital sits committed for the whole life of the
 contract, and long-dated contracts carry wider spreads while returning less per
@@ -475,6 +486,21 @@ earnings cycles to price them, which will take years rather than months.
 Buffered on both sides because the calendar date itself moves. A vendor date can
 shift by days, and an unbuffered filter would admit a contract that turns out to
 span the report.
+
+The buffer is inclusive of its edge: a report exactly
+`Gate:EarningsClearanceDays` from either end of the contract's life is inside the
+window and rejects. A window excluding its own edge would admit a report at
+precisely the distance the buffer was sized for, which is the case the buffer
+exists to catch, and the shift it guards against moves a date by days rather than
+by fractions of one.
+
+Note the comparisons here are not uniform across the gate and each is stated
+where it binds: the spread cap and the delta ceiling reject on "exceeds", the
+premium floor rejects a bid strictly below it [D-W22], which WORKED_EXAMPLE §3
+corroborates rather than supplies, the expiry window admits its own bounds
+[D-W24], and this buffer includes its edge. They differ because the quantities
+differ, so the rule is that each decision states its own boundary rather than
+that one convention governs.
 
 Test FX-EarningsClearanceRejects: a candidate whose life contains a report date
 within the buffer is rejected with the earnings reason recorded.
@@ -871,3 +897,26 @@ multiplier or the deliverable, is unaffected and stays open: both columns
 are recorded as stated, so either answer reads a transcribed value.
 
 Test FX-CorporateActionMintsSuccessor: covered.
+
+---
+
+### D-W37 A constraint that cannot resolve its bound stops the evaluation
+`active` · 2026-07-31
+
+When a gate constraint cannot resolve its bound as of the simulated date, the
+evaluation fails with a message naming the key and the date. It does not admit
+the candidate, and it does not reject it.
+
+Rationale. Admitting silently drops a structural risk control [D-W11] and leaves
+a run that looks normal and is unconstrained. Rejecting presents a
+misconfiguration as an absence of opportunity, and a run of empty feasible sets
+is indistinguishable from a quiet market. Neither is recoverable from the
+record, which is what the record exists for [D-W5]. This is the read-side of
+[D-W34]: a write that leaves an invariant unevaluable is refused, and a read
+that leaves a constraint unevaluable stops for the same reason.
+
+Bounds are resolved once per evaluation rather than per candidate, so an
+unresolvable bound produces one message rather than one per contract.
+
+Test: a constraint evaluated at a simulated date before its bound was written
+fails naming the key and the date.

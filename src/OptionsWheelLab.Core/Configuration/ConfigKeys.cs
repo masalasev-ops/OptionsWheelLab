@@ -10,15 +10,26 @@ namespace OptionsWheelLab.Core.Configuration;
 /// and for the same reason: the check reads its subject from one list that can
 /// be checked against <c>CONFIG_REFERENCE.md</c>.
 /// <para>
-/// Only the keys the invariants operate over are named here. The rest of the
-/// store's keys are the seeder's business and are declared with their values,
-/// because a key with no code that reads it has nothing to name it for.
+/// Two reasons a key is named here: an invariant operates over it, or code
+/// reads it. Until 2.3 only the first applied, so `Gate:MaxDelta` and
+/// `Gate:MaxDte` were here and the other four gate bounds were literals in the
+/// seeder. The gate reads all six as of the simulated date [D-W26], so all six
+/// are named and none is a literal at a call site.
+/// </para>
+/// <para>
+/// The rest of the store's keys are still the seeder's business and are
+/// declared with their values, because a key with no code that reads it has
+/// nothing to name it for.
 /// </para>
 /// </remarks>
 public static class ConfigKeys
 {
+    public const string GateMaxSpreadFractionOfMid = "Gate:MaxSpreadFractionOfMid";
+    public const string GateMinPremium = "Gate:MinPremium";
     public const string GateMaxDelta = "Gate:MaxDelta";
+    public const string GateMinDte = "Gate:MinDte";
     public const string GateMaxDte = "Gate:MaxDte";
+    public const string GateEarningsClearanceDays = "Gate:EarningsClearanceDays";
     public const string TrialMaxTrialDays = "Trial:MaxTrialDays";
 
     public const string BaselineDeltaMax = "Policy:Baseline:DeltaMax";

@@ -1,3 +1,4 @@
+using OptionsWheelLab.Core.Generation;
 using OptionsWheelLab.Core.Identity;
 using OptionsWheelLab.Core.Positions;
 using OptionsWheelLab.Core.Storage;
@@ -5,7 +6,8 @@ using OptionsWheelLab.Core.Storage;
 namespace OptionsWheelLab.Tests;
 
 /// <summary>
-/// The stored forms of a date, a contract right and a position state.
+/// The stored forms of a date, a contract right, a position state and a gate
+/// reason.
 /// </summary>
 /// <remarks>
 /// Not registered fixtures, so deliberately not named <c>FX-*</c>:
@@ -184,6 +186,100 @@ public sealed class StoredFormTests
         var named = declared.Where(tag => paragraph.Contains($"`{tag}`", StringComparison.Ordinal));
 
         Assert.Equal(declared, named);
+    }
+
+    [Fact]
+    public void A_gate_reason_stores_lower_case_and_round_trips()
+    {
+        Assert.Equal("spread_cap", StoreGateReason.ToStored(GateReason.SpreadCap));
+        Assert.Equal("premium_floor", StoreGateReason.ToStored(GateReason.PremiumFloor));
+        Assert.Equal("crossed_market", StoreGateReason.ToStored(GateReason.CrossedMarket));
+        Assert.Equal("delta_ceiling", StoreGateReason.ToStored(GateReason.DeltaCeiling));
+        Assert.Equal("expiry_window", StoreGateReason.ToStored(GateReason.ExpiryWindow));
+        Assert.Equal(
+            "earnings_clearance", StoreGateReason.ToStored(GateReason.EarningsClearance));
+
+        Assert.All(
+            Enum.GetValues<GateReason>(),
+            reason => Assert.Equal(
+                reason, StoreGateReason.ParseStored(StoreGateReason.ToStored(reason))));
+    }
+
+    [Fact]
+    public void The_stored_reason_is_not_the_enum_spelling()
+    {
+        Assert.NotEqual(
+            nameof(GateReason.SpreadCap), StoreGateReason.ToStored(GateReason.SpreadCap));
+
+        Assert.NotEqual(
+            nameof(GateReason.SpreadCap).ToLowerInvariant(),
+            StoreGateReason.ToStored(GateReason.SpreadCap));
+
+        Assert.Throws<FormatException>(() => StoreGateReason.ParseStored("SpreadCap"));
+        Assert.Throws<FormatException>(() => StoreGateReason.ParseStored("spreadcap"));
+    }
+
+    [Fact]
+    public void An_unrecognised_reason_is_refused_rather_than_defaulted()
+    {
+        Assert.Throws<FormatException>(() => StoreGateReason.ParseStored("per_name_cap"));
+        Assert.Throws<FormatException>(() => StoreGateReason.ParseStored(""));
+
+        var thrown = Assert.Throws<ArgumentOutOfRangeException>(
+            () => StoreGateReason.ToStored(default));
+
+        Assert.Contains("not a gate reason", thrown.Message, StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    /// Every declared reason names a decision that states its ground.
+    /// </summary>
+    /// <remarks>
+    /// The rule 2.3 established when the gate was about to reject a crossed
+    /// quote on a ground D-W22 did not state. Read off the enum's own summaries,
+    /// so a reason added without a bracketed decision fails here rather than
+    /// reaching the audit trail unaccounted for.
+    /// </remarks>
+    [Fact]
+    public void Every_gate_reason_cites_a_decision_in_its_summary()
+    {
+        var source = File.ReadAllText(
+            Path.Combine(RepoRoot.SourcePath, "OptionsWheelLab.Core", "Generation", "GateReason.cs"));
+
+        var undocumented = Enum
+            .GetValues<GateReason>()
+            .Where(reason => !CitesADecision(source, reason.ToString()))
+            .ToList();
+
+        Assert.NotEmpty(Enum.GetValues<GateReason>());
+
+        Assert.True(
+            undocumented.Count == 0,
+            "These gate reasons have no summary naming the decision that states their ground: "
+            + string.Join(", ", undocumented)
+            + ". A reason with no decision behind it is a rule nobody agreed to.");
+    }
+
+    /// <summary>
+    /// The member's own summary line carries a <c>[D-Wnn]</c> bracket.
+    /// </summary>
+    private static bool CitesADecision(string source, string member)
+    {
+        var declaration = source.IndexOf($"{member} =", StringComparison.Ordinal);
+
+        if (declaration == -1)
+        {
+            return false;
+        }
+
+        // The summary sits above the declaration, so look back to the previous
+        // blank line rather than forward.
+        var preceding = source[..declaration];
+        var summaryStart = preceding.LastIndexOf("/// <summary>", StringComparison.Ordinal);
+
+        return summaryStart != -1
+            && System.Text.RegularExpressions.Regex.IsMatch(
+                preceding[summaryStart..], @"\[D-W\d+\]");
     }
 
     /// <summary>

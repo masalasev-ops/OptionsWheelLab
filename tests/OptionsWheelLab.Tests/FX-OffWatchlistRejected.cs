@@ -212,6 +212,8 @@ public sealed class FX_OffWatchlistRejected
             Ask: 1.01m,
             Delta: -0.24m));
 
-        return new SyntheticChain(symbol, [], [.. quotes]);
+        // No earnings: this fixture is about membership, so the earnings
+        // constraint has nothing to read and admits throughout.
+        return new SyntheticChain(symbol, [], [.. quotes], []);
     }
 }

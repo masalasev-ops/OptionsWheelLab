@@ -42,9 +42,11 @@ namespace OptionsWheelLab.Core.MarketData;
 /// one vocabulary and the same oracle 0.6's fixture uses.
 /// </para>
 /// <para>
-/// <c>corporate_actions</c> and <c>earnings_calendar</c> reads are deliberately
-/// absent: their first consumers are 1.5 and Phase 2, and a member nothing calls
-/// is speculation.
+/// <c>earnings_calendar</c> got its read at 2.3, when the clearance constraint
+/// became its first consumer [D-W25]. The <c>corporate_actions</c> read is still
+/// deliberately absent: 1.5 reaches a predecessor link through
+/// <c>ContractLineage</c>, which is timeless, and no consumer wants the actions
+/// in force at a date yet.
 /// </para>
 /// </remarks>
 public sealed class AsOfMarketData
@@ -190,6 +192,70 @@ public sealed class AsOfMarketData
         }
 
         return [.. quotes.OrderBy(quote => quote.Contract)];
+    }
+
+    /// <summary>
+    /// The scheduled report dates for <paramref name="symbol"/> falling between
+    /// <paramref name="from"/> and <paramref name="to"/> inclusive, as known at
+    /// the end of <paramref name="asOf"/>, in date order.
+    /// </summary>
+    /// <remarks>
+    /// The caller passes the buffered window rather than the contract's life, so
+    /// the buffer's arithmetic lives with the constraint that owns it [D-W25]
+    /// and this read stays a plain range query. Both ends are inclusive, which
+    /// is what makes the buffer's own edge inclusive without this method knowing
+    /// what a buffer is.
+    /// <para>
+    /// The session is not returned. D-W25 reads the date only, and a value
+    /// nothing consumes would be speculation; the column is written so a vendor
+    /// that supplies it does not have the fact discarded, not so this read can
+    /// hand it out.
+    /// </para>
+    /// <para>
+    /// The latest observation per report date comes from a CTE with declared
+    /// column names, the same shape <see cref="QuotesFor"/> uses. A correction
+    /// appends [D-W8], so without the grouping a corrected date would return
+    /// twice.
+    /// </para>
+    /// </remarks>
+    public IReadOnlyList<DateOnly> ReportDatesFor(
+        Ticker symbol,
+        DateOnly from,
+        DateOnly to,
+        DateOnly asOf)
+    {
+        ArgumentNullException.ThrowIfNull(symbol);
+
+        using var command = _connection.CreateCommand();
+        command.CommandText =
+            """
+            WITH latest(report_date, observed_at) AS (
+                SELECT report_date, MAX(observed_at)
+                FROM earnings_calendar
+                WHERE symbol = $symbol
+                  AND report_date >= $from
+                  AND report_date <= $to
+                  AND observed_at <= $asOf
+                GROUP BY report_date
+            )
+            SELECT report_date
+            FROM latest
+            ORDER BY report_date;
+            """;
+        command.Parameters.AddWithValue("$symbol", symbol.Value);
+        command.Parameters.AddWithValue("$from", StoreDate.ToStored(from));
+        command.Parameters.AddWithValue("$to", StoreDate.ToStored(to));
+        command.Parameters.AddWithValue("$asOf", AsOfBoundary.LastInstantOf(asOf));
+
+        var dates = new List<DateOnly>();
+        using var reader = command.ExecuteReader();
+
+        while (reader.Read())
+        {
+            dates.Add(StoreDate.ParseStored(reader.GetString(0)));
+        }
+
+        return dates;
     }
 
     private static decimal? OptionalDecimal(SqliteDataReader reader, int ordinal) =>

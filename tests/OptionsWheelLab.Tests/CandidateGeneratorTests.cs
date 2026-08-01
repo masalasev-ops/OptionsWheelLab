@@ -262,6 +262,9 @@ public sealed class CandidateGeneratorTests
                 Ask: 1.10m,
                 Delta: right == OptionRight.Put ? -0.25m : 0.25m);
 
-        return new SyntheticChain(symbol, [], [.. quotes]);
+        // No bars and no earnings: this suite is about which right a position
+        // state makes sellable, so the earnings constraint has nothing to read
+        // and admits throughout, which is what isolates the case under test.
+        return new SyntheticChain(symbol, [], [.. quotes], []);
     }
 }

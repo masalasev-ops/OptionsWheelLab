@@ -4,8 +4,8 @@ The single registry of test fixtures and source guards. Prompts and checkpoints
 reference the entries registered against them here; they never enumerate names
 inline.
 
-Build state: **partly built**. The thirty-one entries registered against
-0.2 to 2.2 are implemented, being twenty-nine fixtures and two guards; the
+Build state: **partly built**. The thirty-eight entries registered against
+0.2 to 2.3 are implemented, being thirty-six fixtures and two guards; the
 rest belong to checkpoints not yet reached. 1.2 and 2.1 registered none,
 which their details state.
 
@@ -95,6 +95,8 @@ to carry the wrong cell.
 | FX-GateRejectsAboveHeadroom | fixture | 2.4 | candidates breaching per-name headroom are rejected with a reason | WORKED_EXAMPLE §3 |
 | FX-OffWatchlistRejected | fixture | 2.2 | no candidates for a non-member symbol | authored |
 | FX-WorkedExampleEnumerates | fixture | 2.2 | the worked example's chain enumerates exactly the strikes §2 states and §3 claims, in identity order | WORKED_EXAMPLE §2, §3 |
+| FX-WorkedExampleGateVerdicts | fixture | 2.3 | the worked example's chain gates to the verdicts §3 states, under the four contract constraints | WORKED_EXAMPLE §2, §3 |
+| FX-CrossedQuoteRejected | fixture | 2.3 | a crossed quote is rejected with its own reason, not the spread cap | authored |
 | FX-SpreadCapRejects | fixture | 2.3 | a candidate above the spread cap is rejected with its reason | authored |
 | FX-PremiumFloorRejects | fixture | 2.3 | a candidate below the premium floor is rejected with its reason | authored |
 | FX-GateRecordsAllReasons | fixture | 2.5 | a candidate failing two constraints carries both reasons | authored |
