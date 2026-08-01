@@ -4,10 +4,13 @@ Plain language. Read this start to finish. No decision numbers inside the
 pictures, and one job per picture.
 
 Build state: this document explains the whole design, most of which is
-not built. What has shipped is the store beneath it: the market-data
-schema, point-in-time reads, membership as state, chain ingest and
-corporate actions, all on synthetic chains. No decision has ever been
-made, no trial run, no score computed.
+not built. What has shipped is the store beneath it and the machinery that
+picks what could be sold: the market-data schema, point-in-time reads,
+membership as state, chain ingest and corporate actions, and then the
+candidate generator with the risk gate inside it, all on synthetic chains.
+No decision has ever been made, no trial run, no score computed. Nothing
+persists a candidate either, so what the gate refused is returned and
+dropped rather than recorded.
 
 This document assumes you know what a put, a call, a strike, and assignment are,
 and roughly how the wheel behaves. If any of that is unfamiliar, read

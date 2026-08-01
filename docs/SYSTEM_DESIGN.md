@@ -75,7 +75,10 @@ exists to catch, and would make any historical run incapable of failing.
 
 Build state: **built across 1.1 to 1.5**, on synthetic chains: the schema,
 point-in-time reads, chain ingest, and corporate actions as stated successors
-with resolvable lineage. The earnings calendar has its table and no writer yet.
+with resolvable lineage. The earnings calendar gained its format, its writer and
+its as-of read at 2.3, when the clearance constraint became its first consumer.
+Dividends have no writer: `corporate_actions` lists the kind and how a dividend
+is recorded is a Phase 3 obligation.
 
 A daily end-of-day snapshot of the option chains for watchlist names, plus
 underlying bars, dividends, and the earnings calendar. Snapshots are append-only
@@ -84,6 +87,11 @@ rewritten [D-W8]. A delete or an update against a snapshot table fails the build
 the same guard AlphaLab uses for bar history.
 
 ### 3.3 Candidate generator
+
+Build state: **built across 2.2 to 2.5**, on synthetic chains: enumeration
+filtered on membership and position state, the gate inside it, and every
+candidate returned with the reasons it failed. The backward edge below is a
+parameter rather than a read, because the ledger it comes from is Phase 3's.
 
 Two stages in one component. First it enumerates every contract that could be
 sold today given the current position state, with the features that describe it.
@@ -99,6 +107,12 @@ capital, so the ledger feeds back into it. This is the only backward edge in the
 daily path.
 
 ### 3.4 Risk gate
+
+Build state: **built across 2.3 to 2.5**. The contract family landed at 2.3
+and the portfolio family at 2.4, each reading its bounds as of the simulated
+date and each recording every failing reason. What is not built is the
+persistence: a candidate and its reasons are returned and dropped, and the
+columns that would hold them are Phase 4's.
 
 Two families of constraint, and they answer different questions.
 
@@ -326,8 +340,11 @@ paying before Phase 8 buys nothing.
 
 ## 8. Open parameters, closed at 0.8
 
-Build state: **closed at 0.8**. The values are config rows in the store; the
-four keys still unset are owed to the phases that first consume them.
+Build state: **closed at 0.8**. The values are config rows in the store. Three
+of the four keys left unset then have since been set by the phase that first
+consumed them, the `Risk:` block at 2.4, which turned out to be four keys rather
+than three because every cap divides by an account value nothing held.
+`Costs:AssignmentFee` is the one still unset, owed at Phase 3.
 
 The roll bounds [D-W14], the divergence threshold and window [D-W20] and the six
 gate constraints [D-W22 to D-W25] were left unset in this document deliberately,
