@@ -1273,4 +1273,93 @@ accumulates reads as further along than the work.
 The definition of done was restated before the code, and Phase 4's two
 obligation rows now point at each other.
 
-Detail for Phase 3 is authored when Phase 2 signs off.
+---
+
+## Phase 3 — Thin slice: one full wheel turn
+
+Build state: **not built**. Delivers one trial from cash to cash: a put
+sold, assignment or expiry, shares held, calls written, called away or
+closed at the roll bound, with every cash movement in the ledger and the
+trial and position rebuildable from it. On synthetic chains; no vendor data
+until Phase 8.
+
+Eight obligations are owed here, five of which determine what the state
+machine does rather than sitting inside it. They are settled at 3.1 before
+any transition is written, on the ordering Phase 1 and Phase 2 both used:
+a precondition answered late is a schema or a transition built twice.
+
+### 3.1 The mechanics, settled before the machine
+Not code. Each answer becomes a decision citing its source, and each source
+is OCC's own rules rather than a secondary description. This project
+reasoned twice from a secondary source about contract adjustment and was
+wrong both times, which is why the sourcing is a requirement rather than a
+preference.
+- Exercise by exception and its in-the-money threshold at expiry.
+- When assignment is known to the account against when it occurred, which is
+  the point-in-time discipline applied to the account itself.
+- When cash from an assignment or a call-away is usable again under T+1.
+- The early-assignment model around ex-dividend, which `VALIDITY.md` already
+  names as modelled by rule.
+- Dividend entitlement timing, and whether a dividend enters
+  `ledger_entries` and the buy-and-hold control [D-W13].
+- Which quantity committed capital uses, the contract multiplier or the
+  deliverable, from OCC's adjustment memos.
+- What a covered call commits, given [D-W17] fixes committed capital at open.
+- **DoD**: every transition 3.3 will write cites a decision settled here, and
+  no mechanic is encoded from recollection.
+- Registers no fixtures and says so, per rule 2.
+
+### 3.2 The completeness pass
+Not code. Every check in this repository compares one part of the corpus
+against another, so an omission from the domain model is invisible to all of
+them: dividends were absent for eight checkpoints and surfaced from a
+conversation rather than a process.
+- Walk one wheel turn end to end against the corpus and ask what the strategy
+  involves that no document mentions. Cash movements between assignment and
+  call-away, what a trial's economics include, what an account holds that the
+  ledger does not name.
+- Findings become obligations or 3.1 decisions, and the pass runs before 3.3
+  rather than after, because a missing concept is cheapest before the
+  transitions exist.
+- **DoD**: the pass is recorded with what it examined, not only with what it
+  found. A pass that found nothing is evidence only if its scope is stated.
+
+### 3.3 The state machine and the ledger
+Four states as a discriminated union, daily events driving transitions
+[SYSTEM_DESIGN §3.8]. `trials`, `positions` and `ledger_entries` land here.
+- Rolling bounded by whichever of the roll count and the trial days binds
+  first, closing at market at the bound [D-W14]. A roll is a recorded
+  decision.
+- Cost basis recorded both gross and net, with the covered-call constraint
+  reading gross [D-W19], which 2.4 built against a parameter and this
+  supplies.
+- `trials` and `positions` are projections and may be rewritten only where a
+  test rebuilds them from the ledger [D-W35].
+- **Test**: a trial reaching the roll bound closes at market and resolves.
+- **Test**: `trials` and `positions` discarded and rebuilt from
+  `ledger_entries` give the same rows, which is what makes them projections
+  rather than records.
+
+### 3.4 The fill model and the costs
+Sells at the bid with explicit per-contract commission and assignment fees
+[D-W12], never the mid, because end-of-day granularity means the lab never
+observes the price it would have received.
+- Sets `Costs:AssignmentFee`, discharging that obligation. It is a broker
+  figure and no document states it, so record it as chosen with what it is
+  chosen from.
+- **Test**: the worked example's assigned trial totals what §6.3 states,
+  which is the seventh fixture reading that document and the first to read
+  its ledger, where the six before it read its chain, its verdicts and its
+  bases.
+
+### 3.5 Determinism, end to end
+0.5 restated its byte-identical definition of done as identical stored rows
+because no run existed; this is the checkpoint that has one.
+- **Test**: a simulated run with a fixed clock produces byte-identical output
+  across two invocations.
+- Settles what bars nondeterminism in SQL that is not a clock, which the
+  enumeration of the bundled SQLite raised.
+- **DoD**: the guard covers every source of nondeterminism it names, and
+  names every source it does not cover.
+
+Detail for Phase 4 is authored when Phase 3 signs off.
