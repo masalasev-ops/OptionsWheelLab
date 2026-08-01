@@ -62,6 +62,35 @@ internal static class GateScenario
         IReadOnlyList<EarningsReport>? earnings = null,
         BookState? book = null,
         PositionState state = PositionState.Cash,
+        IReadOnlyList<ConfigEntry>? overrides = null) =>
+        EnumeratedAndGated(quotes, earnings, book, state, overrides)
+            .Gated
+            .ToDictionary(
+                candidate => candidate.Candidate.Quote.Contract.Strike,
+                candidate => candidate.Reasons);
+
+    /// <summary>
+    /// What the generator enumerated and what the gate made of it, both in the
+    /// order they were returned.
+    /// </summary>
+    /// <remarks>
+    /// <see cref="Gate"/> keys by strike, which is what a constraint fixture
+    /// wants and which discards the order. 2.5's subject is the order, so it
+    /// needs the sequences: the gated one to assert it is the identity total
+    /// order, and the enumerated one beside it to assert the gate inherits that
+    /// order rather than imposing it a second time.
+    /// <para>
+    /// Both come from one store and one generator, so a difference between them
+    /// is the gate's and not two ingests disagreeing.
+    /// </para>
+    /// </remarks>
+    internal static (
+        IReadOnlyList<EnumeratedCandidate> Enumerated,
+        IReadOnlyList<GatedCandidate> Gated) EnumeratedAndGated(
+        IReadOnlyList<ContractQuote> quotes,
+        IReadOnlyList<EarningsReport>? earnings = null,
+        BookState? book = null,
+        PositionState state = PositionState.Cash,
         IReadOnlyList<ConfigEntry>? overrides = null)
     {
         using var store = TempStore.Empty();
@@ -90,15 +119,14 @@ internal static class GateScenario
 
         using var connection = store.Connections.Open(StoreAccess.ReadOnly);
 
-        var gated = new CandidateGenerator(
-                new AsOfMembership(connection),
-                new AsOfMarketData(connection),
-                new AsOfConfiguration(connection))
-            .GateFor(Symbol, Simulated, state, book ?? BookState.Empty);
+        var generator = new CandidateGenerator(
+            new AsOfMembership(connection),
+            new AsOfMarketData(connection),
+            new AsOfConfiguration(connection));
 
-        return gated.ToDictionary(
-            candidate => candidate.Candidate.Quote.Contract.Strike,
-            candidate => candidate.Reasons);
+        return (
+            generator.EnumerateFor(Symbol, Simulated, state),
+            generator.GateFor(Symbol, Simulated, state, book ?? BookState.Empty));
     }
 
     /// <summary>
