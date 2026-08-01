@@ -15,14 +15,14 @@ One file per phase. It closes when Phase 2 signs off; Phase 3 opens its own.
 
 # Current state
 
-Corpus v1.31.0.
+Corpus v1.32.0.
 
 | | |
 |---|---|
 | Phase 0 | complete and reviewed, 0.1 to 0.8 built and signed off |
 | Phase 1 | complete, 1.1 to 1.5 built and signed off |
-| Phase 2 | open, 2.1 and 2.2 built and signed off, 2.3 to 2.5 not started |
-| CI | green, 401 tests, guards then restore then build then test, on push to `main` and every pull request |
+| Phase 2 | open, 2.1 to 2.3 built and signed off, 2.4 and 2.5 not started |
+| CI | green, 455 tests, guards then restore then build then test, on push to `main` and every pull request |
 
 Which branch the work sits on and which pull requests have merged are not recorded
 here. Git holds both exactly, and a fact kept in two places drifts.
@@ -116,8 +116,10 @@ The chain read reaches identity through `contracts` on `contract_id`, the latest
 observation per contract is a CTE with declared column names, and the uniqueness
 constraint's own index serves the symbol lookup, measured with `EXPLAIN QUERY
 PLAN`. Identity order is imposed in C# on the parsed identities, because the
-stored decimal form does not sort. `corporate_actions` and `earnings_calendar`
-have no reads yet; their first consumers are 1.5 and Phase 2.
+stored decimal form does not sort. `corporate_actions` has no as-of read;
+`earnings_calendar` gained one at 2.3, `ReportDatesFor`, which takes the
+buffered window and returns dates in order, so the buffer's arithmetic stays
+with the constraint that owns it.
 
 **`ChainWriter` persists one chain, whole, at one instant** [1.4]. The chain
 carries no instant and the writer takes one, stamped on every row. Same-instant
@@ -215,11 +217,34 @@ and is the tripwire if the one-text choice is undone.
 
 ## Candidate generation
 
-**The enumeration half only** [2.2]. `CandidateGenerator.EnumerateFor(symbol,
-simulatedDate, state)` asks membership, then the chain, and keeps the quotes
-whose right the state makes sellable. No gate: 2.3 builds the contract
-constraints, 2.4 the portfolio ones, 2.5 the feasible set, and the gate lives
-inside this component when it arrives [D-W10].
+**Enumeration and the four contract constraints** [2.2, 2.3].
+`CandidateGenerator.EnumerateFor(symbol, simulatedDate, state)` asks
+membership, then the chain, and keeps the quotes whose right the state makes
+sellable. `GateFor` runs the contract constraints over that set and returns
+every candidate with the reasons it failed, rejected ones included, because the
+gate's effect is auditable only if what it refused travels with why [D-W5,
+D-W10]. 2.4 adds the portfolio caps and 2.5 assembles and orders the feasible
+set.
+
+`GateBounds` resolves the six bounds once per evaluation rather than once per
+candidate, and an unresolvable bound stops the evaluation naming the key and
+the date [D-W37] rather than admitting or rejecting. That path is reachable in
+ordinary use, not only in tests: the seed stamps `set_at` from the wall clock,
+so every bound resolves null for any simulated date before the seed ran, which
+is the Phase 9 obligation.
+
+`ContractConstraints` is pure and handed its numbers, so it reads no
+configuration and no clock. Its comparisons are deliberately not uniform and
+each comes from the decision that states it: exceeds for the spread cap and the
+delta ceiling, strictly below for the premium floor, an inclusive range for the
+expiry window, an inclusive edge for the earnings buffer. The crossed check
+precedes the spread ratio, because a crossed quote's mid is not a midpoint and
+the ratio below it would be arithmetic on a quantity that means nothing.
+
+`GateReason` is six grounds in declared order, which is the order they are
+recorded in, because three makers receive byte-identical sets [D-W4]. Every
+entry names a decision stating its ground, and a standing test reads the enum's
+own summaries and requires it. 2.4's portfolio grounds are not declared yet.
 
 Enumeration filters on nothing but position state and membership. A deep
 in-the-money put is enumerated and will be rejected by every constraint, which
@@ -262,8 +287,11 @@ store is the authority on what is in force, not the document.
 
 The gate's six bounds are among the nineteen, seeded at 0.8: a spread cap of 0.12
 of mid and a premium floor of 0.30 [D-W22], a delta ceiling of 0.35 [D-W23], an
-expiry window of 7 to 70 [D-W24], and an earnings buffer of 7 [D-W25]. The three
-`Risk:` fractions are the `Unset` ones Phase 2 owes, and 2.4 sets them.
+expiry window of 7 to 70 [D-W24], and an earnings buffer of 7 [D-W25]. All six
+are read as of the simulated date since 2.3, so their Consumer column is
+verified rather than assumed, and all six are named in `ConfigKeys` where two
+were: a key the code reads is not a literal at a call site. The three `Risk:`
+fractions are the `Unset` ones Phase 2 owes, still unread, and 2.4 sets them.
 
 Both directions of the key contract are standing checks for `app` keys. For `rows`
 keys only the types-to-document direction holds, because most are deliberately
@@ -310,7 +338,7 @@ bands the list names.
 
 ## Tests
 
-401: 261 across twenty-nine fixtures, and 140 across twenty-five unregistered
+455: 284 across thirty-six fixtures, and 171 across twenty-eight unregistered
 suites. The two guards are checks rather than tests and are counted in neither.
 2.1 registered none and changed none, which is what a document-only checkpoint
 pinned by existing fixtures looks like; 2.2 registered two.
@@ -326,7 +354,7 @@ number is visible from a green run.
 | FX-ClockIsNotADateSource | 34 |
 | FX-SnapshotNeverRewritten | 23 |
 | FX-NoRewriteOfAppendOnlyTables | 20 |
-| FX-MalformedChainFailsWhole | 17 |
+| FX-MalformedChainFailsWhole | 18 |
 | FX-MoneyRoundTrip | 17 |
 | FX-ConfigWriteRefusesInvariantBreach | 16 |
 | FX-NoSqlAliases | 15 |
@@ -337,10 +365,13 @@ number is visible from a green run.
 | FX-ConfigResolvesAsOf | 6 |
 | FX-EveryConfigSectionBinds | 6 |
 | FX-MigrateFromEmpty | 6 |
+| FX-EarningsClearanceRejects | 5 |
 | FX-EveryBoundKeyIsDocumented | 5 |
 | FX-EveryPolicyBandIsChecked | 5 |
 | FX-RegistryMatchesDisk | 5 |
 | FX-ChainLoadsInIdentityOrder | 4 |
+| FX-CrossedQuoteRejected | 4 |
+| FX-DeltaCeilingRejects | 4 |
 | FX-MaxDteBelowTrialBound | 4 |
 | FX-OffWatchlistRejected | 4 |
 | FX-WorkedExampleChainLoads | 4 |
@@ -352,6 +383,10 @@ number is visible from a green run.
 | FX-PitMembershipExcludesLaterJoiner | 3 |
 | FX-SnapshotRestoresIdentically | 3 |
 | FX-WorkedExampleChainPersists | 3 |
+| FX-WorkedExampleGateVerdicts | 3 |
+| FX-DteWindowRejects | 2 |
+| FX-PremiumFloorRejects | 2 |
+| FX-SpreadCapRejects | 2 |
 
 The suite parses `CONFIG_REFERENCE.md`, `FIXTURES.md`, `DATA_AND_SCHEMA.md`,
 `WORKED_EXAMPLE.md` and `guards.ps1`, so all five are load-bearing rather than
@@ -366,21 +401,25 @@ append-only triggers make the tables impossible to clean between cases.
 Every table beyond the nine that exist. `decisions` and `candidates` are
 Phase 4's.
 
-No gate. The generator enumerates and stops there [2.2]. The constraints of
-[D-W22] to [D-W25] exist as decisions and as seeded configuration and nothing
-reads them: 2.3 builds the contract constraints, 2.4 the portfolio ones, 2.5
-the feasible set. The worked example describes their verdicts; no code
-computes one, and no code reads a gate bound from configuration.
+No portfolio constraints. The gate runs the four contract families [2.3] and
+nothing asks whether the book can carry the position: the three `Risk:`
+fractions are still `Unset`, and the gross-basis rule binding a call strike
+[D-W19] is unbuilt. 2.4 builds both, 2.5 assembles and orders the feasible set
+and records what the gate refused.
 
-Nothing persists a candidate. `EnumeratedCandidate` is returned and dropped;
-`decisions` and `candidates` are Phase 4's, and the feasible set has no store.
+Nothing persists a candidate or its reasons. `GatedCandidate` is returned and
+dropped; `decisions` and `candidates` are Phase 4's, and how a set of reasons
+reaches one nullable column is a carried obligation.
 
 Rolling has no rule, so `short_put` and `short_call` enumerate nothing. D-W14
 permits rolling and bounds it; which contracts a roll offers is Phase 3's and
 unwritten.
 
-`corporate_actions` has its first writer, the mint, and no as-of read;
-`earnings_calendar` has neither. Their read consumers arrive at Phase 2.
+`corporate_actions` has its first writer, the mint, and no as-of read: 1.5
+reaches a predecessor through `ContractLineage`, which is timeless, and nothing
+wants the actions in force at a date yet. `earnings_calendar` got both its
+writer and its read at 2.3, when the clearance constraint became its first
+consumer.
 
 No operator entry point ingests a chain. `ChainWriter`'s only callers are tests
 until Phase 8's vendor ingest needs a verb, and a verb nothing calls is
@@ -395,13 +434,19 @@ obligations, which is where planning for the phase that owns it will look. It is
 copied here: two registers of one list is how an obligation comes to exist in the one
 nobody reads.
 
-Entries stand against Phase 2, 3, 4, 8 and 11. The count is not restated here.
-2.1 discharged the reconciliation row raised at v1.6.0, the table's oldest and
-open for twenty-three corpus versions. Phase 2's two remaining rows are
-preconditions rather than work items: the crossed-quote question is 2.3's,
-because the spread cap is what a crossed quote defeats, and the three `Risk:`
-fractions are 2.4's, because the operator sets a cap and a checkpoint that
-tests one needs it to exist first.
+Entries stand against Phase 2, 3, 4, 8, 9 and 11. The count is not restated
+here. 2.1 discharged the reconciliation row raised at v1.6.0, the table's
+oldest and open for twenty-three corpus versions, and 2.3 discharged the
+crossed-quote row while opening two of its own. Phase 2's one remaining row is
+a precondition rather than a work item: the three `Risk:` fractions are 2.4's,
+because the operator sets a cap and a checkpoint that tests one needs it to
+exist first.
+
+The two 2.3 raised are both consequences of building rather than of planning.
+How a set of gate reasons reaches one nullable column is Phase 4's, and how
+configuration resolves for a simulated date preceding the value being written
+is Phase 9's, which the seed's wall-clock `set_at` makes reachable on the first
+walk-forward.
 
 ## Working rules in force
 
@@ -419,11 +464,25 @@ tests one needs it to exist first.
 Carried forward because each cost something to learn and none is visible from
 the artefact it produced.
 
-- **A suite observed to pass is not a suite shown able to fail.** The way to
-  tell them apart is to reintroduce the defect the test was written for and
-  watch it fail. 2.2 did this twice, and both numbers were worth having: five
-  of ten, and four of four. A test that cannot be made to fail is asserting
-  something else.
+- **A suite observed to pass is not a suite shown able to fail, and a mutation
+  confined to one site is not a mutation of the behaviour.** The first half is
+  2.2's: reintroduce the defect the test was written for and watch it fail, as
+  five of ten and four of four did there. The second is 2.3's, and it is what
+  makes the first sound. Defaulting either half of the bound resolution passed
+  every test, because each half left the other still raising, and only
+  defeating both showed the two tests that assert D-W37. So a passing mutation
+  has two causes, a weak test or an insufficient mutation, and they are told
+  apart only by mutating the behaviour rather than one of its sites.
+- **Enumerate by class, not by the shape of the instance in front of you, then
+  let a compiler or an assertion confirm the count.** Four forms in one
+  checkpoint. A grep for `§3` found three of four unqualified section
+  references and missed `[§5]`, which is a different shape and the same class.
+  A grep for `new SyntheticChain(` found three of four construction sites and
+  the compiler found the fourth, a target-typed `new(`. A consumer-column edit
+  matched nine rows where six were meant, and an assertion on the count caught
+  it before the write. A single-site mutation was masked by a sibling path. The
+  cheap protection is not a better grep; it is arranging for something that
+  counts to fail.
 - **A test can pass for want of data rather than for the reason it names.** A
   membership fixture over a symbol with no chain, or a right filter over a
   chain of one right, passes without exercising anything. Every case needs the
@@ -683,6 +742,121 @@ feasible. 2.2 owns the first half of that sentence and can prove it.
   from disk, not transcribed.
 - No table, no decimal column, no config key: each checked and reported empty,
   or reported with what it added.
+
+### Constraints
+
+No `double` or `float`. No ambient clock. Money is decimal in `TEXT`. Edit files
+with the file tools rather than a shell round trip, which mangles UTF-8 outside
+ASCII. Reconcile the detail and the archive at sign-off, not during the build.
+
+---
+
+## 2.3 The contract constraints
+
+Read `CLAUDE.md`, `BUILD_PLAN.md` 2.3 through 2.5 and the carried obligations,
+D-W5, D-W10, D-W12, D-W22 to D-W26, `DATA_AND_SCHEMA.md` §4.1's
+`earnings_calendar` and §4.3's `candidates`, `WORKED_EXAMPLE.md` §2 and §3,
+`CandidateGenerator`, `AsOfMarketData`, `AsOfConfiguration`,
+`SyntheticChainReader`, `ChainWriter`, the fixtures registered against 2.3 in
+`FIXTURES.md`, and Current state above.
+
+### What the detail does not name
+
+- **Earnings clearance is three builds, not one constraint.**
+  `earnings_calendar` exists from migration 3, nothing reads it, nothing writes
+  it, and `SyntheticChain` is symbol, bars and quotes, so no fixture can put a
+  report date in a store. Correct 2.3's detail to say so: the constraint needs a
+  synthetic format that can express a report date, a writer, and an as-of read
+  before it is testable. Report the shape chosen for each. The format extension
+  is a change to a hand-written file's schema [D-W31], so the report says what
+  it costs a reader of the format. Splitting earnings out or deferring it to 2.5
+  is worth weighing rather than assuming; the registry puts its check here and
+  the constraint is the reason the table exists, so say why if you keep it.
+- **Settle the crossed-quote obligation and record the decision.** Either a
+  crossed quote is not a market and the loader keeps refusing it, so the gate
+  never sees one, or it is a real vendor artefact and the gate rejects it, so
+  the loader must stop refusing it. The argument has to reach D-W22's first
+  rationale: the filter protects the measurement, so what matters is whether an
+  untransactable quote can reach the scorer and present as the best available.
+  If the loader stops refusing, say what changes in `SyntheticChainReader` and
+  what the format then admits; if it keeps refusing, say what the gate does when
+  Phase 8's vendor data delivers one anyway, since the loader does not stand
+  between the vendor and the store. Close the obligation row either way and
+  report the count.
+- **The reason vocabulary is 2.3's, and 2.5 depends on it.** Every fixture here
+  records a reason, `candidates` carries `gate_status` and `gate_reason`, and
+  2.5 asserts that a candidate failing two constraints carries both. Nothing
+  declares what a reason is. Declare it, stored form and all, on the
+  `StoreOptionRight` precedent: declared not derived, refusing an unrecognised
+  value. A candidate carries a set rather than one, and that shape is decided
+  here even though 2.5 asserts it.
+
+**Every reason must name a decision that states its ground.** A gate that
+rejects on a ground its cited decision does not state is this corpus's citation
+pattern, and creating one is worse than inheriting one. Check each reason
+against the operative paragraph of the decision behind it before writing the
+code, and report the sweep.
+
+### The constraints
+
+- Each reads its bound from configuration as of the simulated date [D-W26],
+  never from a constant. **Test**: a constraint evaluated at a simulated date
+  before a later config version uses the earlier bound.
+- An unresolvable bound stops the evaluation naming the key and the date
+  [D-W37], and bounds resolve once per evaluation rather than once per
+  candidate. **Test**: a constraint evaluated at a date before its bound was
+  written fails naming the key and the date, rather than admitting or
+  rejecting. Report the implementation and the message, not the decision.
+- The spread cap and the premium floor [D-W22], both rejections independent and
+  both recorded. The delta ceiling [D-W23], comparing absolute delta, since the
+  sign is where that constraint goes wrong: a put at -0.44 rejects against a
+  0.35 ceiling and one at -0.24 does not. The expiry window [D-W24], both sides,
+  since a one-sided test passes on a constraint that only checks one.
+- Earnings clearance [D-W25], buffered both sides. **Test** three cases: a life
+  containing a report date, a life clearing the buffer, and a life clearing the
+  report by less than the buffer, which is the case an unbuffered filter would
+  pass. **The admit case ingests a report date that exists and sits outside the
+  buffer, never an absent one**, because an absent array means no reports and
+  the constraint would never run. Report the dates chosen and their distances
+  from the buffer edge, and say what the other fixtures do about earnings.
+- Every boundary comes from the decision that states it. Where a decision does
+  not state its edge, that is a finding before it is a choice: report it and
+  have it stated rather than picking one.
+
+### The mutation check
+
+For each constraint, show the suite fails when the constraint is defeated
+rather than only that it passes. A constraint returning admit unconditionally
+should fail its own fixtures. Report which mutations ran and what failed; if any
+mutation passes everything, that fixture is not testing what it claims, **or the
+mutation did not reach the whole behaviour**, and the two are told apart by
+mutating every site the behaviour has rather than one of them.
+
+### The worked example, fourth pin
+
+§3's table now states a verdict and reasons per strike, and 2.2 pinned only the
+enumerated strikes.
+
+- **Test**: gating the worked example's chain at its snapshot date produces
+  §3's verdicts, parsed through `WorkedExampleOracle` rather than restated. Only
+  the four contract constraints; the per-name cap is 2.4's, so the two strikes
+  failing on both carry the delta reason here and gain the capital reason at
+  2.4. Strip it by name against a declared phrase rather than by discarding what
+  does not match, so a reason this checkpoint should have produced cannot vanish
+  into the gap.
+- Assert the phrase-to-reason mapping total over the vocabulary, so a reason
+  with no phrase fails rather than narrowing every expected verdict silently.
+- Report whether §3 held on first run. That is the point of the document being
+  the oracle, and 2.1 wrote its verdicts before any gate existed.
+
+### Definitions of done
+
+- Every check registered against 2.3 exists in its kind; the marker counted from
+  disk, not transcribed.
+- Report what 2.3 adds to `AppendOnlyTables`, `DecimalColumns`, `ConfigKeys` and
+  `CONFIG_REFERENCE.md`, or that each is checked and empty. A key the code reads
+  is named in `ConfigKeys` rather than left a literal, and a bound the gate reads
+  makes its Consumer column verified rather than assumed.
 
 ### Constraints
 
