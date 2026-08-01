@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Text.Json;
 using OptionsWheelLab.Core.Identity;
+using OptionsWheelLab.Core.MarketData;
 using OptionsWheelLab.Core.Storage;
 
 namespace OptionsWheelLab.Core.Synthetic;
@@ -47,7 +48,9 @@ public static class SyntheticChainReader
         AllowTrailingCommas = true,
     };
 
-    private static readonly string[] RootProperties = ["symbol", "bars", "chains"];
+    private static readonly string[] RootProperties = ["symbol", "bars", "chains", "earnings"];
+
+    private static readonly string[] EarningsProperties = ["date", "session"];
 
     private static readonly string[] BarProperties =
         ["date", "close", "open", "high", "low", "adjustedClose", "volume"];
@@ -111,6 +114,7 @@ public static class SyntheticChainReader
         var symbol = ReadSymbol(root, problems);
         var bars = ReadBars(root, symbol, problems);
         var quotes = ReadChains(root, symbol, problems);
+        var earnings = ReadEarnings(root, problems);
 
         if (symbol is null)
         {
@@ -119,13 +123,110 @@ public static class SyntheticChainReader
 
         RefuseDuplicateBars(bars, problems);
         RefuseDuplicateQuotes(quotes, problems);
+        RefuseDuplicateEarnings(earnings, problems);
 
         return new SyntheticChain(
             symbol,
             [.. bars.OrderBy(bar => bar.SessionDate)],
             [.. quotes
                 .OrderBy(quote => quote.SnapshotDate)
-                .ThenBy(quote => quote.Contract)]);
+                .ThenBy(quote => quote.Contract)],
+            [.. earnings.OrderBy(report => report.ReportDate)]);
+    }
+
+    /// <summary>
+    /// The scheduled reports the file states, or none when it states no
+    /// <c>earnings</c> array at all.
+    /// </summary>
+    /// <remarks>
+    /// <b>Optional, where <c>bars</c> and <c>chains</c> are not.</b> Every
+    /// scenario written before 2.3 predates this property, and a scenario with
+    /// no scheduled report is the ordinary case rather than an incomplete file.
+    /// Absence and emptiness therefore mean the same thing here, which
+    /// <see cref="SyntheticChain"/> records as the cost of the choice.
+    /// </remarks>
+    private static List<EarningsReport> ReadEarnings(JsonElement root, List<string> problems)
+    {
+        var reports = new List<EarningsReport>();
+
+        if (!root.TryGetProperty("earnings", out var array))
+        {
+            return reports;
+        }
+
+        if (array.ValueKind != JsonValueKind.Array)
+        {
+            problems.Add("the file.earnings: expected an array.");
+            return reports;
+        }
+
+        var index = 0;
+
+        foreach (var element in array.EnumerateArray())
+        {
+            var path = $"the file.earnings[{index++}]";
+
+            if (!IsObject(element, path, problems))
+            {
+                continue;
+            }
+
+            RefuseUnknown(element, EarningsProperties, path, problems);
+
+            var date = RequiredDate(element, "date", path, problems);
+            var session = RequiredSession(element, path, problems);
+
+            if (date is null || session is null)
+            {
+                continue;
+            }
+
+            reports.Add(new EarningsReport(date.Value, session.Value));
+        }
+
+        return reports;
+    }
+
+    /// <summary>
+    /// The session, rendered through its declared stored form rather than
+    /// parsed by name [DATA_AND_SCHEMA §4.1].
+    /// </summary>
+    private static EarningsSession? RequiredSession(
+        JsonElement element,
+        string path,
+        List<string> problems)
+    {
+        var raw = RequiredString(element, "session", path, problems);
+
+        if (raw is null)
+        {
+            return null;
+        }
+
+        try
+        {
+            return StoreEarningsSession.ParseStored(raw);
+        }
+        catch (FormatException exception)
+        {
+            problems.Add($"{path}.session: {exception.Message}");
+            return null;
+        }
+    }
+
+    private static void RefuseDuplicateEarnings(
+        List<EarningsReport> reports,
+        List<string> problems)
+    {
+        foreach (var duplicate in reports
+            .GroupBy(report => report.ReportDate)
+            .Where(group => group.Count() > 1)
+            .OrderBy(group => group.Key))
+        {
+            problems.Add(
+                $"the file.earnings: {StoreDate.ToStored(duplicate.Key)} is stated "
+                + $"{duplicate.Count()} times. One date carries one scheduled report.");
+        }
     }
 
     private static Ticker? ReadSymbol(JsonElement root, List<string> problems)

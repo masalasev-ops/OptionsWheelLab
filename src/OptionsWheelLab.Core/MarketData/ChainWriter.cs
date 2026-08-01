@@ -69,6 +69,11 @@ public sealed class ChainWriter
             InsertBar(transaction, bar, observedAt);
         }
 
+        foreach (var report in chain.Earnings)
+        {
+            InsertEarnings(transaction, chain.Symbol, report, observedAt);
+        }
+
         // Contracts before quotes: Microsoft.Data.Sqlite enables foreign keys
         // and a bare sqlite3 prompt does not, so this ordering is load-bearing
         // under the application and unchecked outside it [1.1].
@@ -152,6 +157,43 @@ public sealed class ChainWriter
         insert.Parameters.AddStored("$close", bar.Close);
         insert.Parameters.AddStored("$adjClose", bar.AdjustedClose);
         insert.Parameters.AddWithValue("$volume", bar.Volume ?? (object)DBNull.Value);
+        insert.Parameters.AddStored("$observed", observedAt);
+        insert.ExecuteNonQuery();
+    }
+
+    /// <summary>
+    /// One <c>earnings_calendar</c> row per scheduled report the scenario
+    /// states.
+    /// </summary>
+    /// <remarks>
+    /// <b>The table's first writer, three checkpoints after both vocabularies
+    /// learned it.</b> It has been in <see cref="Storage.AppendOnlyTables"/> and
+    /// carried its two refusing triggers since migration 3 with nothing writing
+    /// it, which is the same shape <c>corporate_actions</c> had until 1.5.
+    /// <para>
+    /// No key of its own, so a re-ingest at a later instant appends rather than
+    /// conflicting, and the as-of read takes the latest observation at or before
+    /// the instant it is asked as of. The session goes through its declared
+    /// stored form rather than <c>ToString</c> [§4.1].
+    /// </para>
+    /// </remarks>
+    private void InsertEarnings(
+        SqliteTransaction transaction,
+        Ticker symbol,
+        EarningsReport report,
+        DateTimeOffset observedAt)
+    {
+        using var insert = _connection.CreateCommand();
+        insert.Transaction = transaction;
+        insert.CommandText =
+            """
+            INSERT INTO earnings_calendar (symbol, report_date, session, observed_at)
+            VALUES ($symbol, $reportDate, $session, $observed);
+            """;
+        insert.Parameters.AddWithValue("$symbol", symbol.Value);
+        insert.Parameters.AddStored("$reportDate", report.ReportDate);
+        insert.Parameters.AddWithValue(
+            "$session", StoreEarningsSession.ToStored(report.Session));
         insert.Parameters.AddStored("$observed", observedAt);
         insert.ExecuteNonQuery();
     }

@@ -15,10 +15,20 @@ namespace OptionsWheelLab.Core.Synthetic;
 /// <para>
 /// Nothing here reaches the store. Phase 1 wires these to
 /// <c>underlying_bars</c>, <c>chain_snapshots</c>, <c>contracts</c> and
-/// <c>contract_quotes</c>, and stamps <c>observed_at</c> as it does so.
+/// <c>contract_quotes</c>, and 2.3 adds <c>earnings_calendar</c>; the writer
+/// stamps <c>observed_at</c> as it does so.
+/// </para>
+/// <para>
+/// <b><see cref="Earnings"/> is a third collection whose absence and whose
+/// emptiness mean the same thing</b>, which is right for this table and would be
+/// wrong for one where "no data yet" and "no events" differ. A name with no
+/// scheduled report and a scenario that does not mention reports both read as no
+/// reports, and D-W25's constraint admits in both cases. The cost is that a
+/// fixture cannot express "earnings unknown", and no fixture needs to.
 /// </para>
 /// </remarks>
 public sealed record SyntheticChain(
     Ticker Symbol,
     IReadOnlyList<UnderlyingBar> Bars,
-    IReadOnlyList<ContractQuote> Quotes);
+    IReadOnlyList<ContractQuote> Quotes,
+    IReadOnlyList<EarningsReport> Earnings);

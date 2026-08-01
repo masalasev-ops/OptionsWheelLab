@@ -137,7 +137,10 @@ public sealed class ChainWriterTests
                     Session,
                     Bid: bid50,
                     Ask: 1.05m),
-            ]);
+            ],
+            // No scheduled reports: this suite is about how a chain persists,
+            // and the earnings rows have their own cases.
+            []);
 
     private static long Count(SqliteConnection connection, string table)
     {
