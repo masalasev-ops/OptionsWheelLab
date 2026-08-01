@@ -93,6 +93,20 @@ account value every cap divides by.
 - Defaulting only the decimal half of the shared bound resolution still left
   `GateBoundsTests` passing, because the integer half kept raising. The same
   shape 2.3 recorded, reproduced through the helper that now serves two records.
+- A passing mutation now has three causes and the archive carries them as one
+  lesson, because the third completes the technique rather than extending it: a
+  weak test, an insufficient mutation, or a suite made unfalsifiable by two
+  paths agreeing at the seeded data. The third's tell is that two keys hold one
+  value, which this corpus does deliberately more than once, `Gate:MaxDelta` and
+  `Policy:Random:DeltaMax` being the other pair.
+- **The refusal message does not name which bound record could not resolve, and
+  the key implies it only by convention.** Read rather than assumed:
+  `GateBounds` resolves six keys all prefixed `Gate:` and `PortfolioBounds` four
+  all prefixed `Risk:`, so the ten partition cleanly today. Nothing states that
+  a record's keys share a section and nothing checks it, so a third record
+  reading across sections would make the message ambiguous without anything
+  failing. Recorded at the helper; widening the message is a change to what
+  [D-W37] says it carries, so it would be a decision rather than an edit.
 
 ## [1.32.0] — 2026-07-31
 

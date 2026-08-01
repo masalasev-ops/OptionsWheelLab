@@ -1148,8 +1148,9 @@ keys rather than three.
 - **DoD**: every cap reads its bound as of the simulated date [D-W26], and an
   unresolvable one stops the evaluation naming the key and the date [D-W37].
 
-Reconciled at sign-off against what shipped. Four things were larger than the
-scope above, and the first of them changed what the obligation was.
+Reconciled at sign-off against what shipped. Five things were larger than the
+scope above, the first of them changed what the obligation was, and the last
+arrived in review.
 
 **The fractions are transcribed, not chosen, and saying so corrects the
 framing this detail was written under.** §1 states equity of 100,000, a
@@ -1185,11 +1186,28 @@ constraint reading the wrong fraction passed every test until two assertions
 were added at a configuration the store does not hold and could. That is
 2.3's mutation lesson one level up: there a mutation confined to one site
 left another site raising, here a value equal to its neighbour left a field
-unreadable from any verdict.
+unreadable from any verdict, which is the third and last cause a passing
+mutation has.
+
+**Review moved that condition to where it is read, and the assertion to where
+it is found.** The indistinguishability was recorded in the code and the
+changelog, which reaches a reader of the code; an operator revising
+`Risk:SimultaneousAssignmentLimitFraction` reads `CONFIG_REFERENCE.md`, whose
+Notes now state it as a condition of the equal fractions rather than a fact
+about the caps. The assertion telling the two constraints apart moved out of
+an unregistered suite into `FX-AssignmentStressRejects`, since it is the only
+one that does and belongs where the registry points.
 
 D-W19 gains its boundary, a strike exactly at gross basis being admissible,
 and `WORKED_EXAMPLE.md` §3's per-name headroom citation moves from D-W10 to
-D-W11.
+D-W11. D-W22, D-W24 and D-W25 gain the amendment stamps 2.3 did not write,
+so the register shows four decisions moving where it showed one; that this
+checkpoint's own plan cited D-W25 as the precedent for stamping, D-W25 being
+one of the three unstamped, is the citation pattern created rather than
+inherited and caught inside the checkpoint that made it.
+
+One obligation is raised beside the one discharged: what a covered call
+commits, owed at Phase 3. Twelve becomes thirteen.
 
 ### 2.5 The feasible set
 Assembly and ordering, and the record of what the gate refused.

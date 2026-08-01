@@ -233,6 +233,10 @@ message exists once. That path is reachable in ordinary use, not only in tests:
 the seed stamps `set_at` from the wall clock, so every bound resolves null for
 any simulated date before the seed ran, which is the Phase 9 obligation.
 
+The message does not say which record failed, and the key implies it only by
+convention: the six `Gate:` keys and the four `Risk:` keys partition cleanly,
+nothing states that a record's keys share a section, and nothing checks it.
+
 Two bound records rather than one, because the two families are evaluated apart
 and widening would make every contract-constraint site supply numbers that
 family cannot read.
