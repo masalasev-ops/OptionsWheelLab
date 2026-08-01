@@ -1,5 +1,66 @@
 # CHANGELOG
 
+## [1.32.0] — 2026-07-31
+
+Checkpoint 2.3: the four contract constraints, each reading its bound as of the
+simulated date.
+
+### Added
+- D-W37: a constraint that cannot resolve its bound stops the evaluation naming
+  the key and the date. It does not admit, which would silently drop a
+  structural risk control [D-W11], and does not reject, which would present a
+  misconfiguration as an absence of opportunity. Read-side of [D-W34].
+- `earnings_calendar` gains its format, its writer and its as-of read, which the
+  clearance constraint needed before it was testable at all. The synthetic
+  format's root gains an optional `earnings` array; `ChainWriter` writes the
+  rows in its existing transaction; `AsOfMarketData.ReportDatesFor` takes the
+  buffered window.
+- The gate's reason vocabulary: six grounds in declared order, with a stored
+  form declared not derived, and a standing test requiring every reason to name
+  the decision that states its ground.
+- `FX-CrossedQuoteRejected` and `FX-WorkedExampleGateVerdicts` registered
+  against 2.3, so seven checks land where the registry carried five. The marker
+  moves to thirty-eight entries against 0.2 to 2.3, counted from disk.
+- Carried obligations gains two, both consequences of building: how a set of
+  gate reasons reaches one nullable column (Phase 4), and how configuration
+  resolves for a simulated date preceding the value being written (Phase 9).
+  Twelve becomes thirteen, the crossed-quote row having closed.
+
+### Changed
+- D-W22 gains the crossed ground. It had stated two, a spread above the cap and
+  a bid below the floor, and a crossed quote is neither: its spread is negative
+  and its bid is high. Recorded as its own reason rather than the spread cap's,
+  because a negative spread is not a spread above a cap.
+- D-W24 gains one word, "the inclusive range", so its edge rests on stated
+  wording rather than on the convention that a range includes its endpoints.
+- D-W25 gains the buffer's inclusive edge, and the note that the gate's
+  comparisons are deliberately not uniform: each decision states its own
+  boundary where it binds, because the quantities differ.
+- `SyntheticChainReader` stops refusing a crossed quote. That refusal was right
+  about the risk and wrong about the venue, since Phase 8's ingest reaches the
+  store without passing the loader; the rule moved to the gate. Negative prices
+  stay refused and a locked market was never refused.
+  `FX-MalformedChainFailsWhole` loses that assertion and gains its inverse.
+- `ConfigKeys` gains the four gate keys it lacked, so all six are named and the
+  seeder stops carrying them as literals. The six `Gate:` rows' Consumer column
+  moves from Unverified to `GateBounds`; the three `Risk:` fractions stay
+  Unverified, being 2.4's.
+- `DATA_AND_SCHEMA.md` §4.1 states the `session` vocabulary, which nothing did.
+  The column had been NOT NULL since migration 3 with no document naming what
+  could go in it.
+
+### Notes
+- §3's verdicts were written at 2.1, before any gate existed, and held on the
+  first run of the fixture that tests them.
+- Ten mutations were run and none passed everything. D-W37's took two attempts:
+  defaulting either half of the bound resolution passed every test, because each
+  left the other still raising. A mutation confined to one site is not a mutation
+  of the behaviour, so a passing mutation means either a weak test or an
+  insufficient mutation.
+- The same class-versus-instance error appeared four times, in searches and in
+  that mutation. Enumerating by class and letting a compiler or an assertion
+  confirm the count is what caught the ones that were caught.
+
 ## [1.31.1] — 2026-07-31
 
 Two citations corrected, both raised by 2.2's audit and neither belonging to

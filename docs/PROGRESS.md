@@ -5,9 +5,9 @@ Appended to, never rewritten. The repository is the authority on build state.
 ## Current state
 
 **Phase 0 complete and reviewed. Phase 1 complete.** Checkpoints 0.1 to 0.8
-and 1.1 to 1.5 built and signed off. Phase 2 is open: 2.1 and 2.2 are built
-and signed off, and 2.3 to 2.5 are not started. The documentation corpus is at
-v1.31.1.
+and 1.1 to 1.5 built and signed off. Phase 2 is open: 2.1 to 2.3 are built
+and signed off, and 2.4 and 2.5 are not started. The documentation corpus is at
+v1.32.0.
 
 ## Log
 
@@ -988,3 +988,45 @@ column against what each fixture actually reads. An audit that started from the
 plausible reading, that `authored` means no document is parsed, produced eight
 false findings against the configuration and registry fixtures before the real
 rule surfaced.
+
+### 2026-07-31 — corpus v1.32.0
+Checkpoint 2.3, the four contract constraints. Each reads its bound as of the
+simulated date and none from a constant, which is the checkpoint's own
+definition of done. 455 tests, up fifty-four; schema unchanged at 5; four
+config keys added and the six gate bounds' consumers verified.
+
+Two of the four families needed a decision before they needed code. The gate
+could not reject a crossed quote on any ground D-W22 stated: that decision gave
+a spread above the cap and a bid below the floor, and a crossed quote is
+neither, its spread being negative and its bid high. Rejecting on it would have
+been this corpus's citation pattern for the sixth time and the first instance
+created rather than inherited, so the decision was amended before the code
+cited it. Then two boundaries turned out unstated, D-W25's buffer edge and
+D-W24's window, the latter resting on the convention that a range includes its
+endpoints, which is exactly the convention the gate does not use. Four
+decisions were touched where the detail anticipated none.
+
+Earnings clearance was three builds rather than one constraint. The table had
+existed since migration 3 with nothing reading it and nothing writing it, and a
+synthetic chain could not express a report date, so the constraint was
+untestable before a format, a writer and an as-of read existed. The session
+vocabulary was authored fresh: a sweep for its values across the documents, the
+source and the synthetic files returned only matches inside a SQLite binary.
+
+The crossed-quote obligation closed, and the loader's refusal moved to the
+gate. That refusal was right about the risk and wrong about the venue, because
+Phase 8's ingest reaches the store without passing the loader, so a rule living
+there would have been absent exactly when real data arrived.
+
+Section 3's verdicts were written at 2.1, before any gate existed, and held on
+the first run of the fixture that tests them.
+
+Ten mutations were run and none passed everything, but D-W37's took two
+attempts and the first result was misleading. Defaulting either half of the
+bound resolution passed every test, because each half left the other still
+raising. A mutation confined to one site is not a mutation of the behaviour, so
+a passing mutation means either a weak test or an insufficient mutation, and
+the two are told apart only by defeating every site the behaviour has. The same
+class-versus-instance error appeared four times this checkpoint, in three
+searches and that mutation; what caught the ones that were caught was a
+compiler or an assertion counting, not a better search.
