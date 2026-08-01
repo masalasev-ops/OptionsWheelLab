@@ -1,3 +1,4 @@
+using OptionsWheelLab.Core.Configuration;
 using OptionsWheelLab.Core.Identity;
 using OptionsWheelLab.Core.MarketData;
 using OptionsWheelLab.Core.Membership;
@@ -52,14 +53,33 @@ public sealed class CandidateGenerator
 {
     private readonly AsOfMembership _membership;
     private readonly AsOfMarketData _marketData;
+    private readonly AsOfConfiguration? _configuration;
 
     public CandidateGenerator(AsOfMembership membership, AsOfMarketData marketData)
+        : this(membership, marketData, configuration: null)
+    {
+    }
+
+    /// <summary>
+    /// A generator that can gate as well as enumerate.
+    /// </summary>
+    /// <remarks>
+    /// Configuration is the gate's dependency and not enumeration's, which is
+    /// why it arrives on a second constructor rather than being required of
+    /// every caller. <see cref="EnumerateFor"/> reads no bound and 2.2's callers
+    /// keep working unchanged; <see cref="GateFor"/> needs all six [D-W26].
+    /// </remarks>
+    public CandidateGenerator(
+        AsOfMembership membership,
+        AsOfMarketData marketData,
+        AsOfConfiguration? configuration)
     {
         ArgumentNullException.ThrowIfNull(membership);
         ArgumentNullException.ThrowIfNull(marketData);
 
         _membership = membership;
         _marketData = marketData;
+        _configuration = configuration;
     }
 
     /// <summary>
@@ -105,6 +125,91 @@ public sealed class CandidateGenerator
                 .Where(quote => quote.Contract.Right == sellable)
                 .Select(quote => new EnumeratedCandidate(quote))
         ];
+    }
+
+    /// <summary>
+    /// Every candidate <see cref="EnumerateFor"/> yields, each with the reasons
+    /// the gate refused it, in contract identity order.
+    /// </summary>
+    /// <remarks>
+    /// <b>Rejected candidates are returned, not removed.</b> The gate's effect
+    /// is auditable only if what it refused travels with its reasons [D-W5,
+    /// D-W10]. Assembling the feasible set out of these, ordering it and
+    /// recording it is 2.5's.
+    /// <para>
+    /// Bounds resolve once here rather than per candidate [D-W37], so an
+    /// unresolvable bound raises once for the evaluation rather than once per
+    /// contract, and every candidate on this date is judged against the same
+    /// numbers.
+    /// </para>
+    /// <para>
+    /// The report dates are read once too, over the widest window any candidate
+    /// on this chain could need, and narrowed per contract in memory. A read per
+    /// contract would be the same rows fetched once per expiry.
+    /// </para>
+    /// </remarks>
+    public IReadOnlyList<GatedCandidate> GateFor(
+        Ticker symbol,
+        DateOnly simulatedDate,
+        PositionState state)
+    {
+        ArgumentNullException.ThrowIfNull(symbol);
+
+        if (_configuration is null)
+        {
+            throw new InvalidOperationException(
+                "This generator was built without configuration and can enumerate but not gate. "
+                + "Every constraint reads its bound as of the simulated date [D-W26], so the "
+                + "gate cannot run without a configuration surface to read.");
+        }
+
+        var candidates = EnumerateFor(symbol, simulatedDate, state);
+
+        if (candidates.Count == 0)
+        {
+            return [];
+        }
+
+        var bounds = GateBounds.ResolveFor(_configuration, simulatedDate);
+        var reports = ReportDatesAcross(symbol, simulatedDate, candidates, bounds);
+
+        return
+        [
+            .. candidates.Select(candidate =>
+            {
+                var window = ContractConstraints.ClearanceWindow(
+                    simulatedDate,
+                    candidate.Quote.Contract.Expiry,
+                    bounds.EarningsClearanceDays);
+
+                var inWindow = reports
+                    .Where(date => date >= window.From && date <= window.To)
+                    .ToList();
+
+                return new GatedCandidate(
+                    candidate,
+                    ContractConstraints.Evaluate(
+                        candidate.Quote, simulatedDate, bounds, inWindow));
+            })
+        ];
+    }
+
+    /// <summary>
+    /// The reports falling in the widest clearance window any of these
+    /// candidates could need, read once.
+    /// </summary>
+    private IReadOnlyList<DateOnly> ReportDatesAcross(
+        Ticker symbol,
+        DateOnly simulatedDate,
+        IReadOnlyList<EnumeratedCandidate> candidates,
+        GateBounds bounds)
+    {
+        var latestExpiry = candidates.Max(candidate => candidate.Quote.Contract.Expiry);
+        var widest = ContractConstraints.ClearanceWindow(
+            simulatedDate, latestExpiry, bounds.EarningsClearanceDays);
+
+        return _marketData.ReportDatesFor(
+            symbol, widest.From, widest.To, asOf: simulatedDate);
     }
 
     /// <summary>

@@ -34,9 +34,9 @@ public static class SeedValues
     [
         // Gate constraints. Every value is the one proposed in CONFIG_REFERENCE
         // and in the decision that introduced it.
-        new("Gate:MaxSpreadFractionOfMid", "0.12",
+        new(ConfigKeys.GateMaxSpreadFractionOfMid, "0.12",
             "Proposed default [D-W22]. A fraction of mid, so 0.12 is twelve percent."),
-        new("Gate:MinPremium", "0.30",
+        new(ConfigKeys.GateMinPremium, "0.30",
             "Proposed default [D-W22]. Below this the per-contract commission eats a large "
             + "fraction of the credit."),
         new(ConfigKeys.GateMaxDelta, "0.35",
@@ -45,13 +45,13 @@ public static class SeedValues
             + "delta range the gate admits. A control drawing from a smaller opportunity set "
             + "than the gate allows would make a difference between makers partly permission "
             + "rather than judgement [D-W4, D-W10]."),
-        new("Gate:MinDte", "7",
+        new(ConfigKeys.GateMinDte, "7",
             "Proposed default [D-W24]. The fill and assignment models are least defensible on "
             + "contracts about to expire."),
         new(ConfigKeys.GateMaxDte, "70",
             "Proposed default [D-W24]. Must stay strictly below Trial:MaxTrialDays, which the "
             + "write path now enforces."),
-        new("Gate:EarningsClearanceDays", "7",
+        new(ConfigKeys.GateEarningsClearanceDays, "7",
             "Proposed default [D-W25]. Buffered on both sides because a vendor report date "
             + "moves."),
 
