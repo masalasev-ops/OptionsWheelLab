@@ -546,19 +546,32 @@ walk-forward.
 Carried forward because each cost something to learn and none is visible from
 the artefact it produced.
 
-- **A suite observed to pass is not a suite shown able to fail, and a mutation
-  confined to one site is not a mutation of the behaviour.** The first half is
-  2.2's: reintroduce the defect the test was written for and watch it fail, as
-  five of ten and four of four did there. The second is 2.3's, and it is what
-  makes the first sound. Defaulting either half of the bound resolution passed
-  every test, because each half left the other still raising, and only
-  defeating both showed the two tests that assert D-W37. So a passing mutation
-  has two causes, a weak test or an insufficient mutation, and they are told
-  apart only by mutating the behaviour rather than one of its sites. 2.4 adds
-  a third cause that neither half predicts: **a mutation can pass because two
-  keys hold the same value.** The assignment limit reading the total cap's
-  fraction was invisible while both were 0.60, and the fix was an assertion at
-  a configuration the store does not hold and could, not a better mutation.
+- **A passing mutation has three causes, and the technique only works if you can
+  tell them apart.** One checkpoint found each, and the third is what completes
+  it.
+
+  **A weak test** [2.2]. A suite observed to pass is not a suite shown able to
+  fail: reintroduce the defect the test was written for and watch it fail, as
+  five of ten and four of four did there.
+
+  **An insufficient mutation** [2.3]. A mutation confined to one site is not a
+  mutation of the behaviour. Defaulting either half of the bound resolution
+  passed every test, because each half left the other still raising, and only
+  defeating both showed the two tests that assert D-W37. Told apart from the
+  first by defeating every site the behaviour has rather than one of them.
+
+  **An unfalsifiable suite** [2.4]. Two paths can agree at the seeded data, so a
+  mutation swapping one for the other is invisible however sound the test and
+  however complete the mutation. The assignment limit reading the total cap's
+  fraction passed all 490 tests because both fractions are 0.60. The fix is
+  neither a better test nor a better mutation: it is an assertion at data the
+  store does not hold and could.
+
+  **The tell for the third is specific**: it appears wherever the corpus seeds
+  two keys to one value, and this corpus does that deliberately more than once,
+  `Gate:MaxDelta` and `Policy:Random:DeltaMax` being the other pair. Where two
+  values coincide by choice, the choice is also hiding a binding, and the
+  coincidence is the thing to go looking at.
 - **A definition of done that describes a state rather than an act usually names
   a later checkpoint's subject.** Three instances now: 0.6's, 2.1's, and 2.4's
   requiring a cap to be evaluated against committed capital "as the store
