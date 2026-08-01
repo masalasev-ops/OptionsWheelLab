@@ -289,12 +289,19 @@ figures.
 ---
 
 ### D-W19 Gross basis governs the covered call constraint
-`active` · 2026-07-26
+`active` · 2026-07-26, amended 2026-08-01 (boundary)
 
 After assignment, cost basis is recorded both gross, with premium tracked
 separately, and net, with premium reducing basis. The "above basis" constraint on
 covered call strikes is evaluated against gross basis. Reports state which
 convention they display.
+
+A strike exactly at gross basis is admissible. The constraint exists to prevent
+a call capping recovery below the cash outlay, and a strike at basis recovers it
+exactly, so excluding it would forbid the break-even strike for no stated
+reason. Called away at basis, the trial returns its premium and no capital loss,
+which is the worst outcome this constraint is meant to permit rather than the
+best it is meant to prevent.
 
 Rationale: netting premium into basis permits call strikes below the cash outlay,
 which caps recovery below entry and lets accumulated premium subsidise

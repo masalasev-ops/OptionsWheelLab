@@ -17,6 +17,12 @@ namespace OptionsWheelLab.Core.Configuration;
 /// are named and none is a literal at a call site.
 /// </para>
 /// <para>
+/// 2.4 adds the four `Risk:` keys on the same ground. None belongs to a
+/// cross-key invariant, so they are here for the second reason only:
+/// <see cref="Generation.PortfolioBounds"/> reads all four as of the simulated
+/// date.
+/// </para>
+/// <para>
 /// The rest of the store's keys are still the seeder's business and are
 /// declared with their values, because a key with no code that reads it has
 /// nothing to name it for.
@@ -31,6 +37,13 @@ public static class ConfigKeys
     public const string GateMaxDte = "Gate:MaxDte";
     public const string GateEarningsClearanceDays = "Gate:EarningsClearanceDays";
     public const string TrialMaxTrialDays = "Trial:MaxTrialDays";
+
+    public const string RiskEquity = "Risk:Equity";
+    public const string RiskPerNameCapFraction = "Risk:PerNameCapFraction";
+    public const string RiskTotalCapFraction = "Risk:TotalCapFraction";
+
+    public const string RiskSimultaneousAssignmentLimitFraction =
+        "Risk:SimultaneousAssignmentLimitFraction";
 
     public const string BaselineDeltaMax = "Policy:Baseline:DeltaMax";
     public const string RandomDeltaMax = "Policy:Random:DeltaMax";

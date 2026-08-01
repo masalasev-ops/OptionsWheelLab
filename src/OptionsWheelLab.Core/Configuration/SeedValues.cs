@@ -10,11 +10,22 @@ namespace OptionsWheelLab.Core.Configuration;
 /// taken from a proposed value in a decision, or judged. The third is the one
 /// worth arguing, and there are four of them.
 /// <para>
-/// Nineteen of the twenty-three `rows`-classed keys are here. The three
-/// <c>Risk:</c> fractions are the operator's risk appetite [D-W11] and
-/// <c>Costs:AssignmentFee</c> has no statement anywhere; both are carried
-/// obligations against the phase that first consumes them, because leaving a key
-/// unseeded and leaving it unscheduled are different things.
+/// Twenty-three of the twenty-four `rows`-classed keys are here. Nineteen
+/// landed at 0.8; the four <c>Risk:</c> keys landed at 2.4, which is the
+/// checkpoint that first reads them, and <c>Costs:AssignmentFee</c> is still
+/// owed at Phase 3. That last one has no statement anywhere, and it stayed a
+/// carried obligation rather than a gap because leaving a key unseeded and
+/// leaving it unscheduled are different things.
+/// </para>
+/// <para>
+/// <b>The <c>Risk:</c> block is a fourth kind of provenance and it is stated per
+/// key.</b> Three of the four are transcribed from <c>WORKED_EXAMPLE.md</c>
+/// section 1, which states the equity and both cap percentages and derives the
+/// headrooms section 3 uses. The fourth is chosen, no document stating it. 0.8
+/// left all of them on the ground that an equity-relative cap is the operator's
+/// risk appetite [D-W11] and that an example illustrating one account is not the
+/// operator setting one; that argument is about who decides, and it does not
+/// stop the decided values coinciding with the example's.
 /// </para>
 /// <para>
 /// Values are literals here rather than bound from <c>appsettings</c>. A section
@@ -54,6 +65,29 @@ public static class SeedValues
         new(ConfigKeys.GateEarningsClearanceDays, "7",
             "Proposed default [D-W25]. Buffered on both sides because a vendor report date "
             + "moves."),
+
+        // Risk caps. Structural and outside what the learner may propose
+        // [D-W11]. Three are transcribed from WORKED_EXAMPLE section 1 and the
+        // fourth is chosen; each note says which.
+        new(ConfigKeys.RiskEquity, "100000.00",
+            "Transcribed from WORKED_EXAMPLE section 1. A configuration key rather than a "
+            + "figure derived from cash and open positions: a derived denominator moves with "
+            + "the run and would loosen every cap during a drawdown, which is when they "
+            + "matter [D-W11]."),
+        new(ConfigKeys.RiskPerNameCapFraction, "0.25",
+            "Transcribed from WORKED_EXAMPLE section 1, which states 25 percent and derives "
+            + "the 5,100.00 headroom section 3's verdicts rest on. Against equity of 100,000 "
+            + "that is 25,000 committed in one name."),
+        new(ConfigKeys.RiskTotalCapFraction, "0.60",
+            "Transcribed from WORKED_EXAMPLE section 1, which states 60 percent. Against "
+            + "equity of 100,000 that is 60,000 committed in total, so two names at the full "
+            + "per-name cap commit 50,000 and a third cannot reach its own cap."),
+        new(ConfigKeys.RiskSimultaneousAssignmentLimitFraction, "0.60",
+            "Chosen, not transcribed: no document states it. Held equal to "
+            + "Risk:TotalCapFraction because a cash-secured put's committed capital is its "
+            + "assignment exposure, so a lower value makes the total cap unreachable and a "
+            + "higher one never binds. The relationship changes at Phase 3, when a covered "
+            + "call commits shares rather than cash."),
 
         // Trial bounds. No value is proposed anywhere, so both are judged.
         new("Trial:MaxRolls", "2",

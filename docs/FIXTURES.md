@@ -93,6 +93,8 @@ to carry the wrong cell.
 | FX-WorkedExampleChainPersists | fixture | 1.4 | the worked example's chain persists and reads back identical to the document's tables | WORKED_EXAMPLE §2, §5 |
 | FX-CorporateActionMintsSuccessor | fixture | 1.5 | a split mints a stated successor with its predecessor recorded, the original row unchanged, and the lineage walk resolving all generations | authored |
 | FX-GateRejectsAboveHeadroom | fixture | 2.4 | candidates breaching per-name headroom are rejected with a reason | WORKED_EXAMPLE §3 |
+| FX-TotalCapRejectsAboveHeadroom | fixture | 2.4 | a candidate breaching the total committed-capital cap is rejected with a reason | authored |
+| FX-AssignmentStressRejects | fixture | 2.4 | a candidate breaching the simultaneous-assignment limit is rejected with a reason | authored |
 | FX-OffWatchlistRejected | fixture | 2.2 | no candidates for a non-member symbol | authored |
 | FX-WorkedExampleEnumerates | fixture | 2.2 | the worked example's chain enumerates exactly the strikes §2 states and §3 claims, in identity order | WORKED_EXAMPLE §2, §3 |
 | FX-WorkedExampleGateVerdicts | fixture | 2.3 | the worked example's chain gates to the verdicts §3 states, under the four contract constraints | WORKED_EXAMPLE §2, §3 |
