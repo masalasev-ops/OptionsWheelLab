@@ -179,6 +179,14 @@ than zero, because a gamma of zero is a false observation and not a missing one,
 amount, so `corporate_actions` has one of each. A chain the loader accepts is a chain
 this schema holds.
 
+`session` is `before_open`, `after_close` or `unspecified`, lower case, matching
+`right` and `kind` elsewhere in this schema. It records when in the session the
+report lands, which [D-W25]'s buffered constraint does not read: a buffer
+measured in days is indifferent to the hour. It is carried because a narrower
+buffer would need it, and because a vendor that supplies it should not have the
+fact discarded on the way in. `unspecified` is the honest value when the vendor
+gives none, and is not a default standing in for a guess.
+
 `->` marks a foreign key. **They are enforced**, not decorative:
 Microsoft.Data.Sqlite turns foreign keys on by default, which a bare `sqlite3`
 prompt does not, so a quote cannot point at a contract that does not exist and a
