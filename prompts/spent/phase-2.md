@@ -9,20 +9,26 @@ stands. Corrections found while building are folded back into the checkpoint's
 prompt rather than appended as further entries, so replaying the prompts in order
 against the corpus reproduces the current state without replaying the mistakes.
 
-One file per phase. It closes when Phase 2 signs off; Phase 3 opens its own.
+One file per phase. **This file stays open past Phase 2's sign-off and closes
+when `phase-3.md` opens**, which is the practice `phase-1.md` already records:
+that file is frozen at v1.30.0, "when `phase-2.md` opened", which was 2.1's
+sign-off rather than Phase 1's close. Closing at sign-off would leave nothing
+describing the present between here and 3.1, which is the defect v1.30.0 fixed in
+this pair of files. This sentence said sign-off until 2.5 and is corrected to what
+the archive does.
 
 ---
 
 # Current state
 
-Corpus v1.33.0.
+Corpus v1.34.0.
 
 | | |
 |---|---|
 | Phase 0 | complete and reviewed, 0.1 to 0.8 built and signed off |
 | Phase 1 | complete, 1.1 to 1.5 built and signed off |
-| Phase 2 | open, 2.1 to 2.4 built and signed off, 2.5 not started |
-| CI | green, 493 tests, guards then restore then build then test, on push to `main` and every pull request |
+| Phase 2 | complete, 2.1 to 2.5 built and signed off |
+| CI | green, 503 tests, guards then restore then build then test, on push to `main` and every pull request |
 
 Which branch the work sits on and which pull requests have merged are not recorded
 here. Git holds both exactly, and a fact kept in two places drifts.
@@ -289,7 +295,22 @@ grounds run one to six and portfolio grounds seven to ten, so a reader can see
 which question a candidate failed. Every entry names a decision stating its
 ground, and a standing test reads the enum's own summaries and requires it.
 `StoreGateReason` declares all ten stored forms rather than deriving them, eight
-being unreachable from the member name by any casing rule.
+being unreachable from the member name by any casing rule. Nine of the ten can
+land on one candidate, the crossed reason being unreachable beside the spread
+cap, and FX-GateRecordsAllReasons asserts that maximum against the enum's own
+length.
+
+`GatedCandidate` compares its reasons by sequence rather than by the reference
+a record's default comparer would use, order included. Two candidates with one
+contract and one set of reasons in one order are the same verdict, which is what
+D-W4 asks and what the synthesised equality answered wrong until 2.5.
+
+The order a feasible set arrives in is the chain read's, imposed once at
+`AsOfMarketData.QuotesFor` and inherited everywhere after. Filtering preserves
+order, so the gate adds nothing; the read owns the sort and the test that holds
+it, and the gate asserts the property. Identity orders on expiry before strike,
+so the ordering suite supplies two expiries scrambled, every other chain here
+being one expiry.
 
 Enumeration filters on nothing but position state and membership. A deep
 in-the-money put is enumerated and will be rejected by every constraint, which
@@ -402,11 +423,11 @@ bands the list names.
 
 ## Tests
 
-493: 303 across forty fixtures, and 190 across thirty unregistered
+503: 307 across forty-one fixtures, and 196 across thirty-one unregistered
 suites. The two guards are checks rather than tests and are counted in neither.
 2.1 registered none and changed none, which is what a document-only checkpoint
-pinned by existing fixtures looks like; 2.2 registered two, 2.3 seven and 2.4
-four.
+pinned by existing fixtures looks like; 2.2 registered two, 2.3 seven, 2.4
+four and 2.5 one.
 
 **A suite observed to pass is not a suite shown able to fail.** 2.2's two
 mutation checks are the method: a generator returning puts unconditionally
@@ -439,6 +460,7 @@ number is visible from a green run.
 | FX-ChainLoadsInIdentityOrder | 4 |
 | FX-CrossedQuoteRejected | 4 |
 | FX-DeltaCeilingRejects | 4 |
+| FX-GateRecordsAllReasons | 4 |
 | FX-GateRejectsAboveHeadroom | 4 |
 | FX-GrossBasisBindsCallStrike | 4 |
 | FX-MaxDteBelowTrialBound | 4 |
@@ -470,10 +492,12 @@ append-only triggers make the tables impossible to clean between cases.
 Every table beyond the nine that exist. `decisions` and `candidates` are
 Phase 4's.
 
-No feasible set. The gate runs both families [2.3, 2.4] and `GateFor` returns
-every candidate with its reasons, but nothing assembles the survivors, orders
-them by contract identity or records what was refused. 2.5 does all three, and
-it is the first consumer of the total order 1.5 completed.
+No `FeasibleSet` type, and that is a choice rather than a gap. `GateFor`
+returning every candidate with its reasons in identity order is assembly,
+ordering and the refusal record; a type justified only by a later consumer is
+speculation, and no maker exists until Phase 4. The set's grain is (symbol,
+date) and Phase 4's obligation carries it, so that phase models the set with
+`candidates` in front of it rather than inheriting a shape guessed early.
 
 No book to gate against. `BookState` is a parameter and nothing computes one:
 `positions` is Phase 3's, so every caller states its own exposure and basis, and
@@ -1104,6 +1128,103 @@ same candidate.
 - `ConfigKeys` and `CONFIG_REFERENCE.md` gain the Risk keys; report whether their
   consumers move from **Unverified** to verified.
 - The Risk obligation closes. Report the count.
+
+### Constraints
+
+No `double` or `float`. No ambient clock. Money is decimal in `TEXT`. Edit files
+with the file tools rather than a shell round trip, which mangles UTF-8 outside
+ASCII. Reconcile the detail and the archive at sign-off, not during the build.
+
+---
+
+## 2.5 The feasible set
+
+Read `CLAUDE.md`, `BUILD_PLAN.md` 2.5 and the carried obligations, D-W4, D-W5,
+D-W10, `SYSTEM_DESIGN.md` §3.3 and §3.4, `DATA_AND_SCHEMA.md` §4.3,
+`CandidateGenerator`, `GatedCandidate`, `ContractIdentity`, `AsOfMarketData`,
+the fixtures registered against 2.5 in `FIXTURES.md`, and Current state above.
+
+2.5 is the last checkpoint of Phase 2 and closes it. The gate is whole, so this
+is a small code checkpoint and a large reconciliation one. Say so rather than
+inflating the first half: two of this phase's obligations were discharged by
+building something and this one is discharged by asserting what was built.
+
+### What assembly produces is a choice
+
+`GateFor` already returns every candidate with its reasons in identity order,
+which is assembly, ordering and the refusal record. Decide whether a
+`FeasibleSet` type ships and report the reason, not only the choice. A type
+justified only by a later consumer is speculation, which is `GateReason`'s own
+ground for declining 2.4's members at 2.3, and 1.5 removed
+`Contract.DeliverableShares` for being a second statement made before its
+consumer existed. Phase 4's obligation names the set's grain as (symbol, date);
+whatever is decided, that row absorbs the reasoning, because Phase 4's planning
+reads it and 2.5's detail is about to freeze.
+
+### The definition of done asks for bytes that do not exist
+
+It says the set is ordered "so three makers receiving it receive the same bytes
+[D-W4]". Nothing serialises a candidate at 2.5 and `candidates` is Phase 4's.
+2.5 is not built, so its detail is live intent: restate it as what this
+checkpoint can assert, being that the same inputs produce the same sequence,
+compared as an ordered sequence of identities and reasons, and that the ordering
+is the identity total order. Carry the byte-level property to the checkpoint that
+persists the set, and add to Phase 4's obligation that
+`FX-ThreeMakersSameFeasibleSet` is where it lands.
+
+**This is the fourth definition of done whose subject belongs to a later
+checkpoint**, after 0.5's, 0.6's and 2.4's. Record it in the CHANGELOG under
+Fixed with the class named, and check the earlier list while you are there: a
+count of instances that nobody re-reads is how the wrong instance stays named.
+
+### The order is not this checkpoint's to impose
+
+The same clause calls 2.5 the first consumer of the total order 1.5 completed.
+Check it before building on it. Assert the property at the gate's output and say
+where the order actually comes from, because a second sort would be a second
+statement of one guarantee, and `CandidateGenerator`'s own remark already says
+enumeration inherits rather than re-imposes.
+
+- **Test**: the gated sequence is in identity order, sorted through the
+  identity's own comparison rather than against a hand-written list.
+- **Test**: the same inputs gate to the same sequence, identities and reasons.
+- **Test**: the gate returns what enumeration returned, in that order, so
+  nothing reorders or drops.
+- Identity orders on expiry before strike and every chain in this repository is
+  one expiry, so a chain of one expiry cannot tell an identity comparison from a
+  strike comparison. Supply more than one and scramble the input.
+
+### The registered check
+
+- **Test**: a candidate failing two constraints carries both, which is why the
+  gate evaluates every constraint rather than short-circuiting. Two constraints
+  in one family, one from each family, and the full set a single evaluation can
+  produce, since the registered wording asks for two and two of one kind would
+  discharge it while leaving the seam between the families untested.
+- Assert the maximum against the vocabulary's own length rather than against a
+  number, so a reason added later leaves it unasserted rather than wrong.
+
+### Mutation checks
+
+Per constraint and per property, mutating the behaviour rather than a site.
+Include one that should change nothing, being the gate re-sorting its own
+output, and say which of the three causes of a passing mutation applies when one
+passes; if none does, that is a fourth outcome and worth naming as such.
+
+### The markers, and the sweep they imply
+
+`SYSTEM_DESIGN.md` §3.3 and §3.4 gain the build-state markers `CLAUDE.md` §5
+requires. Sweep the rest while you are in there rather than writing two and
+leaving the others: a marker is an observation and goes stale silently, and each
+correction states what is not built beside what is.
+
+### Definitions of done
+
+- Every check registered against 2.5 exists in its kind; marker from disk.
+- Report what 2.5 adds to `ConfigKeys` and `CONFIG_REFERENCE.md`, or that each is
+  checked and empty.
+- Phase 2's build state moves to complete, with what is not built stated beside
+  it. Phase 3's detail is authored content and arrives as a corpus sync.
 
 ### Constraints
 
