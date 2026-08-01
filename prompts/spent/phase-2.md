@@ -22,7 +22,7 @@ Corpus v1.33.0.
 | Phase 0 | complete and reviewed, 0.1 to 0.8 built and signed off |
 | Phase 1 | complete, 1.1 to 1.5 built and signed off |
 | Phase 2 | open, 2.1 to 2.4 built and signed off, 2.5 not started |
-| CI | green, 492 tests, guards then restore then build then test, on push to `main` and every pull request |
+| CI | green, 493 tests, guards then restore then build then test, on push to `main` and every pull request |
 
 Which branch the work sits on and which pull requests have merged are not recorded
 here. Git holds both exactly, and a fact kept in two places drifts.
@@ -398,7 +398,7 @@ bands the list names.
 
 ## Tests
 
-492: 302 across forty fixtures, and 190 across thirty unregistered
+493: 303 across forty fixtures, and 190 across thirty unregistered
 suites. The two guards are checks rather than tests and are counted in neither.
 2.1 registered none and changed none, which is what a document-only checkpoint
 pinned by existing fixtures looks like; 2.2 registered two, 2.3 seven and 2.4
@@ -431,7 +431,7 @@ number is visible from a green run.
 | FX-EveryPolicyBandIsChecked | 5 |
 | FX-RegistryMatchesDisk | 5 |
 | FX-TotalCapRejectsAboveHeadroom | 5 |
-| FX-AssignmentStressRejects | 4 |
+| FX-AssignmentStressRejects | 5 |
 | FX-ChainLoadsInIdentityOrder | 4 |
 | FX-CrossedQuoteRejected | 4 |
 | FX-DeltaCeilingRejects | 4 |
@@ -507,8 +507,16 @@ Entries stand against Phase 3, 4, 8, 9 and 11. The count is not restated
 here. **Phase 2 owes nothing.** 2.1 discharged the reconciliation row raised at
 v1.6.0, the table's oldest and open for twenty-three corpus versions, 2.3
 discharged the crossed-quote row while opening two of its own, and 2.4
-discharged the risk row. All three were preconditions rather than work items,
-which is what put them at the front of the phase.
+discharged the risk row while opening one of its own. All three discharged rows
+were preconditions rather than work items, which is what put them at the front
+of the phase.
+
+2.4's row is what a covered call commits, owed at Phase 3. D-W17 fixes a trial's
+committed capital at open, so a call written against shares already assigned may
+commit nothing new, while 2.4 charges the candidate's own figure regardless of
+right. That is the conservative reading and binds a cap that may not apply, and
+no fixture reaches it because no covered call is gated before the state machine
+exists.
 
 The risk row named three fractions and took four keys, because every cap is a
 fraction of an account value that no key, column or table held. That is the
@@ -551,6 +559,13 @@ the artefact it produced.
   keys hold the same value.** The assignment limit reading the total cap's
   fraction was invisible while both were 0.60, and the fix was an assertion at
   a configuration the store does not hold and could, not a better mutation.
+- **A definition of done that describes a state rather than an act usually names
+  a later checkpoint's subject.** Three instances now: 0.6's, 2.1's, and 2.4's
+  requiring a cap to be evaluated against committed capital "as the store
+  records it" when nothing persists until Phase 4. The tell is grammatical
+  rather than technical, and the repair is to state the property the clause was
+  protecting, which in each case survives the checkpoint boundary the state
+  does not.
 - **A check can be vacuous in two directions and neither implies the other.** A
   cap tested against an empty portfolio passes whether or not it works, which is
   1.1's empty-table shape. A cap whose bound is never reached also passes

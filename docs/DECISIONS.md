@@ -347,7 +347,7 @@ in the money carries a large excursion on a positive outcome.
 ---
 
 ### D-W22 Contract-level liquidity filter
-`active` · 2026-07-27
+`active` · 2026-07-27, amended 2026-07-31 (crossed markets)
 
 The gate rejects a candidate whose quoted spread exceeds
 `Gate:MaxSpreadFractionOfMid` of the mid, or whose bid falls below
@@ -440,7 +440,8 @@ no tighter than any configured policy band's upper bound.
 ---
 
 ### D-W24 Days-to-expiry window in the gate
-`active` · 2026-07-27, amended 2026-07-27 (enforcement point)
+`active` · 2026-07-27, amended 2026-07-27 (enforcement point), amended
+2026-07-31 (inclusive range)
 
 The gate rejects a candidate whose days to expiry fall outside the inclusive
 range `Gate:MinDte` to `Gate:MaxDte`. Proposed defaults 7 and 70, Phase 0.8
@@ -471,7 +472,7 @@ than `Trial:MaxTrialDays`.
 ---
 
 ### D-W25 Earnings clearance in the gate
-`active` · 2026-07-27
+`active` · 2026-07-27, amended 2026-07-31 (buffer edge)
 
 The gate rejects a candidate whose contract life contains a scheduled earnings
 date, plus a buffer of `Gate:EarningsClearanceDays` on either side. Proposed

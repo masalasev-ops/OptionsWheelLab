@@ -14,8 +14,16 @@ account value every cap divides by.
   while producing a simulated decision.
 - The four `Risk:` keys are set at version 1, discharging the PR #7 obligation.
   Three are transcribed from `WORKED_EXAMPLE.md` section 1 and only the
-  simultaneous-assignment fraction is chosen; each Note says which. Twelve
-  carried obligations stand.
+  simultaneous-assignment fraction is chosen; each Note says which. Phase 2 now
+  owes nothing, all three of its rows having been preconditions.
+- Carried obligations gains one, owed at Phase 3: what a covered call commits.
+  [D-W17] fixes a trial's committed capital at open, so a call written against
+  shares already assigned may commit nothing new, while 2.4 charges the
+  candidate's own figure regardless of right. Twelve becomes thirteen.
+- 2.5's detail carries `SYSTEM_DESIGN.md` §3.3's and §3.4's build-state markers,
+  which `CLAUDE.md` §5 requires and v1.28.0's sweep left because neither section
+  was built then. They land at 2.5 rather than here because §3.4 is complete
+  only once the feasible set assembles.
 - `PortfolioBounds`, a second bound record rather than four more fields on
   `GateBounds`. The two families are evaluated apart, so widening would make
   every contract-constraint site supply numbers that family cannot read.
@@ -53,7 +61,21 @@ account value every cap divides by.
   rests on the citation. The count is now large enough that the method is the
   finding rather than the individual error: reading a decision because something
   rests on it has found a wrong citation six times, and reading the documents
-  alone found none of them.
+  alone found none of them. A seventh was created and caught in the same
+  checkpoint: the plan for 2.4 cited D-W25 as the precedent for stamping an
+  amendment, and D-W25 is one of the three 2.3 amended without stamping.
+- 2.4's definition of done required a cap to be evaluated against committed
+  capital "as the store records it", which was unmeetable as written: nothing
+  persists at 2.4, `candidates` being Phase 4's, so the store records no
+  candidate to have a figure. Restated as the property it protected, one
+  computing site, which is what Phase 4 will persist from rather than computing
+  a second figure. Third instance of a definition of done whose subject belongs
+  to a later checkpoint, after 0.6's and 2.1's, and the tell is the same each
+  time: the clause describes a state rather than an act.
+- D-W22, D-W24 and D-W25 gain the amendment stamps 2.3 did not write. The
+  register showed one decision moving where four had, and D-W24's existing stamp
+  was July's enforcement-point amendment rather than 2.3's inclusive-range
+  wording.
 
 ### Notes
 - Section 3's verdicts held on the first run of the completed gate, both reasons
@@ -63,9 +85,11 @@ account value every cap divides by.
   reading `TotalCapFraction` instead of its own key. Not a weak test so much as
   the seeded values hiding the binding, the two fractions being held equal by
   choice. Two assertions were added at a configuration the store does not hold
-  and could. This is 2.3's lesson one level up, where a mutation confined to one
-  site left another still raising; here a value equal to its neighbour left a
-  field unreadable from any verdict.
+  and could, the verdict half registered inside `FX-AssignmentStressRejects`
+  because it is the only assertion telling two constraints apart and should be
+  findable from the registry. This is 2.3's lesson one level up, where a
+  mutation confined to one site left another still raising; here a value equal
+  to its neighbour left a field unreadable from any verdict.
 - Defaulting only the decimal half of the shared bound resolution still left
   `GateBoundsTests` passing, because the integer half kept raising. The same
   shape 2.3 recorded, reproduced through the helper that now serves two records.

@@ -1032,8 +1032,8 @@ searches and that mutation; what caught the ones that were caught was a
 compiler or an assertion counting, not a better search.
 
 ### 2026-08-01 — corpus v1.33.0
-Checkpoint 2.4, the three portfolio caps and the gross-basis rule. 492 tests,
-up thirty-seven; schema unchanged at 5; four config keys added and their
+Checkpoint 2.4, the three portfolio caps and the gross-basis rule. 493 tests,
+up thirty-eight; schema unchanged at 5; four config keys added and their
 consumers verified; forty-two registry entries implemented against 0.2 to 2.4,
 counted from disk. The gate is whole apart from assembly, and both families can
 now fail one candidate.
@@ -1070,7 +1070,11 @@ hid it.** The assignment limit reading `TotalCapFraction` instead of its own key
 is undetectable while the two are held equal, and nothing forbids an operator
 setting them apart, since no invariant ties them and the relationship changes at
 Phase 3. Two assertions were added at a configuration the store does not hold and
-could. That is 2.3's lesson one level up: there a mutation confined to one site
+could, and the verdict half is inside `FX-AssignmentStressRejects` rather than an
+unregistered suite: it is the only assertion telling two constraints apart, so it
+belongs where the registry points. `CONFIG_REFERENCE.md`'s own Notes now say the
+indistinguishability is a condition of the equal fractions rather than a fact
+about the caps, because an operator revising one reads that row and not the code. That is 2.3's lesson one level up: there a mutation confined to one site
 left another site still raising, and here a value equal to its neighbour left a
 field unreadable from any verdict. Defaulting only the decimal half of the shared
 bound resolution reproduced 2.3's original result exactly, the integer half
@@ -1081,6 +1085,20 @@ the per-name headroom to D-W10, which states where the gate lives, where every
 other constraint in that sentence cites the decision that states it. Found the
 same way as the other five, by building the thing that rests on the citation.
 Reading the documents alone has found none of the six.
+
+A seventh was created and caught inside the same checkpoint, which is the first
+time that has happened to a citation this build made rather than inherited. The
+plan for 2.4 cited D-W25 as the precedent for stamping an amendment, and D-W25 is
+one of three decisions 2.3 amended and did not stamp. D-W22, D-W24 and D-W25 now
+carry their stamps, so the register shows four decisions moving where it showed
+one.
+
+**A definition of done can name a later checkpoint's subject, and 2.4's did.** It
+required a cap to be evaluated against committed capital as the store records it,
+and nothing persists at 2.4. Restated as the property it was protecting, one
+computing site. Third instance after 0.6's and 2.1's, and the tell is grammatical
+rather than technical: the clause described a state where the others describe an
+act, and a state can belong to a checkpoint the clause does not.
 
 D-W19 gains its boundary. It said "above basis" and left a strike exactly at
 basis unsaid; a strike at basis recovers the outlay exactly, so excluding it

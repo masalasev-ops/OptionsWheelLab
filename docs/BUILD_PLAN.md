@@ -625,6 +625,7 @@ admits only one origin costs.
 | Phase 3 | Verify the wheel's settlement mechanics against OCC's own rules before the state machine's decisions are authored, and cite the rule in each decision: exercise-by-exception and its in-the-money threshold at expiry; when assignment is known to the account versus when it occurred; when cash from an assignment or a call-away is usable again under T+1 settlement; the early-assignment model around ex-dividend that VALIDITY already names as modelled by rule; and dividend entitlement timing given that ex-date and record date coincide under T+1. Every item is a mechanics fact with a primary source, none is currently verified, and the corpus's posture is transcription from authorities rather than recollection [D-W36]. Raised at 1.5 when the adjustment question got this treatment and the remaining unverified mechanics were enumerated. | v1.26.0 |
 | Phase 4 | Decide how a candidate's gate reasons are stored. `candidates.gate_reason` is a single nullable TEXT column and the domain type is a set in declared order [2.3], which FX-GateRecordsAllReasons at 2.5 asserts by requiring two reasons on one candidate. The options include a delimited list, which makes a reason unqueryable, and a row per reason, which changes the table's grain. Raised at 2.3 when the vocabulary was declared. | v1.32.0 |
 | Phase 9 | Decide how configuration resolves for a simulated date that precedes the value being written. `SeedCommand` stamps `set_at` from the wall clock, so every gate bound resolves null for any simulated date before the seed ran, which is every date in a walk-forward over real history. [D-W26] requires resolution as of the simulated date and [D-W37] stops the evaluation rather than guessing, so the collision surfaces loudly at the first walk-forward rather than silently. The options include backdating the seed, which costs the audit trail its truthfulness, and resolving a registered run's configuration as of its pre-registration instant [D-W15], which keeps both rules intact. Raised at 2.3 while answering what an unresolvable bound does. | v1.32.0 |
+| Phase 3 | Decide what a covered call commits. [D-W17] fixes a trial's committed capital at open, so a call written against shares already assigned may commit nothing new, while 2.4 charges the candidate's own figure regardless of right, which is the conservative reading and binds a cap that may not apply. No fixture reaches it because no covered call is gated before the state machine exists. Raised at 2.4. | v1.33.0 |
 | Phase 3 | Run a domain-completeness pass before the state machine's decisions are authored, and record what it finds. Every check this repository has compares one part of the corpus against another, so an omission from the domain model is invisible to all of them: dividends were absent from `ledger_entries` and from D-W13's control for eight checkpoints, and surfaced from a conversation rather than from any process. The pass walks a wheel turn end to end against the corpus and asks what the strategy involves that no document mentions: cash movements between assignment and call-away, what a trial's economics include, what an account holds that the ledger does not name. Findings become their own rows. Raised at 1.5, after the dividend gap showed the class exists. | v1.26.0 |
 
 ---
@@ -1197,5 +1198,13 @@ Assembly and ordering, and the record of what the gate refused.
 - **DoD**: the set is ordered by contract identity, so three makers
   receiving it receive the same bytes [D-W4]. This is the first consumer of
   the total order 1.5 completed.
+- Carries `SYSTEM_DESIGN.md` §3.3 and §3.4's build-state markers, which
+  `CLAUDE.md` §5 requires of every section describing a component and which
+  v1.28.0's sweep left because neither was built then. §3.3 is the candidate
+  generator, built across 2.2 and 2.3; §3.4 is the risk gate, whose contract
+  family landed at 2.3 and whose portfolio family landed at 2.4. They land
+  here rather than at 2.4 because §3.4 is complete only once the feasible set
+  assembles, and a marker written a checkpoint early would need amending a
+  checkpoint later. Raised at 2.4.
 
 Detail for Phase 3 is authored when Phase 2 signs off.

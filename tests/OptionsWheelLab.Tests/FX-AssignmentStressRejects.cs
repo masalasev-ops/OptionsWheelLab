@@ -1,3 +1,4 @@
+using OptionsWheelLab.Core.Configuration;
 using OptionsWheelLab.Core.Generation;
 
 namespace OptionsWheelLab.Tests;
@@ -73,6 +74,42 @@ public sealed class FX_AssignmentStressRejects
         var verdicts = GateScenario.Gate([GateScenario.Quote(Above)], book: Concentrated);
 
         Assert.Empty(verdicts[Above]);
+    }
+
+    /// <summary>
+    /// The limit reads its own fraction, shown at a configuration where the two
+    /// differ.
+    /// </summary>
+    /// <remarks>
+    /// <b>Found by mutation, and registered here rather than left in an
+    /// unregistered suite.</b> A limit reading `Risk:TotalCapFraction` instead
+    /// of its own key passed all 490 tests, because the two are held equal. This
+    /// is the only assertion that tells the two constraints apart, so it belongs
+    /// where the registry points rather than only where the arithmetic is
+    /// convenient to test.
+    /// <para>
+    /// The revision is a second config version at the seed's own instant, so
+    /// nothing is backdated: equal `set_at` is permitted and version breaks the
+    /// tie, which is what as-of resolution already does [D-W26]. Nothing forbids
+    /// the configuration either, CONFIG_REFERENCE recording no invariant between
+    /// the two fractions, deliberately, because the relationship changes at
+    /// Phase 3.
+    /// </para>
+    /// </remarks>
+    [Fact]
+    public void The_limit_reads_its_own_fraction()
+    {
+        // 30,000.00 against 28,000.00 leaves 2,000.00, where the total cap's
+        // 60,000.00 leaves 32,000.00 and the per-name cap is untouched.
+        var verdicts = GateScenario.Gate(
+            [GateScenario.Quote(25.00m)],
+            book: new BookState(CommittedInName: 0.00m, CommittedTotal: 28_000.00m),
+            overrides:
+            [
+                new(ConfigKeys.RiskSimultaneousAssignmentLimitFraction, "0.30", "halved"),
+            ]);
+
+        Assert.Equal([GateReason.AssignmentStress], verdicts[25.00m]);
     }
 
     /// <summary>
