@@ -60,7 +60,7 @@ Committed capital is `strike x 100 x contracts` [D-W17].
 All seven strikes are enumerated. The gate then evaluates each against every
 constraint this snapshot gives it something to read: the spread cap of twelve
 percent of mid and the premium floor of `0.30` [D-W22], the delta ceiling of
-`0.35` [D-W23], and the `5,100.00` per-name headroom [D-W10]. Every failing
+`0.35` [D-W23], and the `5,100.00` per-name headroom [D-W11]. Every failing
 reason is recorded, not the first. The ceiling compares absolute delta
 [D-W23], which is why this table carries magnitudes where §2 carries the sign
 the chain stated.

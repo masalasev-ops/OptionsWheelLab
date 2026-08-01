@@ -26,8 +26,9 @@ namespace OptionsWheelLab.Core.Generation;
 /// </para>
 /// <para>
 /// The portfolio constraints are not here. They ask whether the book can carry
-/// the position rather than whether the contract belongs in the set, they need
-/// ledger state, and they are 2.4's [D-W11, D-W19].
+/// the position rather than whether the contract belongs in the set, and they
+/// need ledger state, so they live in <see cref="PortfolioConstraints"/> with
+/// their own bound record [D-W11, D-W19].
 /// </para>
 /// </remarks>
 public static class ContractConstraints

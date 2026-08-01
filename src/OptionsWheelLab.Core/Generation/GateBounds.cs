@@ -52,32 +52,17 @@ public sealed record GateBounds(
         ArgumentNullException.ThrowIfNull(configuration);
 
         return new GateBounds(
-            RequiredDecimal(configuration, ConfigKeys.GateMaxSpreadFractionOfMid, simulatedDate),
-            RequiredDecimal(configuration, ConfigKeys.GateMinPremium, simulatedDate),
-            RequiredDecimal(configuration, ConfigKeys.GateMaxDelta, simulatedDate),
-            RequiredInt(configuration, ConfigKeys.GateMinDte, simulatedDate),
-            RequiredInt(configuration, ConfigKeys.GateMaxDte, simulatedDate),
-            RequiredInt(configuration, ConfigKeys.GateEarningsClearanceDays, simulatedDate));
+            ResolvedBound.RequiredDecimal(
+                configuration, ConfigKeys.GateMaxSpreadFractionOfMid, simulatedDate),
+            ResolvedBound.RequiredDecimal(
+                configuration, ConfigKeys.GateMinPremium, simulatedDate),
+            ResolvedBound.RequiredDecimal(
+                configuration, ConfigKeys.GateMaxDelta, simulatedDate),
+            ResolvedBound.RequiredInt(
+                configuration, ConfigKeys.GateMinDte, simulatedDate),
+            ResolvedBound.RequiredInt(
+                configuration, ConfigKeys.GateMaxDte, simulatedDate),
+            ResolvedBound.RequiredInt(
+                configuration, ConfigKeys.GateEarningsClearanceDays, simulatedDate));
     }
-
-    private static decimal RequiredDecimal(
-        AsOfConfiguration configuration,
-        string key,
-        DateOnly simulatedDate) =>
-        configuration.ResolveDecimal(key, simulatedDate) ?? throw Unresolvable(key, simulatedDate);
-
-    private static int RequiredInt(
-        AsOfConfiguration configuration,
-        string key,
-        DateOnly simulatedDate) =>
-        configuration.ResolveInt(key, simulatedDate) ?? throw Unresolvable(key, simulatedDate);
-
-    /// <summary>
-    /// The message names the key and the date, because either alone leaves the
-    /// reader guessing which of the two is wrong.
-    /// </summary>
-    private static InvalidOperationException Unresolvable(string key, DateOnly simulatedDate) =>
-        new($"'{key}' has no value in force on {Storage.StoreDate.ToStored(simulatedDate)}. "
-            + "A gate bound that cannot be resolved is not defaulted: the evaluation stops "
-            + "rather than producing a feasible set under an unknown constraint [D-W37].");
 }

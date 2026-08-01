@@ -15,14 +15,14 @@ One file per phase. It closes when Phase 2 signs off; Phase 3 opens its own.
 
 # Current state
 
-Corpus v1.32.0.
+Corpus v1.33.0.
 
 | | |
 |---|---|
 | Phase 0 | complete and reviewed, 0.1 to 0.8 built and signed off |
 | Phase 1 | complete, 1.1 to 1.5 built and signed off |
-| Phase 2 | open, 2.1 to 2.3 built and signed off, 2.4 and 2.5 not started |
-| CI | green, 455 tests, guards then restore then build then test, on push to `main` and every pull request |
+| Phase 2 | open, 2.1 to 2.4 built and signed off, 2.5 not started |
+| CI | green, 493 tests, guards then restore then build then test, on push to `main` and every pull request |
 
 Which branch the work sits on and which pull requests have merged are not recorded
 here. Git holds both exactly, and a fact kept in two places drifts.
@@ -217,21 +217,63 @@ and is the tripwire if the one-text choice is undone.
 
 ## Candidate generation
 
-**Enumeration and the four contract constraints** [2.2, 2.3].
+**Enumeration and both constraint families** [2.2, 2.3, 2.4].
 `CandidateGenerator.EnumerateFor(symbol, simulatedDate, state)` asks
 membership, then the chain, and keeps the quotes whose right the state makes
-sellable. `GateFor` runs the contract constraints over that set and returns
-every candidate with the reasons it failed, rejected ones included, because the
-gate's effect is auditable only if what it refused travels with why [D-W5,
-D-W10]. 2.4 adds the portfolio caps and 2.5 assembles and orders the feasible
-set.
+sellable. `GateFor(symbol, simulatedDate, state, book)` runs both families over
+that set and returns every candidate with the reasons it failed, rejected ones
+included, because the gate's effect is auditable only if what it refused travels
+with why [D-W5, D-W10]. 2.5 assembles and orders the feasible set.
 
-`GateBounds` resolves the six bounds once per evaluation rather than once per
-candidate, and an unresolvable bound stops the evaluation naming the key and
-the date [D-W37] rather than admitting or rejecting. That path is reachable in
-ordinary use, not only in tests: the seed stamps `set_at` from the wall clock,
-so every bound resolves null for any simulated date before the seed ran, which
-is the Phase 9 obligation.
+`GateBounds` resolves the six contract bounds once per evaluation rather than
+once per candidate, `PortfolioBounds` the four `Risk:` values the same way, and
+an unresolvable bound stops the evaluation naming the key and the date [D-W37]
+rather than admitting or rejecting. Both call one internal helper, so D-W37's
+message exists once. That path is reachable in ordinary use, not only in tests:
+the seed stamps `set_at` from the wall clock, so every bound resolves null for
+any simulated date before the seed ran, which is the Phase 9 obligation.
+
+The message does not say which record failed, and the key implies it only by
+convention: the six `Gate:` keys and the four `Risk:` keys partition cleanly,
+nothing states that a record's keys share a section, and nothing checks it.
+
+Two bound records rather than one, because the two families are evaluated apart
+and widening would make every contract-constraint site supply numbers that
+family cannot read.
+
+`PortfolioConstraints` is pure and handed its values too, and asks the other
+question of SYSTEM_DESIGN §3.4: whether the book can carry the position rather
+than whether the contract belongs in the set. Three caps against equity, and
+D-W19's gross-basis rule binding a call strike, which admits a strike exactly at
+basis. A call arriving with no basis stops rather than resolving either way,
+which is D-W37's argument through book state rather than configuration.
+
+`PortfolioConstraints` exposes its three headrooms and that is deliberate. A cap
+whose bound is never reached passes whether or not it is wired, so WORKED_EXAMPLE
+§3 alone cannot tell a working total cap from one reading the wrong exposure;
+asserting the headrooms through the functions the constraint compares against is
+what does.
+
+**The total cap and the assignment limit are indistinguishable by any
+rejection.** Both fractions are 0.60 and assignment exposure never exceeds
+committed capital on a book this lab can hold, so a candidate breaching one
+breaches the other, and the two tests separating them work at a configuration the
+store does not hold and could.
+
+`BookState` carries committed capital in the name, committed capital in total,
+and a nullable gross basis. It is a parameter because `positions` is Phase 3's.
+Assignment exposure is not a field: it is committed capital today, derived where
+it is compared and stated there, so Phase 3 must touch the site that states the
+equality rather than notice a field that has quietly been a copy. `GateFor` takes
+the book required rather than defaulted, because a cap against an empty book
+admits everything.
+
+`CommittedCapital` is one site, being strike times deliverable times contracts.
+Which quantity D-W17 means is Phase 3's open obligation; 2.4 reads the
+deliverable because it is the only one in reach and says so rather than deciding.
+What a covered call commits is a further open question, D-W17 fixing a trial's
+committed capital at open, and 2.4 charges the candidate's own figure whatever
+the right, which is the tighter reading of a cap.
 
 `ContractConstraints` is pure and handed its numbers, so it reads no
 configuration and no clock. Its comparisons are deliberately not uniform and
@@ -241,10 +283,13 @@ expiry window, an inclusive edge for the earnings buffer. The crossed check
 precedes the spread ratio, because a crossed quote's mid is not a midpoint and
 the ratio below it would be arithmetic on a quantity that means nothing.
 
-`GateReason` is six grounds in declared order, which is the order they are
-recorded in, because three makers receive byte-identical sets [D-W4]. Every
-entry names a decision stating its ground, and a standing test reads the enum's
-own summaries and requires it. 2.4's portfolio grounds are not declared yet.
+`GateReason` is ten grounds in declared order, which is the order they are
+recorded in, because three makers receive byte-identical sets [D-W4]. Contract
+grounds run one to six and portfolio grounds seven to ten, so a reader can see
+which question a candidate failed. Every entry names a decision stating its
+ground, and a standing test reads the enum's own summaries and requires it.
+`StoreGateReason` declares all ten stored forms rather than deriving them, eight
+being unreachable from the member name by any casing rule.
 
 Enumeration filters on nothing but position state and membership. A deep
 in-the-money put is enumerated and will be rejected by every constraint, which
@@ -264,7 +309,10 @@ and asserted at the generator's own output instead.
 `committed_capital`, `credit` and `feature_json`: none of 2.3's constraints
 needs them, and the quantity computing committed capital is the open Phase 3
 obligation, so building the economics here means choosing between the
-multiplier and the deliverable at the checkpoint with no reason to.
+multiplier and the deliverable at the checkpoint with no reason to. 2.4 needed
+committed capital and still did not put it here, since it is a function of the
+identity the record already carries and the obligation is better served by one
+computing site than by one field.
 
 `PositionState` is the concept without its table, four tags rendered through a
 declared `StorePositionState`. It starts at one, because a `default` reading
@@ -281,17 +329,33 @@ Two sections bound, `Eodhd` and `Storage`, both verified. Six sections deliberat
 unbound because `CONFIG_REFERENCE.md` classes them `rows` and a registered options
 type is itself a current-value accessor.
 
-Nineteen of the 23 `rows`-classed keys hold a value at version 1, written by the
-`seed` verb. Four carry an `Unset` marker and each names the phase that owes it. The
-store is the authority on what is in force, not the document.
+Twenty-three of the 24 `rows`-classed keys hold a value at version 1, written by
+the `seed` verb. One carries an `Unset` marker and names the phase that owes it,
+being `Costs:AssignmentFee` at Phase 3. The store is the authority on what is in
+force, not the document.
 
-The gate's six bounds are among the nineteen, seeded at 0.8: a spread cap of 0.12
-of mid and a premium floor of 0.30 [D-W22], a delta ceiling of 0.35 [D-W23], an
-expiry window of 7 to 70 [D-W24], and an earnings buffer of 7 [D-W25]. All six
-are read as of the simulated date since 2.3, so their Consumer column is
-verified rather than assumed, and all six are named in `ConfigKeys` where two
-were: a key the code reads is not a literal at a call site. The three `Risk:`
-fractions are the `Unset` ones Phase 2 owes, still unread, and 2.4 sets them.
+The gate's six contract bounds were seeded at 0.8: a spread cap of 0.12 of mid
+and a premium floor of 0.30 [D-W22], a delta ceiling of 0.35 [D-W23], an expiry
+window of 7 to 70 [D-W24], and an earnings buffer of 7 [D-W25]. All six are read
+as of the simulated date since 2.3, so their Consumer column is verified rather
+than assumed, and all six are named in `ConfigKeys` where two were: a key the
+code reads is not a literal at a call site.
+
+The four `Risk:` keys were seeded at 2.4, which is where the caps first read
+them: equity of 100000.00, a per-name cap of 0.25, a total cap of 0.60 and a
+simultaneous-assignment limit of 0.60. Three are transcribed from
+`WORKED_EXAMPLE.md` §1 and only the fourth is chosen, and each row's Notes say
+which. Equity is a key rather than a derived figure because a denominator
+computed from the run's own state would loosen every cap during a drawdown
+[D-W11]. None belongs to a cross-key invariant, so `InvariantKeys` is unchanged
+and nothing ties the total cap to the assignment limit, deliberately: the two
+coincide only while every position is a cash-secured put.
+
+Against those values the caps admit 25,000.00 in one name, 60,000.00 in total
+and 60,000.00 of assignment exposure. On §1's book of 19,900.00 in `WDGT` and
+38,000.00 overall, that is the 5,100.00 headroom §3 rests on and 22,000.00 of
+the other two. Two names at the full per-name cap commit 50,000.00, so the total
+binds part-way through a third rather than at a whole number of them.
 
 Both directions of the key contract are standing checks for `app` keys. For `rows`
 keys only the types-to-document direction holds, because most are deliberately
@@ -338,10 +402,11 @@ bands the list names.
 
 ## Tests
 
-455: 284 across thirty-six fixtures, and 171 across twenty-eight unregistered
+493: 303 across forty fixtures, and 190 across thirty unregistered
 suites. The two guards are checks rather than tests and are counted in neither.
 2.1 registered none and changed none, which is what a document-only checkpoint
-pinned by existing fixtures looks like; 2.2 registered two.
+pinned by existing fixtures looks like; 2.2 registered two, 2.3 seven and 2.4
+four.
 
 **A suite observed to pass is not a suite shown able to fail.** 2.2's two
 mutation checks are the method: a generator returning puts unconditionally
@@ -369,13 +434,18 @@ number is visible from a green run.
 | FX-EveryBoundKeyIsDocumented | 5 |
 | FX-EveryPolicyBandIsChecked | 5 |
 | FX-RegistryMatchesDisk | 5 |
+| FX-TotalCapRejectsAboveHeadroom | 5 |
+| FX-AssignmentStressRejects | 5 |
 | FX-ChainLoadsInIdentityOrder | 4 |
 | FX-CrossedQuoteRejected | 4 |
 | FX-DeltaCeilingRejects | 4 |
+| FX-GateRejectsAboveHeadroom | 4 |
+| FX-GrossBasisBindsCallStrike | 4 |
 | FX-MaxDteBelowTrialBound | 4 |
 | FX-OffWatchlistRejected | 4 |
 | FX-WorkedExampleChainLoads | 4 |
 | FX-WorkedExampleEnumerates | 4 |
+| FX-WorkedExampleGateVerdicts | 4 |
 | FX-ApiCannotWrite | 3 |
 | FX-CorporateActionMintsSuccessor | 3 |
 | FX-EveryAppKeyBinds | 3 |
@@ -383,7 +453,6 @@ number is visible from a green run.
 | FX-PitMembershipExcludesLaterJoiner | 3 |
 | FX-SnapshotRestoresIdentically | 3 |
 | FX-WorkedExampleChainPersists | 3 |
-| FX-WorkedExampleGateVerdicts | 3 |
 | FX-DteWindowRejects | 2 |
 | FX-PremiumFloorRejects | 2 |
 | FX-SpreadCapRejects | 2 |
@@ -401,11 +470,15 @@ append-only triggers make the tables impossible to clean between cases.
 Every table beyond the nine that exist. `decisions` and `candidates` are
 Phase 4's.
 
-No portfolio constraints. The gate runs the four contract families [2.3] and
-nothing asks whether the book can carry the position: the three `Risk:`
-fractions are still `Unset`, and the gross-basis rule binding a call strike
-[D-W19] is unbuilt. 2.4 builds both, 2.5 assembles and orders the feasible set
-and records what the gate refused.
+No feasible set. The gate runs both families [2.3, 2.4] and `GateFor` returns
+every candidate with its reasons, but nothing assembles the survivors, orders
+them by contract identity or records what was refused. 2.5 does all three, and
+it is the first consumer of the total order 1.5 completed.
+
+No book to gate against. `BookState` is a parameter and nothing computes one:
+`positions` is Phase 3's, so every caller states its own exposure and basis, and
+the backward edge SYSTEM_DESIGN §3.3 names as the only one in the daily path is
+a parameter rather than a read.
 
 Nothing persists a candidate or its reasons. `GatedCandidate` is returned and
 dropped; `decisions` and `candidates` are Phase 4's, and how a set of reasons
@@ -434,13 +507,26 @@ obligations, which is where planning for the phase that owns it will look. It is
 copied here: two registers of one list is how an obligation comes to exist in the one
 nobody reads.
 
-Entries stand against Phase 2, 3, 4, 8, 9 and 11. The count is not restated
-here. 2.1 discharged the reconciliation row raised at v1.6.0, the table's
-oldest and open for twenty-three corpus versions, and 2.3 discharged the
-crossed-quote row while opening two of its own. Phase 2's one remaining row is
-a precondition rather than a work item: the three `Risk:` fractions are 2.4's,
-because the operator sets a cap and a checkpoint that tests one needs it to
-exist first.
+Entries stand against Phase 3, 4, 8, 9 and 11. The count is not restated
+here. **Phase 2 owes nothing.** 2.1 discharged the reconciliation row raised at
+v1.6.0, the table's oldest and open for twenty-three corpus versions, 2.3
+discharged the crossed-quote row while opening two of its own, and 2.4
+discharged the risk row while opening one of its own. All three discharged rows
+were preconditions rather than work items, which is what put them at the front
+of the phase.
+
+2.4's row is what a covered call commits, owed at Phase 3. D-W17 fixes a trial's
+committed capital at open, so a call written against shares already assigned may
+commit nothing new, while 2.4 charges the candidate's own figure regardless of
+right. That is the conservative reading and binds a cap that may not apply, and
+no fixture reaches it because no covered call is gated before the state machine
+exists.
+
+The risk row named three fractions and took four keys, because every cap is a
+fraction of an account value that no key, column or table held. That is the
+shape to expect from an obligation written before the thing that consumes it:
+it names what was missing from the checkpoint that deferred it, not what the
+checkpoint that claims it will find.
 
 The two 2.3 raised are both consequences of building rather than of planning.
 How a set of gate reasons reaches one nullable column is Phase 4's, and how
@@ -464,15 +550,46 @@ walk-forward.
 Carried forward because each cost something to learn and none is visible from
 the artefact it produced.
 
-- **A suite observed to pass is not a suite shown able to fail, and a mutation
-  confined to one site is not a mutation of the behaviour.** The first half is
-  2.2's: reintroduce the defect the test was written for and watch it fail, as
-  five of ten and four of four did there. The second is 2.3's, and it is what
-  makes the first sound. Defaulting either half of the bound resolution passed
-  every test, because each half left the other still raising, and only
-  defeating both showed the two tests that assert D-W37. So a passing mutation
-  has two causes, a weak test or an insufficient mutation, and they are told
-  apart only by mutating the behaviour rather than one of its sites.
+- **A passing mutation has three causes, and the technique only works if you can
+  tell them apart.** One checkpoint found each, and the third is what completes
+  it.
+
+  **A weak test** [2.2]. A suite observed to pass is not a suite shown able to
+  fail: reintroduce the defect the test was written for and watch it fail, as
+  five of ten and four of four did there.
+
+  **An insufficient mutation** [2.3]. A mutation confined to one site is not a
+  mutation of the behaviour. Defaulting either half of the bound resolution
+  passed every test, because each half left the other still raising, and only
+  defeating both showed the two tests that assert D-W37. Told apart from the
+  first by defeating every site the behaviour has rather than one of them.
+
+  **An unfalsifiable suite** [2.4]. Two paths can agree at the seeded data, so a
+  mutation swapping one for the other is invisible however sound the test and
+  however complete the mutation. The assignment limit reading the total cap's
+  fraction passed all 490 tests because both fractions are 0.60. The fix is
+  neither a better test nor a better mutation: it is an assertion at data the
+  store does not hold and could.
+
+  **The tell for the third is specific**: it appears wherever the corpus seeds
+  two keys to one value, and this corpus does that deliberately more than once,
+  `Gate:MaxDelta` and `Policy:Random:DeltaMax` being the other pair. Where two
+  values coincide by choice, the choice is also hiding a binding, and the
+  coincidence is the thing to go looking at.
+- **A definition of done that describes a state rather than an act usually names
+  a later checkpoint's subject.** Three instances now: 0.6's, 2.1's, and 2.4's
+  requiring a cap to be evaluated against committed capital "as the store
+  records it" when nothing persists until Phase 4. The tell is grammatical
+  rather than technical, and the repair is to state the property the clause was
+  protecting, which in each case survives the checkpoint boundary the state
+  does not.
+- **A check can be vacuous in two directions and neither implies the other.** A
+  cap tested against an empty portfolio passes whether or not it works, which is
+  1.1's empty-table shape. A cap whose bound is never reached also passes
+  whether or not it is wired, and that one hides inside a document that looks
+  like thorough coverage: WORKED_EXAMPLE §1 derives two headrooms and only one
+  reaches §3, so a total cap reading the wrong exposure reproduces §3 exactly.
+  Both directions need their own case.
 - **Enumerate by class, not by the shape of the instance in front of you, then
   let a compiler or an assertion confirm the count.** Four forms in one
   checkpoint. A grep for `§3` found three of four unqualified section
@@ -857,6 +974,136 @@ enumerated strikes.
   `CONFIG_REFERENCE.md`, or that each is checked and empty. A key the code reads
   is named in `ConfigKeys` rather than left a literal, and a bound the gate reads
   makes its Consumer column verified rather than assumed.
+
+### Constraints
+
+No `double` or `float`. No ambient clock. Money is decimal in `TEXT`. Edit files
+with the file tools rather than a shell round trip, which mangles UTF-8 outside
+ASCII. Reconcile the detail and the archive at sign-off, not during the build.
+
+---
+
+## 2.4 The portfolio constraints
+
+Read `CLAUDE.md`, `BUILD_PLAN.md` 2.4 and 2.5 and the carried obligations,
+D-W5, D-W10, D-W11, D-W17, D-W19, D-W26, D-W34, D-W37, `CONFIG_REFERENCE.md`'s
+Risk rows and the paragraph above them, `WORKED_EXAMPLE.md` §1 and §3,
+`GateBounds`, `GateReason`, `GatedCandidate`, `ContractConstraints`,
+`EnumeratedCandidate`, the fixtures registered against 2.4 in `FIXTURES.md`,
+and Current state above.
+
+2.4 extends the shapes 2.3 built rather than inventing any. Bounds resolve once
+per evaluation into a record of numbers, so a constraint is handed values and
+cannot reach configuration [D-W37]. Reasons are enum members from 1 and a
+candidate carries a set. Follow all three.
+
+### Equity does not exist and every cap divides by it
+
+Verified before the checkpoint: no key, no column and no table holds an account
+value, and §1 states 100,000 in prose that nothing reads. So the obligation is
+four keys rather than the three it names.
+
+It is a configuration key rather than a derived figure, and D-W11's own
+rationale is the argument: the caps are structural because the sample cannot
+price the tail, and a denominator computed from the run's own state moves with
+the run, so a drawdown would loosen every cap at the moment it should bind.
+`rows`-classed under D-W27, a cap being read while producing a simulated
+decision.
+
+### The values, and which of them are decisions
+
+`Risk:Equity` 100000.00, `Risk:PerNameCapFraction` 0.25 and
+`Risk:TotalCapFraction` 0.60 are transcribed from §1, which states all three and
+derives §3's 5,100.00 headroom from them.
+`Risk:SimultaneousAssignmentLimitFraction` 0.60 is chosen, no document stating
+it, and its reason is arithmetic: a cash-secured put's committed capital is its
+assignment exposure, so any value below the total is unreachable and any above
+it never binds. The relationship changes at Phase 3, when a covered call commits
+shares rather than cash.
+
+Each row's Notes state which of the two it is. Calling the transcribed ones
+proposals inverts 0.8's distinction, whose argument was about who decides rather
+than about which figures they would pick.
+
+**Report what the seeded values make each cap admit**, so the three are
+checkable as amounts and not only as ratios.
+
+Do not add an invariant between the total cap and the assignment limit. They
+coincide today because every position is a cash-secured put; the relationship
+changes at Phase 3 rather than being wrong now. The per-name-against-total
+invariant is worth weighing on D-W34's precedent and worth reporting either way.
+
+### The bounds record
+
+The four values, resolved once per evaluation, unresolvable stopping with the
+key and the date [D-W37]. Report whether it is a second record or a widening of
+`GateBounds`, and why: separate reads better if the two families are ever
+evaluated apart, one reads better if they never are.
+
+### Committed capital, and the exposure the caps read
+
+`EnumeratedCandidate` declined economics and named 2.4 as the checkpoint needing
+them, with the Phase 3 obligation as the reason. Act on that reasoning rather
+than restating it: one site computes committed capital, it cites the obligation,
+and Phase 3 changes one place.
+
+- Per-name reads the candidate. Total and simultaneous-assignment read open
+  exposure, which is `positions` and is Phase 3, so both take it as a parameter
+  the way the constraints take bounds.
+- **Test**: each portfolio cap rejects at non-zero exposure. A cap tested only
+  against an empty portfolio passes whether or not it works, which is 1.1's
+  empty-table shape.
+- **The opposite vacuity is the one §3 cannot see.** §1 states 19,900.00
+  committed in `WDGT` and 38,000.00 across all names and derives both headrooms;
+  only the per-name figure reaches §3. Supply both, and the same figure for
+  assignment exposure, so the third cap is exercised on a real number rather than
+  on zero. Then assert both headrooms as the fixture computes them, because a
+  total cap wired to the wrong figure, or not wired at all, reproduces §3
+  exactly.
+
+### The reasons and the basis rule
+
+`GateReason` gains members from 7, sequentially, each with the decision it
+cites. `StoreGateReason` gains their stored forms, declared not derived.
+
+- D-W19 says "above basis" and the registry says "below gross basis is refused",
+  which leaves a strike exactly at basis unsaid. State it in the decision before
+  the code rests on it: a strike at basis recovers the outlay exactly, so
+  excluding it would forbid the break-even strike for no stated reason.
+- The basis rule binds a call against a position's gross basis, so basis is a
+  parameter until Phase 3 supplies one.
+- **Test**: a strike net basis admits and gross basis rejects is rejected, both
+  bases in one test or it shows a rejection rather than the distinction.
+- **Test**: a strike exactly at gross basis is admitted.
+
+### Two families on one candidate
+
+2.4 is the first checkpoint where a contract constraint and a cap can fail the
+same candidate.
+
+- **Test**: one candidate carrying a reason from each family, in declared order.
+  2.5's fixture asserts the property; this asserts it is reachable.
+- Mutation check per constraint, mutating the behaviour rather than a site, per
+  2.3's correction. Report what you ran and what failed. **A mutation that passes
+  everything may mean the seeded values hide the binding rather than that the
+  test is weak**: two keys holding the same value make either readable from the
+  other. Where that happens, add the assertion at a configuration the store does
+  not hold and could, rather than recording the gap.
+
+### The worked example, fifth pin
+
+§3 carries per-name cap verdicts that 2.3 stripped by name.
+
+- **Test**: gating the chain with the caps in place reproduces §3's full
+  verdicts, both reasons on the two strikes failing both, nothing stripped.
+- Report whether §3 held on first run.
+
+### Definitions of done
+
+- Registered checks exist in their kind; marker from disk.
+- `ConfigKeys` and `CONFIG_REFERENCE.md` gain the Risk keys; report whether their
+  consumers move from **Unverified** to verified.
+- The Risk obligation closes. Report the count.
 
 ### Constraints
 

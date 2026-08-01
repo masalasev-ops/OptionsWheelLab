@@ -42,16 +42,44 @@ internal static class GateScenario
     /// <summary>
     /// The gate's verdict on every quote, keyed by strike.
     /// </summary>
+    /// <param name="book">
+    /// What the account already carries, defaulting to nothing.
+    /// </param>
+    /// <param name="overrides">
+    /// Config versions appended after the seed, for a fixture whose subject the
+    /// seeded values cannot express.
+    /// </param>
+    /// <remarks>
+    /// <b>The default book is empty and the caps are therefore silent by
+    /// default.</b> That is right for the contract-constraint fixtures, which is
+    /// what this helper was built for: a book they did not ask about should not
+    /// put a reason on their quotes. It is wrong for a cap fixture, and a cap
+    /// tested against an empty book passes whether or not it works, so every
+    /// registered cap fixture states a book rather than taking this default.
+    /// </remarks>
     internal static IReadOnlyDictionary<decimal, IReadOnlyList<GateReason>> Gate(
         IReadOnlyList<ContractQuote> quotes,
-        IReadOnlyList<EarningsReport>? earnings = null)
+        IReadOnlyList<EarningsReport>? earnings = null,
+        BookState? book = null,
+        PositionState state = PositionState.Cash,
+        IReadOnlyList<ConfigEntry>? overrides = null)
     {
         using var store = TempStore.Empty();
         new MigrationRunner(store.Connections).Run(Seeded);
 
         using (var write = store.Connections.Open(StoreAccess.Write))
         {
-            new ConfigWriter(write).AppendAll(SeedValues.All, Seeded);
+            var configuration = new ConfigWriter(write);
+            configuration.AppendAll(SeedValues.All, Seeded);
+
+            // Version 2 at the same instant. Equal set_at is permitted and
+            // version breaks the tie, which is what as-of resolution already
+            // does [D-W26], so an override is in force on the simulated date
+            // without backdating anything.
+            foreach (var entry in overrides ?? [])
+            {
+                configuration.Append(entry.Key, entry.Value, Seeded);
+            }
 
             new MembershipWriter(write).Append(
                 Symbol, MembershipKind.Joined, new DateOnly(2026, 1, 2), Seeded);
@@ -66,7 +94,7 @@ internal static class GateScenario
                 new AsOfMembership(connection),
                 new AsOfMarketData(connection),
                 new AsOfConfiguration(connection))
-            .GateFor(Symbol, Simulated, PositionState.Cash);
+            .GateFor(Symbol, Simulated, state, book ?? BookState.Empty);
 
         return gated.ToDictionary(
             candidate => candidate.Candidate.Quote.Contract.Strike,
@@ -87,9 +115,10 @@ internal static class GateScenario
         decimal bid = 0.95m,
         decimal ask = 1.01m,
         decimal? delta = -0.24m,
-        DateOnly? expiry = null) =>
+        DateOnly? expiry = null,
+        OptionRight right = OptionRight.Put) =>
         new(
-            ContractIdentity.Of(Symbol, expiry ?? Expiry, OptionRight.Put, strike),
+            ContractIdentity.Of(Symbol, expiry ?? Expiry, right, strike),
             Simulated,
             bid,
             ask,

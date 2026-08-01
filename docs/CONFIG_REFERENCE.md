@@ -56,16 +56,23 @@ whose current value differs from the one recorded here.
 
 ## Risk
 
-All three are **Unset** and owed at Phase 2, which is where the risk gate first
-reads them. An equity-relative cap is the operator's risk appetite [D-W11], and
-the worked example illustrating one account is not the operator setting one, so
-0.8 deliberately left them rather than transcribing an example's figures.
+All four are set at version 1 in checkpoint 2.4, which is where the risk gate
+first reads them. An equity-relative cap is the operator's risk appetite
+[D-W11], and the worked example illustrating one account is not the operator
+setting one, so 0.8 deliberately left them rather than transcribing an example's
+figures. The Notes below say per key whether its value is transcribed or chosen.
+
+The caps are fractions of equity, and equity is configuration rather than a
+figure derived from cash and open positions. A derived denominator moves with
+the run and would loosen every cap during a drawdown, which is when they matter
+[D-W11].
 
 | Key | Store | Meaning | Consumer | Notes |
 |---|---|---|---|---|
-| `Risk:PerNameCapFraction` | rows | max committed capital in one name, as a fraction of equity | Risk gate **Unverified** | Structural, not learner-proposable [D-W11]. **Unset.** Phase 2 |
-| `Risk:TotalCapFraction` | rows | max total committed capital, as a fraction of equity | Risk gate **Unverified** | Structural [D-W11]. **Unset.** Phase 2 |
-| `Risk:SimultaneousAssignmentLimitFraction` | rows | max exposure if every open short put assigned at once, as a fraction of equity | Risk gate **Unverified** | Structural [D-W11]. **Unset.** Phase 2 |
+| `Risk:Equity` | rows | the account value the three caps are fractions of | Risk gate via `PortfolioBounds` | Structural, not learner-proposable [D-W11]. 100000.00, transcribed from `WORKED_EXAMPLE.md` section 1 |
+| `Risk:PerNameCapFraction` | rows | max committed capital in one name, as a fraction of equity | Risk gate via `PortfolioBounds` | Structural, not learner-proposable [D-W11]. 0.25, transcribed from `WORKED_EXAMPLE.md` section 1, which derives the 5,100.00 headroom section 3 states |
+| `Risk:TotalCapFraction` | rows | max total committed capital, as a fraction of equity | Risk gate via `PortfolioBounds` | Structural [D-W11]. 0.60, transcribed from `WORKED_EXAMPLE.md` section 1 |
+| `Risk:SimultaneousAssignmentLimitFraction` | rows | max exposure if every open short put assigned at once, as a fraction of equity | Risk gate via `PortfolioBounds` | Structural [D-W11]. 0.60, chosen rather than transcribed, no document stating it. Held equal to `Risk:TotalCapFraction` while every position is a cash-secured put, whose committed capital is its assignment exposure, so a lower value makes the total cap unreachable and a higher one never binds. **The two caps cannot be told apart by any rejection while the fractions are equal**, and setting them apart makes each separately observable. They diverge in effect at Phase 3, when a covered call commits shares rather than cash. No invariant ties the two, deliberately, for that reason |
 
 ## Gate constraints
 

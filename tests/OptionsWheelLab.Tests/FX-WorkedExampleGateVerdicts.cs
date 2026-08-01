@@ -11,7 +11,7 @@ namespace OptionsWheelLab.Tests;
 
 /// <summary>
 /// FX-WorkedExampleGateVerdicts: the worked example's chain gates to the
-/// verdicts §3 states, under the four contract constraints.
+/// verdicts §3 states, under both constraint families.
 /// </summary>
 /// <remarks>
 /// The fourth fixture pinning that document. 0.6's proves the file loads to
@@ -20,39 +20,52 @@ namespace OptionsWheelLab.Tests;
 /// §3 was written at 2.1, before any gate existed, so it is a prediction this
 /// checkpoint either meets or contradicts.
 /// <para>
-/// <b>The per-name cap is stripped from each expected verdict, because it is
-/// 2.4's.</b> §3 states the whole gate's verdict and 2.3 builds two thirds of
-/// it, so the two strikes failing on both grounds carry the delta reason here
-/// and gain the capital reason at 2.4. Stripping is done by name against a
-/// declared phrase rather than by dropping unrecognised text, so a reason this
-/// checkpoint should have produced cannot vanish into the gap.
+/// <b>Nothing is stripped as of 2.4.</b> 2.3 built two thirds of the gate, so
+/// this file removed the per-name cap from each expected verdict by name and
+/// said which checkpoint owned it. The constraint exists now, so the phrase
+/// joins the mapping and the two strikes failing on both grounds carry both.
+/// </para>
+/// <para>
+/// <b>All three caps take their opening exposure from §1.</b> That document
+/// states 19,900.00 committed in this name and 38,000.00 across all names and
+/// derives both headrooms from them, and only the per-name figure reaches §3.
+/// Supplying the second is what keeps the total cap from being exercised at
+/// zero exposure, which is the vacuity in the opposite direction from an empty
+/// book: not a cap never asked, but a cap whose bound is unreachable, and a
+/// total cap wired to the wrong figure or to nothing reproduces §3 exactly.
 /// </para>
 /// <para>
 /// The mapping from §3's phrases to reasons is asserted total over the
 /// vocabulary, so a reason with no phrase fails here rather than passing
 /// unnoticed. That is what keeps the document's wording authoritative without
-/// making it a third representation of the vocabulary.
+/// making it a third representation of the vocabulary, and it is what fired the
+/// moment 2.4 declared four reasons.
 /// </para>
 /// </remarks>
 public sealed class FX_WorkedExampleGateVerdicts
 {
     /// <summary>
-    /// §3's own words for each reason 2.3 can produce, and the one it cannot.
+    /// §3's own words for each reason its snapshot can produce.
     /// </summary>
-    /// <remarks>
-    /// The expiry window and earnings clearance have no phrase because §3 states
-    /// that one snapshot cannot demonstrate them, which is why they are absent
-    /// from that table rather than missing from it.
-    /// </remarks>
     private static readonly (string Phrase, GateReason Reason)[] Phrases =
     [
         ("spread cap", GateReason.SpreadCap),
         ("premium floor", GateReason.PremiumFloor),
         ("delta ceiling", GateReason.DeltaCeiling),
+        ("per-name cap", GateReason.PerNameCap),
     ];
 
-    /// <summary>The reason 2.4 adds, named so it can be stripped by name.</summary>
-    private const string PerNameCap = "per-name cap";
+    /// <summary>
+    /// What §1 says the account already carries on the snapshot date.
+    /// </summary>
+    /// <remarks>
+    /// No shares are held in this name, so there is no gross basis: §1's book is
+    /// cash and committed puts, and the assignment that produces a basis is
+    /// §6.3, seven weeks later.
+    /// </remarks>
+    private static readonly BookState Book = new(
+        CommittedInName: 19_900.00m,
+        CommittedTotal: 38_000.00m);
 
     private static readonly DateTimeOffset Seeded =
         new(2026, 1, 1, 21, 0, 0, TimeSpan.Zero);
@@ -97,12 +110,22 @@ public sealed class FX_WorkedExampleGateVerdicts
 
     /// <summary>
     /// Every reason the vocabulary declares either has a phrase in this file or
-    /// is one §3 states it cannot demonstrate.
+    /// is one this snapshot cannot demonstrate.
     /// </summary>
     /// <remarks>
     /// Without this, a reason added to the vocabulary with no phrase would make
     /// every expected verdict quietly narrower, and the comparison above would
-    /// still pass.
+    /// still pass. It did its job at 2.4: the four portfolio reasons landed and
+    /// this failed until each was accounted for.
+    /// <para>
+    /// Each entry below is undemonstrable for its own stated reason rather than
+    /// by being left out. The crossed market, the expiry window and earnings
+    /// clearance are §3's own three, being a chain with no crossed quote, one
+    /// expiry and no report date. The total cap is undemonstrable because §1
+    /// says it does not bind, and assignment stress because it is held equal to
+    /// the total cap [CONFIG_REFERENCE]; the headroom test below is what
+    /// exercises both. Gross basis is a call constraint and §3 enumerates puts.
+    /// </para>
     /// </remarks>
     [Fact]
     public void Every_declared_reason_is_accounted_for()
@@ -112,6 +135,9 @@ public sealed class FX_WorkedExampleGateVerdicts
             GateReason.CrossedMarket,
             GateReason.ExpiryWindow,
             GateReason.EarningsClearance,
+            GateReason.TotalCap,
+            GateReason.AssignmentStress,
+            GateReason.GrossBasis,
         ];
 
         var accounted = Phrases
@@ -123,8 +149,59 @@ public sealed class FX_WorkedExampleGateVerdicts
     }
 
     /// <summary>
-    /// The reasons §3's Gate cell states, less the one 2.4 owns.
+    /// §1's claim that the per-name cap binds and the total does not, checked
+    /// rather than read.
     /// </summary>
+    /// <remarks>
+    /// The headrooms are the figures §1 derives at its own line 26. Asserting
+    /// them through the functions the constraint compares against is what
+    /// separates a working total cap from one reading the per-name exposure, or
+    /// from one not wired at all: both reproduce §3's verdicts exactly, because
+    /// no candidate on this chain comes within 16,500.00 of the total headroom.
+    /// </remarks>
+    [Fact]
+    public void Section_one_derives_both_headrooms_and_only_the_per_name_one_binds()
+    {
+        var caps = SeededBounds();
+
+        Assert.Equal(5_100.00m, PortfolioConstraints.PerNameHeadroom(caps, Book));
+        Assert.Equal(22_000.00m, PortfolioConstraints.TotalHeadroom(caps, Book));
+        Assert.Equal(22_000.00m, PortfolioConstraints.AssignmentHeadroom(caps, Book));
+
+        var reasons = Gated().SelectMany(entry => entry.Value).ToList();
+
+        Assert.Contains(GateReason.PerNameCap, reasons);
+        Assert.DoesNotContain(GateReason.TotalCap, reasons);
+        Assert.DoesNotContain(GateReason.AssignmentStress, reasons);
+    }
+
+    /// <summary>
+    /// The caps in force on the snapshot date, resolved rather than restated.
+    /// </summary>
+    private static PortfolioBounds SeededBounds()
+    {
+        using var store = TempStore.Empty();
+        new MigrationRunner(store.Connections).Run(Seeded);
+
+        using (var write = store.Connections.Open(StoreAccess.Write))
+        {
+            new ConfigWriter(write).AppendAll(SeedValues.All, Seeded);
+        }
+
+        using var connection = store.Connections.Open(StoreAccess.ReadOnly);
+
+        return PortfolioBounds.ResolveFor(new AsOfConfiguration(connection), SnapshotDate);
+    }
+
+    /// <summary>
+    /// The reasons §3's Gate cell states, all of them.
+    /// </summary>
+    /// <remarks>
+    /// <c>Single</c> rather than a filter, so a phrase this file does not know
+    /// is a failure rather than a silent omission. That mattered while 2.3 was
+    /// stripping one phrase by name and it still matters: §3 is authored prose
+    /// and a revision naming a reason nothing maps should stop here.
+    /// </remarks>
     private static IReadOnlyList<GateReason> ExpectedReasons(string cell)
     {
         if (cell.Equals("feasible", StringComparison.Ordinal))
@@ -132,20 +209,11 @@ public sealed class FX_WorkedExampleGateVerdicts
             return [];
         }
 
-        var stated = cell["rejected:".Length..]
-            .Split(',')
-            .Select(part => part.Trim())
-            .ToList();
-
-        // Stripped by name, not by discarding what does not match. A phrase
-        // neither this file nor 2.4 knows about is a failure rather than a
-        // silent omission.
-        var forThisCheckpoint = stated.Where(
-            phrase => !phrase.Equals(PerNameCap, StringComparison.Ordinal));
-
         return
         [
-            .. forThisCheckpoint
+            .. cell["rejected:".Length..]
+                .Split(',')
+                .Select(part => part.Trim())
                 .Select(phrase => Phrases.Single(entry =>
                     entry.Phrase.Equals(phrase, StringComparison.Ordinal)).Reason)
                 .Order()
@@ -179,7 +247,7 @@ public sealed class FX_WorkedExampleGateVerdicts
                 new AsOfMembership(connection),
                 new AsOfMarketData(connection),
                 new AsOfConfiguration(connection))
-            .GateFor(Ticker.Normalise(Symbol), SnapshotDate, PositionState.Cash)
+            .GateFor(Ticker.Normalise(Symbol), SnapshotDate, PositionState.Cash, Book)
             .ToDictionary(
                 candidate => candidate.Candidate.Quote.Contract.Strike,
                 candidate => candidate.Reasons);

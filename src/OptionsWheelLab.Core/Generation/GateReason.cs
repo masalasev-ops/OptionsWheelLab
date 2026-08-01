@@ -30,8 +30,12 @@ namespace OptionsWheelLab.Core.Generation;
 /// candidate that never failed it.
 /// </para>
 /// <para>
-/// 2.4's portfolio grounds are not here. They arrive with the constraints that
-/// record them, because a member nothing calls is speculation.
+/// <b>The contract grounds come first and the portfolio grounds follow</b>,
+/// which puts the two families of SYSTEM_DESIGN §3.4 in blocks rather than
+/// interleaved. Nothing requires that order; what requires an order at all is
+/// D-W4, and a reader scanning a candidate's reasons can then see which question
+/// it failed, whether the contract belonged in the set or whether the book could
+/// carry it.
 /// </para>
 /// </remarks>
 public enum GateReason
@@ -53,4 +57,25 @@ public enum GateReason
 
     /// <summary>The contract's buffered life contains a report date [D-W25].</summary>
     EarningsClearance = 6,
+
+    /// <summary>
+    /// Committed capital in this name would exceed the per-name cap [D-W11].
+    /// </summary>
+    PerNameCap = 7,
+
+    /// <summary>
+    /// Committed capital across all names would exceed the total cap [D-W11].
+    /// </summary>
+    TotalCap = 8,
+
+    /// <summary>
+    /// Exposure if every open short put assigned at once would exceed the limit
+    /// [D-W11].
+    /// </summary>
+    AssignmentStress = 9,
+
+    /// <summary>
+    /// A covered call strike below the shares' gross basis [D-W19].
+    /// </summary>
+    GrossBasis = 10,
 }

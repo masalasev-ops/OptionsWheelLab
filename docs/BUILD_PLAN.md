@@ -617,7 +617,6 @@ admits only one origin costs.
 | Phase 11 | Re-add `Microsoft.AspNetCore.OpenApi` against a version whose `Microsoft.OpenApi` dependency clears the audit. Removed at 0.1 rather than suppressing the advisory; the reason is in the Api project file. | PR #1 |
 | Phase 3 | Establish output-level determinism: a simulated run with a fixed clock produces byte-identical output across two invocations. 0.5 restated it as identical stored rows because no run existed to make. Compared as produced artefacts, never as a database file [D-W28]. | PR #4 |
 | Phase 3 | Decide what bars nondeterminism in SQL that is not a clock. Enumerating the bundled SQLite showed `random()` and `randomblob()` alongside the seven clock functions; they are outside FX-ClockIsNotADateSource by name but would break a byte-identical run just as surely. | PR #4 |
-| Phase 2 | Set the three `Risk:` fractions. 0.8 seeded nineteen rows-classed keys and left these because an equity-relative cap is the operator's risk appetite [D-W11], and the worked example illustrating one account is not the operator setting one. FX-GateRejectsAboveHeadroom needs them, so the phase that consumes them sets them. | PR #7 |
 | Phase 3 | Set `Costs:AssignmentFee`. No document states it, and zero inferred from an absent ledger line is weaker than a stated number and invisible when wrong. Phase 3's assignment path is the first thing that computes with it. | PR #7 |
 | Phase 3 | Settle which quantity committed capital uses. D-W17's first paragraph says the contract multiplier and its third says the deliverable, and they differ for an adjusted contract. On a 3-for-2 split taking a $90 strike to $60 with a 150-share deliverable, strike times multiplier gives $6,000 and strike times deliverable gives $9,000, and only the second leaves the aggregate exercise where the adjustment found it. A reverse split may behave differently, in which case the aggregate exercise price is a stated fact per adjustment rather than a product of two columns, and the schema needs to carry it. Check against OCC's contract adjustment memos, not a secondary source. Raised at 1.1 while choosing a unique constraint, and twice reasoned wrongly from a sentence about premium quoting before the arithmetic was run. | v1.18.0 |
 | Phase 4 | Store one feasible set per name and date rather than one per decision. `candidates` is keyed on `decision_id`, so three makers acting on one set write it three times, while [D-W4] requires the three to be byte-identical and `FX-ThreeMakersSameFeasibleSet` asserts it. Storing once and referencing thrice makes it true by construction and divides the largest uncertain table by three. Raised while estimating store size over a ten-year lifetime, before the table exists. | v1.17.0 |
@@ -626,6 +625,7 @@ admits only one origin costs.
 | Phase 3 | Verify the wheel's settlement mechanics against OCC's own rules before the state machine's decisions are authored, and cite the rule in each decision: exercise-by-exception and its in-the-money threshold at expiry; when assignment is known to the account versus when it occurred; when cash from an assignment or a call-away is usable again under T+1 settlement; the early-assignment model around ex-dividend that VALIDITY already names as modelled by rule; and dividend entitlement timing given that ex-date and record date coincide under T+1. Every item is a mechanics fact with a primary source, none is currently verified, and the corpus's posture is transcription from authorities rather than recollection [D-W36]. Raised at 1.5 when the adjustment question got this treatment and the remaining unverified mechanics were enumerated. | v1.26.0 |
 | Phase 4 | Decide how a candidate's gate reasons are stored. `candidates.gate_reason` is a single nullable TEXT column and the domain type is a set in declared order [2.3], which FX-GateRecordsAllReasons at 2.5 asserts by requiring two reasons on one candidate. The options include a delimited list, which makes a reason unqueryable, and a row per reason, which changes the table's grain. Raised at 2.3 when the vocabulary was declared. | v1.32.0 |
 | Phase 9 | Decide how configuration resolves for a simulated date that precedes the value being written. `SeedCommand` stamps `set_at` from the wall clock, so every gate bound resolves null for any simulated date before the seed ran, which is every date in a walk-forward over real history. [D-W26] requires resolution as of the simulated date and [D-W37] stops the evaluation rather than guessing, so the collision surfaces loudly at the first walk-forward rather than silently. The options include backdating the seed, which costs the audit trail its truthfulness, and resolving a registered run's configuration as of its pre-registration instant [D-W15], which keeps both rules intact. Raised at 2.3 while answering what an unresolvable bound does. | v1.32.0 |
+| Phase 3 | Decide what a covered call commits. [D-W17] fixes a trial's committed capital at open, so a call written against shares already assigned may commit nothing new, while 2.4 charges the candidate's own figure regardless of right, which is the conservative reading and binds a cap that may not apply. No fixture reaches it because no covered call is gated before the state machine exists. Raised at 2.4. | v1.33.0 |
 | Phase 3 | Run a domain-completeness pass before the state machine's decisions are authored, and record what it finds. Every check this repository has compares one part of the corpus against another, so an omission from the domain model is invisible to all of them: dividends were absent from `ledger_entries` and from D-W13's control for eight checkpoints, and surfaced from a conversation rather than from any process. The pass walks a wheel turn end to end against the corpus and asks what the strategy involves that no document mentions: cash movements between assignment and call-away, what a trial's economics include, what an account holds that the ledger does not name. Findings become their own rows. Raised at 1.5, after the dividend gap showed the class exists. | v1.26.0 |
 
 ---
@@ -908,6 +908,10 @@ what test data can express before the liquidity constraints are built, and
 the risk fractions must exist before a capital cap can be tested against
 anything.
 
+All three are discharged: the worked example at 2.1, the crossed quote at
+2.3, and the risk keys at 2.4, which turned out to be four keys rather than
+three because every cap divides by an equity figure nothing held.
+
 ### 2.1 The worked example, reconciled
 Not code. Seven registered fixtures read this document's conclusions, and
 its own chain contradicts the constraints this phase builds: the 45.00
@@ -1122,14 +1126,88 @@ what the loader enforces is smaller than it was.
 ### 2.4 The portfolio constraints
 The three caps of [D-W11], and the gross-basis rule of [D-W19] binding an
 admissible call strike.
-- Sets the three `Risk:` fractions, discharging that obligation. They are
-  the operator's [D-W11], so record what each value means rather than
-  choosing one and moving on.
+
+**Equity does not exist and every cap divides by it.** No key, no column and
+no table holds an account value: `WORKED_EXAMPLE.md` §1 states 100,000 in
+prose and nothing reads it. It is a configuration key rather than a derived
+figure, and D-W11's own rationale is the argument, since a denominator
+computed from the run's own state moves with the run and a drawdown would
+loosen every cap at the moment it should bind. So the obligation is four
+keys rather than three.
+- Sets the four `Risk:` keys, discharging that obligation. They are the
+  operator's [D-W11], so record what each value means rather than choosing
+  one and moving on, and say per key whether it is transcribed or chosen.
 - **Test**: a candidate whose committed capital exceeds the per-name headroom
   is rejected, and a covered-call strike below gross basis is not admissible.
-- **DoD**: a cap is evaluated against committed capital as the store
-  records it, not against a recomputed figure. The Phase 3 metric question
-  is still open, so state which quantity this checkpoint reads and why.
+- **Test**: each portfolio cap rejects at non-zero exposure. A cap tested only
+  against an empty portfolio passes whether or not it works, which is 1.1's
+  empty-table shape.
+- **DoD**: committed capital is computed in one place, which is what makes the
+  Phase 3 metric question a one-site change. That question is still open, so
+  state which quantity this checkpoint reads and why.
+- **DoD**: every cap reads its bound as of the simulated date [D-W26], and an
+  unresolvable one stops the evaluation naming the key and the date [D-W37].
+
+Reconciled at sign-off against what shipped. Five things were larger than the
+scope above, the first of them changed what the obligation was, and the last
+arrived in review.
+
+**The fractions are transcribed, not chosen, and saying so corrects the
+framing this detail was written under.** §1 states equity of 100,000, a
+per-name cap of 25 percent and a total cap of 60 percent, and derives §3's
+5,100.00 headroom from them. Only the simultaneous-assignment fraction is a
+choice, and its reason is arithmetic rather than appetite: a cash-secured
+put's committed capital is its assignment exposure, so a lower value makes
+the total cap unreachable and a higher one never binds. 0.8's argument for
+leaving these keys, that an example illustrating one account is not the
+operator setting one, is about who decides and does not stop the decided
+values coinciding with the example's. Presenting transcription as choice is
+0.8's distinction inverted.
+
+**The DoD asking for committed capital "as the store records it" could not be
+met and was replaced rather than waived.** Nothing persists at 2.4:
+`candidates.committed_capital` is §4.3's column and Phase 4's to write. What
+the clause was protecting is that a cap and a stored figure cannot disagree,
+and one computing site delivers that in the only form available now, since
+Phase 4 will persist this figure rather than a second one.
+
+**A cap whose bound is never reached is the second kind of vacuity, and §3
+alone cannot see it.** §1 derives two headrooms and only the per-name one
+reaches §3, so a total cap wired to the wrong exposure, or not wired at all,
+reproduces §3's verdicts exactly. Both headrooms are asserted through the
+functions the constraint compares against, which is why those are public.
+The first kind, a cap tested at zero exposure, is the Test line above; this
+is its mirror and neither implies the other.
+
+**The two capital caps cannot be told apart by a rejection.** Both fractions
+are 0.60 and assignment exposure never exceeds committed capital on a book
+this lab can hold, so a candidate breaching one breaches the other, and a
+constraint reading the wrong fraction passed every test until two assertions
+were added at a configuration the store does not hold and could. That is
+2.3's mutation lesson one level up: there a mutation confined to one site
+left another site raising, here a value equal to its neighbour left a field
+unreadable from any verdict, which is the third and last cause a passing
+mutation has.
+
+**Review moved that condition to where it is read, and the assertion to where
+it is found.** The indistinguishability was recorded in the code and the
+changelog, which reaches a reader of the code; an operator revising
+`Risk:SimultaneousAssignmentLimitFraction` reads `CONFIG_REFERENCE.md`, whose
+Notes now state it as a condition of the equal fractions rather than a fact
+about the caps. The assertion telling the two constraints apart moved out of
+an unregistered suite into `FX-AssignmentStressRejects`, since it is the only
+one that does and belongs where the registry points.
+
+D-W19 gains its boundary, a strike exactly at gross basis being admissible,
+and `WORKED_EXAMPLE.md` §3's per-name headroom citation moves from D-W10 to
+D-W11. D-W22, D-W24 and D-W25 gain the amendment stamps 2.3 did not write,
+so the register shows four decisions moving where it showed one; that this
+checkpoint's own plan cited D-W25 as the precedent for stamping, D-W25 being
+one of the three unstamped, is the citation pattern created rather than
+inherited and caught inside the checkpoint that made it.
+
+One obligation is raised beside the one discharged: what a covered call
+commits, owed at Phase 3. Twelve becomes thirteen.
 
 ### 2.5 The feasible set
 Assembly and ordering, and the record of what the gate refused.
@@ -1138,5 +1216,13 @@ Assembly and ordering, and the record of what the gate refused.
 - **DoD**: the set is ordered by contract identity, so three makers
   receiving it receive the same bytes [D-W4]. This is the first consumer of
   the total order 1.5 completed.
+- Carries `SYSTEM_DESIGN.md` §3.3 and §3.4's build-state markers, which
+  `CLAUDE.md` §5 requires of every section describing a component and which
+  v1.28.0's sweep left because neither was built then. §3.3 is the candidate
+  generator, built across 2.2 and 2.3; §3.4 is the risk gate, whose contract
+  family landed at 2.3 and whose portfolio family landed at 2.4. They land
+  here rather than at 2.4 because §3.4 is complete only once the feasible set
+  assembles, and a marker written a checkpoint early would need amending a
+  checkpoint later. Raised at 2.4.
 
 Detail for Phase 3 is authored when Phase 2 signs off.

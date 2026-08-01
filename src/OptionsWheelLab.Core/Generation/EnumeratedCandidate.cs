@@ -23,6 +23,13 @@ namespace OptionsWheelLab.Core.Generation;
 /// before the obligation that settles it.
 /// </para>
 /// <para>
+/// <b>2.4 needed committed capital and still did not put it here.</b> It is a
+/// function of the identity this record already carries, so storing it would be
+/// a second copy of a derived fact, and the obligation is better served by one
+/// computing site than by one field: see <see cref="CommittedCapital"/>, which
+/// is what Phase 3 changes.
+/// </para>
+/// <para>
 /// <b>The quote rather than the identity alone</b>, because 2.3 reads it four
 /// times over and re-reading the chain per constraint would put one read on four
 /// paths. <see cref="ContractQuote"/> already carries the identity and the
