@@ -15,8 +15,9 @@ namespace OptionsWheelLab.Core.Generation;
 /// is Phase 4's to write from this.
 /// </para>
 /// <para>
-/// At 2.3 the reasons are the contract families only. 2.4's portfolio caps add
-/// to the same collection, which is why it is a collection.
+/// The reasons are both families as of 2.4, contract then portfolio, which is
+/// why this is a collection rather than a reason: the two are evaluated
+/// separately and appended in the vocabulary's declared order [D-W4].
 /// </para>
 /// </remarks>
 public sealed record GatedCandidate(

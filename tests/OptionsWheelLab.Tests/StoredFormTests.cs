@@ -198,6 +198,11 @@ public sealed class StoredFormTests
         Assert.Equal("expiry_window", StoreGateReason.ToStored(GateReason.ExpiryWindow));
         Assert.Equal(
             "earnings_clearance", StoreGateReason.ToStored(GateReason.EarningsClearance));
+        Assert.Equal("per_name_cap", StoreGateReason.ToStored(GateReason.PerNameCap));
+        Assert.Equal("total_cap", StoreGateReason.ToStored(GateReason.TotalCap));
+        Assert.Equal(
+            "assignment_stress", StoreGateReason.ToStored(GateReason.AssignmentStress));
+        Assert.Equal("gross_basis", StoreGateReason.ToStored(GateReason.GrossBasis));
 
         Assert.All(
             Enum.GetValues<GateReason>(),
@@ -219,10 +224,19 @@ public sealed class StoredFormTests
         Assert.Throws<FormatException>(() => StoreGateReason.ParseStored("spreadcap"));
     }
 
+    /// <summary>
+    /// The unrecognised value is one no checkpoint owns, deliberately.
+    /// </summary>
+    /// <remarks>
+    /// 2.3 used <c>per_name_cap</c> here because it was 2.4's and did not exist
+    /// yet, so this assertion inverted the moment that reason landed and the
+    /// suite said so. A value naming a constraint nothing has proposed cannot
+    /// expire the same way.
+    /// </remarks>
     [Fact]
     public void An_unrecognised_reason_is_refused_rather_than_defaulted()
     {
-        Assert.Throws<FormatException>(() => StoreGateReason.ParseStored("per_name_cap"));
+        Assert.Throws<FormatException>(() => StoreGateReason.ParseStored("open_interest_floor"));
         Assert.Throws<FormatException>(() => StoreGateReason.ParseStored(""));
 
         var thrown = Assert.Throws<ArgumentOutOfRangeException>(

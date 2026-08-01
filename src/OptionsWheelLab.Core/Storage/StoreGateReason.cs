@@ -13,7 +13,7 @@ namespace OptionsWheelLab.Core.Storage;
 /// with its table is a tag whose stored form was never a decision.
 /// <para>
 /// <b>The permitted values are declared, not derived from the enum's
-/// spelling.</b> Four of these six are unreachable from the member name by any
+/// spelling.</b> Eight of these ten are unreachable from the member name by any
 /// casing rule, so a derivation would have to be a mapping, which is what this
 /// is.
 /// </para>
@@ -41,6 +41,38 @@ public static class StoreGateReason
 
     public const string EarningsClearance = "earnings_clearance";
 
+    public const string PerNameCap = "per_name_cap";
+
+    public const string TotalCap = "total_cap";
+
+    public const string AssignmentStress = "assignment_stress";
+
+    public const string GrossBasis = "gross_basis";
+
+    /// <summary>
+    /// Every permitted value, for the refusal messages below.
+    /// </summary>
+    /// <remarks>
+    /// The mapping stays declared; this is only how the two messages name what
+    /// they would otherwise spell out. At six the sentence was written twice and
+    /// stayed right by inspection; at ten a hand-written list is a third
+    /// statement of the vocabulary that goes stale silently, which is the defect
+    /// this file's own remark warns about.
+    /// </remarks>
+    private static readonly string[] Permitted =
+    [
+        SpreadCap,
+        PremiumFloor,
+        CrossedMarket,
+        DeltaCeiling,
+        ExpiryWindow,
+        EarningsClearance,
+        PerNameCap,
+        TotalCap,
+        AssignmentStress,
+        GrossBasis,
+    ];
+
     public static string ToStored(GateReason reason) => reason switch
     {
         GateReason.SpreadCap => SpreadCap,
@@ -49,12 +81,14 @@ public static class StoreGateReason
         GateReason.DeltaCeiling => DeltaCeiling,
         GateReason.ExpiryWindow => ExpiryWindow,
         GateReason.EarningsClearance => EarningsClearance,
+        GateReason.PerNameCap => PerNameCap,
+        GateReason.TotalCap => TotalCap,
+        GateReason.AssignmentStress => AssignmentStress,
+        GateReason.GrossBasis => GrossBasis,
         _ => throw new ArgumentOutOfRangeException(
             nameof(reason),
             reason,
-            $"'{reason}' is not a gate reason. The stored forms are '{SpreadCap}', "
-            + $"'{PremiumFloor}', '{CrossedMarket}', '{DeltaCeiling}', '{ExpiryWindow}' and "
-            + $"'{EarningsClearance}'."),
+            $"'{reason}' is not a gate reason. The stored forms are {Listed()}."),
     };
 
     public static GateReason ParseStored(string stored)
@@ -69,10 +103,16 @@ public static class StoreGateReason
             DeltaCeiling => GateReason.DeltaCeiling,
             ExpiryWindow => GateReason.ExpiryWindow,
             EarningsClearance => GateReason.EarningsClearance,
+            PerNameCap => GateReason.PerNameCap,
+            TotalCap => GateReason.TotalCap,
+            AssignmentStress => GateReason.AssignmentStress,
+            GrossBasis => GateReason.GrossBasis,
             _ => throw new FormatException(
                 $"'{stored}' is not a stored gate reason. The permitted values are "
-                + $"'{SpreadCap}', '{PremiumFloor}', '{CrossedMarket}', '{DeltaCeiling}', "
-                + $"'{ExpiryWindow}' and '{EarningsClearance}', lower case."),
+                + $"{Listed()}, lower case."),
         };
     }
+
+    private static string Listed() =>
+        string.Join(", ", Permitted.Select(value => $"'{value}'"));
 }

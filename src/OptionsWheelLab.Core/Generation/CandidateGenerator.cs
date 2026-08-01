@@ -20,9 +20,12 @@ namespace OptionsWheelLab.Core.Generation;
 /// decision record exists to hold. WORKED_EXAMPLE §3 is the worked case: seven
 /// strikes enumerated, three feasible, and the four rejections are the lesson.
 /// <para>
-/// The gate itself is not here yet. 2.3 adds the contract constraints, 2.4 the
-/// portfolio ones and 2.5 the feasible set; the gate lives inside this component
-/// when it arrives [D-W10], so the survivors are what all three makers receive.
+/// <b>The gate lives inside this component</b> [D-W10], so the survivors are
+/// what all three makers receive and a difference between them is selection
+/// rather than permission. Both families are here as of 2.4, the contract
+/// constraints from 2.3 and the portfolio ones from 2.4; assembling the
+/// survivors into an ordered feasible set and recording what was refused is
+/// 2.5's.
 /// </para>
 /// <para>
 /// <b>The simulated date reaches four parameters, and that is a choice.</b> Both
@@ -147,13 +150,23 @@ public sealed class CandidateGenerator
     /// on this chain could need, and narrowed per contract in memory. A read per
     /// contract would be the same rows fetched once per expiry.
     /// </para>
+    /// <para>
+    /// <b>The book is a required parameter rather than a defaulted one</b>
+    /// [D-W11]. An omitted book would default to carrying nothing, and a cap
+    /// against an empty book admits everything, so forgetting to pass one would
+    /// drop three structural risk controls while every test still passed. The
+    /// gate needing current portfolio state is the only backward edge in the
+    /// daily path [SYSTEM_DESIGN §3.3], and it arrives here.
+    /// </para>
     /// </remarks>
     public IReadOnlyList<GatedCandidate> GateFor(
         Ticker symbol,
         DateOnly simulatedDate,
-        PositionState state)
+        PositionState state,
+        BookState book)
     {
         ArgumentNullException.ThrowIfNull(symbol);
+        ArgumentNullException.ThrowIfNull(book);
 
         if (_configuration is null)
         {
@@ -171,6 +184,7 @@ public sealed class CandidateGenerator
         }
 
         var bounds = GateBounds.ResolveFor(_configuration, simulatedDate);
+        var caps = PortfolioBounds.ResolveFor(_configuration, simulatedDate);
         var reports = ReportDatesAcross(symbol, simulatedDate, candidates, bounds);
 
         return
@@ -186,10 +200,16 @@ public sealed class CandidateGenerator
                     .Where(date => date >= window.From && date <= window.To)
                     .ToList();
 
+                // Contract reasons then portfolio reasons, which is the enum's
+                // declared order and therefore the order a candidate carries
+                // them in [D-W4].
                 return new GatedCandidate(
                     candidate,
-                    ContractConstraints.Evaluate(
-                        candidate.Quote, simulatedDate, bounds, inWindow));
+                    [
+                        .. ContractConstraints.Evaluate(
+                            candidate.Quote, simulatedDate, bounds, inWindow),
+                        .. PortfolioConstraints.Evaluate(candidate, caps, book),
+                    ]);
             })
         ];
     }
