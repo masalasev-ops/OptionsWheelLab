@@ -74,12 +74,12 @@ decision proposed, set at version 1 in Phase 0.8.
 
 | Key | Store | Meaning | Consumer | Notes |
 |---|---|---|---|---|
-| `Gate:MaxSpreadFractionOfMid` | rows | reject above this spread as a fraction of mid | Risk gate **Unverified** | 0.12, the proposed default [D-W22] |
-| `Gate:MinPremium` | rows | reject below this bid | Risk gate **Unverified** | 0.30, the proposed default [D-W22] |
-| `Gate:MaxDelta` | rows | reject above this absolute delta | Risk gate **Unverified** | 0.35, the proposed default. Held equal to `Policy:Random:DeltaMax` by choice rather than by coincidence of defaults, which settles that decision's open clause. Must be no tighter than the loosest policy band [D-W23] |
-| `Gate:MinDte` | rows | earliest admissible expiry | Risk gate **Unverified** | 7, the proposed default [D-W24] |
-| `Gate:MaxDte` | rows | latest admissible expiry | Risk gate **Unverified** | 70, the proposed default. Must be less than `Trial:MaxTrialDays` [D-W24] |
-| `Gate:EarningsClearanceDays` | rows | buffer either side of a report date | Risk gate **Unverified** | 7, the proposed default [D-W25] |
+| `Gate:MaxSpreadFractionOfMid` | rows | reject above this spread as a fraction of mid | Risk gate via `GateBounds` | 0.12, the proposed default [D-W22] |
+| `Gate:MinPremium` | rows | reject below this bid | Risk gate via `GateBounds` | 0.30, the proposed default [D-W22] |
+| `Gate:MaxDelta` | rows | reject above this absolute delta | Risk gate via `GateBounds` | 0.35, the proposed default. Held equal to `Policy:Random:DeltaMax` by choice rather than by coincidence of defaults, which settles that decision's open clause. Must be no tighter than the loosest policy band [D-W23] |
+| `Gate:MinDte` | rows | earliest admissible expiry | Risk gate via `GateBounds` | 7, the proposed default [D-W24] |
+| `Gate:MaxDte` | rows | latest admissible expiry | Risk gate via `GateBounds` | 70, the proposed default. Must be less than `Trial:MaxTrialDays` [D-W24] |
+| `Gate:EarningsClearanceDays` | rows | buffer either side of a report date | Risk gate via `GateBounds` | 7, the proposed default [D-W25] |
 
 Two cross-key invariants are enforced when a config version is WRITTEN, not at
 startup: `Gate:MaxDelta` against every policy band [D-W23], and `Gate:MaxDte`
