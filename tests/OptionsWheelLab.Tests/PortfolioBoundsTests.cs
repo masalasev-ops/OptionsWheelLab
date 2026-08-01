@@ -72,6 +72,32 @@ public sealed class PortfolioBoundsTests
     }
 
     /// <summary>
+    /// The two equal fractions come from their own keys, shown by revising one.
+    /// </summary>
+    /// <remarks>
+    /// The seeded values are both 0.60, so asserting them cannot tell a record
+    /// reading two keys from one reading a single key twice. Revising one is
+    /// what separates them, and it costs nothing: config rows are versioned, so
+    /// the later version answers only for later dates and the seeded pair is
+    /// still what an earlier date resolves.
+    /// </remarks>
+    [Fact]
+    public void The_two_equal_fractions_resolve_from_their_own_keys()
+    {
+        using var store = SeededStore();
+        using var connection = store.Connections.Open(StoreAccess.Write);
+
+        new ConfigWriter(connection).Append(
+            ConfigKeys.RiskSimultaneousAssignmentLimitFraction, "0.30", Revised);
+
+        var later = PortfolioBounds.ResolveFor(
+            new AsOfConfiguration(connection), new DateOnly(2026, 7, 1));
+
+        Assert.Equal(0.60m, later.TotalCapFraction);
+        Assert.Equal(0.30m, later.SimultaneousAssignmentLimitFraction);
+    }
+
+    /// <summary>
     /// An unresolvable cap stops the evaluation naming the key and the date
     /// [D-W37].
     /// </summary>

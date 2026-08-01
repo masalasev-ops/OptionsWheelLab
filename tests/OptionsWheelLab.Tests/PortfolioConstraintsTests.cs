@@ -106,6 +106,36 @@ public sealed class PortfolioConstraintsTests
     }
 
     /// <summary>
+    /// The assignment limit reads its own fraction, shown at a configuration
+    /// where the two differ.
+    /// </summary>
+    /// <remarks>
+    /// <b>Found by mutation, and it is the seeded values that hide it.</b> The
+    /// limit is held equal to the total cap [CONFIG_REFERENCE], so a limit
+    /// reading <c>TotalCapFraction</c> instead of its own key passed all 490
+    /// tests. Nothing forbids an operator setting them apart: CONFIG_REFERENCE
+    /// records no invariant between the two, deliberately, because the
+    /// relationship changes at Phase 3 rather than being wrong now. So this
+    /// asserts against a configuration the store does not currently hold and
+    /// could, which is what makes the third cap's own key load-bearing.
+    /// </remarks>
+    [Fact]
+    public void The_assignment_limit_reads_its_own_fraction()
+    {
+        var apart = Seeded with { SimultaneousAssignmentLimitFraction = 0.30m };
+        var book = new BookState(CommittedInName: 0m, CommittedTotal: 28_000.00m);
+
+        // 30,000.00 against 28,000.00 leaves 2,000.00, where the total cap's
+        // 60,000.00 leaves 32,000.00 and the per-name cap is untouched.
+        Assert.Equal(2_000.00m, PortfolioConstraints.AssignmentHeadroom(apart, book));
+        Assert.Equal(32_000.00m, PortfolioConstraints.TotalHeadroom(apart, book));
+
+        Assert.Equal(
+            [GateReason.AssignmentStress],
+            PortfolioConstraints.Evaluate(Put(25.00m), apart, book));
+    }
+
+    /// <summary>
     /// Every cap reason, on one candidate, in the enum's declared order.
     /// </summary>
     /// <remarks>
