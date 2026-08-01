@@ -624,6 +624,7 @@ admits only one origin costs.
 | Phase 8 | Extract the market rules out of `SyntheticChainReader`, so one definition serves the synthetic reader and the vendor ingest. Refusing a negative bid, a negative ask and a crossed market are statements about what a market can be, not JSON concerns, and they sit as private statics on the reader, so a second producer of quotes can only duplicate them. Phase 8 is where that second producer arrives. **The crossed-quote coupling is discharged at 2.3**: the gate handles a crossed quote [D-W22, as amended], so that rule moved to the gate and left the loader, and what remains to extract is the two negative-price refusals. Not extracted at 0.8 because there is one caller and the second does not exist. | PR #9 |
 | Phase 3 | Decide how dividends are recorded. Between assignment and call-away the account holds shares, and a dividend paid in that window is cash the trial received; omitting it understates every covered-call leg and misprices the buy-and-hold control [D-W13], which biases the exact comparison the lab exists to make. Needs a ledger `kind`, a source for ex-dates and amounts (`corporate_actions` already exists and lists `dividend` among its kinds), and a statement of whether the synthetic-chain format can express one. Raised from a review of what the wheel model omits, before Phase 3's detail is authored. | v1.22.0 |
 | Phase 3 | Verify the wheel's settlement mechanics against OCC's own rules before the state machine's decisions are authored, and cite the rule in each decision: exercise-by-exception and its in-the-money threshold at expiry; when assignment is known to the account versus when it occurred; when cash from an assignment or a call-away is usable again under T+1 settlement; the early-assignment model around ex-dividend that VALIDITY already names as modelled by rule; and dividend entitlement timing given that ex-date and record date coincide under T+1. Every item is a mechanics fact with a primary source, none is currently verified, and the corpus's posture is transcription from authorities rather than recollection [D-W36]. Raised at 1.5 when the adjustment question got this treatment and the remaining unverified mechanics were enumerated. | v1.26.0 |
+| Phase 4 | Decide how a candidate's gate reasons are stored. `candidates.gate_reason` is a single nullable TEXT column and the domain type is a set in declared order [2.3], which FX-GateRecordsAllReasons at 2.5 asserts by requiring two reasons on one candidate. The options include a delimited list, which makes a reason unqueryable, and a row per reason, which changes the table's grain. Raised at 2.3 when the vocabulary was declared. | v1.32.0 |
 | Phase 9 | Decide how configuration resolves for a simulated date that precedes the value being written. `SeedCommand` stamps `set_at` from the wall clock, so every gate bound resolves null for any simulated date before the seed ran, which is every date in a walk-forward over real history. [D-W26] requires resolution as of the simulated date and [D-W37] stops the evaluation rather than guessing, so the collision surfaces loudly at the first walk-forward rather than silently. The options include backdating the seed, which costs the audit trail its truthfulness, and resolving a registered run's configuration as of its pre-registration instant [D-W15], which keeps both rules intact. Raised at 2.3 while answering what an unresolvable bound does. | v1.32.0 |
 | Phase 3 | Run a domain-completeness pass before the state machine's decisions are authored, and record what it finds. Every check this repository has compares one part of the corpus against another, so an omission from the domain model is invisible to all of them: dividends were absent from `ledger_entries` and from D-W13's control for eight checkpoints, and surfaced from a conversation rather than from any process. The pass walks a wheel turn end to end against the corpus and asks what the strategy involves that no document mentions: cash movements between assignment and call-away, what a trial's economics include, what an account holds that the ledger does not name. Findings become their own rows. Raised at 1.5, after the dividend gap showed the class exists. | v1.26.0 |
 
@@ -1081,6 +1082,42 @@ at 2.5.
   simulated date [D-W26], never from a constant. An unresolvable bound stops
   the evaluation naming the key and the date [D-W37], and bounds resolve once
   per evaluation rather than once per candidate.
+
+Reconciled at sign-off against what shipped. Three things were larger than the
+scope above, and two of them are decisions this checkpoint could not have been
+built without.
+
+**The gate could not reject a crossed quote on any ground D-W22 stated.** That
+decision gave two, a spread above the cap and a bid below the floor, and a
+crossed quote is neither: its spread is negative and its bid is high. Rejecting
+on it would have been this corpus's citation pattern for the sixth time and the
+first instance created rather than inherited, the earlier five having been found
+by building the thing that rested on the citation. D-W22 gains the ground before
+the code cites it, and the reason is its own rather than the spread cap's,
+because a negative spread is not a spread above a cap and the audit trail should
+not say it was. `FX-CrossedQuoteRejected` is registered here, which the registry
+did not carry when this detail was written.
+
+**Two boundaries turned out to be unstated, and one rested on a convention the
+gate does not use.** D-W25 said the buffer was on both sides and not whether its
+edge was inside; D-W24 said "outside `Gate:MinDte` to `Gate:MaxDte`", which
+states an edge only through the convention that a range includes its endpoints.
+Both are amended, and D-W25 carries the note that the gate's comparisons are
+deliberately not uniform because the quantities differ, so each decision states
+its own boundary rather than one convention governing all of them. Four
+decisions were touched in total where the detail anticipated none.
+
+**The mutation method needed a correction of its own.** 2.2 established that a
+suite observed to pass is not a suite shown able to fail. 2.3 found that a
+mutation confined to one site is not a mutation of the behaviour: defaulting
+either half of the bound resolution passed everything, because each left the
+other still raising, and only defeating both showed the two tests that assert
+D-W37. The same shape appeared four times this checkpoint in searches rather
+than mutations, and both halves are carried in the archive.
+
+Seven fixtures landed where the registry carried five, and
+`FX-MalformedChainFailsWhole` lost an assertion and gained its inverse, since
+what the loader enforces is smaller than it was.
 
 ### 2.4 The portfolio constraints
 The three caps of [D-W11], and the gross-basis rule of [D-W19] binding an
