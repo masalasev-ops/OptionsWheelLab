@@ -1,5 +1,25 @@
 # CHANGELOG
 
+## [1.34.1] — 2026-08-01
+
+One marker corrected, raised by 2.5's sweep and belonging to no checkpoint, so
+it lands after that one merges rather than inside it.
+
+### Fixed
+- `WORKED_EXAMPLE.md` read **not built** while §2, §3 and §5 were reproduced end
+  to end, §1's caps were configuration, and six of the eleven fixtures naming it
+  were implemented. The marker was not stale so much as answering the wrong
+  question: this document is a specification expressed as arithmetic, so what
+  gets built is never the document but the machinery that reproduces it, and
+  "not built" was true of the document and silent on that. It now says how much
+  of the arithmetic something computes, and names what is not reproduced beside
+  what is.
+- That is the sense this marker carries, stated because it differs from every
+  other one in the corpus. Elsewhere a marker describes the thing the section
+  describes; here it describes a second thing entirely, and reading it the usual
+  way is what let it sit unchanged for five checkpoints that built against the
+  document.
+
 ## [1.34.0] — 2026-08-01
 
 Checkpoint 2.5, and with it **Phase 2**. The feasible set: assembly, ordering,

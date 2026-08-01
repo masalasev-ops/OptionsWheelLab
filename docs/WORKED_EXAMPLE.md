@@ -1,6 +1,27 @@
 # WORKED_EXAMPLE
 
-Build state: **not built**. This is a specification expressed as arithmetic.
+Build state: **partly reproduced**, and this marker means something different
+from every other one in the corpus. This is a specification expressed as
+arithmetic, so what gets built is never this document but the machinery that
+reproduces it, and the question the marker answers is how much of the arithmetic
+something now computes. It read **not built** until v1.34.1, which was true of
+the document and said nothing about that.
+
+Reproduced: §2's chain and §5's bars, which load and persist to the cent; §3
+whole, every strike enumerated and every verdict and reason reached; and §1's
+caps, which are configuration now and whose 5,100.00 and 22,000.00 headrooms are
+asserted. §1's fill rule and policy bands are configuration too and nothing
+consumes them yet. Of §6, only 6.3's two bases are read, by the constraint that
+binds a call strike.
+
+Not built: §4's decisions and fills, §6.1 and §6.2, §6.3's 498.05 total, and §7
+and §8's scores and regret. Six of the eleven fixtures naming this document are
+implemented and the other five belong to Phases 3, 4 and 5, which is where the
+makers, the trials and the scores arrive.
+
+Nothing here is decorative. A figure this document states that the code
+contradicts fails a fixture rather than going unnoticed, which is what made §3's
+revision at 2.1 a code change and not a documentation one.
 
 One decision traced from chain snapshot to regret score, with every number
 computed. Prose specifications are ambiguous exactly where it matters; this
