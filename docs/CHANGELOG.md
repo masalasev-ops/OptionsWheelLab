@@ -1,5 +1,85 @@
 # CHANGELOG
 
+## [1.34.0] — 2026-08-01
+
+Checkpoint 2.5, and with it **Phase 2**. The feasible set: assembly, ordering,
+and the record of what the gate refused.
+
+### Added
+- `FX-GateRecordsAllReasons`, the only fixture 2.5 registers. Two reasons has
+  three shapes and the cheapest is not the one that matters: two constraints
+  inside one family share an evaluation, one from each family crosses two calls
+  and a concatenation, and the full set says the declared order survives every
+  branch. The full case is nine of the ten reasons, the tenth being unreachable
+  beside the spread cap, and the count is asserted against the enum's own length.
+- An unregistered ordering suite: the gated sequence is in identity order, the
+  same inputs produce the same sequence compared as identities and reasons in
+  order, and the order is inherited from the chain read rather than imposed a
+  second time. Its chain is two expiries supplied scrambled, because identity
+  orders on expiry before strike and every other chain here is one expiry.
+- `SYSTEM_DESIGN.md` §3.3 and §3.4 gain their build-state markers, which
+  v1.28.0's sweep left because neither was built then.
+
+### Changed
+- `GatedCandidate` compares its reasons by sequence. Order is part of it, two
+  arrangements of one set not being one verdict.
+- Phase 4's two obligation rows point at each other. The grain a feasible set is
+  stored at and how a set of gate reasons reaches one column are one schema
+  decision, and answering either alone constrains the other silently. Not
+  merged: two rows raised for two reasons at two versions are the history. The
+  carried-obligations preamble states the convention, which is this corpus's
+  pointer rule arriving in a register rather than in prose.
+- The v1.17.0 row also absorbs what 2.5 declined to model. No `FeasibleSet` type
+  ships: `GateFor` returning every candidate with its reasons in identity order
+  is assembly, ordering and the refusal record, and a type justified only by a
+  later consumer is speculation. Phase 4 models the set with `candidates` in
+  front of it rather than inheriting a shape guessed three checkpoints early.
+
+### Fixed
+- **`GatedCandidate`'s synthesised equality compared its reasons by reference**,
+  so two identical verdicts were unequal whenever the lists were separate
+  instances, which is every time the gate runs twice. That is the question
+  [D-W4] asks and the type answered it wrong. Found by asserting that an
+  evaluation repeats; `FX-ThreeMakersSameFeasibleSet` at Phase 4 is where it
+  would otherwise have surfaced, as a difference between three makers that did
+  not exist.
+- 2.5's definition of done required the set be ordered "so three makers
+  receiving it receive the same bytes", and nothing serialises a candidate at
+  2.5. Restated as the sequence property, with the byte-level one carried to the
+  checkpoint that persists the set. **Fourth instance of a definition of done
+  whose subject belongs to a later checkpoint**, after 0.5's, 0.6's and 2.4's,
+  and the tell is the same every time: the clause describes a state rather than
+  an act.
+- v1.33.0 recorded that class as "third instance after 0.6's and 2.1's". ~~2.1~~
+  is wrong: 2.1's definition of done named two fixtures that both existed. The
+  instance it should have named is **0.5's**, whose byte-identical clause had no
+  subject because there was no run to make. The series is 0.5, 0.6, 2.4, 2.5.
+- The same definition of done called 2.5 "the first consumer of the total order
+  1.5 completed". `AsOfMarketData.QuotesFor` has consumed it since 1.2 and
+  gained the fifth component at 1.5 without changing; it is the only `OrderBy`
+  over an identity in `src/`. The gate inherits that order rather than
+  repeating it, and the detail now says so.
+- Three build-state markers had gone stale, found by the sweep for two.
+  `SYSTEM_DESIGN.md` §3.2 said the earnings calendar had its table and no
+  writer, which 2.3 falsified; §8 said four keys were unset, which has been one
+  since 2.4; `ORIENTATION.md` described what had shipped as Phase 1's store, two
+  checkpoints after the generator.
+
+### Notes
+- Seven mutations were run. Short-circuiting after the contract family fails 6,
+  concatenating the families in the other order 5, the portfolio family
+  recording only its first reason 6, reversing the gate's output 4, removing the
+  chain read's sort 1, and reverting the verdict equality 2.
+- **One passed everything and that is the correct result rather than a gap.**
+  Making the gate re-sort its own output changes nothing, because the sequence
+  is already in that order; it is a null mutation, which is a fourth outcome
+  distinct from the three causes of a passing mutation the archive records.
+- Removing the chain read's sort failed only the read's own test, the ordering
+  suite still passing because the store returned identity order on that chain
+  regardless. Which access path produced that was not measured. The read owns
+  the sort and the test that holds it; the gate asserts the property it
+  inherits.
+
 ## [1.33.0] — 2026-08-01
 
 Checkpoint 2.4: the three portfolio caps and the gross-basis rule, and the

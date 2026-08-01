@@ -905,10 +905,11 @@ Detail for Phase 2 is authored when Phase 1 signs off.
 
 ## Phase 2 — Candidate generator and risk gate
 
-Build state: **not built**. Delivers one feasible set per name and date,
-produced by enumeration and filtered by a gate that sits inside the
-generator [D-W10], with every rejection reason recorded [D-W5]. On
-synthetic chains; no vendor data until Phase 8.
+Build state: **complete**. 2.1 to 2.5 built and signed off. Delivers one
+feasible set per name and date, produced by enumeration and filtered by a
+gate that sits inside the generator [D-W10], with every rejection reason
+recorded [D-W5]. On synthetic chains; no vendor data until Phase 8. Nothing
+persists a candidate or its reasons, which is Phase 4's.
 
 All three of this phase's carried obligations are preconditions rather than
 work items, and that shapes the order. The worked example must be
@@ -1238,5 +1239,38 @@ Assembly and ordering, and the record of what the gate refused.
   here rather than at 2.4 because §3.4 is complete only once the feasible set
   assembles, and a marker written a checkpoint early would need amending a
   checkpoint later. Raised at 2.4.
+
+Reconciled at sign-off against what shipped. Three things were larger than the
+scope above, and the first is a defect the definition of done found.
+
+**`GatedCandidate`'s equality compared its reasons by reference.** A record
+compares each member with the default comparer, which for a collection is
+reference equality, so two candidates with the same contract and the same
+reasons in the same order were unequal whenever the lists were separate
+instances, which is every time the gate runs twice. That is the question D-W4
+asks and the type answered it wrong. Equality now compares by sequence, order
+included, because two arrangements of one set are not one verdict. It was
+found by asserting that an evaluation repeats, and Phase 4's
+FX-ThreeMakersSameFeasibleSet is where it would otherwise have surfaced, as a
+difference between three makers that did not exist.
+
+**Ordering needed a chain no fixture in this repository had.** Identity orders
+on expiry before strike and every chain here is one expiry, so nothing could
+tell an identity comparison from a strike comparison. The ordering suite uses
+two expiries and four strikes supplied scrambled. Removing the chain read's
+sort then failed exactly one test, the read's own, because the store returned
+identity order anyway on that chain; which access path produced it was not
+measured. That is the right division rather than a gap: the read owns the sort
+and owns the test that holds it, and the gate asserts the property it inherits.
+
+**Three build-state markers had gone stale and the sweep for two found them.**
+§3.2 said the earnings calendar had its table and no writer, which 2.3
+falsified; §8 said four keys were unset, which has been one since 2.4; and
+`ORIENTATION.md` described what had shipped as Phase 1's store. Each
+correction states what is not built beside what is, since a marker that only
+accumulates reads as further along than the work.
+
+The definition of done was restated before the code, and Phase 4's two
+obligation rows now point at each other.
 
 Detail for Phase 3 is authored when Phase 2 signs off.

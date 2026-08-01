@@ -4,10 +4,9 @@ Appended to, never rewritten. The repository is the authority on build state.
 
 ## Current state
 
-**Phase 0 complete and reviewed. Phase 1 complete.** Checkpoints 0.1 to 0.8
-and 1.1 to 1.5 built and signed off. Phase 2 is open: 2.1 to 2.4 are built
-and signed off, and 2.5 is not started. The documentation corpus is at
-v1.33.0.
+**Phase 0 complete and reviewed. Phases 1 and 2 complete.** Checkpoints 0.1 to
+0.8, 1.1 to 1.5 and 2.1 to 2.5 built and signed off. Phase 3 is not started and
+its detail is not yet authored. The documentation corpus is at v1.34.0.
 
 ## Log
 
@@ -1105,3 +1104,59 @@ basis unsaid; a strike at basis recovers the outlay exactly, so excluding it
 would forbid the break-even strike for no stated reason. §3's verdicts, written
 at 2.1 before any gate existed, held on the first run of the completed gate with
 nothing stripped.
+
+### 2026-08-01 — corpus v1.34.0
+Checkpoint 2.5 built and signed off, and with it **Phase 2**. The feasible set:
+assembly, ordering, and the record of what the gate refused. 503 tests, up ten;
+schema unchanged at 5; no config key, 2.5 introducing none; forty-three registry
+entries implemented against 0.2 to 2.5, counted from disk. Thirteen carried
+obligations stand and Phase 2 owes nothing.
+
+**The smallest checkpoint of the phase found the defect that mattered most.**
+`GatedCandidate`'s synthesised equality compared its reasons by reference, so two
+candidates with the same contract and the same reasons in the same order were
+unequal whenever the lists were separate instances, which is every time the gate
+runs twice. D-W4 asks exactly that question and the type answered it wrong. It
+surfaced from asserting that one evaluation repeats, which is 2.5's whole
+definition of done; the alternative venue was Phase 4's
+FX-ThreeMakersSameFeasibleSet, where it would have presented as a difference
+between three makers that did not exist, which is the misdiagnosis D-W26's
+rationale describes in a different register.
+
+**Ordering needed a chain the repository did not have.** Identity orders on
+expiry before strike and every chain here is one expiry, so no fixture could tell
+an identity comparison from a strike comparison; the ordering suite supplies two
+expiries scrambled. Removing the chain read's sort then failed exactly one test,
+the read's own, because the store returned identity order on that chain anyway.
+Which access path produced that was not measured, and it is recorded as unmeasured
+rather than explained. The division is the intended one: the read owns the sort
+and the test holding it, and the gate asserts the property it inherits rather
+than restating the guarantee.
+
+**A fourth outcome for a mutation, distinct from the three causes of a passing
+one.** Making the gate re-sort its own output passed everything, and that is the
+correct result: the sequence is already in that order, so the mutation changes no
+behaviour. A null mutation is evidence rather than a gap, and telling it from a
+weak test, an insufficient mutation and an unfalsifiable suite is a fourth
+question to ask, not a fourth failure.
+
+**The definition of done was wrong twice in one clause.** It asked for bytes
+where nothing serialises a candidate, and it called 2.5 the first consumer of the
+total order 1.5 completed when `AsOfMarketData.QuotesFor` has consumed it since
+1.2. Both corrected before the code. That is the fourth definition of done whose
+subject belongs to a later checkpoint, and correcting it found that v1.33.0's
+record of the same class named the wrong earlier instance: it said 0.6 and 2.1
+where 2.1's clause named two fixtures that both existed. The series is 0.5, 0.6,
+2.4, 2.5, and the correction is recorded here rather than by editing v1.33.0,
+which this log does not do.
+
+Two Phase 4 obligations turned out to be one schema decision in two places: the
+grain a feasible set is stored at, and how a set of gate reasons reaches one
+column. They are not merged, two rows raised for two reasons at two versions
+being the history, and each now names the other. That is this corpus's pointer
+rule reaching a register, where it has until now applied to a fact stated twice.
+
+Phase 2 delivers one feasible set per name and date, produced by enumeration and
+filtered by a gate that sits inside the generator with every rejection reason
+recorded, on synthetic chains throughout, which is what it said it would deliver.
+Nothing persists a candidate, and no decision has been made.
