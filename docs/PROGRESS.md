@@ -6,7 +6,7 @@ Appended to, never rewritten. The repository is the authority on build state.
 
 **Phase 0 complete and reviewed. Phases 1 and 2 complete.** Checkpoints 0.1 to
 0.8, 1.1 to 1.5 and 2.1 to 2.5 built and signed off. Phase 3 is not started and
-its detail is not yet authored. The documentation corpus is at v1.34.0.
+its detail is not yet authored. The documentation corpus is at v1.34.1.
 
 ## Log
 
@@ -1160,3 +1160,22 @@ Phase 2 delivers one feasible set per name and date, produced by enumeration and
 filtered by a gate that sits inside the generator with every rejection reason
 recorded, on synthetic chains throughout, which is what it said it would deliver.
 Nothing persists a candidate, and no decision has been made.
+
+### 2026-08-01 — corpus v1.34.1
+`WORKED_EXAMPLE.md`'s build-state marker corrected. Raised by 2.5's marker sweep
+and belonging to no checkpoint, so it lands after that one merges rather than
+inside it, on v1.31.1's precedent.
+
+The marker read **not built** while §2, §3 and §5 were reproduced end to end,
+§1's caps had become configuration, and six of the eleven fixtures naming the
+document were implemented. It was not stale so much as answering the wrong
+question. This document is a specification expressed as arithmetic, so what gets
+built is never the document but the machinery that reproduces it; "not built" was
+true of the document and silent on that, which is why five checkpoints built
+against it without anyone reading the marker as wrong.
+
+**A marker whose sense differs from every other one has to say so.** Elsewhere a
+marker describes the thing its section describes. Here it describes a second
+thing entirely, and a reader applying the usual reading gets a true sentence and
+the wrong picture, which is the same survival mechanism v1.31.1 recorded for a
+citation: a true statement beside a misleading one stops the reader checking.
