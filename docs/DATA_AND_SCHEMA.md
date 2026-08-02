@@ -317,12 +317,22 @@ positions
   shares INTEGER, gross_basis TEXT, net_basis TEXT, contract_id INTEGER NULL
 
 ledger_entries
-  entry_id INTEGER PK, trial_id INTEGER, entry_date TEXT, kind TEXT,
-  amount TEXT, contract_id INTEGER NULL, note TEXT
+  entry_id INTEGER PK, trial_id INTEGER, entry_date TEXT, known_on TEXT,
+  kind TEXT, amount TEXT, contract_id INTEGER NULL, note TEXT
 ```
 
 `state` is the discriminated union tag: `cash`, `short_put`, `holding_shares`,
 `short_call`. Both basis conventions are stored [D-W19].
+
+`entry_date` is the session an entry occurred in and `known_on` the session the
+account could act on it. They differ because assignment is determined after the
+close and is known the next morning [D-W39], and both are stored because a
+projection rebuilt from this table [D-W35] must reproduce what was known when,
+which one date cannot answer. `_on` rather than `_at`, because §Time reserves
+that suffix for timestamps and this is a date, matching `opened_on` and
+`closed_on`. `decisions` carries the same pair one block above, `decision_date`
+beside `recorded_at`, so a second date on a row is this schema's convention
+rather than an exception here.
 
 ### 4.4 Scores
 
