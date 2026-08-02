@@ -15,12 +15,12 @@ predates this file and cannot be relied on.
 ## Topical index
 
 **Purpose and measurement**: D-W2, D-W3, D-W5, D-W17, D-W18, D-W20, D-W21
-**Isolation and controls**: D-W1, D-W4, D-W6, D-W13, D-W41
-**Data and identity**: D-W7, D-W8, D-W9, D-W15, D-W26, D-W27, D-W28, D-W29, D-W30, D-W31, D-W32, D-W34, D-W35, D-W36, D-W39
+**Isolation and controls**: D-W1, D-W4, D-W6, D-W13, D-W41, D-W45
+**Data and identity**: D-W7, D-W8, D-W9, D-W15, D-W26, D-W27, D-W28, D-W29, D-W30, D-W31, D-W32, D-W34, D-W35, D-W36, D-W39, D-W44
 **Risk**: D-W10, D-W11, D-W14, D-W19, D-W23, D-W25, D-W37, D-W43
 **Gate constraints**: D-W10, D-W22, D-W23, D-W24, D-W25
-**Settlement mechanics**: D-W38, D-W39, D-W40, D-W41, D-W42, D-W43
-**Scope**: D-W12, D-W16
+**Settlement mechanics**: D-W38, D-W39, D-W40, D-W41, D-W42, D-W43, D-W44
+**Scope**: D-W12, D-W16, D-W45
 **Verification mechanisms**: D-W28, D-W33
 
 ## Status legend
@@ -1119,11 +1119,20 @@ control is built, which is not Phase 3.
 ---
 
 ### D-W42 Early exercise around ex-dividend is modelled, and nothing is cited
-`active` · 2026-08-02
+`active` · 2026-08-02, amended 2026-08-02 (scoped to unadjusted dividends)
 
 A short call is assigned on the session before the ex-dividend date when the
-dividend exceeds the call's remaining time value. No other early assignment is
-modelled.
+dividend exceeds the call's remaining time value **and the contract is not
+adjusted for that dividend** [D-W44]. No other early assignment is modelled.
+
+Scope, narrowed by 3.2's completeness pass. Early exercise to capture a dividend
+is the behaviour OCC's own rationale describes for dividends it does not adjust
+for: "If adjustments are not made in response to special dividends (i.e., by
+calling for the delivery of the dividend) call holders can capture the dividends
+only by exercising their options." Where the contract is adjusted the holder
+receives the dividend through the deliverable and has no reason to surrender the
+option's time value, so the condition below applies to unadjusted dividends and
+the adjusted case has no early assignment at all.
 
 The absence is the source. Whether the holder of a long call exercises it early
 is that holder's decision, and no rule governs the making of it. OCC Rule 803
@@ -1176,3 +1185,66 @@ call.
 Test FX-CoveredCallCommitsNothingFurther: a trial holding assigned shares gates a
 call candidate against the committed capital it already carries, and the per-name
 headroom is unchanged by the call.
+
+---
+
+### D-W44 An ordinary dividend pays cash; a non-ordinary one adjusts the contract
+`active` · 2026-08-02
+
+A dividend is two events in this domain and the record carries both. An ordinary
+cash dividend pays the holder of the shares and leaves the overlying contracts
+untouched. A non-ordinary one adjusts them, by calling for delivery of the
+dividend, so the deliverable changes and the strike does not [D-W17].
+
+Source. A cash dividend or distribution is ordinary regardless of size when it
+"was declared pursuant to a policy or practice of paying such dividends or
+distributions on a quarterly or other regular basis", and as a general rule one
+"less than $12.50 per contract would not trigger the adjustment provisions of
+Article VI, Section 11A". Release No. 34-54748, File No. SR-OCC-2006-01,
+71 FR 67415, 21 November 2006, approved at Release No. 34-55258, 72 FR 7701,
+16 February 2007. Retrieved 2026-08-02.
+
+The rule this replaces is in the same filing and is not the rule. Its Background
+records the 10% Rule, under which a dividend was ordinary if it did not exceed
+ten per cent of the underlying's value on the declaration date, and the filing
+exists to revise it. Size no longer decides; regularity does.
+
+Consequence, and it is why this is not a detail of [D-W41]. A trial holding
+shares through an ordinary dividend receives cash and its short call is
+unchanged. Through a non-ordinary one it receives the dividend through the
+deliverable of a contract whose terms have moved, which is a corporate action in
+the sense `corporate_actions` already carries and not a ledger entry alone. The
+corpus had one word for both and the two have opposite consequences for the leg
+the trial has written.
+
+What this does not decide. Which side of the line a particular dividend falls on
+is OCC's determination per event and is transcribed, never derived [D-W36]. The
+$12.50 threshold is stated as a general rule by the filing and this decision
+repeats it as such rather than as a bound to compute with.
+
+Test FX-OrdinaryDividendLeavesContractUnchanged: an ordinary dividend produces a
+ledger entry and no contract adjustment, and a non-ordinary one produces the
+adjustment its corporate action states.
+
+---
+
+### D-W45 Tax is outside the lab, and saying so is the point
+`active` · 2026-08-02
+
+No return this lab computes is after tax, and no decision path reads a tax rate,
+a holding period or a wash-sale rule.
+
+Chosen, with nothing to cite: what a laboratory chooses to measure is not
+governed by anything external.
+
+Why it is written down rather than left obvious. This is a decision-quality
+laboratory, and the wheel's tax treatment differs from buy-and-hold's in ways
+that would move the comparison [D-W13]: premium is short-term whatever the
+holding period, assignment resets a basis, and a called-away position realises a
+gain that a held one does not. An unstated exclusion is indistinguishable from an
+omission, which is the subject of the pass that raised this, and the corpus had
+no sentence anywhere naming tax in either direction.
+
+Consequence for reading a result. Every comparison this lab reports is pre-tax on
+both sides, which is a fair comparison of decisions and not a claim about what an
+investor keeps.
