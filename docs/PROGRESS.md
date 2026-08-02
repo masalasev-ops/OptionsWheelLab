@@ -1257,14 +1257,17 @@ lab's account-level behaviour is a model recorded as a model rather than a rule
 transcribed. That is the same disclosure in three places, and it is what the
 sourcing requirement buys that a secondary description would have hidden.
 
-- **Committed capital's quantity.** The reverse-split half is settled: a 3-for-4
-  reverse on a $50 option adjusts the deliverable to 75 shares with the strike
-  unchanged, which preserves the aggregate exercise only as strike times
-  multiplier. The forward half waits on the memo, since the older method reduced
-  the strike as well and whether the current one does is what the memo settles.
-  [D-W17] is not amended in either direction until it lands, and D-W36's figures
-  are not reasoned from, their provenance being a search result rather than the
-  memo.
+- **Committed capital's quantity, narrowed to one case.** Reverse splits are
+  settled from the Options Industry Council's term-by-term table: contracts,
+  strike and multiplier unchanged, deliverable divided by the ratio, so
+  committed capital is strike times multiplier. Whole-number forward splits are
+  settled the same way by the contract-multiplication method. The open case is
+  the uneven forward split, where the 2006 filing's summary and its worked
+  example admit two readings and neither route either of us has reaches the text
+  that would decide it. [D-W17] stays unamended because a decision right for two
+  cases and silent on the third would be worse than one that waits, and D-W36's
+  figures are still not reasoned from, their provenance being a search result
+  rather than the memo.
 - **T+1 cash availability.** Unretrieved. Its source is SEC Rule 15c6-1 as
   amended, and it decides whether a trial can open the next day or the day after.
 - **Early assignment around ex-dividend.** Unretrieved, and it splits: the
