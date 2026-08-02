@@ -16,9 +16,10 @@ predates this file and cannot be relied on.
 
 **Purpose and measurement**: D-W2, D-W3, D-W5, D-W17, D-W18, D-W20, D-W21
 **Isolation and controls**: D-W1, D-W4, D-W6, D-W13
-**Data and identity**: D-W7, D-W8, D-W9, D-W15, D-W26, D-W27, D-W28, D-W29, D-W30, D-W31, D-W32, D-W34, D-W35, D-W36
+**Data and identity**: D-W7, D-W8, D-W9, D-W15, D-W26, D-W27, D-W28, D-W29, D-W30, D-W31, D-W32, D-W34, D-W35, D-W36, D-W39
 **Risk**: D-W10, D-W11, D-W14, D-W19, D-W23, D-W25, D-W37
 **Gate constraints**: D-W10, D-W22, D-W23, D-W24, D-W25
+**Settlement mechanics**: D-W38, D-W39
 **Scope**: D-W12, D-W16
 **Verification mechanisms**: D-W28, D-W33
 
@@ -928,3 +929,62 @@ unresolvable bound produces one message rather than one per contract.
 
 Test: a constraint evaluated at a simulated date before its bound was written
 fails naming the key and the date.
+
+---
+
+### D-W38 Expiry resolves by exercise at one cent in the money
+`active` · 2026-08-01
+
+A short option expiring one cent or more in the money against the session's
+closing price is assigned. One expiring out of the money, or in the money by
+less than one cent, expires worthless.
+
+Source and its limit. OCC Rule 805(d)'s exercise-by-exception threshold is
+one cent per contract for equity options in customer, firm and market-maker
+accounts alike, measured against the closing price of the underlying.
+Retrieved 2026-08-01 from the Options Industry Council's exercise reference,
+which states that OCC uses the one-cent threshold for the positions of its
+clearing members as an administrative convenience and that a firm may use a
+different one. So it is a procedure between OCC and its clearing members
+rather than a rule binding an account, and Rule 805 Interpretation .02 says
+as much: the thresholds are not intended to dictate to clearing members
+which positions in customers' accounts should or must be exercised.
+
+The lab models the common case and records that it is a model. A contrary
+exercise advice, by which a holder declines an in-the-money exercise or
+exercises one that is out of the money, is not modelled: it is a choice made
+by the holder of a contract the lab is short, and the lab cannot observe it.
+
+Test FX-ExpiryResolvesAtOneCent: a short put closing one cent below its
+strike assigns; one closing at the strike expires worthless.
+
+---
+
+### D-W39 Assignment occurs at a session's close and is known the next morning
+`active` · 2026-08-01
+
+Assignment is determined against net short positions after the close of
+session D and is not known to the account until the morning of the next
+business day. No decision made on D may depend on an assignment that
+occurred on D.
+
+Source. Retrieved 2026-08-01 from the Options Industry Council's assignment
+reference: assignments are determined based on net positions after the close
+of the market each day, so a short position bought back before the close
+cannot be assigned that day. OCC's nightly processing allocates exercises to
+clearing members in the early hours, and clearing members allocate to their
+customers in their own nightly processing before the next session opens.
+
+Rationale, and it is [D-W8] applied to the account rather than to the market.
+A maker that reacted to its own assignment on the day it happened would be
+reading a fact that did not exist yet, which is the leak an as-of read exists
+to prevent. The same discipline the store applies to what the market showed,
+applied to what the account knew.
+
+Consequence for the state machine. An assignment carries two dates: the
+session it occurred in, and the session the account may act on it. Both are
+stored, because a projection rebuilt from the ledger [D-W35] must reproduce
+what was known when, and one date cannot answer both questions.
+
+Test FX-AssignmentKnownNextSession: a decision on the day of assignment sees
+the pre-assignment state, and the following session sees the shares.
