@@ -5,8 +5,10 @@ Appended to, never rewritten. The repository is the authority on build state.
 ## Current state
 
 **Phase 0 complete and reviewed. Phases 1 and 2 complete.** Checkpoints 0.1 to
-0.8, 1.1 to 1.5 and 2.1 to 2.5 built and signed off. Phase 3 is not started and
-its detail is authored. The documentation corpus is at v1.35.0.
+0.8, 1.1 to 1.5 and 2.1 to 2.5 built and signed off. **Checkpoint 3.1 is in
+progress on `phase-3/checkpoint-3.1` and deliberately unmerged**: two of its
+seven mechanics are settled and five are not. The documentation corpus is at
+v1.36.0.
 
 ## Log
 
@@ -1212,3 +1214,63 @@ written.** That is the shape, and it is the reason this corpus keeps removing
 counts and ordinals from prose that would otherwise have to be revisited every
 time the thing beneath it moves. The number of instances is the one figure this
 entry does not assert.
+
+### 2026-08-01 — corpus v1.36.0
+Checkpoint 3.1 opened, and two of its seven mechanics settled. D-W38 resolves
+expiry by exercise at one cent in the money; D-W39 places assignment after a
+session's close and the account's knowledge of it the next morning. Two fixtures
+registered against 3.3, where the transitions land. Documentation only; no code,
+and the suite is unchanged at 503.
+
+**The branch is deliberately unmerged, and that is a state rather than a stall.**
+3.1 signs off when all seven are settled, and a half-settled 3.1 on `main` would
+leave the corpus asserting two mechanics and silent on five with nothing marking
+the difference. This entry is what makes the open state legible while it sits.
+
+**What was retrieved.** The Options Industry Council's exercise and assignment
+references, on 2026-08-01, cited in both decisions under headings that say what
+they are. That is 3.1's requirement of OCC's own rules met by disclosure rather
+than by claim: OIC describes OCC's procedure, and D-W38 states what that
+procedure does not establish, which is that the one-cent threshold runs between
+OCC and its clearing members rather than binding an account.
+
+**What was not, and why.** Measured on 2026-08-01: `theocc.com` and
+`infomemo.theocc.com` both return 403 to this environment while `sec.gov` serves
+the filings, so primary rule text arrives through SEC rule filings and the
+contract adjustment memos do not arrive at all. Five items stay open.
+
+- **Committed capital's quantity.** The reverse-split half is settled: a 3-for-4
+  reverse on a $50 option adjusts the deliverable to 75 shares with the strike
+  unchanged, which preserves the aggregate exercise only as strike times
+  multiplier. The forward half waits on the memo, since the older method reduced
+  the strike as well and whether the current one does is what the memo settles.
+  [D-W17] is not amended in either direction until it lands, and D-W36's figures
+  are not reasoned from, their provenance being a search result rather than the
+  memo.
+- **T+1 cash availability.** Unretrieved. Its source is SEC Rule 15c6-1 as
+  amended, and it decides whether a trial can open the next day or the day after.
+- **Early assignment around ex-dividend.** Unretrieved, and it splits: the
+  allocation mechanics have a primary source in OCC's rules, and whether a holder
+  exercises early has none by nature, being that holder's choice. `VALIDITY.md`
+  already names this as modelled by rule, so what is owed is the rule and its
+  source rather than a decision about whether to model it.
+- **Dividend entitlement timing, and whether a dividend enters `ledger_entries`
+  and the buy-and-hold control** [D-W13]. Unretrieved, and the largest of the
+  five, since the answer decides a ledger kind and a control's return. The
+  entitlement half's source is unknown until retrieved; whether a dividend enters
+  the ledger has no external source at all.
+- **What a covered call commits.** Depends on the first three and goes last. No
+  external source: it is a modelling choice about [D-W17]'s committed capital.
+
+**Which of those cite an authority and which are chosen is stated before
+retrieval rather than after**, because that is what stops the last one arriving
+dressed as a fact. It is the distinction 2.4 drew between a transcribed value and
+a chosen one, moved from numbers to mechanics.
+
+**D-W39's second date lands in the schema now rather than at 3.3**, because the
+decision determines it rather than leaving it open. [D-W35] makes `trials` and
+`positions` projections rebuildable from `ledger_entries`, and a projection
+cannot carry what its source lacks, so `known_on` is deduced onto the ledger
+rather than chosen for it, and `positions` does not gain it for the same reason.
+The table is Phase 3's and does not exist, so this is the schema being right
+before it is built rather than a change to one.

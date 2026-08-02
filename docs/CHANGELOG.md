@@ -1,5 +1,44 @@
 # CHANGELOG
 
+## [1.36.0] — 2026-08-01
+
+Checkpoint 3.1 opened. Two of its seven mechanics settled, five open, and the
+branch deliberately unmerged until all seven are. Documentation only; no code,
+no config key, and the suite is unchanged at 503.
+
+### Added
+- **D-W38**: a short option expiring one cent or more in the money against the
+  session's close is assigned, and one closer than that expires worthless.
+- **D-W39**: assignment is determined after a session's close and is not known
+  to the account until the next morning, so no decision made on the day may
+  depend on an assignment that occurred on it.
+- `ledger_entries` gains `known_on`, and §4.3 says why an entry carries the
+  session it occurred in beside the session the account could act on it.
+- Two fixtures registered against 3.3, where the transitions land. 3.1 registers
+  none against itself and its detail says so.
+
+### Notes
+- **3.1's requirement of OCC's own rules is met by disclosure rather than by
+  claim.** Both decisions cite the Options Industry Council under a heading that
+  names it, and D-W38 states what the source does not establish: the one-cent
+  threshold is a procedure between OCC and its clearing members rather than a
+  rule binding an account, which Rule 805's own interpretation says as much.
+- **`theocc.com` and `infomemo.theocc.com` return 403 to the build environment
+  and `sec.gov` serves the filings**, measured rather than assumed. So primary
+  rule text is reachable and the contract adjustment memos are not, which is why
+  committed capital's quantity stays open and [D-W17] is unamended.
+- **The knowledge column is deduced, not chosen.** [D-W35] makes `trials` and
+  `positions` projections rebuildable from the ledger, and a projection cannot
+  carry what its source lacks, so D-W39's second date has exactly one place it
+  can live. Landing it now costs a column in a table that does not exist yet;
+  landing it at 3.3 would cost the transitions that were built without it.
+- **Which open items cite an authority and which are chosen is recorded before
+  retrieval, not after.** Two have a primary source, one has none by nature, one
+  is unknown until retrieved, and two are this corpus's own modelling choices.
+  That is 2.4's distinction between a transcribed value and a chosen one, moved
+  from numbers to mechanics, and it is what stops the last one arriving dressed
+  as a fact.
+
 ## [1.35.0] — 2026-08-01
 
 Phase 3's checkpoint detail. Documentation only; no code, no schema, no config
