@@ -91,8 +91,8 @@ walk-forward run inherits whatever assumption was made and cannot validate it.
 Only live execution could, and this lab does not execute.
 
 **Early exercise.** End-of-day data does not show intraday exercise. Assignment is
-modelled by rule, principally at expiry and around ex-dividend for short calls,
-and the model is an approximation whose error is unmeasured.
+modelled by rule, principally at expiry and around ex-dividend for short calls
+[D-W38, D-W42], and the model is an approximation whose error is unmeasured.
 
 **Regime generality.** With a handful of walk-forward folds in one volatility
 regime, any conclusion is conditional on that regime. The lab cannot claim a
