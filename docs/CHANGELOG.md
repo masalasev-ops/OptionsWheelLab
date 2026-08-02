@@ -1,5 +1,33 @@
 # CHANGELOG
 
+## [1.37.1] — 2026-08-02
+
+The marker sweep 3.1's sign-off should have run. Raised immediately after that
+merge and belonging to no checkpoint, so it lands after rather than inside it, on
+v1.31.1's and v1.34.1's precedent. Documentation only, 503 tests unchanged.
+
+### Fixed
+- **Phase 3 read `not built` with 3.1 built and signed off.** It now reads partly
+  built and says which checkpoint that is, and that no code exists for the phase,
+  since a phase marker that only tracks whether anything has happened cannot
+  distinguish a phase whose decisions are settled from one nobody has started.
+- **`DATA_AND_SCHEMA.md` assigned §4.3 wholly to Phase 4.** `trials`, `positions`
+  and `ledger_entries` land at 3.3 and only `decisions` and `candidates` are
+  Phase 4's. The section splits across two phases, which was true the moment
+  Phase 3's detail was authored at v1.35.0 and unnoticed through the checkpoint
+  that edited that very section.
+
+### Notes
+- **The sweep is part of sign-off whether or not the sign-off names it.** 2.5
+  established it and found three stale markers; 3.1 recorded the practice in the
+  archive's lessons two commits before signing off and then closed on the acts it
+  had been given without running it. A practice recorded but not triggered is
+  worth less than one nobody wrote down, because the record makes it look
+  covered.
+- **The registry's marker was checked and holds.** Forty-three entries against
+  0.2 to 2.5 are implemented, being forty-one fixtures and two guards, counted
+  rather than carried; 3.1's six new rows sit at 3.3 and implement nothing.
+
 ## [1.37.0] — 2026-08-02
 
 **Checkpoint 3.1**, the mechanics settled before the machine. Seven questions

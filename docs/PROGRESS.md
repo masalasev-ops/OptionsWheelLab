@@ -6,7 +6,7 @@ Appended to, never rewritten. The repository is the authority on build state.
 
 **Phase 0 complete and reviewed. Phases 1 and 2 complete. Phase 3 started.**
 Checkpoints 0.1 to 0.8, 1.1 to 1.5, 2.1 to 2.5 and 3.1 built and signed off. 3.2
-to 3.5 are not started. The documentation corpus is at v1.37.0.
+to 3.5 are not started. The documentation corpus is at v1.37.1.
 
 ## Log
 
@@ -1392,3 +1392,20 @@ quotation is not evidence until its position in the document is established,
 which is this corpus's citation rule one level deeper than it had been applied;
 and that a checkpoint writing no code can still change the schema, because the
 deduction comes from a decision rather than from a rule.
+
+### 2026-08-02 — corpus v1.37.1
+**The marker sweep 3.1's sign-off should have run.** Two markers were stale.
+Phase 3 read not built with 3.1 signed off, and `DATA_AND_SCHEMA.md` assigned
+§4.3 wholly to Phase 4 when `trials`, `positions` and `ledger_entries` land at
+3.3. The second was true from v1.35.0, when Phase 3's detail was authored, and
+survived the checkpoint that edited that section.
+
+**The registry's marker holds**, counted rather than carried: forty-three entries
+against 0.2 to 2.5 implemented, forty-one fixtures and two guards. Every other
+marker in the corpus was read and is accurate.
+
+**A practice recorded but not triggered is worth less than one nobody wrote
+down**, because the record makes it look covered. 2.5 established this sweep and
+found three; 3.1 wrote it into the archive's lessons two commits before sign-off
+and then closed on the acts it had been handed. What makes a sweep run is being
+part of the sign-off, not being described in a document the sign-off produces.

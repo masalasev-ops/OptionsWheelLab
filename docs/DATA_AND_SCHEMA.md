@@ -8,8 +8,11 @@ values of `right` are implemented at 0.4.
 triggers and indexes. §4.2 is implemented at 1.3, its shape settled by D-W35 as
 transitions; §2's corporate-action paragraph is implemented at 1.5, its
 identity paragraph corrected and implemented there too [D-W36]. The rest is
-specification: decisions and trials Phase 4, scores Phase 5, pre-registration
-Phase 9.
+specification, and §4.3 splits across two phases rather than falling to one:
+`trials`, `positions` and `ledger_entries` at 3.3, `decisions` and `candidates`
+Phase 4, scores Phase 5, pre-registration Phase 9. `ledger_entries` gained
+`known_on` at 3.1 while still specification, deduced from [D-W35] rather than
+built.
 
 ## 1. Sources
 

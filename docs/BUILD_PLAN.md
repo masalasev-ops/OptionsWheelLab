@@ -1283,11 +1283,12 @@ obligation rows now point at each other.
 
 ## Phase 3 — Thin slice: one full wheel turn
 
-Build state: **not built**. Delivers one trial from cash to cash: a put
-sold, assignment or expiry, shares held, calls written, called away or
-closed at the roll bound, with every cash movement in the ledger and the
-trial and position rebuildable from it. On synthetic chains; no vendor data
-until Phase 8.
+Build state: **partly built**. 3.1 built and signed off, settling the mechanics
+as decisions; 3.2 to 3.5 not started, and no code exists for this phase. Delivers
+one trial from cash to cash: a put sold, assignment or expiry, shares held, calls
+written, called away or closed at the roll bound, with every cash movement in the
+ledger and the trial and position rebuildable from it. On synthetic chains; no
+vendor data until Phase 8.
 
 Several of the obligations owed here determine what the state machine does
 rather than sitting inside it, and those are settled at 3.1 before any
