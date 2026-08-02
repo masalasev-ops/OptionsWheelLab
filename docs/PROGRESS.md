@@ -1246,6 +1246,17 @@ text where `federalregister.gov`'s full-text path returns a bot wall. That is ho
 D-W38's citation moved from a characterisation of Rule 805 to the filing that set
 it, which is the one thing 3.1 had recorded as unverifiable from here.
 
+**The authority covers the clearing layer and the account layer is convention.**
+Three mechanics now show it. OCC's one-cent threshold runs between OCC and its
+clearing members and does not bind an account; OCC assigns exercise notices to a
+Clearing Member while Rule 804 leaves the choice of writer to that member's own
+fixed procedures, with the method deliberately outside Rule 803 since
+SR-OCC-95-16 removed it; and no rule fixes when a customer is told. So a decision
+that spans both layers cites two authorities or states that it has one, and the
+lab's account-level behaviour is a model recorded as a model rather than a rule
+transcribed. That is the same disclosure in three places, and it is what the
+sourcing requirement buys that a secondary description would have hidden.
+
 - **Committed capital's quantity.** The reverse-split half is settled: a 3-for-4
   reverse on a $50 option adjusts the deliverable to 75 shares with the strike
   unchanged, which preserves the aggregate exercise only as strike times

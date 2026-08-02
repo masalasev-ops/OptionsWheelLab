@@ -974,12 +974,34 @@ session D and is not known to the account until the morning of the next
 business day. No decision made on D may depend on an assignment that
 occurred on D.
 
-Source. Retrieved 2026-08-01 from the Options Industry Council's assignment
-reference: assignments are determined based on net positions after the close
-of the market each day, so a short position bought back before the close
-cannot be assigned that day. OCC's nightly processing allocates exercises to
-clearing members in the early hours, and clearing members allocate to their
-customers in their own nightly processing before the next session opens.
+Source, the clearing layer. Rule 803 assigns exercise notices to Clearing
+Members in respect of positions in a particular account, or a particular
+sub-account where an account is divided, which is its Interpretation .01. The
+method is deliberately outside the rule: SR-OCC-95-16 amended Rule 803 to
+eliminate the reference to random selection as the means OCC uses, and states
+that the assignment procedures "will be a stated policy, practice, or
+interpretation of proposed OCC Rule 803 and will not be set forth in Rule 803"
+(Release No. 34-36453, File No. SR-OCC-95-16, 60 FR 56625, 9 November 1995).
+Neither does any rule reached here state that assignment is determined against
+net positions after the close of the market each day, so that a short position
+bought back before the close cannot be assigned that day; that is retrieved
+2026-08-01 from the Options Industry Council's assignment reference, as is the
+description of OCC allocating to clearing members in the early hours.
+
+Source, the account layer. Rule 804 requires each Clearing Member to establish
+fixed procedures for allocating assigned exercises to specific short positions,
+"in accordance with the requirements set forth in Exchange Rules and any
+applicable rules of any self-regulatory organization of which the Clearing
+Member is a member", and its reporting provision names each writer to whom the
+member allocated an exercise assigned "on the preceding business day". So the
+member's own procedures govern which account is assigned, and no OCC rule fixes
+when a customer is told: the next-business-day shape is what that reporting
+deadline assumes rather than what any rule requires. Retrieved 2026-08-01 from
+Exhibit 5B of File No. SR-OCC-2024-013.
+
+The lab models the common case of next-session notification and records that
+the timing is a broker's procedure rather than a rule, which is the disclosure
+D-W38 makes about the one-cent threshold not binding an account.
 
 Rationale, and it is [D-W8] applied to the account rather than to the market.
 A maker that reacted to its own assignment on the day it happened would be
