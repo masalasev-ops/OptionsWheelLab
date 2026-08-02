@@ -15,11 +15,11 @@ predates this file and cannot be relied on.
 ## Topical index
 
 **Purpose and measurement**: D-W2, D-W3, D-W5, D-W17, D-W18, D-W20, D-W21
-**Isolation and controls**: D-W1, D-W4, D-W6, D-W13
+**Isolation and controls**: D-W1, D-W4, D-W6, D-W13, D-W41
 **Data and identity**: D-W7, D-W8, D-W9, D-W15, D-W26, D-W27, D-W28, D-W29, D-W30, D-W31, D-W32, D-W34, D-W35, D-W36, D-W39
 **Risk**: D-W10, D-W11, D-W14, D-W19, D-W23, D-W25, D-W37
 **Gate constraints**: D-W10, D-W22, D-W23, D-W24, D-W25
-**Settlement mechanics**: D-W38, D-W39
+**Settlement mechanics**: D-W38, D-W39, D-W40, D-W41, D-W42
 **Scope**: D-W12, D-W16
 **Verification mechanisms**: D-W28, D-W33
 
@@ -1029,3 +1029,117 @@ what was known when, and one date cannot answer both questions.
 
 Test FX-AssignmentKnownNextSession: a decision on the day of assignment sees
 the pre-assignment state, and the following session sees the shares.
+
+---
+
+### D-W40 Proceeds from an assignment or a call-away are usable the next session
+`active` · 2026-08-02
+
+Cash and shares from an assignment or a call-away settle on the first business
+day after the session the exercise occurred in. That is the session the account
+first learns of the assignment [D-W39], so a trial may commit the proceeds on
+the session it learns of them and not before.
+
+Source, the settlement cycle. Rule 15c6-1(a) as amended requires that a broker
+"not effect or enter into a contract for the purchase or sale of a security ...
+that provides for payment of funds and delivery of securities later than the
+first business day after the date of the contract", with a compliance date of
+28 May 2024. Release No. 34-96930, File No. S7-05-22, 88 FR 13872, 6 March 2023.
+Retrieved 2026-08-02.
+
+Source, the exercise leg. An exercise is a clearing event rather than a purchase
+or sale, so the cycle above does not reach it and OCC's own rule does. The order
+approving OCC's conforming changes records that, for transactions settling on a
+broker-to-broker basis, OCC changed "the delivery date for physically-settled
+options under OCC Rule 903 from the 'second' to the 'first' business day
+following exercise", implemented on the Commission's compliance date. Release
+No. 34-99701, File No. SR-OCC-2024-002, 89 FR 18685, 14 March 2024. Retrieved
+2026-08-02.
+
+What neither reaches. When a broker makes settled proceeds available to trade
+against is house policy and margin treatment rather than a settlement cycle, and
+no rule fixes it. The lab models proceeds as usable on the settlement session and
+records that as a model, which is the disclosure [D-W38] makes about the one-cent
+threshold and [D-W39] about notification.
+
+Scope. "The first business day after" needs a session calendar and this lab has
+none. The only session sequence in the store is `underlying_bars.session_date`,
+which is per symbol and cannot distinguish a market holiday from a name that did
+not trade. What that calendar is, and whether it is derived or stored, is owed at
+3.3 rather than settled here.
+
+Nothing reads this yet, and saying so is cheaper than leaving it to be found.
+Committed capital is bounded against equity rather than against settled cash
+[D-W11], so no maker asks whether cash has cleared. The mechanic is recorded
+because the state machine needs it the first time a trial opens on the session
+after a close, not because a path consumes it today.
+
+Test FX-ProceedsUsableOnSettlement: a trial closed by assignment cannot commit
+its proceeds on the session of the assignment and can on the following session.
+
+---
+
+### D-W41 Dividend entitlement is fixed at the record date, and a dividend is ledgered
+`active` · 2026-08-02
+
+A holder entitled to a dividend is one holding the shares before the ex-dividend
+date, which under a one-day settlement cycle is the record date itself. A
+dividend received while a trial holds assigned shares is recorded in
+`ledger_entries`, and the buy-and-hold control receives its dividends on the same
+basis [D-W13].
+
+Two questions, and only the first has an authority.
+
+Source, the entitlement. FINRA Rule 11140(b)(1) as amended: the date designated
+as the "ex-dividend date" "would be the record date if the record date falls on a
+business day, or the first business day preceding the record date if the record
+date falls on a day designated by the Committee as a non-delivery date". Filed
+for immediate effectiveness with an operative date of 28 May 2024. Release No.
+34-99075, File No. SR-FINRA-2023-017, 88 FR 85678, 8 December 2023. Retrieved
+2026-08-02.
+
+What no rule reaches, and the lab decides. Whether a dividend enters the record
+at all is this corpus's question rather than a market's. It does, in both places:
+a dividend paid between assignment and call-away is cash the trial received, and
+recording it against the trial while leaving the control's return untouched would
+bias the exact comparison the lab exists to make, in one direction. Chosen, not
+transcribed.
+
+Three things this needs and none of them lands here. `ledger_entries.kind` needs
+a `dividend` value; `CorporateActionKind` is `Split` only and names this decision
+in its own remarks; and the synthetic-chain format carries no corporate actions
+at all, so no hand-written scenario can express a dividend today. Naming them is
+what this decision owes the checkpoint that adds them.
+
+Test FX-DividendReachesLedger: a dividend whose ex-date falls while a trial holds
+assigned shares produces a ledger entry, and one whose ex-date falls after the
+shares were called away does not. The control's half is asserted where the
+control is built, which is not Phase 3.
+
+---
+
+### D-W42 Early exercise around ex-dividend is modelled, and nothing is cited
+`active` · 2026-08-02
+
+A short call is assigned on the session before the ex-dividend date when the
+dividend exceeds the call's remaining time value. No other early assignment is
+modelled.
+
+The absence is the source. Whether the holder of a long call exercises it early
+is that holder's decision, and no rule governs the making of it. OCC Rule 803
+assigns an exercise notice to a Clearing Member once one is made and Rule 804
+leaves the allocation to that member's own fixed procedures [D-W39]; both
+describe what happens after a choice this lab cannot observe. So this decision
+cites nothing, which is a different thing from citing weakly.
+
+The condition is chosen, not transcribed. A holder who exercises early captures
+the dividend and gives up the option's remaining time value, so the exchange is
+worth making when the first exceeds the second. That is the standard reasoning
+and it is an approximation: it assumes a holder who acts on it, ignores what
+acting costs, and could not see intraday exercise in end-of-day data in any case.
+`VALIDITY.md` records the error as unmeasured and this decision does not improve
+on that.
+
+Test FX-EarlyAssignmentOnDividend: a short call whose underlying goes ex-dividend
+by more than the call's remaining time value is assigned on the preceding
+session, and one where the time value is larger is not.
