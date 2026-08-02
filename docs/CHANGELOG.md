@@ -17,6 +17,23 @@ no config key, and the suite is unchanged at 503.
 - Two fixtures registered against 3.3, where the transitions land. 3.1 registers
   none against itself and its detail says so.
 
+### Fixed
+- **[D-W17]'s third paragraph asserted the metric uses the deliverable and
+  located it in `contracts.multiplier`, which is neither the right quantity nor
+  the right column.** Added at 0.4 with corpus v1.9.9, it stood for fifteen
+  checkpoints, produced the v1.18.0 obligation reasoning from a method retired
+  in February 2007, and shaped `CommittedCapital.For` at 2.4. It was written by
+  the corpus author, twice defended from secondary sources that described the
+  retired method as current, and closed only by reading the filing that retired
+  it. Committed capital is strike times the multiplier in every case.
+- **The v1.18.0 obligation closes.** It reasons from footnote 6's arithmetic,
+  which was correct until February 2007 and describes a retired method. Its
+  proposed alternative, a stated aggregate per adjustment needing its own
+  column, is unnecessary: the multiplier already carries it. Thirteen stays
+  thirteen: that row leaves and `CommittedCapital.For`'s correction at 3.3
+  takes its place, because settling a question and changing the code it
+  governs are different pieces of work.
+
 ### Notes
 - **3.1's requirement of OCC's own rules is met by disclosure rather than by
   claim.** Both decisions cite the Options Industry Council under a heading that
@@ -38,6 +55,11 @@ no config key, and the suite is unchanged at 503.
   That is 2.4's distinction between a transcribed value and a chosen one, moved
   from numbers to mechanics, and it is what stops the last one arriving dressed
   as a fact.
+- **The footnote that appeared to settle the adjustment question settles the
+  opposite**, because it sits in the Background describing what the filing
+  exists to replace. A quotation is not evidence until its position in the
+  document is established, which is the citation rule one level deeper than
+  where this corpus has been applying it.
 - **Two claims about this corpus were made from recollection and a read
   contradicted both**: that §4 marks non-nullability, when no column in the
   document does, and that 1.1 had corrected `vendor_symbol`, which was

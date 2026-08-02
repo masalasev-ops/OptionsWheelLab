@@ -256,7 +256,7 @@ absent from watchlist membership as of that date.
 ---
 
 ### D-W17 Outcome metric: denominator and horizon
-`active` · 2026-07-26
+`active` · 2026-07-26, amended 2026-08-02 (the multiplier, sourced)
 
 The outcome of a decision is return on capital committed at the strike, being
 strike times the contract multiplier times contracts, measured from trial open
@@ -265,10 +265,23 @@ through to return to cash, with assigned shares marked into the same number.
 Consequence: assignment is inside the metric rather than outside it, so the
 strategy's downside cannot leave the measurement.
 
-One hundred is the standard multiplier and not a constant of the metric. An
-adjusted contract carries its own deliverable in `contracts.multiplier`, so a
-metric hardcoding one hundred would misprice every position in a name that has
-split.
+One hundred is the contract multiplier, and no adjustment changes it. OCC's
+By-Laws once specified two methods, one of which reduced the strike and raised
+the deliverable together: a 3-for-2 took a $60 option calling for 100 shares to
+a $40 strike calling for 150. Those methods produced rounding windfalls and were
+retired. Under the method in force, an adjustment moves the deliverable and not
+"the strike prices or the values used to calculate aggregate exercise prices and
+premiums", so the same 3-for-2 leaves a $50 option at $50 with a 150-share
+deliverable, and an exercising call holder "would continue to pay $50 times
+100". The same applies to reverse splits. So committed capital is strike times
+the multiplier in every case, and a metric reading the deliverable would
+misprice every adjusted position, which is the error this paragraph previously
+asserted.
+
+Source: Release No. 34-54748, File No. SR-OCC-2006-01, 71 FR 67415,
+21 November 2006, for the proposed method and the retired ones; approved by
+Release No. 34-55258, File No. SR-OCC-2006-01, 72 FR 7701, 16 February 2007.
+Retrieved 2026-08-02.
 
 Test: `WORKED_EXAMPLE.md` reproduces the figure to the cent.
 
