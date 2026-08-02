@@ -1239,6 +1239,13 @@ OCC and its clearing members rather than binding an account.
 the filings, so primary rule text arrives through SEC rule filings and the
 contract adjustment memos do not arrive at all. Five items stay open.
 
+**A second route, recorded because it reached what the first could not.** A rule
+whose text no SEC filing exhibit reproduces can still be read in the Federal
+Register notice that approved it, and `govinfo.gov` serves those as GPO's own
+text where `federalregister.gov`'s full-text path returns a bot wall. That is how
+D-W38's citation moved from a characterisation of Rule 805 to the filing that set
+it, which is the one thing 3.1 had recorded as unverifiable from here.
+
 - **Committed capital's quantity.** The reverse-split half is settled: a 3-for-4
   reverse on a $50 option adjusts the deliverable to 75 shares with the strike
   unchanged, which preserves the aggregate exercise only as strike times
