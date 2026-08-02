@@ -644,7 +644,6 @@ to differ.
 | 3.3 | Correct `CommittedCapital.For` to strike times multiplier, per [D-W17] as amended. 2.4 read the deliverable as the only quantity in reach and named 3.1 as the checkpoint that would decide; it decided the other way. Its own reasoning was that the choice sits in one place so Phase 3 changes one site, and this is that site. Every current contract carries one hundred as both quantities, so no test distinguishes them today and none will until an adjusted contract is gated. Raised at 3.1. | v1.36.0 |
 | 3.3 | Give the record a dividend to hold, per [D-W41]. `ledger_entries.kind` needs a `dividend` value, `CorporateActionKind` is `Split` only and names that decision in its own remarks, and the synthetic-chain format carries no corporate actions at all, so no hand-written scenario can express one. Whether `corporate_actions` gains a CHECK the way `right` and membership's `kind` have one rides with it. Raised at 3.1, where the decision named all three rather than adding any. | v1.36.0 |
 | 3.3 | Decide what a session calendar is, since [D-W40] resolves settlement to "the first business day after" and nothing in this lab can answer that. The only session sequence in the store is `underlying_bars.session_date`, which is per symbol and cannot distinguish a market holiday from a name that did not trade. Whether the calendar is derived from bars or stored is the question; Phase 8's vendor ingest is the other consumer. Raised at 3.1. | v1.36.0 |
-| 3.2 | Run a domain-completeness pass before the state machine's decisions are authored, and record what it finds. Every check this repository has compares one part of the corpus against another, so an omission from the domain model is invisible to all of them: dividends were absent from `ledger_entries` and from D-W13's control for eight checkpoints, and surfaced from a conversation rather than from any process. The pass walks a wheel turn end to end against the corpus and asks what the strategy involves that no document mentions: cash movements between assignment and call-away, what a trial's economics include, what an account holds that the ledger does not name. Findings become their own rows. Raised at 1.5, after the dividend gap showed the class exists. | v1.26.0 |
 
 ---
 
@@ -1286,8 +1285,9 @@ obligation rows now point at each other.
 
 ## Phase 3 — Thin slice: one full wheel turn
 
-Build state: **partly built**. 3.1 built and signed off, settling the mechanics
-as decisions; 3.2 to 3.5 not started, and no code exists for this phase. Delivers
+Build state: **partly built**. 3.1 and 3.2 built and signed off, settling the
+mechanics as decisions and running the completeness pass; 3.3 to 3.5 not started,
+and no code exists for this phase. Delivers
 one trial from cash to cash: a put sold, assignment or expiry, shares held, calls
 written, called away or closed at the roll bound, with every cash movement in the
 ledger and the trial and position rebuildable from it. On synthetic chains; no
@@ -1364,11 +1364,43 @@ conversation rather than a process.
   involves that no document mentions. Cash movements between assignment and
   call-away, what a trial's economics include, what an account holds that the
   ledger does not name.
-- Findings become obligations or 3.1 decisions, and the pass runs before 3.3
+- Findings become obligations or decisions, and the pass runs before 3.3
   rather than after, because a missing concept is cheapest before the
   transitions exist.
 - **DoD**: the pass is recorded with what it examined, not only with what it
   found. A pass that found nothing is evidence only if its scope is stated.
+
+Reconciled at sign-off against what shipped. The clause above said "obligations
+or 3.1 decisions" and was written while 3.1 was ahead; it signed off first, so a
+settled finding takes its own D-W number here and the clause is corrected to say
+so. Six findings, three settled as decisions and three raised as obligations.
+
+**The pass had to compare the corpus against something outside it, which its own
+argument forces.** If every check this repository has is corpus against corpus,
+so is a survey that reads the corpus and asks whether it looks complete. Four of
+the five axes were walked against OCC's own enumeration of the events that adjust
+a contract, retrieved on 3.1's routes; the fifth had no external authority, since
+nothing governs what a laboratory chooses to measure, and that is recorded as the
+reason rather than left as a gap in the method.
+
+**The scope was committed before the walk, and each axis is recorded whether or
+not it found anything.** Both are the same discipline: a record written
+afterwards cannot show that it preceded what it describes, and five axes reporting
+two findings would leave a record silent on three. An axis that found nothing is
+the only evidence it was walked at all.
+
+**The dividend was one word in this corpus and two events in the market.** An
+ordinary dividend pays cash; a non-ordinary one adjusts the contract by calling
+for delivery of the dividend [D-W44]. That narrowed [D-W42], authored the day
+before, to unadjusted dividends, because a holder who receives the dividend
+through the deliverable has no reason to exercise early. A pass run after 3.3
+would have found it against transitions already written.
+
+**The passage that looks like the answer was the retired rule again.** The 10%
+Rule defines an ordinary dividend by size and sits in the Background of the
+filing that replaced it with a test of regularity. Second occurrence in two
+checkpoints, and the reason the lesson from 3.1 is stated as a rule about
+position in a document rather than as a fact about one filing.
 
 ### 3.3 The state machine and the ledger
 Four states as a discriminated union, daily events driving transitions

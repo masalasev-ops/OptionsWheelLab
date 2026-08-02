@@ -5,9 +5,8 @@ Appended to, never rewritten. The repository is the authority on build state.
 ## Current state
 
 **Phase 0 complete and reviewed. Phases 1 and 2 complete. Phase 3 started.**
-Checkpoints 0.1 to 0.8, 1.1 to 1.5, 2.1 to 2.5 and 3.1 built and signed off.
-**3.2 is in progress**, 3.3 to 3.5 are not started. The documentation corpus is
-at v1.38.0.
+Checkpoints 0.1 to 0.8, 1.1 to 1.5, 2.1 to 2.5, 3.1 and 3.2 built and signed
+off. 3.3 to 3.5 are not started. The documentation corpus is at v1.39.0.
 
 ## Log
 
@@ -1585,3 +1584,40 @@ underlyings with the same capital over the same window, and a hold-cash floor.
 Nothing. The walk stayed inside the scope as committed, and the axes that reach
 Phase 8's vendor ingest and the learner were stopped at that boundary rather than
 followed.
+
+### 2026-08-02 — corpus v1.39.0
+**Checkpoint 3.2 signed off.** The completeness pass ran over five axes and found
+six things, three settled here and three raised. D-W44 splits the dividend into
+the two events the market has, D-W45 puts tax outside the lab and says so, and
+[D-W42] is narrowed to unadjusted dividends a day after it was written.
+
+**What the pass was, as distinct from what it found.** Its scope was committed
+before the walk, in its own commit, so the order is checkable rather than
+asserted. Every axis is recorded whether or not it produced a finding, because an
+axis that found nothing is the only evidence it was walked. Four axes were walked
+against OCC's own enumeration of the corporate actions that adjust a contract;
+the fifth had no external authority and says so, since nothing governs what a
+laboratory chooses to measure. The survey committed before any decision did.
+
+**The finding that justifies the ordering.** [D-W44] narrowed [D-W42], authored
+the day before, because a holder who receives a dividend through an adjusted
+deliverable has no reason to exercise early to capture it. Run after 3.3 the pass
+would have found that against transitions already written, which is the argument
+the phase's preamble makes and the first time this project has watched it pay.
+
+**The retired rule looked like the answer for the second checkpoint running.**
+The 10% Rule defines an ordinary dividend by size, and sits in the Background of
+the filing that replaced size with regularity. That is why 3.1's lesson is stated
+as a rule about a quotation's position in a document rather than as a fact about
+one filing.
+
+**The marker sweep ran as an act of sign-off**, which is what 3.1 recorded and did
+not do. Seventeen markers read, one stale, and it was Phase 3's own: it named 3.1
+alone. The registry's holds at forty-three implemented entries against 0.2 to
+2.5, counted rather than carried, since 3.2 registered one row at 3.3 and
+implemented nothing.
+
+**The table stands at fourteen rows**, seven at checkpoint granularity and seven
+at phase. 3.2 closed its own and raised three: the state machine's event set at
+3.3, a deliverable that is shares plus cash at Phase 8, and whether cash earns at
+Phase 5.
