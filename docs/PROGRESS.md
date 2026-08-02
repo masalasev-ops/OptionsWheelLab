@@ -5,8 +5,9 @@ Appended to, never rewritten. The repository is the authority on build state.
 ## Current state
 
 **Phase 0 complete and reviewed. Phases 1 and 2 complete. Phase 3 started.**
-Checkpoints 0.1 to 0.8, 1.1 to 1.5, 2.1 to 2.5 and 3.1 built and signed off. 3.2
-to 3.5 are not started. The documentation corpus is at v1.37.1.
+Checkpoints 0.1 to 0.8, 1.1 to 1.5, 2.1 to 2.5 and 3.1 built and signed off.
+**3.2 is in progress**, 3.3 to 3.5 are not started. The documentation corpus is
+at v1.38.0.
 
 ## Log
 
@@ -1409,3 +1410,58 @@ down**, because the record makes it look covered. 2.5 established this sweep and
 found three; 3.1 wrote it into the archive's lessons two commits before sign-off
 and then closed on the acts it had been handed. What makes a sweep run is being
 part of the sign-off, not being described in a document the sign-off produces.
+
+### 2026-08-02 — corpus v1.38.0
+**Checkpoint 3.2 opened. This entry is the completeness pass's scope, and it is
+written and committed before the walk.** The definition of done requires the
+pass to be recorded with what it examined and not only with what it found, and a
+scope written afterwards is a reconstruction. Committing it first is the only
+thing that makes the order checkable rather than asserted, which is the same
+argument that made 3.1's marker sweep worthless when it existed as a lesson
+rather than as an act.
+
+**The method has to compare the corpus against something outside it.** The
+obligation's own argument is that every check this repository has compares one
+part of the corpus against another, so an omission from the domain model is
+invisible to all of them. A pass that reads the corpus and asks whether it looks
+complete is another such check. Each axis is therefore walked against an external
+enumeration where one exists, and against first principles where none does, with
+the source named per axis and stated as which of the two it was.
+
+**Five axes, and each will be recorded whether or not it produces a finding.** An
+axis that produces nothing is the more valuable record, because it is the only
+evidence that the axis was walked at all: a finding proves the walk by existing,
+and an absence proves nothing unless it is written down. That is the vacuity
+guard this repository puts on every scanning check, applied to a pass.
+
+| Axis | What the corpus holds | Walked against |
+|---|---|---|
+| States and events | four states and six events [`SYSTEM_DESIGN.md` §3.8] | OCC's adjustment provisions and the filings retrieved at 3.1 |
+| Cash movements | premium, assignment, call-away, commission, assignment fee, dividend | the filings' own cash language, then first principles |
+| What an account can hold | cash, shares, a short put, a short call; `deliverable_shares` as an integer on identity [1.5] | the adjustment method in force |
+| What a trial's return includes | [D-W17], [D-W18], [D-W12] and [D-W41] | first principles, no external authority |
+| The two controls | buy-and-hold and the hold-cash floor [D-W13] | first principles |
+
+**Scope, stated in both directions.** In: the turn's states and events, every
+cash movement, what an account can hold, what a trial's return includes, and both
+controls. Out, each because it is a phase whose own detail is unwritten and a
+pass over unwritten intent surveys nothing: the learner, the walk-forward
+boundary, pre-registration, the UI, and Phase 8's vendor ingest.
+
+**Why the controls are in and the turn alone is not enough.** The wheel turn by
+itself would not have caught the dividend gap, which was a hole in [D-W13]'s
+control as much as in `ledger_entries`, and that gap is the founding instance of
+the class this pass exists for. A scope that misses its own founding example is
+the wrong scope.
+
+**Anything the walk turns up outside this scope is recorded as out of scope and
+raised, never absorbed.** A scope that grew to fit what was found is not a scope.
+
+**Each finding will be classified as it is recorded.** Settleable inside 3.2 when
+the corpus can answer it from what it already holds, being a decision, a schema,
+or an arithmetic consequence of either. An obligation when the answer needs an
+external source, depends on work not yet built, or is a modelling choice large
+enough to deserve its own argument. 3.1's mechanics were all of the second kind,
+which is what made it a retrieval checkpoint. Recording which kind each finding
+is, rather than only what it is, is what stops "settled" meaning "answerable from
+what happened to be to hand".
