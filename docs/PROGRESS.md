@@ -1465,3 +1465,123 @@ enough to deserve its own argument. 3.1's mechanics were all of the second kind,
 which is what made it a retrieval checkpoint. Recording which kind each finding
 is, rather than only what it is, is what stops "settled" meaning "answerable from
 what happened to be to hand".
+
+### 2026-08-02 — corpus v1.38.0, the walk
+**The completeness pass, walked against the scope committed above.** All five
+axes are recorded, including those that produced nothing, because an axis with no
+finding is the only evidence that it was walked. No decision is authored in this
+entry; the findings are classified and the decisions follow.
+
+**The external enumeration, retrieved 2026-08-02 from GPO.** OCC states the
+events that adjust a contract: "Certain corporate actions -- such as declaration
+of dividends or distributions, stock splits, rights offerings, reorganizations,
+or the merger or liquidation of an issuer -- affecting an underlying security may
+require an adjustment to the terms of the overlying options" (Release No.
+34-69642, File No. SR-OCC-2013-05, 78 FR 33138, 3 June 2013). The substantive
+rules are By-Laws Article VI Section 11A and the procedural ones Section 11.
+
+#### Axis 1, states and events. Three findings.
+
+Walked against that enumeration. The corpus names four states and six events:
+expiry, assignment, exercise, dividend, split, earnings [`SYSTEM_DESIGN.md`
+§3.8].
+
+- **The event vocabulary is short by five.** Rights offerings, reorganizations,
+  mergers, liquidations and spin-offs adjust a contract and no document in this
+  corpus names any of them. `CorporateActionKind` holds `Split` alone.
+  **Obligation**: each is a modelling choice about what a trial does when its
+  underlying stops being the thing the trial opened against, and that is larger
+  than an omission to close here.
+- **Ordinary and special dividends are one concept in this corpus and two in the
+  market, with opposite consequences.** An ordinary cash dividend pays the holder
+  and does not adjust the contract. A non-ordinary one adjusts it, "by calling
+  for the delivery of the dividend". Under the rule in force a dividend is
+  ordinary regardless of size when "declared pursuant to a policy or practice of
+  paying such dividends or distributions on a quarterly or other regular basis",
+  and as a general rule one below $12.50 per contract does not trigger adjustment
+  at all (Release No. 34-54748, File No. SR-OCC-2006-01, 71 FR 67415, 21 November
+  2006, approved at Release No. 34-55258, 72 FR 7701, 16 February 2007).
+  **Settleable**: [D-W41] decided that a dividend is ledgered and did not
+  distinguish the two, and the distinction is a consequence of a source already
+  in the corpus.
+- **[D-W42]'s condition is right and its scope is unstated.** Early exercise to
+  capture a dividend is the behaviour OCC's own rationale describes for dividends
+  it does *not* adjust for: "If adjustments are not made in response to special
+  dividends (i.e., by calling for the delivery of the dividend) call holders can
+  capture the dividends only by exercising their options." Where the contract is
+  adjusted the holder receives the dividend through the deliverable and has no
+  reason to exercise early, so the model applies to unadjusted dividends only.
+  **Settleable**: it narrows a decision authored yesterday, from a source
+  retrieved for a different question.
+
+The **10% Rule** was read and rejected as the answer. It defines ordinary by size
+and appears in that filing's Background as the rule the filing exists to revise,
+which is the second time in two checkpoints that the passage which looks like the
+answer is the one being retired.
+
+#### Axis 2, cash movements. One finding, shared with axes 4 and 5.
+
+Walked against the filings' own cash language, then first principles. The corpus
+names premium, the assignment purchase, call-away proceeds, commission, the
+assignment fee and now the dividend.
+
+- **Cash earns nothing in this model and the corpus never says so.** Measured:
+  the word appears three times in the corpus and not once as a financial concept,
+  being `open_interest` as a quote column, "underlying equity interest" inside
+  [D-W38]'s quotation, and "interesting" in the primer. **Obligation**: a rate is
+  an external source and a decision about which one is a modelling choice with
+  its own argument. Recorded under Axis 5 with its consequence, since that is
+  where it bites.
+
+Nothing else was missing. Every other cash movement a wheel turn makes has a name
+in the corpus, which is what the ledger's `kind` column exists to carry.
+
+#### Axis 3, what an account can hold. One finding, and it reaches identity.
+
+Walked against the adjustment method in force.
+
+- **A deliverable can be shares plus cash, and this schema cannot express one.**
+  The method states that a 4-for-3 split of an $80 option gives a deliverable
+  "adjusted to 133 shares plus the cash value of the eliminated fractional share
+  (.3333 x the post-split value of a share of XYZ stock as determined by OCC)",
+  with the strike unchanged (same filing as above). `deliverable_shares` is an
+  integer, it is one of the five components of contract identity [1.5], and
+  nothing anywhere in the corpus or the sources names cash in lieu.
+  **Obligation**: it changes contract identity, which is the one structure this
+  project has been most careful with, and a change there is not a thing to settle
+  inside a survey.
+
+#### Axis 4, what a trial's return includes. One finding, minor.
+
+Walked against first principles; there is no external authority for what a lab
+chooses to measure. [D-W17] fixes the denominator, [D-W18] the horizon, [D-W12]
+the costs, [D-W41] the dividends.
+
+- **Tax is not mentioned anywhere and is presumably out of scope, which is not
+  the same as being out of scope.** **Settleable**: stating an exclusion needs no
+  source, and an unstated exclusion is indistinguishable from an omission, which
+  is this pass's entire subject.
+
+Otherwise the axis produced nothing: every component of a trial's return has a
+decision, and the interest question belongs to Axis 5.
+
+#### Axis 5, the two controls. One finding.
+
+Walked against first principles. [D-W13] runs buy-and-hold on the same
+underlyings with the same capital over the same window, and a hold-cash floor.
+
+- **The absence of interest biases two of the three comparisons in opposite
+  directions, which is why it is a finding rather than a rounding error.** The
+  wheel holds cash securing its puts and the floor holds cash outright, so both
+  are understated by roughly the same amount and their comparison survives.
+  Buy-and-hold holds no cash and is not understated at all, so the comparison the
+  lab exists to make is biased against the wheel by whatever the rate is.
+  **Obligation**: the same one Axis 2 raised, recorded here because this is where
+  its consequence lands, and it is a control gap of the same kind as the dividend
+  gap and in the same decision.
+
+#### Out of scope, raised rather than absorbed
+
+Nothing. The walk stayed inside the scope as committed, and the axes that reach
+Phase 8's vendor ingest and the learner were stopped at that boundary rather than
+followed.
