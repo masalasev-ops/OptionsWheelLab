@@ -17,9 +17,9 @@ predates this file and cannot be relied on.
 **Purpose and measurement**: D-W2, D-W3, D-W5, D-W17, D-W18, D-W20, D-W21
 **Isolation and controls**: D-W1, D-W4, D-W6, D-W13, D-W41
 **Data and identity**: D-W7, D-W8, D-W9, D-W15, D-W26, D-W27, D-W28, D-W29, D-W30, D-W31, D-W32, D-W34, D-W35, D-W36, D-W39
-**Risk**: D-W10, D-W11, D-W14, D-W19, D-W23, D-W25, D-W37
+**Risk**: D-W10, D-W11, D-W14, D-W19, D-W23, D-W25, D-W37, D-W43
 **Gate constraints**: D-W10, D-W22, D-W23, D-W24, D-W25
-**Settlement mechanics**: D-W38, D-W39, D-W40, D-W41, D-W42
+**Settlement mechanics**: D-W38, D-W39, D-W40, D-W41, D-W42, D-W43
 **Scope**: D-W12, D-W16
 **Verification mechanisms**: D-W28, D-W33
 
@@ -1143,3 +1143,36 @@ on that.
 Test FX-EarlyAssignmentOnDividend: a short call whose underlying goes ex-dividend
 by more than the call's remaining time value is assigned on the preceding
 session, and one where the time value is larger is not.
+
+---
+
+### D-W43 A covered call commits nothing beyond the trial's committed capital
+`active` · 2026-08-02
+
+A covered call written against shares a trial already holds commits no further
+capital. The trial's committed capital was fixed when the put was sold [D-W17]
+and the shares are what that capital bought, so the portfolio caps read one
+figure per trial from open to close and it does not change when the leg changes.
+
+Chosen, not transcribed. No authority states this: it is a modelling choice about
+how the lab measures its own exposure, on 2.4's distinction, and the only one of
+3.1's seven mechanics with no external source of any kind.
+
+Why it is the conservative reading rather than the permissive one. The
+alternative charges a call its own committed figure, which would count the same
+capital twice in the same trial and make the per-name cap bind on a leg that ties
+up no cash. The risk a covered call carries is not that it commits capital but
+that it caps recovery below the outlay, and that is [D-W19]'s gross-basis
+constraint rather than a capital cap.
+
+What this does not decide. Whether writing a call reduces the trial's committed
+capital, by the credit received or otherwise, is not addressed: the figure is
+fixed at open and this decision keeps it fixed. And the simultaneous-assignment
+limit reads short puts, so a trial holding shares contributes nothing to it,
+which is why that cap and the total cap coincide today [`CONFIG_REFERENCE.md`,
+`Risk:SimultaneousAssignmentLimitFraction`] and will diverge at the first covered
+call.
+
+Test FX-CoveredCallCommitsNothingFurther: a trial holding assigned shares gates a
+call candidate against the committed capital it already carries, and the per-name
+headroom is unchanged by the call.

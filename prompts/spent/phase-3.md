@@ -1,37 +1,36 @@
-# Phase 2 Candidate generator and risk gate: spent prompts
+# Phase 3 Thin slice, one full wheel turn: spent prompts
 
-**This file is closed.** It closed when `phase-3.md` opened at 3.1's sign-off,
-corpus v1.37.0, and is not corrected further. Its Current state was last brought
-current at v1.35.0 and describes the repository as it stood then, which is what
-it is frozen at rather than what it closed at; the two differ because 3.1 moved
-the corpus twice while changing no code. `phase-3.md` holds the description of
-the present. Phase 0's and Phase 1's files are frozen the same way.
+Current state below is the whole state of the repository and the only description
+of the present. Phase 0's, Phase 1's and Phase 2's files hold the state as it
+stood when the next file opened and are not corrected further.
 
 One prompt per checkpoint, being the prompt that produces the checkpoint as it now
 stands. Corrections found while building are folded back into the checkpoint's
 prompt rather than appended as further entries, so replaying the prompts in order
 against the corpus reproduces the current state without replaying the mistakes.
 
-One file per phase. **This file stayed open past Phase 2's sign-off and closed
-when `phase-3.md` opened**, which is the practice `phase-1.md` already records:
-that file is frozen at v1.30.0, "when `phase-2.md` opened", which was 2.1's
-sign-off rather than Phase 1's close. Closing at sign-off would leave nothing
-describing the present between here and 3.1, which is the defect v1.30.0 fixed in
-this pair of files. This sentence said sign-off until 2.5 and is corrected to what
-the archive does.
+One file per phase. This file opened at 3.1's sign-off, which closed
+`phase-2.md`, on the practice that file records: a phase's archive stays open
+past its own sign-off and closes when the next one opens, because closing at
+sign-off leaves nothing describing the present in between.
 
 ---
 
 # Current state
 
-Corpus v1.35.0.
+Corpus v1.37.0.
 
 | | |
 |---|---|
 | Phase 0 | complete and reviewed, 0.1 to 0.8 built and signed off |
 | Phase 1 | complete, 1.1 to 1.5 built and signed off |
 | Phase 2 | complete, 2.1 to 2.5 built and signed off |
+| Phase 3 | 3.1 built and signed off, 3.2 to 3.5 not started |
 | CI | green, 503 tests, guards then restore then build then test, on push to `main` and every pull request |
+
+**3.1 changed no code**, so every section below except this table, `Owed` and
+`Lessons that transfer` stands as it did at Phase 2's close. The suite is
+unchanged at 503 and the guards scan the same 149 files.
 
 Which branch the work sits on and which pull requests have merged are not recorded
 here. Git holds both exactly, and a fact kept in two places drifts.
@@ -534,8 +533,12 @@ obligations, which is where planning for the phase that owns it will look. It is
 copied here: two registers of one list is how an obligation comes to exist in the one
 nobody reads.
 
-Entries stand against Phase 3, 4, 8, 9 and 11. The count is not restated
-here. **Phase 2 owes nothing.** 2.1 discharged the reconciliation row raised at
+Entries stand against checkpoints 3.2 to 3.5 and against Phases 4, 8, 9 and 11.
+The count is not restated here. **The column now names a checkpoint once the
+owning phase's detail exists and a phase otherwise**, stated at the table
+because two readings of it disagreed: a count over phase names alone misses the
+rows that have moved on. **3.1 owes nothing**, and it closed four rows while
+raising three, all three at 3.3. **Phase 2 owes nothing.** 2.1 discharged the reconciliation row raised at
 v1.6.0, the table's oldest and open for twenty-three corpus versions, 2.3
 discharged the crossed-quote row while opening two of its own, and 2.4
 discharged the risk row while opening one of its own. All three discharged rows
@@ -643,594 +646,124 @@ the artefact it produced.
   naming fixtures in prompts and in checkpoint detail; every prompt in this
   project named them anyway, including the supplied ones. The reliable reading
   was that the prompt half was wrong, not that every prompt was.
+- **A market rule governs the clearing layer and the account layer is
+  convention** [3.1]. A decision spanning both cites two authorities or states
+  that it has one, and saying which is the disclosure rather than a caveat. Four
+  of 3.1's seven mechanics needed it: the one-cent exercise threshold runs
+  between OCC and its clearing members and does not bind an account; OCC assigns
+  an exercise notice to a member and the member's own fixed procedures choose the
+  writer; a settlement cycle is a rule and when a broker releases proceeds to
+  trade against is house policy; and entitlement to a dividend is a rule while
+  whether the lab records one is nobody's. One had no authority at any layer,
+  because the act it models is a holder's choice, and that is the only case with
+  no limit to disclose against. And one rests on a rule that deliberately omits
+  its own method, SR-OCC-95-16 having removed random selection from Rule 803 in
+  1995 and put the procedures outside it, so the gap was designed rather than
+  missed. The failure this prevents is not a wrong citation but a right one
+  carrying more weight than it can hold.
+- **A quotation is not evidence until its position in the document is
+  established** [3.1]. The footnote that appeared to settle which quantity
+  committed capital uses sits in the Background of the filing that retired the
+  method it describes, and reading it alone gives the opposite of the answer.
+  That is this corpus's citation rule one level deeper than it had been applied:
+  not only does the cited source have to state the property, the cited sentence
+  has to be the document speaking rather than the document quoting what it is
+  about to replace.
+- **A checkpoint that writes no code can still change the schema** [3.1].
+  `ledger_entries` gained `known_on` because [D-W35] makes the trial tables
+  projections and a projection cannot carry what its source lacks. The column
+  was deduced from a decision rather than from a rule, and landing it while the
+  table did not yet exist cost one line where landing it after the transitions
+  would have cost the transitions. The check that finds these is to ask, of every
+  decision, whether a rebuild from the ledger reproduces what it requires.
 
 ---
 
 # Prompts
 
-## 2.1 The worked example, reconciled
+## 3.1 The mechanics, settled before the machine
 
-Read `CLAUDE.md`, `BUILD_PLAN.md` §2.1 and the carried obligations,
-`WORKED_EXAMPLE.md` in full, D-W4, D-W5, D-W10, D-W12, D-W22 to D-W25,
-`CONFIG_REFERENCE.md`'s seeded Gate and Risk rows, FX-WorkedExampleChainLoads,
-FX-WorkedExampleChainPersists, `WorkedExampleOracle`,
-`synthetic/worked-example.json`, and Current state above. No production code.
+Docs only. New branch `phase-3/checkpoint-3.1` off `main`. No code, and the
+suite must come out unchanged. The branch stays open until all seven mechanics
+are settled: a half-settled 3.1 on `main` would leave the corpus asserting some
+mechanics and silent on the rest with nothing marking the difference.
 
-### The invariant, and why the rewrite is small
+### The division of labour
 
-- **Establish this before changing anything, by reading rather than by trusting
-  it**: every figure in §4 through §7 derives from a bid, because fills are at
-  the bid [D-W12], and the only figure derived from an ask is the spread ratio
-  the gate reads. Read each section in full; a search for a column name answers
-  a different question.
-- So the rewrite changes asks and adds rejected candidates, and changes nothing
-  else. Not the symbol, the snapshot date or the expiry; not any bid on any
-  strike; not the strikes 45.00, 47.50 and 50.00, which are the feasible set §4,
-  §6 and §7 depend on, including FX-ThreeMakersSameFeasibleSet's expected set;
-  not any delta on those three; nothing in §4, §5, §6 or §7.
-- Report what the check found, not that it was run. An §4-onward figure reading
-  an ask is a finding and changes the shape of this checkpoint.
+Verification is the build's and the decisions are authored, which is the
+v1.26.0 obligation's own wording: verify *before the state machine's decisions
+are authored*. Where the evidence is in the build's hands and the wording is
+not, draft and land for correction rather than wait for supplied prose, and
+record in the corpus that the prose is the build's. A reader must be able to
+tell which author produced a sentence.
 
-### What the revised chain must demonstrate
+### The house form, which D-W38 sets
 
-The chain teaches the gate, which means each constraint this snapshot can
-demonstrate has a candidate demonstrating it, with obvious margins rather than
-hundredths.
+Each decision carries the operative statement first; one Source paragraph per
+authority, quoting the clause with its release number, file number, Federal
+Register citation and retrieval date; a paragraph naming what the authority does
+not reach and what the lab models instead; and a Test line naming a fixture
+registered at the checkpoint that builds it. 3.1 registers none against itself
+and says so, per `FIXTURES.md` rule 2.
 
-- The spread cap [D-W22]: the three feasible strikes pass comfortably, and one
-  added candidate fails it and nothing else.
-- The premium floor [D-W22]: one added candidate fails it and nothing else.
-- The delta ceiling [D-W23]: 52.50 and 55.00 already fail it at 0.44 and 0.62
-  against 0.35, and already fail the per-name cap. Keep both, because a
-  candidate failing two constraints is what FX-GateRecordsAllReasons exists for
-  and the document should show one.
-- Added candidates extend the strike ladder downward at its existing 2.50
-  spacing rather than inserting off-ladder strikes.
-- **Expect the floor to constrain the added candidates**, since 45.00's bid is
-  the floor exactly and its bid cannot move. A spread-cap-only failure below it
-  is possible on one bid alone, and the geometry that results is the stale
-  untransactable quote D-W22 describes, so state it in §3 as deliberate rather
-  than letting it read as an accident.
-- Constraints this snapshot cannot demonstrate, stated in the document rather
-  than left as a gap: the expiry window [D-W24] and earnings clearance [D-W25],
-  because one snapshot date with one expiry cannot show a window and no report
-  date exists in this example. Say so in §3 and say which checkpoint's fixtures
-  cover them instead.
-- Compute every ratio and report the arithmetic. Carry no figure from this
-  prompt: none is supplied, deliberately, because the numbers are the thing to
-  get right and this project's arithmetic errors have all come from
-  transcription rather than from calculation.
+### Routes, measured before relying on them
 
-### The three artefacts move together
+`theocc.com` and `infomemo.theocc.com` return 403 to this environment.
+`sec.gov` serves SRO filings to `curl` with a declared agent and 403s WebFetch.
+`govinfo.gov` serves GPO's own text of the Federal Register, and
+`federalregister.gov`'s JSON API locates documents by date and agency while its
+full-text path returns a bot wall. A rule whose text no filing exhibit
+reproduces can still be read in the notice that approved it, which is the route
+that reaches Rule 805 and Rule 903. Contract adjustment info memos are not
+Federal Register documents and have no such fallback.
 
-§2's table, §3's gate table and `synthetic/worked-example.json` state one chain.
-All three change in one commit or the oracle disagrees with itself.
+### The seven, and what each cites
 
-- §3's gate table gains a column per constraint, or a reason column naming every
-  constraint each candidate failed, so the table shows the gate's whole verdict
-  rather than the capital cap alone. It shows one constraint today and the
-  banner names three more.
-- The JSON gains the new quotes and the revised asks.
-- Both pinning fixtures pass unchanged in code: the oracle helper parses §2 and
-  the fixtures compare, so a revision needing a fixture edit has changed
-  something the tests were holding.
+- **Expiry resolution.** One cent in the money against the session's close, from
+  Release No. 34-57163, File No. SR-OCC-2007-18, 73 FR 4297, 24 January 2008,
+  which amended Rule 805 to reduce the threshold from $.05 to $.01 and states
+  the in-the-money test. The Options Industry Council supplies the limit that
+  the filing does not: the threshold runs between OCC and its clearing members
+  rather than binding an account.
+- **When assignment is known.** Determined after the close and known the next
+  morning, which is [D-W8] applied to the account. Split by authority: Rule 803
+  and its Interpretation .01 for the clearing layer, with SR-OCC-95-16 for why
+  the method is deliberately outside the rule; Rule 804 for the account layer,
+  where the member's own fixed procedures govern and no rule fixes when a
+  customer is told.
+- **T+1 cash availability.** Rule 15c6-1(a) for the cycle and OCC Rule 903 for
+  the exercise leg, an exercise being a clearing event rather than a purchase or
+  sale. When a broker releases proceeds to trade against is house policy.
+- **Dividend entitlement.** FINRA Rule 11140(b)(1) as amended fixes the ex-date
+  at the record date. Whether a dividend enters the record has no authority and
+  the lab decides it: it does, in `ledger_entries` and in the control [D-W13].
+- **Early exercise around ex-dividend.** No rule governs whether a holder
+  exercises, so the decision cites nothing and says that citing nothing differs
+  from citing weakly. The condition is chosen.
+- **Committed capital's quantity.** Strike times the multiplier, from Release
+  No. 34-54748, File No. SR-OCC-2006-01, 71 FR 67415, 21 November 2006, approved
+  by Release No. 34-55258, 72 FR 7701, 16 February 2007. Amend [D-W17] rather
+  than adding a decision, and stamp the amendment.
+- **What a covered call commits.** Nothing beyond the trial's figure, fixed at
+  open. Chosen, with no external source of any kind.
 
-### The delta the gate compares, and the deferral it settles
+### The two checks that are not about sources
 
-- §3's table carries magnitudes where §2 carries the sign, and the document says
-  why: the ceiling compares absolute delta [D-W23]. One sentence, and it removes
-  the only place in the revision where one quantity appears two ways without
-  explanation.
-- `ContractQuote.cs` says whether the ceiling compares magnitude is Phase 2's to
-  settle [D-W23], and D-W23 said absolute delta from the day it was written. The
-  question was answered by the decision the comment cites, in the sentence it
-  cites it for. Correct the comment: the ceiling compares absolute delta, and
-  the loader still carries the sign the chain states, which is the part that was
-  genuinely a loader question. Enumerate the reach from the work rather than
-  from this clause; the same deferral is elsewhere.
-- It is a comment in `src/`, so the commit touching it is code-adjacent rather
-  than docs-only. Say so rather than letting a docs-only claim carry a `.cs`
-  edit unremarked.
-
-### The banner and the obligation
-
-- §3's banner comes down, replaced with nothing: a resolved conflict needs no
-  monument, and CHANGELOG carries the history.
-- Remove the Phase 2 reconciliation row from carried obligations, raised at
-  v1.6.0 and open since. Report the count before and after.
-- CHANGELOG, under Fixed: the example was written before the contract-level gate
-  existed and taught a three-candidate feasible set the gate would render as
-  two. Reconciled by revising the quoted markets so the feasible set survives,
-  and by adding candidates that fail the constraints the example never
-  demonstrated. No bid changed, so nothing downstream of the fill moved.
-
-### Definitions of done
-
-- 2.1 registers no checks and says so in its detail, per rule 2's clause. It
-  changes a document two existing fixtures already pin, which is the coverage.
-- No table, no decimal column, no config key: each checked and reported empty.
-- The seeded Gate values are read from `CONFIG_REFERENCE.md` rather than
-  assumed: if any margin depends on a value that is proposed rather than seeded,
-  say which.
+- **Run [D-W35] against every decision.** Can a projection rebuilt from
+  `ledger_entries` reproduce what this decision requires? `known_on` falls out
+  of that question, not out of any rule. The session calendar does not resolve
+  and is raised rather than deduced.
+- **State which claims are transcribed and which are chosen before retrieving,
+  not after.** That is 2.4's distinction moved from numbers to mechanics, and it
+  is what stops the last one arriving dressed as a fact.
 
 ### Constraints
 
-No `double` or `float`. No ambient clock. Money is decimal in `TEXT`. Edit files
-with the file tools rather than a shell round trip, which mangles UTF-8 outside
-ASCII. Reconcile the detail and the archive at sign-off, not during the build.
-
----
-
-## 2.2 Enumeration and membership
-
-Read `CLAUDE.md`, `BUILD_PLAN.md` 2.2 through 2.5 and the carried obligations,
-`SYSTEM_DESIGN.md` §3.3 and §3.4, `DATA_AND_SCHEMA.md` §4.3's `candidates` and
-`positions`, D-W3, D-W4, D-W5, D-W9, D-W10, D-W12, D-W14, D-W16, D-W17,
-`WORKED_EXAMPLE.md` §2 and §3 as reconciled at 2.1, `AsOfMembership`,
-`AsOfMarketData`, `ContractIdentity`, the fixtures registered against 2.2 in
-`FIXTURES.md`, and Current state above. The first Phase 2 checkpoint that
-writes code.
-
-### Three decisions, settled before the code
-
-2.2's detail says one sentence about what a candidate is. These three settle
-what it leaves open, and each is a judgement rather than a transcription, so
-argue it and record the argument in the detail.
-
-- **How far a candidate is built here, and what waits for 2.4.** §4.3's
-  `candidates` carries `contracts_qty`, `committed_capital`, `credit` and
-  `feature_json`, and none of 2.3's four constraints needs any of them: the
-  spread cap, premium floor and delta ceiling read the quote, and the expiry
-  window reads a date. Only 2.4's capital caps need committed capital, and the
-  quantity that computes it is the open Phase 3 metric question. Decide what
-  2.2's candidate carries and report the reasoning; building economics here
-  means choosing between the multiplier and the deliverable at the checkpoint
-  that has no reason to. Whatever you choose, the type is not the `candidates`
-  row: that table is Phase 4's and nothing persists at 2.2.
-- **The simulated date is used on both axes, and that is a choice.** A read
-  needs a snapshot date and an as-of instant, and 1.2 made them independent
-  deliberately. On a simulated date D the generator wants the chain for D as
-  known at D, so it passes D twice. State it in the detail and at the call site
-  rather than letting the same variable land in two parameters unremarked. The
-  two axes exist because they can differ; collapsing them is correct for a
-  simulated run and would be wrong for a backfill. Membership resolves on the
-  same pair, so one date reaches four parameters across two reads.
-- **Enumeration is deliberately broad, and the detail should say why.** A deep
-  in-the-money put is sellable and will be rejected by every constraint.
-  Enumerating it anyway is what makes the gate's effect auditable [D-W5,
-  D-W10], and 2.1's own §3 demonstrates it: seven strikes enumerated, three
-  feasible, and the four rejections are the lesson. Say in the detail that
-  enumeration filters on nothing but position state and membership. A generator
-  that pre-filters produces a smaller enumerated set and a smaller record of
-  what the gate did, which is the property Phase 4's decision record exists to
-  hold.
-
-### Position state, without the table
-
-`positions` is §4.3 and unbuilt. 2.2 needs the concept and not the row.
-
-- A `PositionState` in `Core` with the four tags §4.3 names, rendered through a
-  declared `Store*` form now rather than when the table lands, on the
-  `StoreOptionRight` precedent. Declared, not derived from the enum's spelling.
-- Report what each state makes sellable and on whose authority. Cash to puts
-  and shares to calls are the wheel [D-W16]; what a `short_put` or `short_call`
-  state enumerates is a rolling question [D-W14] whose rules are Phase 3's, so
-  2.2 enumerates nothing for them unless you can cite something that says
-  otherwise. Say which you did.
-
-### The generator's enumeration half
-
-In `Core`, one type. Takes a symbol, a simulated date, a position state; asks
-membership, then the chain; returns candidates in `ContractIdentity` order.
-
-- **Test**: a symbol that was not a member at the simulated date enumerates
-  nothing, even with a chain present for it. Both halves matter, since a
-  chain-less symbol would pass for the wrong reason.
-- **Test**: a symbol that joined after the simulated date is not a member at
-  it, which is 1.3's point-in-time membership fixture reaching the generator
-  rather than being restated.
-- **Test**: the same inputs enumerate the same candidates in the same order,
-  twice, which is 2.2's own definition of done and the first consumer of 1.5's
-  five-component total order.
-- **Test**: enumeration is a pure function of its three inputs. State how you
-  asserted purity rather than asserting it in prose.
-
-**The two membership reads must not be able to disagree.** A per-symbol read
-and the set read agreeing across chosen cases is evidence; "cannot differ" is a
-property of one SQL definition serving both. Make it structural: one text with
-an optional symbol predicate, or the set read expressed through the per-symbol
-one, so a change to the ranking reaches both by construction rather than by two
-edits. If you keep two statements of the query, say so plainly and drop the
-"cannot resolve differently" claim, because two copies of one query drift the
-way two copies of one fact do and 1.5 removed `Contract.DeliverableShares` for
-exactly that reason. Keep the agreement tests either way; they are the tripwire
-if the structural choice is ever undone. Report which you did and what it cost.
-
-**Nothing asserts that a shares position enumerates calls.** The only chain in
-the repository is all puts, so an enumerator that ignored state entirely, or
-filtered to puts unconditionally, passes every test above.
-
-- A two-right chain built inline in the generator's own suite rather than as a
-  new file under `synthetic/`: that directory holds hand-written chains the
-  corpus refers to [D-W31], and this is test scaffolding for one suite.
-- **Test**: on one chain carrying both rights, cash enumerates the puts and no
-  call, and a shares position enumerates the calls and no put. Assert both
-  directions on the same chain, so neither passes for want of data.
-- **Test**: the two short legs enumerate nothing on that same chain, which is
-  the searched-and-empty finding asserted rather than only reported. That one
-  is worth having precisely because it will fail the day Phase 3 gives rolling
-  a rule, which is the right moment to be told.
-- Report whether the state actually reached the filter on first run. An
-  enumerator that ignores its third parameter is the specific defect this
-  closes, and the interesting answer is if it passed before the fix.
-
-### The worked example is the enumeration oracle too
-
-§2 carries seven strikes and §3 says all seven are enumerated with three
-feasible. 2.2 owns the first half of that sentence and can prove it.
-
-- **Test**: enumerating the worked example's chain in cash yields exactly the
-  seven strikes §2's table states, parsed from the document through
-  `WorkedExampleOracle` rather than restated.
-- This is the third fixture pinning that document and the first to read §3's
-  claim rather than §2's data. If §3 and the enumerator ever disagree, one of
-  them is wrong and the suite says which.
-- Its registry row is supplied with the prompt, so the fixture and its
-  registration land together and both enforcement directions hold from the
-  commit it arrives in. The marker moves in that same commit, counted from
-  disk, when the count is true.
-
-### Definitions of done
-
-- Every check registered against 2.2 exists in its kind; the marker counted
-  from disk, not transcribed.
-- No table, no decimal column, no config key: each checked and reported empty,
-  or reported with what it added.
-
-### Constraints
-
-No `double` or `float`. No ambient clock. Money is decimal in `TEXT`. Edit files
-with the file tools rather than a shell round trip, which mangles UTF-8 outside
-ASCII. Reconcile the detail and the archive at sign-off, not during the build.
-
----
-
-## 2.3 The contract constraints
-
-Read `CLAUDE.md`, `BUILD_PLAN.md` 2.3 through 2.5 and the carried obligations,
-D-W5, D-W10, D-W12, D-W22 to D-W26, `DATA_AND_SCHEMA.md` §4.1's
-`earnings_calendar` and §4.3's `candidates`, `WORKED_EXAMPLE.md` §2 and §3,
-`CandidateGenerator`, `AsOfMarketData`, `AsOfConfiguration`,
-`SyntheticChainReader`, `ChainWriter`, the fixtures registered against 2.3 in
-`FIXTURES.md`, and Current state above.
-
-### What the detail does not name
-
-- **Earnings clearance is three builds, not one constraint.**
-  `earnings_calendar` exists from migration 3, nothing reads it, nothing writes
-  it, and `SyntheticChain` is symbol, bars and quotes, so no fixture can put a
-  report date in a store. Correct 2.3's detail to say so: the constraint needs a
-  synthetic format that can express a report date, a writer, and an as-of read
-  before it is testable. Report the shape chosen for each. The format extension
-  is a change to a hand-written file's schema [D-W31], so the report says what
-  it costs a reader of the format. Splitting earnings out or deferring it to 2.5
-  is worth weighing rather than assuming; the registry puts its check here and
-  the constraint is the reason the table exists, so say why if you keep it.
-- **Settle the crossed-quote obligation and record the decision.** Either a
-  crossed quote is not a market and the loader keeps refusing it, so the gate
-  never sees one, or it is a real vendor artefact and the gate rejects it, so
-  the loader must stop refusing it. The argument has to reach D-W22's first
-  rationale: the filter protects the measurement, so what matters is whether an
-  untransactable quote can reach the scorer and present as the best available.
-  If the loader stops refusing, say what changes in `SyntheticChainReader` and
-  what the format then admits; if it keeps refusing, say what the gate does when
-  Phase 8's vendor data delivers one anyway, since the loader does not stand
-  between the vendor and the store. Close the obligation row either way and
-  report the count.
-- **The reason vocabulary is 2.3's, and 2.5 depends on it.** Every fixture here
-  records a reason, `candidates` carries `gate_status` and `gate_reason`, and
-  2.5 asserts that a candidate failing two constraints carries both. Nothing
-  declares what a reason is. Declare it, stored form and all, on the
-  `StoreOptionRight` precedent: declared not derived, refusing an unrecognised
-  value. A candidate carries a set rather than one, and that shape is decided
-  here even though 2.5 asserts it.
-
-**Every reason must name a decision that states its ground.** A gate that
-rejects on a ground its cited decision does not state is this corpus's citation
-pattern, and creating one is worse than inheriting one. Check each reason
-against the operative paragraph of the decision behind it before writing the
-code, and report the sweep.
-
-### The constraints
-
-- Each reads its bound from configuration as of the simulated date [D-W26],
-  never from a constant. **Test**: a constraint evaluated at a simulated date
-  before a later config version uses the earlier bound.
-- An unresolvable bound stops the evaluation naming the key and the date
-  [D-W37], and bounds resolve once per evaluation rather than once per
-  candidate. **Test**: a constraint evaluated at a date before its bound was
-  written fails naming the key and the date, rather than admitting or
-  rejecting. Report the implementation and the message, not the decision.
-- The spread cap and the premium floor [D-W22], both rejections independent and
-  both recorded. The delta ceiling [D-W23], comparing absolute delta, since the
-  sign is where that constraint goes wrong: a put at -0.44 rejects against a
-  0.35 ceiling and one at -0.24 does not. The expiry window [D-W24], both sides,
-  since a one-sided test passes on a constraint that only checks one.
-- Earnings clearance [D-W25], buffered both sides. **Test** three cases: a life
-  containing a report date, a life clearing the buffer, and a life clearing the
-  report by less than the buffer, which is the case an unbuffered filter would
-  pass. **The admit case ingests a report date that exists and sits outside the
-  buffer, never an absent one**, because an absent array means no reports and
-  the constraint would never run. Report the dates chosen and their distances
-  from the buffer edge, and say what the other fixtures do about earnings.
-- Every boundary comes from the decision that states it. Where a decision does
-  not state its edge, that is a finding before it is a choice: report it and
-  have it stated rather than picking one.
-
-### The mutation check
-
-For each constraint, show the suite fails when the constraint is defeated
-rather than only that it passes. A constraint returning admit unconditionally
-should fail its own fixtures. Report which mutations ran and what failed; if any
-mutation passes everything, that fixture is not testing what it claims, **or the
-mutation did not reach the whole behaviour**, and the two are told apart by
-mutating every site the behaviour has rather than one of them.
-
-### The worked example, fourth pin
-
-§3's table now states a verdict and reasons per strike, and 2.2 pinned only the
-enumerated strikes.
-
-- **Test**: gating the worked example's chain at its snapshot date produces
-  §3's verdicts, parsed through `WorkedExampleOracle` rather than restated. Only
-  the four contract constraints; the per-name cap is 2.4's, so the two strikes
-  failing on both carry the delta reason here and gain the capital reason at
-  2.4. Strip it by name against a declared phrase rather than by discarding what
-  does not match, so a reason this checkpoint should have produced cannot vanish
-  into the gap.
-- Assert the phrase-to-reason mapping total over the vocabulary, so a reason
-  with no phrase fails rather than narrowing every expected verdict silently.
-- Report whether §3 held on first run. That is the point of the document being
-  the oracle, and 2.1 wrote its verdicts before any gate existed.
-
-### Definitions of done
-
-- Every check registered against 2.3 exists in its kind; the marker counted from
-  disk, not transcribed.
-- Report what 2.3 adds to `AppendOnlyTables`, `DecimalColumns`, `ConfigKeys` and
-  `CONFIG_REFERENCE.md`, or that each is checked and empty. A key the code reads
-  is named in `ConfigKeys` rather than left a literal, and a bound the gate reads
-  makes its Consumer column verified rather than assumed.
-
-### Constraints
-
-No `double` or `float`. No ambient clock. Money is decimal in `TEXT`. Edit files
-with the file tools rather than a shell round trip, which mangles UTF-8 outside
-ASCII. Reconcile the detail and the archive at sign-off, not during the build.
-
----
-
-## 2.4 The portfolio constraints
-
-Read `CLAUDE.md`, `BUILD_PLAN.md` 2.4 and 2.5 and the carried obligations,
-D-W5, D-W10, D-W11, D-W17, D-W19, D-W26, D-W34, D-W37, `CONFIG_REFERENCE.md`'s
-Risk rows and the paragraph above them, `WORKED_EXAMPLE.md` §1 and §3,
-`GateBounds`, `GateReason`, `GatedCandidate`, `ContractConstraints`,
-`EnumeratedCandidate`, the fixtures registered against 2.4 in `FIXTURES.md`,
-and Current state above.
-
-2.4 extends the shapes 2.3 built rather than inventing any. Bounds resolve once
-per evaluation into a record of numbers, so a constraint is handed values and
-cannot reach configuration [D-W37]. Reasons are enum members from 1 and a
-candidate carries a set. Follow all three.
-
-### Equity does not exist and every cap divides by it
-
-Verified before the checkpoint: no key, no column and no table holds an account
-value, and §1 states 100,000 in prose that nothing reads. So the obligation is
-four keys rather than the three it names.
-
-It is a configuration key rather than a derived figure, and D-W11's own
-rationale is the argument: the caps are structural because the sample cannot
-price the tail, and a denominator computed from the run's own state moves with
-the run, so a drawdown would loosen every cap at the moment it should bind.
-`rows`-classed under D-W27, a cap being read while producing a simulated
-decision.
-
-### The values, and which of them are decisions
-
-`Risk:Equity` 100000.00, `Risk:PerNameCapFraction` 0.25 and
-`Risk:TotalCapFraction` 0.60 are transcribed from §1, which states all three and
-derives §3's 5,100.00 headroom from them.
-`Risk:SimultaneousAssignmentLimitFraction` 0.60 is chosen, no document stating
-it, and its reason is arithmetic: a cash-secured put's committed capital is its
-assignment exposure, so any value below the total is unreachable and any above
-it never binds. The relationship changes at Phase 3, when a covered call commits
-shares rather than cash.
-
-Each row's Notes state which of the two it is. Calling the transcribed ones
-proposals inverts 0.8's distinction, whose argument was about who decides rather
-than about which figures they would pick.
-
-**Report what the seeded values make each cap admit**, so the three are
-checkable as amounts and not only as ratios.
-
-Do not add an invariant between the total cap and the assignment limit. They
-coincide today because every position is a cash-secured put; the relationship
-changes at Phase 3 rather than being wrong now. The per-name-against-total
-invariant is worth weighing on D-W34's precedent and worth reporting either way.
-
-### The bounds record
-
-The four values, resolved once per evaluation, unresolvable stopping with the
-key and the date [D-W37]. Report whether it is a second record or a widening of
-`GateBounds`, and why: separate reads better if the two families are ever
-evaluated apart, one reads better if they never are.
-
-### Committed capital, and the exposure the caps read
-
-`EnumeratedCandidate` declined economics and named 2.4 as the checkpoint needing
-them, with the Phase 3 obligation as the reason. Act on that reasoning rather
-than restating it: one site computes committed capital, it cites the obligation,
-and Phase 3 changes one place.
-
-- Per-name reads the candidate. Total and simultaneous-assignment read open
-  exposure, which is `positions` and is Phase 3, so both take it as a parameter
-  the way the constraints take bounds.
-- **Test**: each portfolio cap rejects at non-zero exposure. A cap tested only
-  against an empty portfolio passes whether or not it works, which is 1.1's
-  empty-table shape.
-- **The opposite vacuity is the one §3 cannot see.** §1 states 19,900.00
-  committed in `WDGT` and 38,000.00 across all names and derives both headrooms;
-  only the per-name figure reaches §3. Supply both, and the same figure for
-  assignment exposure, so the third cap is exercised on a real number rather than
-  on zero. Then assert both headrooms as the fixture computes them, because a
-  total cap wired to the wrong figure, or not wired at all, reproduces §3
-  exactly.
-
-### The reasons and the basis rule
-
-`GateReason` gains members from 7, sequentially, each with the decision it
-cites. `StoreGateReason` gains their stored forms, declared not derived.
-
-- D-W19 says "above basis" and the registry says "below gross basis is refused",
-  which leaves a strike exactly at basis unsaid. State it in the decision before
-  the code rests on it: a strike at basis recovers the outlay exactly, so
-  excluding it would forbid the break-even strike for no stated reason.
-- The basis rule binds a call against a position's gross basis, so basis is a
-  parameter until Phase 3 supplies one.
-- **Test**: a strike net basis admits and gross basis rejects is rejected, both
-  bases in one test or it shows a rejection rather than the distinction.
-- **Test**: a strike exactly at gross basis is admitted.
-
-### Two families on one candidate
-
-2.4 is the first checkpoint where a contract constraint and a cap can fail the
-same candidate.
-
-- **Test**: one candidate carrying a reason from each family, in declared order.
-  2.5's fixture asserts the property; this asserts it is reachable.
-- Mutation check per constraint, mutating the behaviour rather than a site, per
-  2.3's correction. Report what you ran and what failed. **A mutation that passes
-  everything may mean the seeded values hide the binding rather than that the
-  test is weak**: two keys holding the same value make either readable from the
-  other. Where that happens, add the assertion at a configuration the store does
-  not hold and could, rather than recording the gap.
-
-### The worked example, fifth pin
-
-§3 carries per-name cap verdicts that 2.3 stripped by name.
-
-- **Test**: gating the chain with the caps in place reproduces §3's full
-  verdicts, both reasons on the two strikes failing both, nothing stripped.
-- Report whether §3 held on first run.
-
-### Definitions of done
-
-- Registered checks exist in their kind; marker from disk.
-- `ConfigKeys` and `CONFIG_REFERENCE.md` gain the Risk keys; report whether their
-  consumers move from **Unverified** to verified.
-- The Risk obligation closes. Report the count.
-
-### Constraints
-
-No `double` or `float`. No ambient clock. Money is decimal in `TEXT`. Edit files
-with the file tools rather than a shell round trip, which mangles UTF-8 outside
-ASCII. Reconcile the detail and the archive at sign-off, not during the build.
-
----
-
-## 2.5 The feasible set
-
-Read `CLAUDE.md`, `BUILD_PLAN.md` 2.5 and the carried obligations, D-W4, D-W5,
-D-W10, `SYSTEM_DESIGN.md` §3.3 and §3.4, `DATA_AND_SCHEMA.md` §4.3,
-`CandidateGenerator`, `GatedCandidate`, `ContractIdentity`, `AsOfMarketData`,
-the fixtures registered against 2.5 in `FIXTURES.md`, and Current state above.
-
-2.5 is the last checkpoint of Phase 2 and closes it. The gate is whole, so this
-is a small code checkpoint and a large reconciliation one. Say so rather than
-inflating the first half: two of this phase's obligations were discharged by
-building something and this one is discharged by asserting what was built.
-
-### What assembly produces is a choice
-
-`GateFor` already returns every candidate with its reasons in identity order,
-which is assembly, ordering and the refusal record. Decide whether a
-`FeasibleSet` type ships and report the reason, not only the choice. A type
-justified only by a later consumer is speculation, which is `GateReason`'s own
-ground for declining 2.4's members at 2.3, and 1.5 removed
-`Contract.DeliverableShares` for being a second statement made before its
-consumer existed. Phase 4's obligation names the set's grain as (symbol, date);
-whatever is decided, that row absorbs the reasoning, because Phase 4's planning
-reads it and 2.5's detail is about to freeze.
-
-### The definition of done asks for bytes that do not exist
-
-It says the set is ordered "so three makers receiving it receive the same bytes
-[D-W4]". Nothing serialises a candidate at 2.5 and `candidates` is Phase 4's.
-2.5 is not built, so its detail is live intent: restate it as what this
-checkpoint can assert, being that the same inputs produce the same sequence,
-compared as an ordered sequence of identities and reasons, and that the ordering
-is the identity total order. Carry the byte-level property to the checkpoint that
-persists the set, and add to Phase 4's obligation that
-`FX-ThreeMakersSameFeasibleSet` is where it lands.
-
-**This is the fourth definition of done whose subject belongs to a later
-checkpoint**, after 0.5's, 0.6's and 2.4's. Record it in the CHANGELOG under
-Fixed with the class named, and check the earlier list while you are there: a
-count of instances that nobody re-reads is how the wrong instance stays named.
-
-### The order is not this checkpoint's to impose
-
-The same clause calls 2.5 the first consumer of the total order 1.5 completed.
-Check it before building on it. Assert the property at the gate's output and say
-where the order actually comes from, because a second sort would be a second
-statement of one guarantee, and `CandidateGenerator`'s own remark already says
-enumeration inherits rather than re-imposes.
-
-- **Test**: the gated sequence is in identity order, sorted through the
-  identity's own comparison rather than against a hand-written list.
-- **Test**: the same inputs gate to the same sequence, identities and reasons.
-- **Test**: the gate returns what enumeration returned, in that order, so
-  nothing reorders or drops.
-- Identity orders on expiry before strike and every chain in this repository is
-  one expiry, so a chain of one expiry cannot tell an identity comparison from a
-  strike comparison. Supply more than one and scramble the input.
-
-### The registered check
-
-- **Test**: a candidate failing two constraints carries both, which is why the
-  gate evaluates every constraint rather than short-circuiting. Two constraints
-  in one family, one from each family, and the full set a single evaluation can
-  produce, since the registered wording asks for two and two of one kind would
-  discharge it while leaving the seam between the families untested.
-- Assert the maximum against the vocabulary's own length rather than against a
-  number, so a reason added later leaves it unasserted rather than wrong.
-
-### Mutation checks
-
-Per constraint and per property, mutating the behaviour rather than a site.
-Include one that should change nothing, being the gate re-sorting its own
-output, and say which of the three causes of a passing mutation applies when one
-passes; if none does, that is a fourth outcome and worth naming as such.
-
-### The markers, and the sweep they imply
-
-`SYSTEM_DESIGN.md` §3.3 and §3.4 gain the build-state markers `CLAUDE.md` §5
-requires. Sweep the rest while you are in there rather than writing two and
-leaving the others: a marker is an observation and goes stale silently, and each
-correction states what is not built beside what is.
-
-### Definitions of done
-
-- Every check registered against 2.5 exists in its kind; marker from disk.
-- Report what 2.5 adds to `ConfigKeys` and `CONFIG_REFERENCE.md`, or that each is
-  checked and empty.
-- Phase 2's build state moves to complete, with what is not built stated beside
-  it. Phase 3's detail is authored content and arrives as a corpus sync.
-
-### Constraints
-
-No `double` or `float`. No ambient clock. Money is decimal in `TEXT`. Edit files
-with the file tools rather than a shell round trip, which mangles UTF-8 outside
-ASCII. Reconcile the detail and the archive at sign-off, not during the build.
+- Every citation is checked against retrieved text before it lands, never from
+  a search snippet or from recollection. A quotation is not evidence until its
+  position in the document is established: the footnote that appears to settle
+  the adjustment question sits in the Background describing what the filing
+  exists to replace.
+- Counts are read off the table they describe, at the moment they are written.
+- `CommittedCapital.cs` is not edited. 3.1 is not code, and the correction is
+  scheduled at 3.3 rather than remembered.

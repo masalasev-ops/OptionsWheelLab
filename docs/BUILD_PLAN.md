@@ -638,7 +638,6 @@ to differ.
 | Phase 8 | Extract the market rules out of `SyntheticChainReader`, so one definition serves the synthetic reader and the vendor ingest. Refusing a negative bid, a negative ask and a crossed market are statements about what a market can be, not JSON concerns, and they sit as private statics on the reader, so a second producer of quotes can only duplicate them. Phase 8 is where that second producer arrives. **The crossed-quote coupling is discharged at 2.3**: the gate handles a crossed quote [D-W22, as amended], so that rule moved to the gate and left the loader, and what remains to extract is the two negative-price refusals. Not extracted at 0.8 because there is one caller and the second does not exist. | PR #9 |
 | Phase 4 | Decide how a candidate's gate reasons are stored. `candidates.gate_reason` is a single nullable TEXT column and the domain type is a set in declared order [2.3], which FX-GateRecordsAllReasons at 2.5 asserts by requiring two reasons on one candidate. The options include a delimited list, which makes a reason unqueryable, and a row per reason, which changes the table's grain. Raised at 2.3 when the vocabulary was declared. **The grain this assumes is the one the v1.17.0 row decides.** | v1.32.0 |
 | Phase 9 | Decide how configuration resolves for a simulated date that precedes the value being written. `SeedCommand` stamps `set_at` from the wall clock, so every gate bound resolves null for any simulated date before the seed ran, which is every date in a walk-forward over real history. [D-W26] requires resolution as of the simulated date and [D-W37] stops the evaluation rather than guessing, so the collision surfaces loudly at the first walk-forward rather than silently. The options include backdating the seed, which costs the audit trail its truthfulness, and resolving a registered run's configuration as of its pre-registration instant [D-W15], which keeps both rules intact. Raised at 2.3 while answering what an unresolvable bound does. | v1.32.0 |
-| 3.1 | Decide what a covered call commits. [D-W17] fixes a trial's committed capital at open, so a call written against shares already assigned may commit nothing new, while 2.4 charges the candidate's own figure regardless of right, which is the conservative reading and binds a cap that may not apply. No fixture reaches it because no covered call is gated before the state machine exists. Raised at 2.4. | v1.33.0 |
 | 3.3 | Correct `CommittedCapital.For` to strike times multiplier, per [D-W17] as amended. 2.4 read the deliverable as the only quantity in reach and named 3.1 as the checkpoint that would decide; it decided the other way. Its own reasoning was that the choice sits in one place so Phase 3 changes one site, and this is that site. Every current contract carries one hundred as both quantities, so no test distinguishes them today and none will until an adjusted contract is gated. Raised at 3.1. | v1.36.0 |
 | 3.3 | Give the record a dividend to hold, per [D-W41]. `ledger_entries.kind` needs a `dividend` value, `CorporateActionKind` is `Split` only and names that decision in its own remarks, and the synthetic-chain format carries no corporate actions at all, so no hand-written scenario can express one. Whether `corporate_actions` gains a CHECK the way `right` and membership's `kind` have one rides with it. Raised at 3.1, where the decision named all three rather than adding any. | v1.36.0 |
 | 3.3 | Decide what a session calendar is, since [D-W40] resolves settlement to "the first business day after" and nothing in this lab can answer that. The only session sequence in the store is `underlying_bars.session_date`, which is per symbol and cannot distinguish a market holiday from a name that did not trade. Whether the calendar is derived from bars or stored is the question; Phase 8's vendor ingest is the other consumer. Raised at 3.1. | v1.36.0 |
@@ -1318,6 +1317,39 @@ preference.
 - **DoD**: every transition 3.3 will write cites a decision settled here, and
   no mechanic is encoded from recollection.
 - Registers no fixtures and says so, per rule 2.
+
+Reconciled at sign-off against what shipped. Seven questions were listed and
+seven were answered, by six new decisions and one amendment: D-W38 to D-W43, and
+[D-W17] corrected. Four obligations closed, three were raised, six fixtures were
+registered against later checkpoints, and no `.cs` file was touched.
+
+**The sourcing requirement changed what the decisions could claim, which is what
+it was for.** A market rule governs the clearing layer and the account layer is
+convention, so a decision spanning both cites two authorities or states that it
+has one. Four of the seven needed that disclosure. One had no authority at any
+layer, because the act it models is a holder's choice. And one rests on a rule
+that deliberately omits its own method: SR-OCC-95-16 removed random selection
+from Rule 803 in 1995 and put the assignment procedures outside the rule, so the
+gap in what could be cited was designed rather than missed.
+
+**One mechanic was answered by amending a decision rather than by adding one.**
+[D-W17]'s third paragraph had said committed capital reads the deliverable and
+located it in `contracts.multiplier`, which is neither the right quantity nor the
+right column. It entered at 0.4 and stood for fifteen checkpoints, produced the
+obligation that reasoned from it, and shaped `CommittedCapital.For` at 2.4. The
+filing that settled it is the one that retired the method the obligation's
+arithmetic describes, and the footnote which appeared to settle it the other way
+sits in that filing's Background. A quotation is not evidence until its position
+in the document is established.
+
+**Two schema consequences fell out of decisions rather than out of rules.**
+`ledger_entries` gained `known_on` here, deduced from [D-W35] because a
+projection cannot carry what its source lacks, and the table is 3.3's so the
+schema is right before it is built rather than changed after. The second did not
+resolve: [D-W40] settles to "the first business day after" and no business-day,
+trading-day or session-calendar concept exists in this corpus or in `src/`. That
+one has more than one defensible home and is raised at 3.3 rather than deduced
+here.
 
 ### 3.2 The completeness pass
 Not code. Every check in this repository compares one part of the corpus
