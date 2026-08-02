@@ -4,11 +4,9 @@ Appended to, never rewritten. The repository is the authority on build state.
 
 ## Current state
 
-**Phase 0 complete and reviewed. Phases 1 and 2 complete.** Checkpoints 0.1 to
-0.8, 1.1 to 1.5 and 2.1 to 2.5 built and signed off. **Checkpoint 3.1 is in
-progress on `phase-3/checkpoint-3.1` and deliberately unmerged**: what a covered
-call commits is the mechanic still open, and it goes last because it has no
-external source. The documentation corpus is at v1.36.0.
+**Phase 0 complete and reviewed. Phases 1 and 2 complete. Phase 3 started.**
+Checkpoints 0.1 to 0.8, 1.1 to 1.5, 2.1 to 2.5 and 3.1 built and signed off. 3.2
+to 3.5 are not started. The documentation corpus is at v1.37.0.
 
 ## Log
 
@@ -1357,3 +1355,40 @@ marks non-nullability. Eleven of the eighteen tables are mixed and 64 of the 94
 silent columns sit in one, so an unmarked column beside a marked one is what the
 convention produces rather than an anomaly. `known_on` is silent for that reason
 and not by omission.
+
+### 2026-08-02 — corpus v1.37.0
+**Checkpoint 3.1 signed off.** D-W43 settles the last of the seven: a covered
+call written against shares a trial already holds commits no further capital, the
+figure having been fixed when the put was sold [D-W17]. It is the only one of the
+seven with no external source of any kind, and it says so.
+
+Seven questions were listed in 3.1's detail and seven were answered, by six new
+decisions and one amendment. **Four obligations closed and three were raised**,
+all three at 3.3, so the table falls from thirteen rows to twelve: seven at
+checkpoint granularity and five at phase. Six fixtures were registered against
+3.3 and none against 3.1, which registers none and says so. No `.cs` file was
+touched and the suite is unchanged at 503.
+
+**What the checkpoint turned out to be.** Its detail described a documentation
+exercise: answer seven questions, cite a rule for each. What it delivered was
+that, plus a schema column, a schema question raised, a decision corrected that
+had been wrong since 0.4, and a granularity convention stated for a table that
+had been read two ways. None of those was in scope and each fell out of doing
+the work as specified, which is the argument for settling preconditions before
+the transitions rather than alongside them.
+
+**`phase-3.md` opens and `phase-2.md` closes**, on the practice `phase-1.md`
+records: a phase's archive stays open past its own sign-off and closes when the
+next one opens. Phase 2's file is frozen with its Current state as of v1.35.0
+rather than as of the version it closed at, because 3.1 moved the corpus twice
+while changing no code and the state description was not brought forward in
+between. Saying which of the two it is frozen at costs a clause and saves a
+reader assuming the fresher one.
+
+**The archive's lessons gain three**, all of them from this checkpoint: that a
+market rule governs the clearing layer while the account layer is convention, so
+a decision spanning both cites two authorities or states that it has one; that a
+quotation is not evidence until its position in the document is established,
+which is this corpus's citation rule one level deeper than it had been applied;
+and that a checkpoint writing no code can still change the schema, because the
+deduction comes from a decision rather than from a rule.

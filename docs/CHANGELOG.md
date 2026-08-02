@@ -1,5 +1,40 @@
 # CHANGELOG
 
+## [1.37.0] — 2026-08-02
+
+**Checkpoint 3.1**, the mechanics settled before the machine. Seven questions
+listed, seven answered, by six new decisions and one amendment. Documentation
+only; no code, no config key, and the suite is unchanged at 503.
+
+### Added
+- **D-W43**: a covered call written against shares a trial already holds commits
+  no further capital, the figure having been fixed when the put was sold
+  [D-W17]. Chosen, with no external source of any kind, and the conservative
+  reading is the one that does not charge the same capital twice.
+- `prompts/spent/phase-3.md` opens with 3.1's prompt and the description of the
+  present; `phase-2.md` closes.
+
+### Changed
+- **The archive's lessons gain three**, all from this checkpoint: the clearing
+  layer against the account layer; a quotation needing its position in the
+  document established before it is evidence; and a checkpoint that writes no
+  code still changing the schema when the deduction comes from a decision.
+- **Four obligations closed and three were raised**, all three at 3.3, so the
+  table falls to twelve rows: seven at checkpoint granularity and five at phase.
+
+### Notes
+- **The detail described a documentation exercise and the checkpoint delivered
+  more than one.** A schema column, a schema question raised, a decision wrong
+  since 0.4 corrected, and a granularity convention stated for a table two
+  readers had counted differently. None was in scope and each fell out of doing
+  the work as specified, which is the argument for settling preconditions before
+  the transitions rather than alongside them.
+- **Phase 2's archive is frozen at v1.35.0, not at the version it closed at.**
+  3.1 moved the corpus twice while changing no code and the state description was
+  not brought forward in between, so the file closed fresher than its contents.
+  Which of the two it is frozen at is stated, because a reader will otherwise
+  assume the later one.
+
 ## [1.36.0] — 2026-08-01
 
 Checkpoint 3.1 opened. Two of its seven mechanics settled, five open, and the
