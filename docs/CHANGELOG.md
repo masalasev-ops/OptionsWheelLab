@@ -38,6 +38,14 @@ no config key, and the suite is unchanged at 503.
   That is 2.4's distinction between a transcribed value and a chosen one, moved
   from numbers to mechanics, and it is what stops the last one arriving dressed
   as a fact.
+- **Two claims about this corpus were made from recollection and a read
+  contradicted both**: that §4 marks non-nullability, when no column in the
+  document does, and that 1.1 had corrected `vendor_symbol`, which was
+  introduced already marked while the ten columns that commit did correct were
+  in `corporate_actions` and `contract_quotes`. The same shape as the arithmetic
+  corrections before them, in a corpus whose first rule is that a citation is
+  verified by what rests on it rather than by reading it. The pattern is the
+  finding, and the number of instances is not stated.
 
 ## [1.35.0] — 2026-08-01
 

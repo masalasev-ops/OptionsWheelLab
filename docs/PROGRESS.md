@@ -1274,3 +1274,12 @@ cannot carry what its source lacks, so `known_on` is deduced onto the ledger
 rather than chosen for it, and `positions` does not gain it for the same reason.
 The table is Phase 3's and does not exist, so this is the schema being right
 before it is built rather than a change to one.
+
+**The nullability convention, measured because the new column turned on it.**
+Nullability drift has been corrected three times: ten columns at 1.1, one at 1.3,
+and every correction added a `NULL` marker. Section 4 holds 121 columns, of which
+27 are marked `NULL` and 94 are silent, and no column anywhere in the document
+marks non-nullability. Eleven of the eighteen tables are mixed and 64 of the 94
+silent columns sit in one, so an unmarked column beside a marked one is what the
+convention produces rather than an anomaly. `known_on` is silent for that reason
+and not by omission.
