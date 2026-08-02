@@ -15,10 +15,11 @@ predates this file and cannot be relied on.
 ## Topical index
 
 **Purpose and measurement**: D-W2, D-W3, D-W5, D-W17, D-W18, D-W20, D-W21
-**Isolation and controls**: D-W1, D-W4, D-W6, D-W13
-**Data and identity**: D-W7, D-W8, D-W9, D-W15, D-W26, D-W27, D-W28, D-W29, D-W30, D-W31, D-W32, D-W34, D-W35, D-W36
-**Risk**: D-W10, D-W11, D-W14, D-W19, D-W23, D-W25, D-W37
+**Isolation and controls**: D-W1, D-W4, D-W6, D-W13, D-W41
+**Data and identity**: D-W7, D-W8, D-W9, D-W15, D-W26, D-W27, D-W28, D-W29, D-W30, D-W31, D-W32, D-W34, D-W35, D-W36, D-W39
+**Risk**: D-W10, D-W11, D-W14, D-W19, D-W23, D-W25, D-W37, D-W43
 **Gate constraints**: D-W10, D-W22, D-W23, D-W24, D-W25
+**Settlement mechanics**: D-W38, D-W39, D-W40, D-W41, D-W42, D-W43
 **Scope**: D-W12, D-W16
 **Verification mechanisms**: D-W28, D-W33
 
@@ -255,7 +256,7 @@ absent from watchlist membership as of that date.
 ---
 
 ### D-W17 Outcome metric: denominator and horizon
-`active` · 2026-07-26
+`active` · 2026-07-26, amended 2026-08-02 (the multiplier, sourced)
 
 The outcome of a decision is return on capital committed at the strike, being
 strike times the contract multiplier times contracts, measured from trial open
@@ -264,10 +265,23 @@ through to return to cash, with assigned shares marked into the same number.
 Consequence: assignment is inside the metric rather than outside it, so the
 strategy's downside cannot leave the measurement.
 
-One hundred is the standard multiplier and not a constant of the metric. An
-adjusted contract carries its own deliverable in `contracts.multiplier`, so a
-metric hardcoding one hundred would misprice every position in a name that has
-split.
+One hundred is the contract multiplier, and no adjustment changes it. OCC's
+By-Laws once specified two methods, one of which reduced the strike and raised
+the deliverable together: a 3-for-2 took a $60 option calling for 100 shares to
+a $40 strike calling for 150. Those methods produced rounding windfalls and were
+retired. Under the method in force, an adjustment moves the deliverable and not
+"the strike prices or the values used to calculate aggregate exercise prices and
+premiums", so the same 3-for-2 leaves a $50 option at $50 with a 150-share
+deliverable, and an exercising call holder "would continue to pay $50 times
+100". The same applies to reverse splits. So committed capital is strike times
+the multiplier in every case, and a metric reading the deliverable would
+misprice every adjusted position, which is the error this paragraph previously
+asserted.
+
+Source: Release No. 34-54748, File No. SR-OCC-2006-01, 71 FR 67415,
+21 November 2006, for the proposed method and the retired ones; approved by
+Release No. 34-55258, File No. SR-OCC-2006-01, 72 FR 7701, 16 February 2007.
+Retrieved 2026-08-02.
 
 Test: `WORKED_EXAMPLE.md` reproduces the figure to the cent.
 
@@ -928,3 +942,237 @@ unresolvable bound produces one message rather than one per contract.
 
 Test: a constraint evaluated at a simulated date before its bound was written
 fails naming the key and the date.
+
+---
+
+### D-W38 Expiry resolves by exercise at one cent in the money
+`active` · 2026-08-01
+
+A short option expiring one cent or more in the money against the session's
+closing price is assigned. One expiring out of the money, or in the money by
+less than one cent, expires worthless.
+
+Source. OCC Rule 805's exercise-by-exception threshold for equity options is
+one cent, set by Release No. 34-57163, File No. SR-OCC-2007-18, which amended
+Rule 805 to reduce from $.05 to $.01 the threshold amount used to determine
+the equity options deemed in the money for that processing, published at
+73 FR 4297, 24 January 2008. The same filing states the in-the-money test:
+the difference between the exercise price and the closing price of the
+underlying equity interest on the last trading day before expiration.
+Retrieved 2026-08-02.
+
+Retrieved 2026-08-01 from the Options Industry Council's exercise reference,
+which states that OCC uses the one-cent threshold for the positions of its
+clearing members as an administrative convenience and that a firm may use a
+different one. So it is a procedure between OCC and its clearing members
+rather than a rule binding an account, and Rule 805 Interpretation .02 says
+as much: the thresholds are not intended to dictate to clearing members
+which positions in customers' accounts should or must be exercised.
+
+The lab models the common case and records that it is a model. A contrary
+exercise advice, by which a holder declines an in-the-money exercise or
+exercises one that is out of the money, is not modelled: it is a choice made
+by the holder of a contract the lab is short, and the lab cannot observe it.
+
+Test FX-ExpiryResolvesAtOneCent: a short put closing one cent below its
+strike assigns; one closing at the strike expires worthless.
+
+---
+
+### D-W39 Assignment occurs at a session's close and is known the next morning
+`active` · 2026-08-01
+
+Assignment is determined against net short positions after the close of
+session D and is not known to the account until the morning of the next
+business day. No decision made on D may depend on an assignment that
+occurred on D.
+
+Source, the clearing layer. Rule 803 assigns exercise notices to Clearing
+Members in respect of positions in a particular account, or a particular
+sub-account where an account is divided, which is its Interpretation .01. The
+method is deliberately outside the rule: SR-OCC-95-16 amended Rule 803 to
+eliminate the reference to random selection as the means OCC uses, and states
+that the assignment procedures "will be a stated policy, practice, or
+interpretation of proposed OCC Rule 803 and will not be set forth in Rule 803"
+(Release No. 34-36453, File No. SR-OCC-95-16, 60 FR 56625, 9 November 1995).
+Neither does any rule reached here state that assignment is determined against
+net positions after the close of the market each day, so that a short position
+bought back before the close cannot be assigned that day; that is retrieved
+2026-08-01 from the Options Industry Council's assignment reference, as is the
+description of OCC allocating to clearing members in the early hours.
+
+Source, the account layer. Rule 804 requires each Clearing Member to establish
+fixed procedures for allocating assigned exercises to specific short positions,
+"in accordance with the requirements set forth in Exchange Rules and any
+applicable rules of any self-regulatory organization of which the Clearing
+Member is a member", and its reporting provision names each writer to whom the
+member allocated an exercise assigned "on the preceding business day". So the
+member's own procedures govern which account is assigned, and no OCC rule fixes
+when a customer is told: the next-business-day shape is what that reporting
+deadline assumes rather than what any rule requires. Retrieved 2026-08-01 from
+Exhibit 5B of File No. SR-OCC-2024-013.
+
+The lab models the common case of next-session notification and records that
+the timing is a broker's procedure rather than a rule, which is the disclosure
+D-W38 makes about the one-cent threshold not binding an account.
+
+Rationale, and it is [D-W8] applied to the account rather than to the market.
+A maker that reacted to its own assignment on the day it happened would be
+reading a fact that did not exist yet, which is the leak an as-of read exists
+to prevent. The same discipline the store applies to what the market showed,
+applied to what the account knew.
+
+Consequence for the state machine. An assignment carries two dates: the
+session it occurred in, and the session the account may act on it. Both are
+stored, because a projection rebuilt from the ledger [D-W35] must reproduce
+what was known when, and one date cannot answer both questions.
+
+Test FX-AssignmentKnownNextSession: a decision on the day of assignment sees
+the pre-assignment state, and the following session sees the shares.
+
+---
+
+### D-W40 Proceeds from an assignment or a call-away are usable the next session
+`active` · 2026-08-02
+
+Cash and shares from an assignment or a call-away settle on the first business
+day after the session the exercise occurred in. That is the session the account
+first learns of the assignment [D-W39], so a trial may commit the proceeds on
+the session it learns of them and not before.
+
+Source, the settlement cycle. Rule 15c6-1(a) as amended requires that a broker
+"not effect or enter into a contract for the purchase or sale of a security ...
+that provides for payment of funds and delivery of securities later than the
+first business day after the date of the contract", with a compliance date of
+28 May 2024. Release No. 34-96930, File No. S7-05-22, 88 FR 13872, 6 March 2023.
+Retrieved 2026-08-02.
+
+Source, the exercise leg. An exercise is a clearing event rather than a purchase
+or sale, so the cycle above does not reach it and OCC's own rule does. The order
+approving OCC's conforming changes records that, for transactions settling on a
+broker-to-broker basis, OCC changed "the delivery date for physically-settled
+options under OCC Rule 903 from the 'second' to the 'first' business day
+following exercise", implemented on the Commission's compliance date. Release
+No. 34-99701, File No. SR-OCC-2024-002, 89 FR 18685, 14 March 2024. Retrieved
+2026-08-02.
+
+What neither reaches. When a broker makes settled proceeds available to trade
+against is house policy and margin treatment rather than a settlement cycle, and
+no rule fixes it. The lab models proceeds as usable on the settlement session and
+records that as a model, which is the disclosure [D-W38] makes about the one-cent
+threshold and [D-W39] about notification.
+
+Scope. "The first business day after" needs a session calendar and this lab has
+none. The only session sequence in the store is `underlying_bars.session_date`,
+which is per symbol and cannot distinguish a market holiday from a name that did
+not trade. What that calendar is, and whether it is derived or stored, is owed at
+3.3 rather than settled here.
+
+Nothing reads this yet, and saying so is cheaper than leaving it to be found.
+Committed capital is bounded against equity rather than against settled cash
+[D-W11], so no maker asks whether cash has cleared. The mechanic is recorded
+because the state machine needs it the first time a trial opens on the session
+after a close, not because a path consumes it today.
+
+Test FX-ProceedsUsableOnSettlement: a trial closed by assignment cannot commit
+its proceeds on the session of the assignment and can on the following session.
+
+---
+
+### D-W41 Dividend entitlement is fixed at the record date, and a dividend is ledgered
+`active` · 2026-08-02
+
+A holder entitled to a dividend is one holding the shares before the ex-dividend
+date, which under a one-day settlement cycle is the record date itself. A
+dividend received while a trial holds assigned shares is recorded in
+`ledger_entries`, and the buy-and-hold control receives its dividends on the same
+basis [D-W13].
+
+Two questions, and only the first has an authority.
+
+Source, the entitlement. FINRA Rule 11140(b)(1) as amended: the date designated
+as the "ex-dividend date" "would be the record date if the record date falls on a
+business day, or the first business day preceding the record date if the record
+date falls on a day designated by the Committee as a non-delivery date". Filed
+for immediate effectiveness with an operative date of 28 May 2024. Release No.
+34-99075, File No. SR-FINRA-2023-017, 88 FR 85678, 8 December 2023. Retrieved
+2026-08-02.
+
+What no rule reaches, and the lab decides. Whether a dividend enters the record
+at all is this corpus's question rather than a market's. It does, in both places:
+a dividend paid between assignment and call-away is cash the trial received, and
+recording it against the trial while leaving the control's return untouched would
+bias the exact comparison the lab exists to make, in one direction. Chosen, not
+transcribed.
+
+Three things this needs and none of them lands here. `ledger_entries.kind` needs
+a `dividend` value; `CorporateActionKind` is `Split` only and names this decision
+in its own remarks; and the synthetic-chain format carries no corporate actions
+at all, so no hand-written scenario can express a dividend today. Naming them is
+what this decision owes the checkpoint that adds them.
+
+Test FX-DividendReachesLedger: a dividend whose ex-date falls while a trial holds
+assigned shares produces a ledger entry, and one whose ex-date falls after the
+shares were called away does not. The control's half is asserted where the
+control is built, which is not Phase 3.
+
+---
+
+### D-W42 Early exercise around ex-dividend is modelled, and nothing is cited
+`active` · 2026-08-02
+
+A short call is assigned on the session before the ex-dividend date when the
+dividend exceeds the call's remaining time value. No other early assignment is
+modelled.
+
+The absence is the source. Whether the holder of a long call exercises it early
+is that holder's decision, and no rule governs the making of it. OCC Rule 803
+assigns an exercise notice to a Clearing Member once one is made and Rule 804
+leaves the allocation to that member's own fixed procedures [D-W39]; both
+describe what happens after a choice this lab cannot observe. So this decision
+cites nothing, which is a different thing from citing weakly.
+
+The condition is chosen, not transcribed. A holder who exercises early captures
+the dividend and gives up the option's remaining time value, so the exchange is
+worth making when the first exceeds the second. That is the standard reasoning
+and it is an approximation: it assumes a holder who acts on it, ignores what
+acting costs, and could not see intraday exercise in end-of-day data in any case.
+`VALIDITY.md` records the error as unmeasured and this decision does not improve
+on that.
+
+Test FX-EarlyAssignmentOnDividend: a short call whose underlying goes ex-dividend
+by more than the call's remaining time value is assigned on the preceding
+session, and one where the time value is larger is not.
+
+---
+
+### D-W43 A covered call commits nothing beyond the trial's committed capital
+`active` · 2026-08-02
+
+A covered call written against shares a trial already holds commits no further
+capital. The trial's committed capital was fixed when the put was sold [D-W17]
+and the shares are what that capital bought, so the portfolio caps read one
+figure per trial from open to close and it does not change when the leg changes.
+
+Chosen, not transcribed. No authority states this: it is a modelling choice about
+how the lab measures its own exposure, on 2.4's distinction, and the only one of
+3.1's seven mechanics with no external source of any kind.
+
+Why it is the conservative reading rather than the permissive one. The
+alternative charges a call its own committed figure, which would count the same
+capital twice in the same trial and make the per-name cap bind on a leg that ties
+up no cash. The risk a covered call carries is not that it commits capital but
+that it caps recovery below the outlay, and that is [D-W19]'s gross-basis
+constraint rather than a capital cap.
+
+What this does not decide. Whether writing a call reduces the trial's committed
+capital, by the credit received or otherwise, is not addressed: the figure is
+fixed at open and this decision keeps it fixed. And the simultaneous-assignment
+limit reads short puts, so a trial holding shares contributes nothing to it,
+which is why that cap and the total cap coincide today [`CONFIG_REFERENCE.md`,
+`Risk:SimultaneousAssignmentLimitFraction`] and will diverge at the first covered
+call.
+
+Test FX-CoveredCallCommitsNothingFurther: a trial holding assigned shares gates a
+call candidate against the committed capital it already carries, and the per-name
+headroom is unchanged by the call.

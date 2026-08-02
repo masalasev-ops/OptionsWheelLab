@@ -4,9 +4,9 @@ Appended to, never rewritten. The repository is the authority on build state.
 
 ## Current state
 
-**Phase 0 complete and reviewed. Phases 1 and 2 complete.** Checkpoints 0.1 to
-0.8, 1.1 to 1.5 and 2.1 to 2.5 built and signed off. Phase 3 is not started and
-its detail is authored. The documentation corpus is at v1.35.0.
+**Phase 0 complete and reviewed. Phases 1 and 2 complete. Phase 3 started.**
+Checkpoints 0.1 to 0.8, 1.1 to 1.5, 2.1 to 2.5 and 3.1 built and signed off. 3.2
+to 3.5 are not started. The documentation corpus is at v1.37.0.
 
 ## Log
 
@@ -1212,3 +1212,183 @@ written.** That is the shape, and it is the reason this corpus keeps removing
 counts and ordinals from prose that would otherwise have to be revisited every
 time the thing beneath it moves. The number of instances is the one figure this
 entry does not assert.
+
+### 2026-08-01 — corpus v1.36.0
+Checkpoint 3.1 opened, and all of its mechanics settled but one. D-W38 resolves
+expiry by exercise at one cent in the money; D-W39 places assignment after a
+session's close and the account's knowledge of it the next morning; D-W17 is
+amended to the multiplier; D-W40 settles when proceeds are usable, D-W41
+dividend entitlement and the record, D-W42 early exercise around ex-dividend.
+Five fixtures registered against 3.3, where the transitions land. Documentation
+only; no code, and the suite is unchanged at 503.
+
+**D-W40, D-W41 and D-W42 are drafted rather than supplied.** The evidence was in
+the build's hands and the wording was not, so they were written from the
+retrieved sources and landed for correction. That is the same arrangement D-W39's
+three source paragraphs were written under, and it is recorded because the corpus
+and the repository have different authors [`CLAUDE.md` §10] and a reader should
+know which one produced a sentence.
+
+**The branch is deliberately unmerged, and that is a state rather than a stall.**
+3.1 signs off when all seven are settled, and a half-settled 3.1 on `main` would
+leave the corpus asserting two mechanics and silent on five with nothing marking
+the difference. This entry is what makes the open state legible while it sits.
+
+**What was retrieved.** The Options Industry Council's exercise and assignment
+references, on 2026-08-01, cited in both decisions under headings that say what
+they are. That is 3.1's requirement of OCC's own rules met by disclosure rather
+than by claim: OIC describes OCC's procedure, and D-W38 states what that
+procedure does not establish, which is that the one-cent threshold runs between
+OCC and its clearing members rather than binding an account.
+
+**What was not, and why.** Measured on 2026-08-01: `theocc.com` and
+`infomemo.theocc.com` both return 403 to this environment while `sec.gov` serves
+the filings, so primary rule text arrives through SEC rule filings and the
+contract adjustment memos do not arrive at all. Five items stay open.
+
+**A second route, recorded because it reached what the first could not.** A rule
+whose text no SEC filing exhibit reproduces can still be read in the Federal
+Register notice that approved it, and `govinfo.gov` serves those as GPO's own
+text where `federalregister.gov`'s full-text path returns a bot wall. That is how
+D-W38's citation moved from a characterisation of Rule 805 to the filing that set
+it, which is the one thing 3.1 had recorded as unverifiable from here.
+
+**The authority covers the clearing layer and the account layer is convention.**
+Three mechanics now show it. OCC's one-cent threshold runs between OCC and its
+clearing members and does not bind an account; OCC assigns exercise notices to a
+Clearing Member while Rule 804 leaves the choice of writer to that member's own
+fixed procedures, with the method deliberately outside Rule 803 since
+SR-OCC-95-16 removed it; and no rule fixes when a customer is told. So a decision
+that spans both layers cites two authorities or states that it has one, and the
+lab's account-level behaviour is a model recorded as a model rather than a rule
+transcribed. That is the same disclosure in three places, and it is what the
+sourcing requirement buys that a secondary description would have hidden.
+
+- **Committed capital's quantity, settled at strike times multiplier.**
+  Retrieved 2026-08-02 from Release No. 34-54748, File No. SR-OCC-2006-01,
+  71 FR 67415, 21 November 2006, Notice of Amended Filing of Proposed Rule
+  Change To Revise Option Adjustment Methodology, and from its approval at
+  Release No. 34-55258, same file number, 72 FR 7701, 16 February 2007, which
+  carries the same method text after Amendment No. 1. The approved method
+  adjusts the deliverable "but not the strike prices or the values used to
+  calculate aggregate exercise prices and premiums". On a 3-for-2 split of an
+  XYZ $50 option the deliverable becomes 150 shares, the strike remains $50,
+  "the presplit multiplier of 100, used to extend aggregate strike price and
+  premium amounts, is unchanged", and an exercising call holder "would continue
+  to pay $50 times 100". Footnote 7 applies the same method to reverse splits.
+  So one quantity answers all three cases and it is the multiplier, which is
+  [D-W17]'s first paragraph rather than its third.
+- **The arithmetic the obligation reasons from describes the method this filing
+  retired.** The notice's Background states the pre-2007 rule, under which an
+  uneven forward split moved the strike as well: an XYZ $60 option becomes $40
+  calling for 150 shares. That is where "only strike times deliverable leaves
+  the aggregate exercise where the adjustment found it" comes from, and it held
+  until February 2007. The footnote read without the section framing it gives
+  the opposite answer, which is the shape of both earlier wrong readings on this
+  same question [D-W36]. [D-W17] stays unamended because the amendment is
+  authored, and D-W36's figures are still not reasoned from, their provenance
+  being a search result rather than the memo.
+- **2.4's call site reads the other quantity.** `CommittedCapital.For` returns
+  strike times deliverable, chosen at 2.4 as the only quantity in reach and
+  named there as this checkpoint's to settle. It is settled the other way, and
+  correcting it is 3.3's work rather than 3.1's, which writes no code.
+- **T+1 cash availability, settled as [D-W40].** Retrieved 2026-08-02 from Rule
+  15c6-1(a) as amended, which bars settlement "later than the first business day
+  after the date of the contract" (Release No. 34-96930, File No. S7-05-22,
+  88 FR 13872, 6 March 2023), and from the order approving OCC's conforming
+  changes, which moved "the delivery date for physically-settled options under
+  OCC Rule 903 from the 'second' to the 'first' business day following exercise"
+  for broker-to-broker settlement (Release No. 34-99701, File No.
+  SR-OCC-2024-002, 89 FR 18685, 14 March 2024). Both implemented 28 May 2024.
+- **Dividend entitlement, settled as [D-W41].** Retrieved 2026-08-02 from FINRA
+  Rule 11140(b)(1) as amended: the ex-dividend date "would be the record date if
+  the record date falls on a business day", filed for immediate effectiveness
+  with an operative date of 28 May 2024 (Release No. 34-99075, File No.
+  SR-FINRA-2023-017, 88 FR 85678, 8 December 2023).
+- **Early exercise around ex-dividend, settled as [D-W42], citing nothing.** The
+  absence was established rather than failed at: Rules 803 and 804 govern what
+  happens after an exercise is made and no rule governs the making of it, so the
+  condition the lab adopts is chosen and says so.
+- **What a covered call commits.** Still open, goes last, and no external source:
+  it is a modelling choice about [D-W17]'s committed capital.
+
+**Which of those cite an authority and which are chosen was stated before
+retrieval rather than after**, because that is what stops the last one arriving
+dressed as a fact. It is the distinction 2.4 drew between a transcribed value and
+a chosen one, moved from numbers to mechanics. It held: what was predicted to
+have a primary source has one, and what was predicted to have none still has
+none.
+
+**Three shapes, not three instances of one.** The clearing-layer pattern recurs
+in [D-W40], where a settlement cycle is a rule and when a broker releases
+proceeds to trade against is house policy. [D-W41] is a different shape: one rule
+answering one of the decision's two questions, the other being this corpus's own,
+since whether a dividend enters the record is nobody's rule. [D-W42] is a third:
+no authority at any layer, because the act being modelled is a choice. Counting
+them as one pattern would lose what makes the third one different, which is that
+there is nothing to disclose a limit against.
+
+**The projection check run for each** [D-W35], since [D-W39] needed a column and
+the deduction came from that decision rather than from any rule. [D-W41] and
+[D-W42] need none: a dividend is cash and does not touch basis, entitlement is
+decided from `corporate_actions.ex_date` when the entry is generated rather than
+being a property of the entry, and an early assignment is an assignment using the
+pair `entry_date` and `known_on` that already exists. [D-W40] does not resolve,
+and the reason is measured: no business-day, trading-day or session-calendar
+concept exists in this corpus or in `src/`, so "the first business day after" has
+nothing to resolve against. That is raised at 3.3 rather than answered here,
+because unlike `known_on` it has more than one defensible home.
+
+**D-W39's second date lands in the schema now rather than at 3.3**, because the
+decision determines it rather than leaving it open. [D-W35] makes `trials` and
+`positions` projections rebuildable from `ledger_entries`, and a projection
+cannot carry what its source lacks, so `known_on` is deduced onto the ledger
+rather than chosen for it, and `positions` does not gain it for the same reason.
+The table is Phase 3's and does not exist, so this is the schema being right
+before it is built rather than a change to one.
+
+**The nullability convention, measured because the new column turned on it.**
+Nullability drift has been corrected three times: ten columns at 1.1, one at 1.3,
+and every correction added a `NULL` marker. Section 4 holds 121 columns, of which
+27 are marked `NULL` and 94 are silent, and no column anywhere in the document
+marks non-nullability. Eleven of the eighteen tables are mixed and 64 of the 94
+silent columns sit in one, so an unmarked column beside a marked one is what the
+convention produces rather than an anomaly. `known_on` is silent for that reason
+and not by omission.
+
+### 2026-08-02 — corpus v1.37.0
+**Checkpoint 3.1 signed off.** D-W43 settles the last of the seven: a covered
+call written against shares a trial already holds commits no further capital, the
+figure having been fixed when the put was sold [D-W17]. It is the only one of the
+seven with no external source of any kind, and it says so.
+
+Seven questions were listed in 3.1's detail and seven were answered, by six new
+decisions and one amendment. **Four obligations closed and three were raised**,
+all three at 3.3, so the table falls from thirteen rows to twelve: seven at
+checkpoint granularity and five at phase. Six fixtures were registered against
+3.3 and none against 3.1, which registers none and says so. No `.cs` file was
+touched and the suite is unchanged at 503.
+
+**What the checkpoint turned out to be.** Its detail described a documentation
+exercise: answer seven questions, cite a rule for each. What it delivered was
+that, plus a schema column, a schema question raised, a decision corrected that
+had been wrong since 0.4, and a granularity convention stated for a table that
+had been read two ways. None of those was in scope and each fell out of doing
+the work as specified, which is the argument for settling preconditions before
+the transitions rather than alongside them.
+
+**`phase-3.md` opens and `phase-2.md` closes**, on the practice `phase-1.md`
+records: a phase's archive stays open past its own sign-off and closes when the
+next one opens. Phase 2's file is frozen with its Current state as of v1.35.0
+rather than as of the version it closed at, because 3.1 moved the corpus twice
+while changing no code and the state description was not brought forward in
+between. Saying which of the two it is frozen at costs a clause and saves a
+reader assuming the fresher one.
+
+**The archive's lessons gain three**, all of them from this checkpoint: that a
+market rule governs the clearing layer while the account layer is convention, so
+a decision spanning both cites two authorities or states that it has one; that a
+quotation is not evidence until its position in the document is established,
+which is this corpus's citation rule one level deeper than it had been applied;
+and that a checkpoint writing no code can still change the schema, because the
+deduction comes from a decision rather than from a rule.

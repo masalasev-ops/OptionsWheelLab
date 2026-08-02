@@ -621,21 +621,27 @@ other silently. That is this corpus's pointer rule arriving in a register rather
 than in prose, where it has until now applied to a fact stated twice; here it is
 two questions with one answer, which fails the same way.
 
+**The Owed at column names a checkpoint once the owning phase's detail exists,
+and a phase otherwise.** Detail is written one phase ahead, so a row sits at
+phase granularity for at most one phase, which is the rule `FIXTURES.md` already
+applies to its own checkpoint column. A count taken over phase names alone
+misses the rows that have moved on, which is how two readings of this table came
+to differ.
+
 | Owed at | Obligation | Raised |
 |---|---|---|
 | Phase 11 | Re-add `Microsoft.AspNetCore.OpenApi` against a version whose `Microsoft.OpenApi` dependency clears the audit. Removed at 0.1 rather than suppressing the advisory; the reason is in the Api project file. | PR #1 |
-| Phase 3 | Establish output-level determinism: a simulated run with a fixed clock produces byte-identical output across two invocations. 0.5 restated it as identical stored rows because no run existed to make. Compared as produced artefacts, never as a database file [D-W28]. | PR #4 |
-| Phase 3 | Decide what bars nondeterminism in SQL that is not a clock. Enumerating the bundled SQLite showed `random()` and `randomblob()` alongside the seven clock functions; they are outside FX-ClockIsNotADateSource by name but would break a byte-identical run just as surely. | PR #4 |
-| Phase 3 | Set `Costs:AssignmentFee`. No document states it, and zero inferred from an absent ledger line is weaker than a stated number and invisible when wrong. Phase 3's assignment path is the first thing that computes with it. | PR #7 |
-| Phase 3 | Settle which quantity committed capital uses. D-W17's first paragraph says the contract multiplier and its third says the deliverable, and they differ for an adjusted contract. On a 3-for-2 split taking a $90 strike to $60 with a 150-share deliverable, strike times multiplier gives $6,000 and strike times deliverable gives $9,000, and only the second leaves the aggregate exercise where the adjustment found it. A reverse split may behave differently, in which case the aggregate exercise price is a stated fact per adjustment rather than a product of two columns, and the schema needs to carry it. Check against OCC's contract adjustment memos, not a secondary source. Raised at 1.1 while choosing a unique constraint, and twice reasoned wrongly from a sentence about premium quoting before the arithmetic was run. | v1.18.0 |
+| 3.5 | Establish output-level determinism: a simulated run with a fixed clock produces byte-identical output across two invocations. 0.5 restated it as identical stored rows because no run existed to make. Compared as produced artefacts, never as a database file [D-W28]. | PR #4 |
+| 3.5 | Decide what bars nondeterminism in SQL that is not a clock. Enumerating the bundled SQLite showed `random()` and `randomblob()` alongside the seven clock functions; they are outside FX-ClockIsNotADateSource by name but would break a byte-identical run just as surely. | PR #4 |
+| 3.4 | Set `Costs:AssignmentFee`. No document states it, and zero inferred from an absent ledger line is weaker than a stated number and invisible when wrong. Phase 3's assignment path is the first thing that computes with it. | PR #7 |
 | Phase 4 | Store one feasible set per name and date rather than one per decision. `candidates` is keyed on `decision_id`, so three makers acting on one set write it three times, while [D-W4] requires the three to be byte-identical and `FX-ThreeMakersSameFeasibleSet` asserts it. Storing once and referencing thrice makes it true by construction and divides the largest uncertain table by three. Raised while estimating store size over a ten-year lifetime, before the table exists. The grain is (symbol, date) and nothing carries it as a type; 2.5 declined to ship one because no maker exists to consume it, so Phase 4 models the set with `candidates` in front of it rather than inheriting a shape guessed three checkpoints early. `FX-ThreeMakersSameFeasibleSet` is also where the byte-level property is asserted, restated from 2.5's definition of done for want of a subject. **The reason-storage row raised at v1.32.0 is answered by whatever grain this settles.** | v1.17.0 |
 | Phase 8 | Extract the market rules out of `SyntheticChainReader`, so one definition serves the synthetic reader and the vendor ingest. Refusing a negative bid, a negative ask and a crossed market are statements about what a market can be, not JSON concerns, and they sit as private statics on the reader, so a second producer of quotes can only duplicate them. Phase 8 is where that second producer arrives. **The crossed-quote coupling is discharged at 2.3**: the gate handles a crossed quote [D-W22, as amended], so that rule moved to the gate and left the loader, and what remains to extract is the two negative-price refusals. Not extracted at 0.8 because there is one caller and the second does not exist. | PR #9 |
-| Phase 3 | Decide how dividends are recorded. Between assignment and call-away the account holds shares, and a dividend paid in that window is cash the trial received; omitting it understates every covered-call leg and misprices the buy-and-hold control [D-W13], which biases the exact comparison the lab exists to make. Needs a ledger `kind`, a source for ex-dates and amounts (`corporate_actions` already exists and lists `dividend` among its kinds), and a statement of whether the synthetic-chain format can express one. Raised from a review of what the wheel model omits, before Phase 3's detail is authored. | v1.22.0 |
-| Phase 3 | Verify the wheel's settlement mechanics against OCC's own rules before the state machine's decisions are authored, and cite the rule in each decision: exercise-by-exception and its in-the-money threshold at expiry; when assignment is known to the account versus when it occurred; when cash from an assignment or a call-away is usable again under T+1 settlement; the early-assignment model around ex-dividend that VALIDITY already names as modelled by rule; and dividend entitlement timing given that ex-date and record date coincide under T+1. Every item is a mechanics fact with a primary source, none is currently verified, and the corpus's posture is transcription from authorities rather than recollection [D-W36]. Raised at 1.5 when the adjustment question got this treatment and the remaining unverified mechanics were enumerated. | v1.26.0 |
 | Phase 4 | Decide how a candidate's gate reasons are stored. `candidates.gate_reason` is a single nullable TEXT column and the domain type is a set in declared order [2.3], which FX-GateRecordsAllReasons at 2.5 asserts by requiring two reasons on one candidate. The options include a delimited list, which makes a reason unqueryable, and a row per reason, which changes the table's grain. Raised at 2.3 when the vocabulary was declared. **The grain this assumes is the one the v1.17.0 row decides.** | v1.32.0 |
 | Phase 9 | Decide how configuration resolves for a simulated date that precedes the value being written. `SeedCommand` stamps `set_at` from the wall clock, so every gate bound resolves null for any simulated date before the seed ran, which is every date in a walk-forward over real history. [D-W26] requires resolution as of the simulated date and [D-W37] stops the evaluation rather than guessing, so the collision surfaces loudly at the first walk-forward rather than silently. The options include backdating the seed, which costs the audit trail its truthfulness, and resolving a registered run's configuration as of its pre-registration instant [D-W15], which keeps both rules intact. Raised at 2.3 while answering what an unresolvable bound does. | v1.32.0 |
-| Phase 3 | Decide what a covered call commits. [D-W17] fixes a trial's committed capital at open, so a call written against shares already assigned may commit nothing new, while 2.4 charges the candidate's own figure regardless of right, which is the conservative reading and binds a cap that may not apply. No fixture reaches it because no covered call is gated before the state machine exists. Raised at 2.4. | v1.33.0 |
-| Phase 3 | Run a domain-completeness pass before the state machine's decisions are authored, and record what it finds. Every check this repository has compares one part of the corpus against another, so an omission from the domain model is invisible to all of them: dividends were absent from `ledger_entries` and from D-W13's control for eight checkpoints, and surfaced from a conversation rather than from any process. The pass walks a wheel turn end to end against the corpus and asks what the strategy involves that no document mentions: cash movements between assignment and call-away, what a trial's economics include, what an account holds that the ledger does not name. Findings become their own rows. Raised at 1.5, after the dividend gap showed the class exists. | v1.26.0 |
+| 3.3 | Correct `CommittedCapital.For` to strike times multiplier, per [D-W17] as amended. 2.4 read the deliverable as the only quantity in reach and named 3.1 as the checkpoint that would decide; it decided the other way. Its own reasoning was that the choice sits in one place so Phase 3 changes one site, and this is that site. Every current contract carries one hundred as both quantities, so no test distinguishes them today and none will until an adjusted contract is gated. Raised at 3.1. | v1.36.0 |
+| 3.3 | Give the record a dividend to hold, per [D-W41]. `ledger_entries.kind` needs a `dividend` value, `CorporateActionKind` is `Split` only and names that decision in its own remarks, and the synthetic-chain format carries no corporate actions at all, so no hand-written scenario can express one. Whether `corporate_actions` gains a CHECK the way `right` and membership's `kind` have one rides with it. Raised at 3.1, where the decision named all three rather than adding any. | v1.36.0 |
+| 3.3 | Decide what a session calendar is, since [D-W40] resolves settlement to "the first business day after" and nothing in this lab can answer that. The only session sequence in the store is `underlying_bars.session_date`, which is per symbol and cannot distinguish a market holiday from a name that did not trade. Whether the calendar is derived from bars or stored is the question; Phase 8's vendor ingest is the other consumer. Raised at 3.1. | v1.36.0 |
+| 3.2 | Run a domain-completeness pass before the state machine's decisions are authored, and record what it finds. Every check this repository has compares one part of the corpus against another, so an omission from the domain model is invisible to all of them: dividends were absent from `ledger_entries` and from D-W13's control for eight checkpoints, and surfaced from a conversation rather than from any process. The pass walks a wheel turn end to end against the corpus and asks what the strategy involves that no document mentions: cash movements between assignment and call-away, what a trial's economics include, what an account holds that the ledger does not name. Findings become their own rows. Raised at 1.5, after the dividend gap showed the class exists. | v1.26.0 |
 
 ---
 
@@ -1283,10 +1289,13 @@ closed at the roll bound, with every cash movement in the ledger and the
 trial and position rebuildable from it. On synthetic chains; no vendor data
 until Phase 8.
 
-Eight obligations are owed here, five of which determine what the state
-machine does rather than sitting inside it. They are settled at 3.1 before
-any transition is written, on the ordering Phase 1 and Phase 2 both used:
-a precondition answered late is a schema or a transition built twice.
+Several of the obligations owed here determine what the state machine does
+rather than sitting inside it, and those are settled at 3.1 before any
+transition is written, on the ordering Phase 1 and Phase 2 both used: a
+precondition answered late is a schema or a transition built twice. One
+settled into a code correction instead, which is what it looks like when a
+precondition turns out to have been answered already and only the
+implementation lags.
 
 ### 3.1 The mechanics, settled before the machine
 Not code. Each answer becomes a decision citing its source, and each source
@@ -1308,6 +1317,39 @@ preference.
 - **DoD**: every transition 3.3 will write cites a decision settled here, and
   no mechanic is encoded from recollection.
 - Registers no fixtures and says so, per rule 2.
+
+Reconciled at sign-off against what shipped. Seven questions were listed and
+seven were answered, by six new decisions and one amendment: D-W38 to D-W43, and
+[D-W17] corrected. Four obligations closed, three were raised, six fixtures were
+registered against later checkpoints, and no `.cs` file was touched.
+
+**The sourcing requirement changed what the decisions could claim, which is what
+it was for.** A market rule governs the clearing layer and the account layer is
+convention, so a decision spanning both cites two authorities or states that it
+has one. Four of the seven needed that disclosure. One had no authority at any
+layer, because the act it models is a holder's choice. And one rests on a rule
+that deliberately omits its own method: SR-OCC-95-16 removed random selection
+from Rule 803 in 1995 and put the assignment procedures outside the rule, so the
+gap in what could be cited was designed rather than missed.
+
+**One mechanic was answered by amending a decision rather than by adding one.**
+[D-W17]'s third paragraph had said committed capital reads the deliverable and
+located it in `contracts.multiplier`, which is neither the right quantity nor the
+right column. It entered at 0.4 and stood for fifteen checkpoints, produced the
+obligation that reasoned from it, and shaped `CommittedCapital.For` at 2.4. The
+filing that settled it is the one that retired the method the obligation's
+arithmetic describes, and the footnote which appeared to settle it the other way
+sits in that filing's Background. A quotation is not evidence until its position
+in the document is established.
+
+**Two schema consequences fell out of decisions rather than out of rules.**
+`ledger_entries` gained `known_on` here, deduced from [D-W35] because a
+projection cannot carry what its source lacks, and the table is 3.3's so the
+schema is right before it is built rather than changed after. The second did not
+resolve: [D-W40] settles to "the first business day after" and no business-day,
+trading-day or session-calendar concept exists in this corpus or in `src/`. That
+one has more than one defensible home and is raised at 3.3 rather than deduced
+here.
 
 ### 3.2 The completeness pass
 Not code. Every check in this repository compares one part of the corpus

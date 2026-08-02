@@ -1,5 +1,136 @@
 # CHANGELOG
 
+## [1.37.0] — 2026-08-02
+
+**Checkpoint 3.1**, the mechanics settled before the machine. Seven questions
+listed, seven answered, by six new decisions and one amendment. Documentation
+only; no code, no config key, and the suite is unchanged at 503.
+
+### Added
+- **D-W43**: a covered call written against shares a trial already holds commits
+  no further capital, the figure having been fixed when the put was sold
+  [D-W17]. Chosen, with no external source of any kind, and the conservative
+  reading is the one that does not charge the same capital twice.
+- `prompts/spent/phase-3.md` opens with 3.1's prompt and the description of the
+  present; `phase-2.md` closes.
+
+### Changed
+- **The archive's lessons gain three**, all from this checkpoint: the clearing
+  layer against the account layer; a quotation needing its position in the
+  document established before it is evidence; and a checkpoint that writes no
+  code still changing the schema when the deduction comes from a decision.
+- **Four obligations closed and three were raised**, all three at 3.3, so the
+  table falls to twelve rows: seven at checkpoint granularity and five at phase.
+
+### Notes
+- **The detail described a documentation exercise and the checkpoint delivered
+  more than one.** A schema column, a schema question raised, a decision wrong
+  since 0.4 corrected, and a granularity convention stated for a table two
+  readers had counted differently. None was in scope and each fell out of doing
+  the work as specified, which is the argument for settling preconditions before
+  the transitions rather than alongside them.
+- **Phase 2's archive is frozen at v1.35.0, not at the version it closed at.**
+  3.1 moved the corpus twice while changing no code and the state description was
+  not brought forward in between, so the file closed fresher than its contents.
+  Which of the two it is frozen at is stated, because a reader will otherwise
+  assume the later one.
+
+## [1.36.0] — 2026-08-01
+
+Checkpoint 3.1 opened. Two of its seven mechanics settled, five open, and the
+branch deliberately unmerged until all seven are. Documentation only; no code,
+no config key, and the suite is unchanged at 503.
+
+### Added
+- **D-W38**: a short option expiring one cent or more in the money against the
+  session's close is assigned, and one closer than that expires worthless.
+- **D-W39**: assignment is determined after a session's close and is not known
+  to the account until the next morning, so no decision made on the day may
+  depend on an assignment that occurred on it.
+- `ledger_entries` gains `known_on`, and §4.3 says why an entry carries the
+  session it occurred in beside the session the account could act on it.
+- **D-W40**: proceeds from an assignment or a call-away settle on the first
+  business day after the exercise, which is the session the account learns of it,
+  so a trial may commit them then and not before.
+- **D-W41**: entitlement to a dividend is fixed at the record date, which under a
+  one-day cycle is the ex-date, and a dividend received while a trial holds
+  assigned shares is recorded in `ledger_entries` and in the control [D-W13].
+- **D-W42**: a short call is assigned before an ex-dividend date when the
+  dividend exceeds its remaining time value. It cites nothing, because nothing
+  governs whether a holder exercises.
+- Five fixtures registered against 3.3, where the transitions land. 3.1 registers
+  none against itself and its detail says so.
+- `VALIDITY.md`'s early-exercise paragraph gains `[D-W38, D-W42]`. The two
+  clauses it already carried, at expiry and around ex-dividend, now have
+  decisions; the prose is unchanged, which is §5's test.
+
+### Fixed
+- **[D-W17]'s third paragraph asserted the metric uses the deliverable and
+  located it in `contracts.multiplier`, which is neither the right quantity nor
+  the right column.** Added at 0.4 with corpus v1.9.9, it stood for fifteen
+  checkpoints, produced the v1.18.0 obligation reasoning from a method retired
+  in February 2007, and shaped `CommittedCapital.For` at 2.4. It was written by
+  the corpus author, twice defended from secondary sources that described the
+  retired method as current, and closed only by reading the filing that retired
+  it. Committed capital is strike times the multiplier in every case.
+- **The v1.18.0 obligation closes.** It reasons from footnote 6's arithmetic,
+  which was correct until February 2007 and describes a retired method. Its
+  proposed alternative, a stated aggregate per adjustment needing its own
+  column, is unnecessary: the multiplier already carries it. Thirteen stays
+  thirteen: that row leaves and `CommittedCapital.For`'s correction at 3.3
+  takes its place, because settling a question and changing the code it
+  governs are different pieces of work.
+
+### Notes
+- **3.1's requirement of OCC's own rules is met by disclosure rather than by
+  claim.** Both decisions cite the Options Industry Council under a heading that
+  names it, and D-W38 states what the source does not establish: the one-cent
+  threshold is a procedure between OCC and its clearing members rather than a
+  rule binding an account, which Rule 805's own interpretation says as much.
+- **`theocc.com` and `infomemo.theocc.com` return 403 to the build environment
+  and `sec.gov` serves the filings**, measured rather than assumed. So primary
+  rule text is reachable and the contract adjustment memos are not, which is why
+  committed capital's quantity stays open and [D-W17] is unamended.
+- **The knowledge column is deduced, not chosen.** [D-W35] makes `trials` and
+  `positions` projections rebuildable from the ledger, and a projection cannot
+  carry what its source lacks, so D-W39's second date has exactly one place it
+  can live. Landing it now costs a column in a table that does not exist yet;
+  landing it at 3.3 would cost the transitions that were built without it.
+- **Which open items cite an authority and which are chosen is recorded before
+  retrieval, not after.** Two have a primary source, one has none by nature, one
+  is unknown until retrieved, and two are this corpus's own modelling choices.
+  That is 2.4's distinction between a transcribed value and a chosen one, moved
+  from numbers to mechanics, and it is what stops the last one arriving dressed
+  as a fact.
+- **D-W40, D-W41 and D-W42 are drafted rather than supplied**, written from the
+  retrieved sources and landed for correction, as D-W39's source paragraphs were.
+  Recorded because this corpus and this repository have different authors and a
+  reader should be able to tell which one produced a sentence.
+- **Three shapes rather than three instances of one.** [D-W40] repeats the
+  clearing-layer split: a settlement cycle is a rule and when a broker releases
+  proceeds is house policy. [D-W41] is one rule answering one of two questions,
+  the other being this corpus's own. [D-W42] has no authority at any layer,
+  because the act it models is a choice, and it is the only one of the three with
+  no limit to disclose against.
+- **The projection check ran for each** [D-W35], and only [D-W40] failed to
+  resolve. "The first business day after" needs a session calendar, and no
+  business-day, trading-day or calendar concept exists in this corpus or in
+  `src/` — measured. Unlike `known_on` it has more than one defensible home, so
+  it is raised at 3.3 rather than deduced here.
+- **The footnote that appeared to settle the adjustment question settles the
+  opposite**, because it sits in the Background describing what the filing
+  exists to replace. A quotation is not evidence until its position in the
+  document is established, which is the citation rule one level deeper than
+  where this corpus has been applying it.
+- **Two claims about this corpus were made from recollection and a read
+  contradicted both**: that §4 marks non-nullability, when no column in the
+  document does, and that 1.1 had corrected `vendor_symbol`, which was
+  introduced already marked while the ten columns that commit did correct were
+  in `corporate_actions` and `contract_quotes`. The same shape as the arithmetic
+  corrections before them, in a corpus whose first rule is that a citation is
+  verified by what rests on it rather than by reading it. The pattern is the
+  finding, and the number of instances is not stated.
+
 ## [1.35.0] — 2026-08-01
 
 Phase 3's checkpoint detail. Documentation only; no code, no schema, no config

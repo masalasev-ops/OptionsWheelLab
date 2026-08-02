@@ -111,6 +111,12 @@ to carry the wrong cell.
 | FX-TrialCompleteIncludesAssignment | fixture | 3.4 | the assigned trial totals 498.05 | WORKED_EXAMPLE §6.3 |
 | FX-RollCapCloses | fixture | 3.3 | a trial reaching the roll bound closes at market and resolves | authored |
 | FX-ProjectionRebuildsFromLedger | fixture | 3.3 | `trials` and `positions` discarded and rebuilt from `ledger_entries` give the same rows, which is the condition on rewriting them at all [D-W35] | authored |
+| FX-ExpiryResolvesAtOneCent | fixture | 3.3 | a short put closing one cent below its strike assigns; one closing at the strike expires worthless [D-W38] | authored |
+| FX-AssignmentKnownNextSession | fixture | 3.3 | a decision on the day of assignment sees the pre-assignment state, and the following session sees the shares [D-W39] | authored |
+| FX-ProceedsUsableOnSettlement | fixture | 3.3 | a trial closed by assignment cannot commit its proceeds on the session of the assignment and can on the following session [D-W40] | authored |
+| FX-DividendReachesLedger | fixture | 3.3 | a dividend whose ex-date falls while a trial holds assigned shares produces a ledger entry, and one whose ex-date falls after the shares were called away does not [D-W41] | authored |
+| FX-EarlyAssignmentOnDividend | fixture | 3.3 | a short call whose underlying goes ex-dividend by more than the call's remaining time value is assigned on the preceding session, and one where the time value is larger is not [D-W42] | authored |
+| FX-CoveredCallCommitsNothingFurther | fixture | 3.3 | a trial holding assigned shares gates a call candidate against the committed capital it already carries, and the per-name headroom is unchanged by the call [D-W43] | authored |
 | FX-ThreeMakersSameFeasibleSet | fixture | 4 | all makers receive byte-identical candidate sets | WORKED_EXAMPLE §3 |
 | FX-RecordCarriesFeasibleSet | fixture | 4 | a decision is re-scorable from its record alone | authored |
 | FX-ExcursionRecordedOnWin | fixture | 5 | a positive outcome still carries its adverse excursion | WORKED_EXAMPLE §6.2 |
