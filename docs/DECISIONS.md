@@ -940,12 +940,13 @@ closing price is assigned. One expiring out of the money, or in the money by
 less than one cent, expires worthless.
 
 Source. OCC Rule 805's exercise-by-exception threshold for equity options is
-one cent, set by SR-OCC-2007-18, which amended Rule 805 to reduce from $.05
-to $.01 the threshold amount used to determine the equity options deemed in
-the money for that processing, published at 73 FR 4297, 24 January 2008. The
-same filing states the in-the-money test: the difference between the exercise
-price and the closing price of the underlying equity interest on the last
-trading day before expiration. Retrieved 2026-08-02.
+one cent, set by Release No. 34-57163, File No. SR-OCC-2007-18, which amended
+Rule 805 to reduce from $.05 to $.01 the threshold amount used to determine
+the equity options deemed in the money for that processing, published at
+73 FR 4297, 24 January 2008. The same filing states the in-the-money test:
+the difference between the exercise price and the closing price of the
+underlying equity interest on the last trading day before expiration.
+Retrieved 2026-08-02.
 
 Retrieved 2026-08-01 from the Options Industry Council's exercise reference,
 which states that OCC uses the one-cent threshold for the positions of its
