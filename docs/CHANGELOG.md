@@ -14,8 +14,20 @@ no config key, and the suite is unchanged at 503.
   depend on an assignment that occurred on it.
 - `ledger_entries` gains `known_on`, and §4.3 says why an entry carries the
   session it occurred in beside the session the account could act on it.
-- Two fixtures registered against 3.3, where the transitions land. 3.1 registers
+- **D-W40**: proceeds from an assignment or a call-away settle on the first
+  business day after the exercise, which is the session the account learns of it,
+  so a trial may commit them then and not before.
+- **D-W41**: entitlement to a dividend is fixed at the record date, which under a
+  one-day cycle is the ex-date, and a dividend received while a trial holds
+  assigned shares is recorded in `ledger_entries` and in the control [D-W13].
+- **D-W42**: a short call is assigned before an ex-dividend date when the
+  dividend exceeds its remaining time value. It cites nothing, because nothing
+  governs whether a holder exercises.
+- Five fixtures registered against 3.3, where the transitions land. 3.1 registers
   none against itself and its detail says so.
+- `VALIDITY.md`'s early-exercise paragraph gains `[D-W38, D-W42]`. The two
+  clauses it already carried, at expiry and around ex-dividend, now have
+  decisions; the prose is unchanged, which is §5's test.
 
 ### Fixed
 - **[D-W17]'s third paragraph asserted the metric uses the deliverable and
@@ -55,6 +67,21 @@ no config key, and the suite is unchanged at 503.
   That is 2.4's distinction between a transcribed value and a chosen one, moved
   from numbers to mechanics, and it is what stops the last one arriving dressed
   as a fact.
+- **D-W40, D-W41 and D-W42 are drafted rather than supplied**, written from the
+  retrieved sources and landed for correction, as D-W39's source paragraphs were.
+  Recorded because this corpus and this repository have different authors and a
+  reader should be able to tell which one produced a sentence.
+- **Three shapes rather than three instances of one.** [D-W40] repeats the
+  clearing-layer split: a settlement cycle is a rule and when a broker releases
+  proceeds is house policy. [D-W41] is one rule answering one of two questions,
+  the other being this corpus's own. [D-W42] has no authority at any layer,
+  because the act it models is a choice, and it is the only one of the three with
+  no limit to disclose against.
+- **The projection check ran for each** [D-W35], and only [D-W40] failed to
+  resolve. "The first business day after" needs a session calendar, and no
+  business-day, trading-day or calendar concept exists in this corpus or in
+  `src/` — measured. Unlike `known_on` it has more than one defensible home, so
+  it is raised at 3.3 rather than deduced here.
 - **The footnote that appeared to settle the adjustment question settles the
   opposite**, because it sits in the Background describing what the filing
   exists to replace. A quotation is not evidence until its position in the

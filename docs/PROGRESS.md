@@ -6,9 +6,9 @@ Appended to, never rewritten. The repository is the authority on build state.
 
 **Phase 0 complete and reviewed. Phases 1 and 2 complete.** Checkpoints 0.1 to
 0.8, 1.1 to 1.5 and 2.1 to 2.5 built and signed off. **Checkpoint 3.1 is in
-progress on `phase-3/checkpoint-3.1` and deliberately unmerged**: two of its
-seven mechanics are settled and five are not. The documentation corpus is at
-v1.36.0.
+progress on `phase-3/checkpoint-3.1` and deliberately unmerged**: what a covered
+call commits is the mechanic still open, and it goes last because it has no
+external source. The documentation corpus is at v1.36.0.
 
 ## Log
 
@@ -1216,11 +1216,20 @@ time the thing beneath it moves. The number of instances is the one figure this
 entry does not assert.
 
 ### 2026-08-01 — corpus v1.36.0
-Checkpoint 3.1 opened, and two of its seven mechanics settled. D-W38 resolves
+Checkpoint 3.1 opened, and all of its mechanics settled but one. D-W38 resolves
 expiry by exercise at one cent in the money; D-W39 places assignment after a
-session's close and the account's knowledge of it the next morning. Two fixtures
-registered against 3.3, where the transitions land. Documentation only; no code,
-and the suite is unchanged at 503.
+session's close and the account's knowledge of it the next morning; D-W17 is
+amended to the multiplier; D-W40 settles when proceeds are usable, D-W41
+dividend entitlement and the record, D-W42 early exercise around ex-dividend.
+Five fixtures registered against 3.3, where the transitions land. Documentation
+only; no code, and the suite is unchanged at 503.
+
+**D-W40, D-W41 and D-W42 are drafted rather than supplied.** The evidence was in
+the build's hands and the wording was not, so they were written from the
+retrieved sources and landed for correction. That is the same arrangement D-W39's
+three source paragraphs were written under, and it is recorded because the corpus
+and the repository have different authors [`CLAUDE.md` §10] and a reader should
+know which one produced a sentence.
 
 **The branch is deliberately unmerged, and that is a state rather than a stall.**
 3.1 signs off when all seven are settled, and a half-settled 3.1 on `main` would
@@ -1285,25 +1294,52 @@ sourcing requirement buys that a secondary description would have hidden.
   strike times deliverable, chosen at 2.4 as the only quantity in reach and
   named there as this checkpoint's to settle. It is settled the other way, and
   correcting it is 3.3's work rather than 3.1's, which writes no code.
-- **T+1 cash availability.** Unretrieved. Its source is SEC Rule 15c6-1 as
-  amended, and it decides whether a trial can open the next day or the day after.
-- **Early assignment around ex-dividend.** Unretrieved, and it splits: the
-  allocation mechanics have a primary source in OCC's rules, and whether a holder
-  exercises early has none by nature, being that holder's choice. `VALIDITY.md`
-  already names this as modelled by rule, so what is owed is the rule and its
-  source rather than a decision about whether to model it.
-- **Dividend entitlement timing, and whether a dividend enters `ledger_entries`
-  and the buy-and-hold control** [D-W13]. Unretrieved, and the largest of the
-  five, since the answer decides a ledger kind and a control's return. The
-  entitlement half's source is unknown until retrieved; whether a dividend enters
-  the ledger has no external source at all.
-- **What a covered call commits.** Depends on the first three and goes last. No
-  external source: it is a modelling choice about [D-W17]'s committed capital.
+- **T+1 cash availability, settled as [D-W40].** Retrieved 2026-08-02 from Rule
+  15c6-1(a) as amended, which bars settlement "later than the first business day
+  after the date of the contract" (Release No. 34-96930, File No. S7-05-22,
+  88 FR 13872, 6 March 2023), and from the order approving OCC's conforming
+  changes, which moved "the delivery date for physically-settled options under
+  OCC Rule 903 from the 'second' to the 'first' business day following exercise"
+  for broker-to-broker settlement (Release No. 34-99701, File No.
+  SR-OCC-2024-002, 89 FR 18685, 14 March 2024). Both implemented 28 May 2024.
+- **Dividend entitlement, settled as [D-W41].** Retrieved 2026-08-02 from FINRA
+  Rule 11140(b)(1) as amended: the ex-dividend date "would be the record date if
+  the record date falls on a business day", filed for immediate effectiveness
+  with an operative date of 28 May 2024 (Release No. 34-99075, File No.
+  SR-FINRA-2023-017, 88 FR 85678, 8 December 2023).
+- **Early exercise around ex-dividend, settled as [D-W42], citing nothing.** The
+  absence was established rather than failed at: Rules 803 and 804 govern what
+  happens after an exercise is made and no rule governs the making of it, so the
+  condition the lab adopts is chosen and says so.
+- **What a covered call commits.** Still open, goes last, and no external source:
+  it is a modelling choice about [D-W17]'s committed capital.
 
-**Which of those cite an authority and which are chosen is stated before
+**Which of those cite an authority and which are chosen was stated before
 retrieval rather than after**, because that is what stops the last one arriving
 dressed as a fact. It is the distinction 2.4 drew between a transcribed value and
-a chosen one, moved from numbers to mechanics.
+a chosen one, moved from numbers to mechanics. It held: what was predicted to
+have a primary source has one, and what was predicted to have none still has
+none.
+
+**Three shapes, not three instances of one.** The clearing-layer pattern recurs
+in [D-W40], where a settlement cycle is a rule and when a broker releases
+proceeds to trade against is house policy. [D-W41] is a different shape: one rule
+answering one of the decision's two questions, the other being this corpus's own,
+since whether a dividend enters the record is nobody's rule. [D-W42] is a third:
+no authority at any layer, because the act being modelled is a choice. Counting
+them as one pattern would lose what makes the third one different, which is that
+there is nothing to disclose a limit against.
+
+**The projection check run for each** [D-W35], since [D-W39] needed a column and
+the deduction came from that decision rather than from any rule. [D-W41] and
+[D-W42] need none: a dividend is cash and does not touch basis, entitlement is
+decided from `corporate_actions.ex_date` when the entry is generated rather than
+being a property of the entry, and an early assignment is an assignment using the
+pair `entry_date` and `known_on` that already exists. [D-W40] does not resolve,
+and the reason is measured: no business-day, trading-day or session-calendar
+concept exists in this corpus or in `src/`, so "the first business day after" has
+nothing to resolve against. That is raised at 3.3 rather than answered here,
+because unlike `known_on` it has more than one defensible home.
 
 **D-W39's second date lands in the schema now rather than at 3.3**, because the
 decision determines it rather than leaving it open. [D-W35] makes `trials` and
