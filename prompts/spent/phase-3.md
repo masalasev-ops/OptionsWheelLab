@@ -18,7 +18,7 @@ sign-off leaves nothing describing the present in between.
 
 # Current state
 
-Corpus v1.37.0.
+Corpus v1.37.1.
 
 | | |
 |---|---|
