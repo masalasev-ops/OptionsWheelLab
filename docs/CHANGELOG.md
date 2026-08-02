@@ -25,7 +25,26 @@ suite is unchanged at 503.
 - The table stands at fourteen rows, seven at checkpoint granularity and seven at
   phase.
 
+### Fixed
+- **The carried-obligations table now states its own count, which was asked for
+  at v1.36.0 and reported in conversation instead.** That clause stated the
+  granularity convention and then asked for the figure once, so the next
+  disagreement would be about the corpus rather than about how to read it. The
+  convention landed and the figure did not, so the table went on diagnosing the
+  disagreement without settling it. The count is now read off the table and
+  written beneath it.
+- **The sentence that makes counting unambiguous is new**: a count of the table
+  is a count of rows, rows sharing an `Owed at` value are separate obligations,
+  and a count of distinct values is not a count of the table. Measured at this
+  sign-off, the difference is fourteen against eight, which is larger than the
+  disagreement that prompted the convention in the first place.
+
 ### Notes
+- **A remedy placed where the person who needs it will not meet it is not a
+  remedy.** The count went into a message rather than into the table it
+  describes; 3.1's marker sweep went into an archive's lessons rather than into
+  the acts of sign-off. Different omissions with one shape, and the corpus is the
+  only place either of them counts as done.
 - **The pass compared the corpus against something outside it, which its own
   argument forces.** If every existing check is corpus against corpus, so is a
   survey that reads the corpus and asks whether it looks complete. Four axes were

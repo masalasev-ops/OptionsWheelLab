@@ -626,7 +626,12 @@ and a phase otherwise.** Detail is written one phase ahead, so a row sits at
 phase granularity for at most one phase, which is the rule `FIXTURES.md` already
 applies to its own checkpoint column. A count taken over phase names alone
 misses the rows that have moved on, which is how two readings of this table came
-to differ.
+to differ. A count of this table is a count of rows. Rows sharing an Owed at
+value are separate obligations, and a count of distinct values is not a count of
+this table.
+
+**Fourteen rows stand, seven at checkpoint granularity and seven at phase**, read
+off the table below at 3.2's sign-off.
 
 | Owed at | Obligation | Raised |
 |---|---|---|
