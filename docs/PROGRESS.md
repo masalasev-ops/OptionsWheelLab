@@ -1257,17 +1257,34 @@ lab's account-level behaviour is a model recorded as a model rather than a rule
 transcribed. That is the same disclosure in three places, and it is what the
 sourcing requirement buys that a secondary description would have hidden.
 
-- **Committed capital's quantity, narrowed to one case.** Reverse splits are
-  settled from the Options Industry Council's term-by-term table: contracts,
-  strike and multiplier unchanged, deliverable divided by the ratio, so
-  committed capital is strike times multiplier. Whole-number forward splits are
-  settled the same way by the contract-multiplication method. The open case is
-  the uneven forward split, where the 2006 filing's summary and its worked
-  example admit two readings and neither route either of us has reaches the text
-  that would decide it. [D-W17] stays unamended because a decision right for two
-  cases and silent on the third would be worse than one that waits, and D-W36's
-  figures are still not reasoned from, their provenance being a search result
-  rather than the memo.
+- **Committed capital's quantity, settled at strike times multiplier.**
+  Retrieved 2026-08-02 from Release No. 34-54748, File No. SR-OCC-2006-01,
+  71 FR 67415, 21 November 2006, Notice of Amended Filing of Proposed Rule
+  Change To Revise Option Adjustment Methodology, and from its approval at
+  Release No. 34-55258, same file number, 72 FR 7701, 16 February 2007, which
+  carries the same method text after Amendment No. 1. The approved method
+  adjusts the deliverable "but not the strike prices or the values used to
+  calculate aggregate exercise prices and premiums". On a 3-for-2 split of an
+  XYZ $50 option the deliverable becomes 150 shares, the strike remains $50,
+  "the presplit multiplier of 100, used to extend aggregate strike price and
+  premium amounts, is unchanged", and an exercising call holder "would continue
+  to pay $50 times 100". Footnote 7 applies the same method to reverse splits.
+  So one quantity answers all three cases and it is the multiplier, which is
+  [D-W17]'s first paragraph rather than its third.
+- **The arithmetic the obligation reasons from describes the method this filing
+  retired.** The notice's Background states the pre-2007 rule, under which an
+  uneven forward split moved the strike as well: an XYZ $60 option becomes $40
+  calling for 150 shares. That is where "only strike times deliverable leaves
+  the aggregate exercise where the adjustment found it" comes from, and it held
+  until February 2007. The footnote read without the section framing it gives
+  the opposite answer, which is the shape of both earlier wrong readings on this
+  same question [D-W36]. [D-W17] stays unamended because the amendment is
+  authored, and D-W36's figures are still not reasoned from, their provenance
+  being a search result rather than the memo.
+- **2.4's call site reads the other quantity.** `CommittedCapital.For` returns
+  strike times deliverable, chosen at 2.4 as the only quantity in reach and
+  named there as this checkpoint's to settle. It is settled the other way, and
+  correcting it is 3.3's work rather than 3.1's, which writes no code.
 - **T+1 cash availability.** Unretrieved. Its source is SEC Rule 15c6-1 as
   amended, and it decides whether a trial can open the next day or the day after.
 - **Early assignment around ex-dividend.** Unretrieved, and it splits: the
