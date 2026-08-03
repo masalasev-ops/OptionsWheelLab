@@ -630,18 +630,17 @@ to differ. A count of this table is a count of rows. Rows sharing an Owed at
 value are separate obligations, and a count of distinct values is not a count of
 this table.
 
-**Fifteen rows stand, five at checkpoint granularity and ten at phase**, read off
-the table below at 3.3's sign-off. It stood at fourteen, seven and seven, at
-3.2's; 3.3 closed its own four and raised five, so the total moved by one and the
-split moved by two, which is why a count of rows and a count of granularities are
-read separately rather than derived from each other.
+**Thirteen rows stand, two at checkpoint granularity and eleven at phase**, read
+off the table below at 3.4's sign-off. It stood at fifteen, five and ten, at
+3.3's, and at fourteen, seven and seven, at 3.2's. 3.4 closed its own three and
+raised one, and the two rows left at checkpoint granularity are both 3.5's, which
+is the whole of what Phase 3 has left to do.
 
 | Owed at | Obligation | Raised |
 |---|---|---|
 | Phase 11 | Re-add `Microsoft.AspNetCore.OpenApi` against a version whose `Microsoft.OpenApi` dependency clears the audit. Removed at 0.1 rather than suppressing the advisory; the reason is in the Api project file. | PR #1 |
 | 3.5 | Establish output-level determinism: a simulated run with a fixed clock produces byte-identical output across two invocations. 0.5 restated it as identical stored rows because no run existed to make. Compared as produced artefacts, never as a database file [D-W28]. | PR #4 |
 | 3.5 | Decide what bars nondeterminism in SQL that is not a clock. Enumerating the bundled SQLite showed `random()` and `randomblob()` alongside the seven clock functions; they are outside FX-ClockIsNotADateSource by name but would break a byte-identical run just as surely. | PR #4 |
-| 3.4 | Set `Costs:AssignmentFee`. No document states it, and zero inferred from an absent ledger line is weaker than a stated number and invisible when wrong. Phase 3's assignment path is the first thing that computes with it. | PR #7 |
 | Phase 4 | Store one feasible set per name and date rather than one per decision. `candidates` is keyed on `decision_id`, so three makers acting on one set write it three times, while [D-W4] requires the three to be byte-identical and `FX-ThreeMakersSameFeasibleSet` asserts it. Storing once and referencing thrice makes it true by construction and divides the largest uncertain table by three. Raised while estimating store size over a ten-year lifetime, before the table exists. The grain is (symbol, date) and nothing carries it as a type; 2.5 declined to ship one because no maker exists to consume it, so Phase 4 models the set with `candidates` in front of it rather than inheriting a shape guessed three checkpoints early. `FX-ThreeMakersSameFeasibleSet` is also where the byte-level property is asserted, restated from 2.5's definition of done for want of a subject. **The reason-storage row raised at v1.32.0 is answered by whatever grain this settles.** | v1.17.0 |
 | Phase 8 | Extract the market rules out of `SyntheticChainReader`, so one definition serves the synthetic reader and the vendor ingest. Refusing a negative bid, a negative ask and a crossed market are statements about what a market can be, not JSON concerns, and they sit as private statics on the reader, so a second producer of quotes can only duplicate them. Phase 8 is where that second producer arrives. **The crossed-quote coupling is discharged at 2.3**: the gate handles a crossed quote [D-W22, as amended], so that rule moved to the gate and left the loader, and what remains to extract is the two negative-price refusals. Not extracted at 0.8 because there is one caller and the second does not exist. | PR #9 |
 | Phase 4 | Decide how a candidate's gate reasons are stored. `candidates.gate_reason` is a single nullable TEXT column and the domain type is a set in declared order [2.3], which FX-GateRecordsAllReasons at 2.5 asserts by requiring two reasons on one candidate. The options include a delimited list, which makes a reason unqueryable, and a row per reason, which changes the table's grain. Raised at 2.3 when the vocabulary was declared. **The grain this assumes is the one the v1.17.0 row decides.** | v1.32.0 |
@@ -649,10 +648,9 @@ read separately rather than derived from each other.
 | Phase 8 | Decide how a deliverable that is shares plus cash is recorded. The adjustment method in force gives a 4-for-3 split of an $80 option a deliverable "adjusted to 133 shares plus the cash value of the eliminated fractional share", strike unchanged; `contracts.deliverable_shares` is an integer and one of the five components of contract identity [1.5], and nothing in this corpus or its sources names cash in lieu. Owed at Phase 8 rather than 3.3 because no synthetic chain can express a corporate action at all, so the first deliverable of this shape arrives with vendor data, and the change is to a built structure with a migration cost that is no cheaper now. 3.3 must not assume a deliverable is wholly shares. Raised at 3.2. | v1.38.0 |
 | Phase 5 | Decide whether cash earns, and at what rate. Nothing in this corpus names interest as a financial concept. The absence biases two of the three comparisons in opposite directions: the wheel holds cash securing its puts and the hold-cash floor holds cash outright, so both are understated by roughly the same amount and their comparison survives, while buy-and-hold holds no cash and is not understated at all, so the comparison the lab exists to make is biased against the wheel by whatever the rate is. A rate is an external source and choosing one is a modelling choice with its own argument. Owed at Phase 5, where the outcome metric and the controls' returns are computed. A control gap of the same kind as the dividend gap and in the same decision [D-W13]. Raised at 3.2. | v1.38.0 |
 | Phase 4 | Resolve configuration in the projection rebuild as of the simulated date the run used, never as-now [D-W26]. Telling `closed_at_bound` from `closed_by_choice` means asking whether a bound had been reached, which reads `Trial:MaxRolls` and `Trial:MaxTrialDays`, and a rebuild reading current bounds would disagree with the run it is rebuilding while presenting the disagreement as a ledger defect. Not live at 3.3, where nothing writes `closed_by_choice` because no maker exists. Raised at 3.3 by building the rebuild. | v1.40.0 |
-| 3.4 | Decide whether `Costs:AssignmentFee` can carry a non-zero figure without contradicting `WORKED_EXAMPLE.md`. §1 states the commission and states no assignment fee, and §6.3's assignment leg is exactly `-5,000.00` against a total of `498.05`, so that document's arithmetic assumes the fee is zero while `FX-TrialCompleteIncludesAssignment` asserts the total against the document. A stated figure therefore either changes §6.3 or breaks the fixture's source, which is the collision the PR #7 row could not see when it warned that a zero inferred from an absent ledger line is invisible when wrong. **The figure this constrains is the one that row sets.** Raised at 3.3, where the ledger the fee would appear in was built. | v1.40.0 |
-| 3.4 | Decide whether a commission is its own ledger entry or is netted into the premium. [D-W12] requires per-contract commission and assignment fees explicit without saying where, and `WORKED_EXAMPLE.md` §6.3 nets them, writing "bid 0.95 less commission" as one leg of `+94.35`. A netted cost is not separately auditable, and a separate entry changes what the projection rebuilds from. Both `commission` and `assignment_fee` are already in the ledger's vocabulary [D-W48], so this settles what writes them rather than whether they can be written. Raised at 3.3. | v1.40.0 |
 | Phase 4 | Verify the consumers of `Trial:MaxRolls` and `Trial:MaxTrialDays`, which 3.3 could not. `TrialBounds` reads both as of the simulated date and nothing in `src/` constructs it: the state machine is handed resolved bounds, and the component that would resolve them is the run loop. `CONFIG_REFERENCE.md` calls a consumer that cannot be verified once its checkpoint has landed a defect rather than a documentation gap, and 3.3 was that checkpoint, so both rows stay **Unverified** with the reason recorded rather than the column loosened to admit a type with no component behind it. Raised at 3.3. | v1.40.0 |
 | Phase 4 | Decide which simulated date the trial bounds resolve as of. A trial spans many sessions and [D-W26] resolves configuration as of the simulated date, so nothing states whether an open trial is bound by the values in force at its open or by each session's, and `Trial:MaxRolls` changing mid-trial would move the bound under a position already taken. 3.3 built the machine taking bounds at construction, on `GateBounds`' resolve-once-per-evaluation shape, and invented no answer. **The rebuild row above asks the same as-of question from the other side.** Raised at 3.3. | v1.40.0 |
+| Phase 5 | Decide what `ResolvedBound`'s refusal calls the thing it could not resolve. It reads "a gate bound", which has covered `Risk:` caps since 2.4 and covers a trial bound and a cost from 3.4, so it is wrong for three of the four records that use it. That type's own remarks anticipated this and call changing what the message carries a decision rather than an edit, because what [D-W37]'s refusal says is the reason the type exists. Owed at Phase 5 rather than sooner: the fourth record makes the wording wrong and the fifth is where a reader stops being able to infer the family from the key, since scores are the first values that are neither a bound nor a cost. Raised at 3.4. | v1.41.0 |
 
 ---
 
@@ -1294,10 +1292,11 @@ obligation rows now point at each other.
 
 ## Phase 3 — Thin slice: one full wheel turn
 
-Build state: **partly built**. 3.1, 3.2 and 3.3 built and signed off: the
-mechanics settled as decisions, the completeness pass run, and the state machine,
-the ledger and its projections built against four tables. 3.4 and 3.5 not
-started, so nothing prices a fill and no run is byte-identical yet. Delivers
+Build state: **partly built**. 3.1 to 3.4 built and signed off: the mechanics
+settled as decisions, the completeness pass run, the state machine and ledger
+built against four tables, and the fill model pricing a quote into cash. 3.5 not
+started, so no run is byte-identical yet, and nothing drives the machine: no maker
+chooses and no loop steps a calendar. Delivers
 one trial from cash to cash: a put sold, assignment or expiry, shares held, calls
 written, called away or closed at the roll bound, with every cash movement in the
 ledger and the trial and position rebuildable from it. On synthetic chains; no
@@ -1502,6 +1501,40 @@ observes the price it would have received.
   which is the seventh fixture reading that document and the first to read
   its ledger, where the six before it read its chain, its verdicts and its
   bases.
+
+Reconciled at sign-off against what shipped. One decision, the fill model, a leg
+that writes two entries, and the registered check. Three obligations closed and
+one raised. The suite went from 629 to 650.
+
+**The branch paused for review after the decision and before any code computed
+with it**, which is 3.3's two-review-point shape used a second time and for the
+same reason: the fee is a number an authored document's total depends on.
+
+**All three cost obligations were one question**, and answering it settled what
+the other two were arithmetic over. The commission's grain decided whether §6.3's
+cells and the ledger's rows correspond at all, and the fee's value decided whether
+that document needed amending. Neither could be answered alone.
+
+**The fee's provenance is a retrieved source rather than a judgement.** A broker's
+published schedule with a date, read out of the PDF, saying what it does not
+reach: one schedule is the common case and not a market rule, which is why a fee
+of zero still earns a key. The same page corroborated
+`Costs:CommissionPerContract`, which had been judged from §1 since 0.8 with no
+external source, and closed the last key in the store owed a value.
+
+**The three `Costs:` consumers are verified, and 3.3's two are still not.** What
+verifying takes was measured rather than assumed: a type in `src/` resolves the
+key and a component in `src/` calls that type. `CandidateGenerator` is built only
+by tests and its ten keys have been verified since 2.4, so the test is not who
+constructs the component. `TrialBounds.ResolveFor` appears in no `src/` file at
+all, which is the whole difference.
+
+**Two claims of mine were corrected by probing rather than by reading.** Netting
+the commission and re-running the registered fixture leaves three of its five
+cases passing, so neither the total nor the per-date reconciliation is what the
+grain rests on. And net basis asserted against the machine discriminates nothing,
+because the machine banks the fill's net either way; what the separate row costs
+is that a rebuild must fold it back, so that assertion belongs on a replay.
 
 ### 3.5 Determinism, end to end
 0.5 restated its byte-identical definition of done as identical stored rows

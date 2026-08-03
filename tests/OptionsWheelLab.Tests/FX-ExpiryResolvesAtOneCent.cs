@@ -72,7 +72,7 @@ public sealed class FX_ExpiryResolvesAtOneCent
         var machine = Machine();
         var holding = Resolve(close: 48.90m).State;
         var written = machine.WriteCall(
-            holding, MondayAfter, Call(52.50m, SecondExpiry), credit: 69.35m).State;
+            holding, MondayAfter, Call(52.50m, SecondExpiry), Sold(0.70m)).State;
 
         var resolved = machine.Advance(written, Session(SecondExpiry, close: 52.51m));
 

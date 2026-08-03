@@ -159,6 +159,6 @@ public sealed class FX_EarlyAssignmentOnDividend
         var holding = machine.Advance(OpenedTrial(), Session(FirstExpiry, close: 48.90m)).State;
 
         return machine.WriteCall(
-            holding, MondayAfter, Call(AtTheMoney, ThirdExpiry), credit: 69.35m).State;
+            holding, MondayAfter, Call(AtTheMoney, ThirdExpiry), Sold(0.70m)).State;
     }
 }

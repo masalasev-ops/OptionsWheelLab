@@ -10,18 +10,21 @@ the document and said nothing about that.
 Reproduced: §2's chain and §5's bars, which load and persist to the cent; §3
 whole, every strike enumerated and every verdict and reason reached; and §1's
 caps, which are configuration now and whose 5,100.00 and 22,000.00 headrooms are
-asserted. §1's fill rule and policy bands are configuration too and nothing
-consumes them yet. Of §6, 6.3's two bases are read by the constraint that binds a
-call strike, and 3.3 added its shape: the state machine reaches the call-away on
-2026-06-19 from the assignment on 2026-04-17, so the trial's 109 days are
-computed rather than stated, and its four positions rebuild from the ledger.
+asserted. §1's policy bands are configuration too and nothing consumes
+them yet, and its fill rule is consumed from 3.4. Of §6, 6.3's two bases are read
+by the constraint that binds a call strike, and 3.3 added its shape: the state
+machine reaches the call-away on 2026-06-19 from the assignment on 2026-04-17, so
+the trial's 109 days are computed rather than stated, and its four positions
+rebuild from the ledger. **3.4 added its arithmetic**: §4's fill table, all three
+rows of it, and §6.3's 498.05 from a ledger the machine wrote.
 
-Not built: §4's decisions and fills, §6.1 and §6.2, §6.3's 498.05 total, and §7
-and §8's scores and regret. Six of the eleven fixtures naming this document are
-implemented and the other five belong to Phases 3, 4 and 5, which is where the
-makers, the trials and the scores arrive. 3.3 added none: its twelve rows are all
-`authored`, taking their expectations from the decisions rather than from here,
-and what they borrow is the shape of §5's sessions.
+Not built: §4's three decisions, which need makers; §6.1 and §6.2, which are the
+totals of the two trials no maker has opened; and §7 and §8's scores and regret.
+Seven of the eleven fixtures naming this document are implemented and the other
+four belong to Phases 4 and 5, which is where the makers and the scores arrive.
+3.3 added none of its own: its fifteen rows are all `authored`, taking their
+expectations from the decisions rather than from here, and what they borrow is the
+shape of §5's sessions.
 
 **§6.3's trial never observably holds bare shares, which 3.3 found by rebuilding
 it.** The covered call is written on the session the assignment becomes known and

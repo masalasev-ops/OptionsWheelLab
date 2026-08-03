@@ -77,7 +77,7 @@ public sealed class FX_RollCapCloses
     {
         var machine = Machine();
         var once = machine.Roll(
-            OpenedTrial(), new DateOnly(2026, 4, 8), 1m, Put(50.00m, ThirdExpiry), 1m).State;
+            OpenedTrial(), new DateOnly(2026, 4, 8), Bought(0.01m), Put(50.00m, ThirdExpiry), Sold(0.01m)).State;
 
         var advanced = machine.Advance(once, Session(SecondExpiry, close: 45.00m));
 
@@ -99,10 +99,10 @@ public sealed class FX_RollCapCloses
     public void The_day_bound_closes_a_trial_that_never_rolled()
     {
         var bounds = new TrialBounds(MaxRolls: 2, MaxTrialDays: 30);
-        var machine = new WheelStateMachine(Calendar, bounds);
+        var machine = new WheelStateMachine(Calendar, bounds, Costs);
 
         var bound = machine.Advance(
-            TrialState.OpenShortPut(Put(50.00m, ThirdExpiry), credit: 94.35m, Opened),
+            machine.OpenTrial(Put(50.00m, ThirdExpiry), Sold(0.95m), Opened).State,
             Session(SecondExpiry, close: 45.00m, ask: 5.40m));
 
         Assert.Equal(TrialCloseKind.ClosedAtBound, bound.State.CloseKind);
@@ -119,7 +119,7 @@ public sealed class FX_RollCapCloses
         for (var roll = 0; roll < MaxRolls; roll++)
         {
             state = machine.Roll(
-                state, new DateOnly(2026, 4, 8), 1m, Put(50.00m, ThirdExpiry), 1m).State;
+                state, new DateOnly(2026, 4, 8), Bought(0.01m), Put(50.00m, ThirdExpiry), Sold(0.01m)).State;
         }
 
         Assert.Equal(MaxRolls, state.RollsUsed);

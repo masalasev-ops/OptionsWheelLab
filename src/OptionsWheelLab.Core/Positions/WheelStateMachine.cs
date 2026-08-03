@@ -50,14 +50,80 @@ public sealed class WheelStateMachine
 
     private readonly SessionCalendar _calendar;
     private readonly TrialBounds _bounds;
+    private readonly CostBounds _costs;
 
-    public WheelStateMachine(SessionCalendar calendar, TrialBounds bounds)
+    /// <summary>
+    /// The machine, handed everything it reads.
+    /// </summary>
+    /// <remarks>
+    /// <paramref name="costs"/> arrives resolved for the same reason the bounds
+    /// do [D-W37]: this type reads no configuration. What it needs from them is
+    /// the assignment fee, which the machine rather than the fill model writes,
+    /// because an assignment is a clearing event and not a trade [D-W40] and the
+    /// entry belongs beside the assignment that caused it.
+    /// </remarks>
+    public WheelStateMachine(SessionCalendar calendar, TrialBounds bounds, CostBounds costs)
     {
         ArgumentNullException.ThrowIfNull(calendar);
         ArgumentNullException.ThrowIfNull(bounds);
+        ArgumentNullException.ThrowIfNull(costs);
 
         _calendar = calendar;
         _bounds = bounds;
+        _costs = costs;
+    }
+
+    /// <summary>
+    /// Opening a trial by selling a cash-secured put [D-W16].
+    /// </summary>
+    /// <remarks>
+    /// <b>The open writes its entries here rather than leaving them to a
+    /// caller.</b> Every other leg's entries come from this type, and an open
+    /// whose ledger rows were written elsewhere would be the one event with two
+    /// producers. It also means a trial's first entry is a
+    /// <see cref="LedgerEntryKind.PremiumReceived"/> by construction, which is
+    /// what <see cref="TrialProjection.Replay"/> requires of a ledger it can read.
+    /// </remarks>
+    public Transition OpenTrial(ContractIdentity put, Fill sold, DateOnly session)
+    {
+        ArgumentNullException.ThrowIfNull(put);
+        ArgumentNullException.ThrowIfNull(sold);
+
+        return new Transition(
+            TrialState.OpenShortPut(put, sold.Net, session),
+            [.. PremiumEntries(session, session, LedgerEntryKind.PremiumReceived, sold, put)]);
+    }
+
+    /// <summary>
+    /// A leg's two entries: the premium and, when one was charged, the commission
+    /// [D-W50].
+    /// </summary>
+    /// <remarks>
+    /// <b>A commission of zero writes no row, and that is not the same rule as an
+    /// expiry's.</b> An expiry that pays nothing is still an event and takes a row
+    /// with a zero amount [D-W48], because the projection has to know the short
+    /// closed. A commission is a cost rather than an event, and a cost that was
+    /// not charged is not one.
+    /// </remarks>
+    private static IReadOnlyList<LedgerEntry> PremiumEntries(
+        DateOnly session,
+        DateOnly known,
+        LedgerEntryKind kind,
+        Fill fill,
+        ContractIdentity contract)
+    {
+        var entries = new List<LedgerEntry>
+        {
+            new(session, known, kind, fill.Premium, contract),
+        };
+
+        if (fill.Commission != 0m)
+        {
+            entries.Add(new LedgerEntry(
+                session, known, LedgerEntryKind.Commission, -fill.Commission, contract));
+        }
+
+        return entries;
     }
 
     /// <summary>
@@ -123,12 +189,14 @@ public sealed class WheelStateMachine
     public Transition Roll(
         TrialState state,
         DateOnly session,
-        decimal debit,
+        Fill bought,
         ContractIdentity opened,
-        decimal credit)
+        Fill sold)
     {
         ArgumentNullException.ThrowIfNull(state);
         ArgumentNullException.ThrowIfNull(opened);
+        ArgumentNullException.ThrowIfNull(bought);
+        ArgumentNullException.ThrowIfNull(sold);
 
         if (state.IsClosed)
         {
@@ -146,15 +214,16 @@ public sealed class WheelStateMachine
                 + $"'{state.State}'.");
         }
 
-        var rolled = state.RolledInto(session, opened, state.PremiumBanked - debit + credit);
+        var rolled = state.RolledInto(
+            session, opened, state.PremiumBanked + bought.Net + sold.Net);
 
         return new Transition(
             rolled,
             [
-                new LedgerEntry(
-                    session, session, LedgerEntryKind.PremiumPaid, -debit, state.Contract),
-                new LedgerEntry(
-                    session, session, LedgerEntryKind.PremiumReceived, credit, opened),
+                .. PremiumEntries(
+                    session, session, LedgerEntryKind.PremiumPaid, bought, state.Contract),
+                .. PremiumEntries(
+                    session, session, LedgerEntryKind.PremiumReceived, sold, opened),
             ]);
     }
 
@@ -170,10 +239,11 @@ public sealed class WheelStateMachine
         TrialState state,
         DateOnly session,
         ContractIdentity call,
-        decimal credit)
+        Fill sold)
     {
         ArgumentNullException.ThrowIfNull(state);
         ArgumentNullException.ThrowIfNull(call);
+        ArgumentNullException.ThrowIfNull(sold);
 
         if (state.State is not PositionState.HoldingShares)
         {
@@ -188,8 +258,9 @@ public sealed class WheelStateMachine
         }
 
         return new Transition(
-            state.ShortCallFrom(session, call, state.PremiumBanked + credit),
-            [new LedgerEntry(session, session, LedgerEntryKind.PremiumReceived, credit, call)]);
+            state.ShortCallFrom(session, call, state.PremiumBanked + sold.Net),
+            [.. PremiumEntries(
+                session, session, LedgerEntryKind.PremiumReceived, sold, call)]);
     }
 
     /// <summary>
@@ -471,8 +542,35 @@ public sealed class WheelStateMachine
 
         return new Transition(
             state.HoldingSharesFrom(known, shares, paid / shares, state.PremiumBanked),
-            [new LedgerEntry(session, known, LedgerEntryKind.Assignment, -paid, put)]);
+            [
+                new LedgerEntry(session, known, LedgerEntryKind.Assignment, -paid, put),
+                .. AssignmentFee(session, known, put),
+            ]);
     }
+
+    /// <summary>
+    /// The fee an exercise is charged, when one is [D-W50].
+    /// </summary>
+    /// <remarks>
+    /// Zero for the schedule this lab is configured against, and read rather than
+    /// assumed, because the key is what makes a broker that charges a stored value
+    /// changing rather than code changing. No row when nothing was charged, on the
+    /// argument that a cost of zero is not a cost.
+    /// </remarks>
+    private IReadOnlyList<LedgerEntry> AssignmentFee(
+        DateOnly session,
+        DateOnly known,
+        ContractIdentity contract) =>
+        _costs.AssignmentFee == 0m
+            ? []
+            : [
+                new LedgerEntry(
+                    session,
+                    known,
+                    LedgerEntryKind.AssignmentFee,
+                    -_costs.AssignmentFee,
+                    contract),
+            ];
 
     /// <summary>
     /// Shares taken at the strike, which ends the trial [D-W19, D-W39].
@@ -490,7 +588,10 @@ public sealed class WheelStateMachine
 
         return new Transition(
             state.ClosedTo(known, session, TrialCloseKind.CalledAway, state.PremiumBanked),
-            [new LedgerEntry(session, known, LedgerEntryKind.CallAway, proceeds, call)]);
+            [
+                new LedgerEntry(session, known, LedgerEntryKind.CallAway, proceeds, call),
+                .. AssignmentFee(session, known, call),
+            ]);
     }
 
     /// <summary>

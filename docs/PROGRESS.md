@@ -5,8 +5,8 @@ Appended to, never rewritten. The repository is the authority on build state.
 ## Current state
 
 **Phase 0 complete and reviewed. Phases 1 and 2 complete. Phase 3 started.**
-Checkpoints 0.1 to 0.8, 1.1 to 1.5, 2.1 to 2.5, and 3.1 to 3.3 built and signed
-off. 3.4 and 3.5 are not started. The documentation corpus is at v1.40.0.
+Checkpoints 0.1 to 0.8, 1.1 to 1.5, 2.1 to 2.5, and 3.1 to 3.4 built and signed
+off. 3.5 is not started. The documentation corpus is at v1.41.0.
 
 ## Log
 
@@ -1759,3 +1759,71 @@ trial could be walked through its states.
 phase. 3.3 closed its own four and raised five, so the total moved by one and the
 split moved by two, which is why the two counts are read separately rather than
 derived from each other.
+
+### 2026-08-03 — corpus v1.41.0
+
+**Checkpoint 3.4 built and signed off**, the fill model and the costs. D-W50
+registered. `FillModel` and `CostBounds` resolve the three `Costs:` keys as of the
+simulated date; the machine's legs write a premium and a commission apiece; and
+`FX-TrialCompleteIncludesAssignment` reproduces §6.3's 498.05 from a ledger the
+machine wrote. 650 tests, up from 629; guards over 186 files by three checks.
+
+**The three obligations were one question**, and answering it settled what the
+other two were arithmetic over. The commission's grain decided whether §6.3's
+cells and the ledger's rows correspond at all, and the fee's value decided whether
+that document needed amending. Neither could be answered alone, which is why the
+branch stopped for review after the decision and before any code computed with it.
+
+**The last key in the store owed a value has one, and it took a source rather
+than a judgement.** A broker's published schedule with a date, read out of the
+PDF, saying what it does not reach: one schedule establishes the common case and
+not a market rule, which is why a fee of zero still earns a key. The same page
+carried the 0.65 per-contract commission that `Costs:CommissionPerContract` has
+held from §1 since 0.8 with no external source, which was not looked for.
+
+**What verifying a Consumer takes was measured rather than assumed.** A `rows` key
+is verified when a type in `src/` resolves it and a component in `src/` calls that
+type. It is not about who constructs the component: `CandidateGenerator` is built
+only by tests and its ten keys have been verified since 2.4. Measured over the
+four bound records, three are resolved in `src/` and `TrialBounds.ResolveFor`
+appears in no `src/` file at all. So the three `Costs:` rows are verified and
+3.3's two remain the only unverified rows whose checkpoint has landed, which is
+the difference between a defect and a gap.
+
+**Two of my own claims were corrected by probing rather than by reading.**
+Netting the commission and re-running the registered fixture leaves three of its
+five cases passing, so neither the total nor the per-date reconciliation is what
+the grain rests on; the row count and the two questions are. And net basis
+asserted against the machine discriminates nothing, because the machine banks the
+fill's net whether the commission is separate or folded, so that assertion moved
+to a replay, where the fold is what produces the figure.
+
+That is the same shape as 3.3's four, one level up: the check that finds something
+is the one run against the real subject. Here the subject was my own test, and
+what found the weakness was breaking the code deliberately to see which assertions
+noticed.
+
+**The floating-point guard caught a violation in a test written this
+checkpoint.** `InlineData` cannot carry a decimal, so a theory took doubles and
+cast. It is the only guard that has fired on new work rather than on a probe, and
+it fired on the shape it exists for.
+
+**The marker sweep ran as an act of sign-off.** Eighteen read, five changed and
+none added. Phase 3's names four checkpoints; §3.8's spans 3.3 and 3.4; §8's
+closes completely, since the last unset key is set; the registry's goes from
+fifty-eight implemented entries to fifty-nine; and `WORKED_EXAMPLE.md`'s gains §4's
+fill table and §6.3's total, moving from six of eleven fixtures to seven.
+
+**It ran again at merge and found nothing, which is the answer rather than the
+formality.** 3.3's second run found four stale figures because a review had added
+four commits after its sign-off; 3.4's sign-off was its last commit, so nothing
+had moved. Every figure was re-measured rather than assumed: eighteen markers,
+thirteen obligations at two and eleven, fifty-nine implemented entries against
+fifty-six files and three named checks, seven of eleven fixtures reading the
+worked example, 650 tests and 186 files. The second run is conditional on the
+branch having moved, and running it is how that is established rather than
+guessed.
+
+**The table stands at thirteen rows**, two at checkpoint granularity and eleven at
+phase. 3.4 closed its own three and raised one, and both remaining checkpoint rows
+are 3.5's, which is the whole of what Phase 3 has left.

@@ -185,11 +185,13 @@ entirely by that one choice.
 
 ### 3.8 Wheel state machine and ledger
 
-Build state: **built at 3.3**, on synthetic scenarios: the four states, the
-transitions, `ledger_entries` and the two projections rebuilt from it. What is
-not built is anything that drives it. No maker chooses to roll and no loop steps
-a session, so what advances the machine today is a test, and the roll's own
-decision row is Phase 4's alongside every other decision.
+Build state: **built across 3.3 and 3.4**, on synthetic scenarios: the four
+states, the transitions, `ledger_entries` and the two projections rebuilt from it
+at 3.3, and at 3.4 the fill model that prices a quote into the cash those
+transitions carry. What is not built is anything that drives it. No maker chooses
+to roll and no loop steps a session, so what advances the machine today is a
+test, and the roll's own decision row is Phase 4's alongside every other
+decision.
 
 Four states modelled as a discriminated union: cash, short put, holding shares,
 short call. Daily events drive transitions, and they lie on two axes rather than
@@ -356,11 +358,14 @@ paying before Phase 8 buys nothing.
 
 ## 8. Open parameters, closed at 0.8
 
-Build state: **closed at 0.8**. The values are config rows in the store. Three
-of the four keys left unset then have since been set by the phase that first
-consumed them, the `Risk:` block at 2.4, which turned out to be four keys rather
-than three because every cap divides by an account value nothing held.
-`Costs:AssignmentFee` is the one still unset, owed at Phase 3.
+Build state: **closed at 0.8, and closed completely from 3.4**. The values are
+config rows in the store. Every key left unset then has since been set by the
+phase that first consumed it: the `Risk:` block at 2.4, which turned out to be
+four keys rather than three because every cap divides by an account value nothing
+held, and `Costs:AssignmentFee` at 3.4, which is where the assignment path first
+computes with it. That last one was the only key in the store with no statement
+anywhere behind it, and it took a broker's published schedule rather than a
+judgement [D-W50].
 
 The roll bounds [D-W14], the divergence threshold and window [D-W20] and the six
 gate constraints [D-W22 to D-W25] were left unset in this document deliberately,

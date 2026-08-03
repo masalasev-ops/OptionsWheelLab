@@ -110,6 +110,6 @@ public sealed class FX_ProceedsUsableOnSettlement
         var holding = machine.Advance(OpenedTrial(), Session(FirstExpiry, close: 48.90m)).State;
 
         return machine.WriteCall(
-            holding, SecondMonday, Call(52.50m, ThirdExpiry), credit: 84.35m).State;
+            holding, SecondMonday, Call(52.50m, ThirdExpiry), Sold(0.85m)).State;
     }
 }

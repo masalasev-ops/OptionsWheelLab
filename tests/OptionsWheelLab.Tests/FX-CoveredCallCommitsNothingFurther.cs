@@ -40,7 +40,7 @@ public sealed class FX_CoveredCallCommitsNothingFurther
         var holding = machine.Advance(OpenedTrial(), Session(FirstExpiry, close: 48.90m)).State;
 
         var written = machine.WriteCall(
-            holding, MondayAfter, Call(52.50m, SecondExpiry), credit: 69.35m).State;
+            holding, MondayAfter, Call(52.50m, SecondExpiry), Sold(0.70m)).State;
 
         Assert.Equal(5_000.00m, OpenedTrial().CommittedCapital);
         Assert.Equal(5_000.00m, holding.CommittedCapital);
@@ -61,7 +61,7 @@ public sealed class FX_CoveredCallCommitsNothingFurther
         var machine = Machine();
         var holding = machine.Advance(OpenedTrial(), Session(FirstExpiry, close: 48.90m)).State;
         var written = machine.WriteCall(
-            holding, MondayAfter, Call(52.50m, SecondExpiry), credit: 69.35m).State;
+            holding, MondayAfter, Call(52.50m, SecondExpiry), Sold(0.70m)).State;
 
         var beforeTheCall = BookOf(holding);
         var afterTheCall = BookOf(written);
