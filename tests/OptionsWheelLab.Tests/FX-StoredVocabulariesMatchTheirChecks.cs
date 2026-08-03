@@ -35,6 +35,37 @@ namespace OptionsWheelLab.Tests;
 /// supported case. That second direction is why this reads the DDL rather than
 /// only inserting.
 /// </para>
+/// <para>
+/// <b>One declaration has no <c>CHECK</c> to compare against, and it is named
+/// here rather than left out quietly.</b> A green run covers every stored form
+/// but <see cref="StoreFillPoint"/>. That vocabulary lives in
+/// <c>config_rows.value</c>, which is polymorphic by design and carries decimals
+/// for four sections, integers for <c>Trial:</c>, and this one word, so a
+/// <c>CHECK</c> there would have to know which key a row belongs to: a constraint
+/// on a pair rather than on a value. The code is therefore its only enforcer
+/// where every other vocabulary has two.
+/// </para>
+/// <para>
+/// <b>The exclusion is checked rather than asserted</b>, which is what this
+/// fixture's two-direction design is for applied to its own boundary.
+/// <see cref="StoreFillPoint"/> is exercised in the two directions that do not
+/// need a schema, and
+/// <see cref="The_polymorphic_column_still_has_no_check_to_compare_against"/>
+/// fails if <c>config_rows.value</c> ever gains one, which is the day this
+/// vocabulary should join the enforced set rather than stay named as an
+/// exception.
+/// </para>
+/// <para>
+/// <b>What the second word-valued key inherits.</b> Measured at 3.4: one of the
+/// twenty-four seeded keys carries a word and twenty-three carry quantities,
+/// which is a bound, a fraction, a count or a seed. <c>Costs:FillPoint</c> is the
+/// only key naming a choice among alternatives rather than a magnitude, and that
+/// is what makes it a vocabulary at all. So a second one arrives when a second
+/// choice becomes configurable, and it inherits this: the constraint wanted is
+/// over the PAIR of key and value, which is not a column <c>CHECK</c> in any
+/// form. Expressing it means a trigger or splitting the column, and both are
+/// migrations rather than edits, so it is a decision before it is work.
+/// </para>
 /// </remarks>
 public sealed class FX_StoredVocabulariesMatchTheirChecks
 {
@@ -118,6 +149,37 @@ public sealed class FX_StoredVocabulariesMatchTheirChecks
             StoreLedgerEntryKind.ToStored, StoreLedgerEntryKind.ParseStored);
         AssertRoundTrip<TrialCloseKind>(
             StoreTrialCloseKind.ToStored, StoreTrialCloseKind.ParseStored);
+
+        // The one with no CHECK behind it. It cannot be compared against a
+        // schema, and the two directions that need no schema still apply.
+        AssertRoundTrip<FillPoint>(StoreFillPoint.ToStored, StoreFillPoint.ParseStored);
+    }
+
+    /// <summary>
+    /// The excluded vocabulary is excluded for a reason that still holds.
+    /// </summary>
+    /// <remarks>
+    /// <see cref="StoreFillPoint"/> is left out of the comparison above because
+    /// <c>config_rows.value</c> carries every section's values and cannot be
+    /// constrained without knowing which key a row belongs to. If that column ever
+    /// gains a <c>CHECK</c>, the reason evaporates and this fails, which is the
+    /// point: an exception that outlives its argument is how a stated exclusion
+    /// becomes a silent one.
+    /// </remarks>
+    [Fact]
+    public void The_polymorphic_column_still_has_no_check_to_compare_against()
+    {
+        using var store = MigratedStore();
+        using var connection = store.Connections.Open(StoreAccess.ReadOnly);
+
+        using var read = connection.CreateCommand();
+        read.CommandText =
+            "SELECT sql FROM sqlite_master WHERE type = 'table' AND name = 'config_rows';";
+
+        var ddl = read.ExecuteScalar() as string;
+
+        Assert.NotNull(ddl);
+        Assert.DoesNotContain("CHECK", ddl, StringComparison.OrdinalIgnoreCase);
     }
 
     /// <summary>
@@ -163,6 +225,11 @@ public sealed class FX_StoredVocabulariesMatchTheirChecks
         Assert.Throws<ArgumentOutOfRangeException>(() => StorePositionState.ToStored(default));
         Assert.Throws<ArgumentOutOfRangeException>(() => StoreLedgerEntryKind.ToStored(default));
         Assert.Throws<ArgumentOutOfRangeException>(() => StoreTrialCloseKind.ToStored(default));
+
+        // The vocabulary with no CHECK needs this most: with one member, a
+        // default that read as valid would be a fill point no configuration
+        // produced.
+        Assert.Throws<ArgumentOutOfRangeException>(() => StoreFillPoint.ToStored(default));
     }
 
     private static string[] Stored<T>(Func<T, string> toStored)
