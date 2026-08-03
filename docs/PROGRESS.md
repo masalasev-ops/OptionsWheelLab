@@ -1814,6 +1814,16 @@ closes completely, since the last unset key is set; the registry's goes from
 fifty-eight implemented entries to fifty-nine; and `WORKED_EXAMPLE.md`'s gains §4's
 fill table and §6.3's total, moving from six of eleven fixtures to seven.
 
+**It ran again at merge and found nothing, which is the answer rather than the
+formality.** 3.3's second run found four stale figures because a review had added
+four commits after its sign-off; 3.4's sign-off was its last commit, so nothing
+had moved. Every figure was re-measured rather than assumed: eighteen markers,
+thirteen obligations at two and eleven, fifty-nine implemented entries against
+fifty-six files and three named checks, seven of eleven fixtures reading the
+worked example, 650 tests and 186 files. The second run is conditional on the
+branch having moved, and running it is how that is established rather than
+guessed.
+
 **The table stands at thirteen rows**, two at checkpoint granularity and eleven at
 phase. 3.4 closed its own three and raised one, and both remaining checkpoint rows
 are 3.5's, which is the whole of what Phase 3 has left.
