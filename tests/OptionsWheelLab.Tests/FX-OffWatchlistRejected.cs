@@ -214,6 +214,6 @@ public sealed class FX_OffWatchlistRejected
 
         // No earnings: this fixture is about membership, so the earnings
         // constraint has nothing to read and admits throughout.
-        return new SyntheticChain(symbol, [], [.. quotes], []);
+        return new SyntheticChain(symbol, [], [.. quotes], [], []);
     }
 }

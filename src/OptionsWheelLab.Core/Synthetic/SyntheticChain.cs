@@ -1,4 +1,5 @@
 using OptionsWheelLab.Core.Identity;
+using OptionsWheelLab.Core.MarketData;
 
 namespace OptionsWheelLab.Core.Synthetic;
 
@@ -26,9 +27,25 @@ namespace OptionsWheelLab.Core.Synthetic;
 /// reports, and D-W25's constraint admits in both cases. The cost is that a
 /// fixture cannot express "earnings unknown", and no fixture needs to.
 /// </para>
+/// <para>
+/// <b><see cref="Actions"/> is the fourth, added at 3.3, and it is the last third
+/// of the obligation [D-W41] raised.</b> That decision named three things a
+/// dividend needed and added none: a <c>kind</c> the ledger admits, a
+/// <c>CorporateActionKind</c> beyond <c>Split</c>, and a scenario format that can
+/// state a corporate action at all. Without the third no hand-written scenario
+/// could express a dividend, so the two decisions about what a dividend does
+/// [D-W41, D-W44] had nothing to be tested against.
+/// </para>
+/// <para>
+/// Absence and emptiness mean the same thing here too, on
+/// <see cref="Earnings"/>' argument: a name with no corporate action and a
+/// scenario that does not mention one both read as none, and the state machine
+/// treats both alike.
+/// </para>
 /// </remarks>
 public sealed record SyntheticChain(
     Ticker Symbol,
     IReadOnlyList<UnderlyingBar> Bars,
     IReadOnlyList<ContractQuote> Quotes,
-    IReadOnlyList<EarningsReport> Earnings);
+    IReadOnlyList<EarningsReport> Earnings,
+    IReadOnlyList<ActionOnUnderlying> Actions);

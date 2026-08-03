@@ -114,7 +114,7 @@ internal static class GateScenario
                 Symbol, MembershipKind.Joined, new DateOnly(2026, 1, 2), Seeded);
 
             new ChainWriter(write).Ingest(
-                new SyntheticChain(Symbol, [], quotes, earnings ?? []), Recorded);
+                new SyntheticChain(Symbol, [], quotes, earnings ?? [], []), Recorded);
         }
 
         using var connection = store.Connections.Open(StoreAccess.ReadOnly);

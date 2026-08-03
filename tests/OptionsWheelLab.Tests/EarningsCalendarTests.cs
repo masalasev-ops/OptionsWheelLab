@@ -224,5 +224,5 @@ public sealed class EarningsCalendarTests
     /// because a scenario is not required to state a chain.
     /// </summary>
     private static SyntheticChain ChainWith(DateOnly report) =>
-        new(Symbol, [], [], [new EarningsReport(report, EarningsSession.AfterClose)]);
+        new(Symbol, [], [], [new EarningsReport(report, EarningsSession.AfterClose)], []);
 }

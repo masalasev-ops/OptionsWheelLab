@@ -5,20 +5,6 @@ using OptionsWheelLab.Core.MarketData;
 namespace OptionsWheelLab.Core.Positions;
 
 /// <summary>
-/// A corporate action as the state machine sees it: the recorded event, and the
-/// successor terms the adjusting authority stated when there are any.
-/// </summary>
-/// <remarks>
-/// The terms travel with the event because they are transcribed and never
-/// derived [D-W36]. Nothing here computes an adjusted strike or deliverable from
-/// a ratio, so an action that adjusts a contract and states no terms cannot be
-/// applied, which is a refusal rather than a guess.
-/// </remarks>
-public sealed record ActionOnUnderlying(
-    CorporateAction Action,
-    StatedSuccessorTerms? StatedSuccessor = null);
-
-/// <summary>
 /// What one session shows a trial: the close, the actions dated around it, and
 /// what the short contract was bid.
 /// </summary>

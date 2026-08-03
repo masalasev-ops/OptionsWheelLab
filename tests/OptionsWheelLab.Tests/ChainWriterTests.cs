@@ -138,8 +138,9 @@ public sealed class ChainWriterTests
                     Bid: bid50,
                     Ask: 1.05m),
             ],
-            // No scheduled reports: this suite is about how a chain persists,
-            // and the earnings rows have their own cases.
+            // No scheduled reports and no corporate actions: this suite is about
+            // how a chain persists, and both have their own cases.
+            [],
             []);
 
     private static long Count(SqliteConnection connection, string table)
