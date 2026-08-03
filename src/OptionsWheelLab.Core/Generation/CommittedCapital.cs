@@ -6,46 +6,64 @@ namespace OptionsWheelLab.Core.Generation;
 /// The capital a candidate commits, computed in one place [D-W17].
 /// </summary>
 /// <remarks>
-/// <b>One site, because which quantity this uses is an open obligation.</b>
-/// D-W17's first paragraph says the contract multiplier and its third says the
-/// deliverable, and they differ for an adjusted contract: on a three-for-two
-/// split taking a 90 strike to 60 with a 150-share deliverable, strike times
-/// multiplier gives 6,000 and strike times deliverable gives 9,000, and only the
-/// second leaves the aggregate exercise where the adjustment found it. That is
-/// owed at Phase 3, which is why <see cref="EnumeratedCandidate"/> declined the
-/// economics at 2.2 and named this checkpoint. The obligation stays open; what
-/// this type buys is that settling it changes one place.
+/// <b>Strike times the multiplier, settled at 3.1 by amending the decision</b>
+/// [D-W17, as amended]. An adjustment moves the deliverable and leaves the strike
+/// and the values used to calculate aggregate exercise prices where it found
+/// them, so a three-for-two leaves a $50 option at $50 with a 150-share
+/// deliverable and an exercising holder still pays $50 times 100. Committed
+/// capital is therefore strike times multiplier in every case, and a figure
+/// reading the deliverable would misprice every adjusted position.
 /// <para>
-/// <b>2.4 reads the deliverable, and states why rather than deciding the
-/// obligation.</b> It is the only quantity in reach: <see cref="ContractIdentity"/>
-/// has carried it since 1.5, the multiplier lives on <see cref="Contract"/> and
-/// never reaches a quote, and for a standard contract both are one hundred so
-/// <c>WORKED_EXAMPLE.md</c> cannot adjudicate either way. Reading what is
-/// reachable is not the same as choosing it, and Phase 3 chooses against OCC's
-/// adjustment memos rather than against this call site.
+/// <b>2.4 read the deliverable, stated why, and named 3.1 to decide it.</b> It
+/// was the only quantity in reach and it decided the other way, which is what
+/// that reasoning was for: the choice sat in one place, so this correction is one
+/// expression rather than a sweep.
 /// </para>
 /// <para>
-/// <b>What a covered call commits is a further open question and nothing here
-/// answers it.</b> D-W17 fixes a trial's committed capital at open and carries
-/// assigned shares inside the same number, so a covered call sold against shares
-/// already held plausibly commits nothing new. This returns the candidate's own
-/// figure whatever the right, which is the tighter reading of a cap and
-/// therefore the safe one to be wrong in [CLAUDE.md §6]. Raised for Phase 3,
-/// where the state machine first has a trial to attribute capital to.
+/// <b>The multiplier is a constant here because no transcribed one is in
+/// reach.</b> <see cref="ContractIdentity"/> carries the deliverable and not the
+/// multiplier, and <see cref="Synthetic.ContractQuote"/> excludes it deliberately:
+/// a synthetic chain expresses what was quoted rather than the store's record of
+/// the instrument. The transcribed multiplier lives on <see cref="Contract"/>
+/// [D-W36] and reaches no path a candidate travels. So
+/// <see cref="ContractMultiplier"/> stands in, on D-W17's own statement that one
+/// hundred is the contract multiplier and no adjustment changes it. That
+/// statement is what makes this a stated figure rather than a magic number, and
+/// it is not a tunable [CLAUDE.md §3].
+/// </para>
+/// <para>
+/// <b>What a covered call commits is settled and is not read here.</b> A call
+/// written against shares a trial already holds commits no further capital
+/// [D-W43], and the figure belongs to the trial from open to close. This returns
+/// a candidate's own figure whatever the right, because a candidate has no trial;
+/// the state machine is what attributes capital to one, and it is what applies
+/// D-W43.
 /// </para>
 /// </remarks>
 public static class CommittedCapital
 {
     /// <summary>
+    /// The contract multiplier for an equity option, which no adjustment changes
+    /// [D-W17].
+    /// </summary>
+    /// <remarks>
+    /// Named rather than written at the expression below, so the one place this
+    /// figure appears is the place that cites the decision stating it. When a
+    /// transcribed multiplier reaches this site the transcribed value is what to
+    /// read [D-W36]; that is owed at Phase 8, where vendor data first carries one.
+    /// </remarks>
+    public const int ContractMultiplier = 100;
+
+    /// <summary>
     /// What <paramref name="contracts"/> of <paramref name="contract"/> commit,
-    /// being strike times deliverable times quantity.
+    /// being strike times the multiplier times quantity.
     /// </summary>
     public static decimal For(ContractIdentity contract, int contracts = 1)
     {
         ArgumentNullException.ThrowIfNull(contract);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(contracts);
 
-        return contract.Strike * contract.DeliverableShares * contracts;
+        return contract.Strike * ContractMultiplier * contracts;
     }
 
     /// <summary>

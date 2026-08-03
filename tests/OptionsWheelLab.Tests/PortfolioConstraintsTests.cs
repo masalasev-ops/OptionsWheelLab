@@ -181,23 +181,23 @@ public sealed class PortfolioConstraintsTests
     }
 
     /// <summary>
-    /// Committed capital is strike times deliverable, and an adjusted
-    /// deliverable moves it.
+    /// Committed capital is strike times the multiplier, and an adjusted
+    /// deliverable does not move it.
     /// </summary>
     /// <remarks>
-    /// The quantity is the open Phase 3 obligation and this asserts what 2.4
-    /// reads rather than settling it. A standard contract cannot show the
-    /// difference, both quantities being one hundred, so the adjusted case is
-    /// what makes the choice visible at all: a 60 strike with a 150-share
-    /// deliverable commits 9,000.00 where the multiplier would give 6,000.00.
+    /// Inverted at 3.3 from what 2.4 read, per [D-W17] as amended at 3.1. A
+    /// standard contract cannot tell the two quantities apart, both being one
+    /// hundred, so the adjusted case is the whole assertion: a 60 strike with a
+    /// 150-share deliverable commits 6,000.00, where reading the deliverable
+    /// would give 9,000.00 and misprice the position.
     /// </remarks>
     [Fact]
-    public void Committed_capital_reads_the_deliverable()
+    public void Committed_capital_reads_the_multiplier()
     {
         Assert.Equal(5_000.00m, CommittedCapital.For(Identity(50.00m, OptionRight.Put)));
 
         Assert.Equal(
-            9_000.00m,
+            6_000.00m,
             CommittedCapital.For(
                 ContractIdentity.Of(Symbol, Expiry, OptionRight.Put, 60.00m, 150)));
 
@@ -206,16 +206,19 @@ public sealed class PortfolioConstraintsTests
     }
 
     /// <summary>
-    /// An adjusted deliverable reaches the cap, not only the arithmetic.
+    /// The strike reaches the cap and the deliverable does not.
     /// </summary>
     /// <remarks>
-    /// The same strike admitted at a standard deliverable is refused at 150
-    /// shares, so the identity's fifth component [1.5] is what the cap divides
-    /// the headroom against. A cap hardcoding one hundred would pass every other
-    /// assertion in this file.
+    /// Inverted at 3.3 with the quantity it asserts [D-W17, as amended]. The
+    /// discriminating power is unchanged and points the other way: an adjusted
+    /// contract at the same strike is admitted exactly as the standard one is,
+    /// which fails the moment anything reads the deliverable again, and a higher
+    /// strike on a standard deliverable is refused, which fails if the cap reads
+    /// no quantity at all. The headroom is §1's 5,100.00, so 50.00 commits 5,000
+    /// and clears it either way while 55.00 commits 5,500 and does not.
     /// </remarks>
     [Fact]
-    public void An_adjusted_deliverable_reaches_the_cap()
+    public void The_strike_reaches_the_cap_and_the_deliverable_does_not()
     {
         var book = new BookState(CommittedInName: 19_900.00m, CommittedTotal: 19_900.00m);
 
@@ -229,9 +232,11 @@ public sealed class PortfolioConstraintsTests
                 1.01m,
                 Delta: -0.24m));
 
+        Assert.Empty(PortfolioConstraints.Evaluate(adjusted, Seeded, book));
+
         Assert.Equal(
             [GateReason.PerNameCap],
-            PortfolioConstraints.Evaluate(adjusted, Seeded, book));
+            PortfolioConstraints.Evaluate(Put(55.00m), Seeded, book));
     }
 
     /// <summary>

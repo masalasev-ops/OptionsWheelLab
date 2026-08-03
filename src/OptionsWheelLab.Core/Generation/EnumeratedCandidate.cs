@@ -16,18 +16,17 @@ namespace OptionsWheelLab.Core.Generation;
 /// and the expiry window reads a date off the identity. What the row carries and
 /// this does not is <c>contracts_qty</c>, <c>committed_capital</c>, <c>credit</c>
 /// and <c>feature_json</c>, and only 2.4's caps need the first two. The quantity
-/// that computes committed capital is the open Phase 3 obligation: D-W17's first
-/// paragraph says the contract multiplier and its third says the deliverable,
-/// and they differ for an adjusted contract. Building the economics here means
-/// choosing between them at the checkpoint with no reason to, three checkpoints
-/// before the obligation that settles it.
+/// that computes committed capital was the open Phase 3 obligation, and 3.1
+/// settled it as the multiplier [D-W17, as amended]. Declining the economics here
+/// is what left that settlement one expression to change rather than every record
+/// that had copied a figure.
 /// </para>
 /// <para>
 /// <b>2.4 needed committed capital and still did not put it here.</b> It is a
 /// function of the identity this record already carries, so storing it would be
 /// a second copy of a derived fact, and the obligation is better served by one
 /// computing site than by one field: see <see cref="CommittedCapital"/>, which
-/// is what Phase 3 changes.
+/// is where 3.3 changed it.
 /// </para>
 /// <para>
 /// <b>The quote rather than the identity alone</b>, because 2.3 reads it four
