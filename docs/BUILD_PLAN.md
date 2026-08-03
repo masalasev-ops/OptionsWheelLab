@@ -1539,11 +1539,12 @@ is that a rebuild must fold it back, so that assertion belongs on a replay.
 ### 3.5 Determinism, end to end
 0.5 restated its byte-identical definition of done as identical stored rows
 because no run existed; this is the checkpoint that composes one. A run takes a
-symbol, a session range, a chain, a fixed clock and an opening choice supplied
-rather than chosen, steps every session, and produces a ledger. No maker is
-needed, because determinism is a property of the loop rather than of the choice;
-Phase 4 replaces the supplied choice with a maker's and changes nothing else
-about it.
+symbol, a session range, a chain, a fixed clock and the choices each session
+needs, supplied rather than chosen, steps every session, and produces a ledger.
+No maker is needed, because determinism is a property of the loop rather than of
+the choice; Phase 4 replaces the supplied sequence with a maker's and changes
+nothing else, because a maker produces one decision per session and the supplied
+sequence is that with the choosing already done.
 - **Test**: a composed run produces byte-identical output across two
   invocations.
 - Settles what bars nondeterminism in SQL that is not a clock, which the
