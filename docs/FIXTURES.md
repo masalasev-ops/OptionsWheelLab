@@ -5,9 +5,10 @@ reference the entries registered against them here; they never enumerate names
 inline.
 
 Build state: **partly built**. The forty-three entries registered against
-0.2 to 2.5 are implemented, being forty-one fixtures and two guards; the
-rest belong to checkpoints not yet reached. 1.2 and 2.1 registered none,
-which their details state.
+0.2 to 2.5 are implemented, being forty-one fixtures and two guards. 3.3 is
+in progress: one of its twelve is implemented, and that count moves until it
+signs off. The rest belong to checkpoints not yet reached. 1.2 and 2.1
+registered none, which their details state.
 
 ## Why this file exists
 
@@ -120,6 +121,7 @@ to carry the wrong cell.
 | FX-OrdinaryDividendLeavesContractUnchanged | fixture | 3.3 | an ordinary dividend produces a ledger entry and no contract adjustment, and a non-ordinary one produces the adjustment its corporate action states [D-W44] | authored |
 | FX-NextSessionSkipsAClosedDate | fixture | 3.3 | an assignment whose following date is absent from the calendar settles on the next date the calendar carries, and a date the calendar does not reach stops rather than resolving [D-W46] | authored |
 | FX-UnmodelledActionStopsTheTrial | fixture | 3.3 | a merger on a held underlying stops the trial with the action recorded as its reason, and a split does not [D-W47] | authored |
+| FX-StoredVocabulariesMatchTheirChecks | fixture | 3.3 | every declared stored vocabulary and the CHECK enforcing it admit exactly the same values | authored |
 | FX-ThreeMakersSameFeasibleSet | fixture | 4 | all makers receive byte-identical candidate sets | WORKED_EXAMPLE §3 |
 | FX-RecordCarriesFeasibleSet | fixture | 4 | a decision is re-scorable from its record alone | authored |
 | FX-ExcursionRecordedOnWin | fixture | 5 | a positive outcome still carries its adverse excursion | WORKED_EXAMPLE §6.2 |

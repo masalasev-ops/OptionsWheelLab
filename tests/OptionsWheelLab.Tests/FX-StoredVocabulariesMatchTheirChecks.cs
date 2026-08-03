@@ -9,13 +9,16 @@ using OptionsWheelLab.Core.Storage;
 namespace OptionsWheelLab.Tests;
 
 /// <summary>
-/// Every stored vocabulary the database enforces carries exactly the values the
-/// code can produce.
+/// FX-StoredVocabulariesMatchTheirChecks: every declared stored vocabulary and
+/// the CHECK enforcing it admit exactly the same values.
 /// </summary>
 /// <remarks>
-/// Not a registered fixture, on <see cref="BarsSchemaTests"/>' argument, though
-/// it asserts a property rather than a migration's behaviour and may deserve
-/// registering.
+/// <b>A standing property rather than one checkpoint's behaviour</b>, which is
+/// what puts it in the registry where <see cref="BarsSchemaTests"/> and
+/// <see cref="CorporateActionsSchemaTests"/> stay out. Its shape is
+/// FX-EveryPolicyBandIsChecked's and FX-EveryBoundKeyIsDocumented's, which hold a
+/// declaration and a document together; this holds a declaration and a schema
+/// together, one layer down.
 /// <para>
 /// <b>Each vocabulary is written twice and nothing has held them together.</b>
 /// The <c>Store*</c> class declares the permitted values, deliberately rather
@@ -33,7 +36,7 @@ namespace OptionsWheelLab.Tests;
 /// only inserting.
 /// </para>
 /// </remarks>
-public sealed class StoredVocabularyTests
+public sealed class FX_StoredVocabulariesMatchTheirChecks
 {
     private static readonly DateTimeOffset Instant =
         new(2026, 7, 30, 9, 0, 0, 0, TimeSpan.Zero);
