@@ -883,3 +883,54 @@ checkpoint's own detail has a demonstration step. Say which were checked.
   Six of them now exist, one eleven values long, and nothing held them together
   until a check compared each declaration against the CHECK enforcing it. It
   found a defect in code shipped two phases earlier on its first run.
+
+---
+
+## 3.4 The fill model and the costs
+
+Branch `phase-3/checkpoint-3.4` off `main`. The thing that turns a quote into a
+number: the state machine took every credit and debit as a parameter and computed
+none, and `Costs:FillPoint` had been seeded since 0.8 with no reader at all.
+
+### Three obligations that are one question
+
+What the assignment fee is, whether it can be non-zero without contradicting the
+worked example, and whether a commission is its own ledger entry. The first two
+are the same number and the third decides what they are arithmetic over.
+**Settle them together and stop for review before any code computes with them**,
+which is 3.3's two-review-point shape used for the same reason: the fee is a
+number an authored document's total depends on.
+
+### A stated zero is not the weak zero
+
+The obligation's own words are that a zero INFERRED from an absent ledger line is
+weaker than a stated number. So a fee of zero is admissible and it still needs
+the shape every decision in this phase carries: **a named source with a retrieval
+date, the claim, and what the source does not reach.** One broker's schedule
+establishes the common case and not a market rule, which is why a fee of zero
+still earns a configuration key: the key is what makes a broker that charges a
+stored value changing rather than code changing.
+
+### What a value that cannot vary is read for
+
+`Costs:FillPoint` has one permitted word and reading it looks pointless. It is
+not: a model that skipped the key would honour the rule by accident while a row
+asserted a different one. **Configuration nothing reads is configuration nothing
+can be wrong about.**
+
+### Constraints
+
+- **Verifying a Consumer is a type in `src/` resolving the key and a component in
+  `src/` calling that type**, measured rather than assumed. It is not about who
+  constructs the component: the generator is built only by tests and its keys
+  have been verified since 2.4. Measure the records before claiming either way.
+- **A correspondence a fixture cannot have is not one it should claim.** The
+  document nets what the ledger separates, so cells reconcile against sums and the
+  ledger carries more rows than the table. Say which correspondence is asserted.
+- **Break the code to find out which assertions notice.** Netting the commission
+  and re-running left three of five cases passing, which is how the two that carry
+  the grain were identified. An assertion nobody has seen fail is an assertion
+  nobody has read.
+- **A vocabulary with no second enforcer is named where each audience stands**:
+  at the type, at the fixture that holds the stored forms together, and in the
+  registry row a reader meets first. Written in one place reaches one reader.

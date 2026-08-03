@@ -4,8 +4,8 @@ The single registry of test fixtures and source guards. Prompts and checkpoints
 reference the entries registered against them here; they never enumerate names
 inline.
 
-Build state: **partly built**. The fifty-eight entries registered against 0.2 to
-3.3 are implemented, being fifty-five fixtures and three guards; the rest belong
+Build state: **partly built**. The fifty-nine entries registered against 0.2 to
+3.4 are implemented, being fifty-six fixtures and three guards; the rest belong
 to checkpoints not yet reached. 1.2 and 2.1 registered none, which their details
 state.
 
@@ -15,6 +15,9 @@ named check in the script. Every earlier checkpoint met it too, but with counts
 small enough that meeting it and noticing it were the same act. Twelve landed
 before it signed off and three came from reviewing it afterwards, which is the
 first time this registry has grown from a review rather than from a build.
+
+3.4 registered nothing and implemented the one row already standing against it.
+That row has been in this registry since v1.0.0, waiting for the ledger it reads.
 
 ## Why this file exists
 

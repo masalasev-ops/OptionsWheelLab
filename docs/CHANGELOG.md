@@ -1,5 +1,67 @@
 # CHANGELOG
 
+## [1.41.0] — 2026-08-03
+
+**Checkpoint 3.4**, the fill model and the costs. One decision, the model, a leg
+that writes two entries, and the registered check that reads the worked example's
+ledger. Three obligations closed and one raised. The suite goes from 629 to 650,
+and the last configuration key owed a value gets one.
+
+### Added
+- **D-W50**: a fill's cash is the price times the multiplier, taken at the bid
+  for a sale and the ask for a purchase; the commission is its own ledger entry
+  per contract and per leg; and the assignment fee is zero, transcribed from a
+  named broker's published schedule with a retrieval date. The arrangement that
+  writes gross, commission and a stored net is rejected and named, because it is
+  the one a later reader reaches for.
+- `FillModel` and `CostBounds`, which resolve the three `Costs:` keys as of the
+  simulated date. `FillPoint` and `StoreFillPoint` give the first word-valued key
+  anything reads a checked vocabulary.
+- `WheelStateMachine.OpenTrial`, so a trial's opening entries come from the same
+  producer as every other leg. The open banked a credit and wrote nothing, which
+  made it the one event a caller had to write for.
+- **FX-TrialCompleteIncludesAssignment** is implemented, seventh of the eleven
+  fixtures reading `WORKED_EXAMPLE.md` and the first to read its ledger.
+- One obligation: what `ResolvedBound`'s refusal calls the thing it could not
+  resolve, at Phase 5.
+
+### Changed
+- **The three `Costs:` consumers are verified**, and what verifying takes was
+  measured rather than assumed: a type in `src/` resolves the key and a component
+  in `src/` calls that type. `CandidateGenerator` is built only by tests and its
+  ten keys have been verified since 2.4, so it is not about who constructs the
+  component. `TrialBounds.ResolveFor` appears in no `src/` file, which is the
+  whole of why 3.3's two rows are still a defect.
+- The machine's three legs take a `Fill` where they took a `decimal`, and each
+  writes the premium and the commission separately. A roll is charged twice,
+  because a roll is two legs.
+- `TrialProjection` folds `commission` into premium banked. Net basis is what the
+  account paid per share and the account paid the commission.
+- `Costs:AssignmentFee` brought a kind of provenance the seeder did not have:
+  transcribed from a named external source with a retrieval date, where every
+  other entry is transcribed from this corpus, taken from a decision's proposed
+  value, or judged.
+- The table stands at thirteen rows, two at checkpoint granularity and eleven at
+  phase, and both checkpoint rows are 3.5's.
+
+### Fixed
+- **The registry row for FX-StoredVocabulariesMatchTheirChecks stopped claiming
+  complete coverage.** `StoreFillPoint` has no `CHECK` to compare against, since
+  `config_rows.value` is polymorphic and a constraint there would have to know
+  which key a row belongs to. The exclusion is now stated at the type, at the
+  fixture, and in the row, and it is checked: a case fails if that column ever
+  gains a `CHECK`.
+- Two claims of mine, corrected by probing rather than by reading. Netting the
+  commission and re-running the registered fixture leaves three of its five cases
+  passing, so neither the total nor the per-date reconciliation is what the grain
+  rests on. And net basis asserted against the machine discriminates nothing,
+  because the machine banks the fill's net either way; the assertion belongs on a
+  replay, where the fold is what produces the figure.
+- The floating-point guard caught a violation in a test written this checkpoint.
+  `InlineData` cannot carry a decimal, so a theory took doubles and cast, which is
+  the shape that loses cents where no scan would see it. The cases are quoted and
+  parsed now, for the reason a synthetic chain quotes its numbers.
+
 ## [1.40.0] — 2026-08-03
 
 **Checkpoint 3.3**, the state machine and the ledger, and the first checkpoint in
