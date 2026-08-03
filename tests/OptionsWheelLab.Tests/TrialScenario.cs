@@ -43,14 +43,36 @@ internal static class TrialScenario
     /// <summary>The seeded bounds [CONFIG_REFERENCE].</summary>
     internal static readonly TrialBounds Seeded = new(MaxRolls: 2, MaxTrialDays: 120);
 
-    internal static WheelStateMachine Machine() => new(Calendar, Seeded);
+    /// <summary>The seeded costs [CONFIG_REFERENCE, D-W50].</summary>
+    internal static readonly CostBounds Costs = new(
+        CommissionPerContract: 0.65m, AssignmentFee: 0.00m, FillPoint: FillPoint.Bid);
+
+    internal static WheelStateMachine Machine() => new(Calendar, Seeded, Costs);
 
     internal static WheelStateMachine MachineOn(SessionCalendar calendar) =>
-        new(calendar, Seeded);
+        new(calendar, Seeded, Costs);
 
-    /// <summary>§6.3's opening leg: the 50.00 put sold for 0.95 less commission.</summary>
-    internal static TrialState OpenedTrial() =>
-        TrialState.OpenShortPut(Put(50.00m, FirstExpiry), credit: 94.35m, Opened);
+    /// <summary>
+    /// A sale at <paramref name="bid"/>, priced the way the fill model prices it.
+    /// </summary>
+    /// <remarks>
+    /// The premium and the commission separately [D-W50], so a fixture states the
+    /// quote it means rather than the net it computed. §6.3's three sales are
+    /// 0.95, 0.70 and 0.85, whose nets are 94.35, 69.35 and 84.35.
+    /// </remarks>
+    internal static Fill Sold(decimal bid, int contracts = 1) =>
+        new(ContractTerms.CashFor(bid) * contracts, Costs.CommissionPerContract * contracts);
+
+    /// <summary>A purchase at <paramref name="ask"/> [D-W49].</summary>
+    internal static Fill Bought(decimal ask, int contracts = 1) =>
+        new(-(ContractTerms.CashFor(ask) * contracts), Costs.CommissionPerContract * contracts);
+
+    /// <summary>§6.3's opening leg: the 50.00 put sold at a bid of 0.95.</summary>
+    internal static TrialState OpenedTrial() => OpenedTransition().State;
+
+    /// <summary>The same open, when a fixture needs the entries it wrote.</summary>
+    internal static Transition OpenedTransition() =>
+        Machine().OpenTrial(Put(50.00m, FirstExpiry), Sold(0.95m), Opened);
 
     internal static ContractIdentity Put(decimal strike, DateOnly expiry) =>
         ContractIdentity.Of(Symbol, expiry, OptionRight.Put, strike);

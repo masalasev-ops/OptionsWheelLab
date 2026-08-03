@@ -35,7 +35,7 @@ public sealed class FX_NextSessionSkipsAClosedDate
     public void An_assignment_settles_on_the_next_date_the_calendar_carries()
     {
         var machine = MachineOn(OverEaster);
-        var opened = TrialState.OpenShortPut(Put(50.00m, Thursday), credit: 94.35m, Opened);
+        var opened = machine.OpenTrial(Put(50.00m, Thursday), Sold(0.95m), Opened).State;
 
         var assigned = machine.Advance(opened, Session(Thursday, close: 48.90m));
 
@@ -77,7 +77,7 @@ public sealed class FX_NextSessionSkipsAClosedDate
     public void A_date_the_calendar_does_not_reach_stops_the_evaluation()
     {
         var machine = MachineOn(OverEaster);
-        var opened = TrialState.OpenShortPut(Put(50.00m, EasterMonday), credit: 94.35m, Opened);
+        var opened = machine.OpenTrial(Put(50.00m, EasterMonday), Sold(0.95m), Opened).State;
 
         var thrown = Assert.Throws<InvalidOperationException>(
             () => machine.Advance(opened, Session(EasterMonday, close: 48.90m)));

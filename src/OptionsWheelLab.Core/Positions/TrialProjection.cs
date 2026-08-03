@@ -282,8 +282,17 @@ public static class TrialProjection
                     CloseKindFor(state, entry, bounds),
                     state.PremiumBanked),
 
-            // Cash that moves no position: a dividend the shares earned [D-W41],
-            // and the two cost kinds 3.4 settles [D-W12].
+            // A commission moves no position and does move the basis [D-W50].
+            // Net basis is what the account paid per share and the account paid
+            // the commission, so a replay that treated this as cash-only would be
+            // wrong rather than coarse: WORKED_EXAMPLE 6.3 states 49.0565, and
+            // ignoring the entry gives 49.05. The amount is already negative.
+            LedgerEntryKind.Commission =>
+                state.WithPremiumBanked(state.PremiumBanked + entry.Amount),
+
+            // Cash that moves neither the position nor the basis: a dividend the
+            // shares earned [D-W41], and the fee an exercise is charged, which is
+            // a cost of the event rather than of the shares.
             _ => null,
         };
 

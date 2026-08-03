@@ -103,7 +103,7 @@ public sealed class FX_BoundClosePaysTheAsk
         var holding = machine.Advance(OpenedTrial(), Session(FirstExpiry, close: 48.90m)).State;
 
         var bounds = new TrialBounds(MaxRolls: 2, MaxTrialDays: 30);
-        var bound = new WheelStateMachine(Calendar, bounds).Advance(
+        var bound = new WheelStateMachine(Calendar, bounds, Costs).Advance(
             holding, Session(MondayAfter, close: 45.50m));
 
         var entry = Assert.Single(bound.Entries);
@@ -125,7 +125,7 @@ public sealed class FX_BoundClosePaysTheAsk
         for (var roll = 0; roll < Seeded.MaxRolls; roll++)
         {
             state = machine.Roll(
-                state, new DateOnly(2026, 4, 8), 1m, Put(50.00m, ThirdExpiry), 1m).State;
+                state, new DateOnly(2026, 4, 8), Bought(0.01m), Put(50.00m, ThirdExpiry), Sold(0.01m)).State;
         }
 
         return state;

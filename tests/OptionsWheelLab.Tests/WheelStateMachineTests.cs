@@ -31,6 +31,10 @@ public sealed class WheelStateMachineTests
 
     private static readonly TrialBounds Seeded = new(MaxRolls: 2, MaxTrialDays: 120);
 
+    /// <summary>The seeded costs [CONFIG_REFERENCE, D-W50].</summary>
+    private static readonly CostBounds Costs = new(
+        CommissionPerContract: 0.65m, AssignmentFee: 0.00m, FillPoint: FillPoint.Bid);
+
     private static readonly DateOnly Opened = new(2026, 3, 2);
     private static readonly DateOnly SecondExpiry = new(2026, 5, 15);
     private static readonly DateOnly ThirdExpiry = new(2026, 6, 19);
@@ -106,7 +110,7 @@ public sealed class WheelStateMachineTests
         var machine = Machine();
         var holding = Resolve(close: 48.90m).State;
 
-        var written = machine.WriteCall(holding, MondayAfter, Call(52.50m), credit: 69.35m);
+        var written = machine.WriteCall(holding, MondayAfter, Call(52.50m), Sold(0.70m));
 
         Assert.Equal(5_000.00m, holding.CommittedCapital);
         Assert.Equal(5_000.00m, written.State.CommittedCapital);
@@ -114,22 +118,40 @@ public sealed class WheelStateMachineTests
     }
 
     /// <summary>
-    /// A roll banks both legs and neither is a close [D-W48].
+    /// A roll banks both legs, neither is a close [D-W48], and each is charged
+    /// [D-W50].
     /// </summary>
+    /// <remarks>
+    /// <b>Two commissions, because a roll is two legs.</b> The commission is per
+    /// contract and per leg, so a rolled chain pays it every time it rolls, which
+    /// is a cost the bound exists partly to limit [D-W14] and which a netted
+    /// ledger would have buried inside two premium figures.
+    /// </remarks>
     [Fact]
-    public void A_roll_writes_a_premium_paid_and_a_premium_received()
+    public void A_roll_writes_both_legs_and_is_charged_for_each()
     {
         var machine = Machine();
-        var opened = TrialState.OpenShortPut(Put(50.00m), credit: 94.35m, Opened);
+        var opened = machine.OpenTrial(Put(50.00m), Sold(0.95m), Opened).State;
 
         var rolled = machine.Roll(
-            opened, FirstExpiry, debit: 120.00m, opened: Put(48.00m), credit: 150.00m);
+            opened, FirstExpiry, Bought(1.20m), opened: Put(48.00m), Sold(1.50m));
 
         Assert.Equal(
-            [LedgerEntryKind.PremiumPaid, LedgerEntryKind.PremiumReceived],
+            [
+                LedgerEntryKind.PremiumPaid,
+                LedgerEntryKind.Commission,
+                LedgerEntryKind.PremiumReceived,
+                LedgerEntryKind.Commission,
+            ],
             rolled.Entries.Select(entry => entry.Kind));
+
         Assert.Equal(1, rolled.State.RollsUsed);
-        Assert.Equal(94.35m - 120.00m + 150.00m, rolled.State.PremiumBanked);
+
+        // 94.35 banked, less 120.65 paid, plus 149.35 received.
+        Assert.Equal(123.05m, rolled.State.PremiumBanked);
+        Assert.Equal(
+            rolled.State.PremiumBanked,
+            94.35m + rolled.Entries.Sum(entry => entry.Amount));
     }
 
     /// <summary>
@@ -168,7 +190,7 @@ public sealed class WheelStateMachineTests
     {
         var machine = Machine();
         var expiring = machine.Roll(
-            RolledTwice(), new DateOnly(2026, 4, 8), 1m, Put(50.00m), 1m).State;
+            RolledTwice(), new DateOnly(2026, 4, 8), Bought(0.01m), Put(50.00m), Sold(0.01m)).State;
 
         var assigned = machine.Advance(expiring, Session(FirstExpiry, close: 45.00m));
 
@@ -194,9 +216,9 @@ public sealed class WheelStateMachineTests
         var opened = TrialState.OpenShortPut(LatePut(50.00m), credit: 94.35m, Opened);
 
         var once = machine.Roll(
-            opened, new DateOnly(2026, 4, 8), 1m, LatePut(50.00m), 1m).State;
+            opened, new DateOnly(2026, 4, 8), Bought(0.01m), LatePut(50.00m), Sold(0.01m)).State;
 
-        return machine.Roll(once, new DateOnly(2026, 4, 8), 1m, LatePut(50.00m), 1m).State;
+        return machine.Roll(once, new DateOnly(2026, 4, 8), Bought(0.01m), LatePut(50.00m), Sold(0.01m)).State;
     }
 
     /// <summary>
@@ -397,7 +419,7 @@ public sealed class WheelStateMachineTests
         var adjustedCall = ContractIdentity.Of(
             Symbol, SecondExpiry, OptionRight.Call, 52.50m, deliverableShares: 150);
 
-        var written = machine.WriteCall(holding, MondayAfter, adjustedCall, credit: 69.35m).State;
+        var written = machine.WriteCall(holding, MondayAfter, adjustedCall, Sold(0.70m)).State;
         var away = machine.Advance(written, Session(SecondExpiry, close: 55.00m));
 
         Assert.Equal(TrialCloseKind.CalledAway, away.State.CloseKind);
@@ -425,7 +447,7 @@ public sealed class WheelStateMachineTests
 
         for (var roll = 0; roll < Seeded.MaxRolls; roll++)
         {
-            state = machine.Roll(state, new DateOnly(2026, 4, 8), 1m, adjusted, 1m).State;
+            state = machine.Roll(state, new DateOnly(2026, 4, 8), Bought(0.01m), adjusted, Sold(0.01m)).State;
         }
 
         var bound = machine.Advance(state, Session(SecondExpiry, close: 45.00m, ask: 5.40m));
@@ -435,7 +457,13 @@ public sealed class WheelStateMachineTests
         Assert.Equal(-540.00m, Assert.Single(bound.Entries).Amount);
     }
 
-    private static WheelStateMachine Machine() => new(Calendar, Seeded);
+    private static WheelStateMachine Machine() => new(Calendar, Seeded, Costs);
+
+    private static Fill Sold(decimal bid) =>
+        new(ContractTerms.CashFor(bid), Costs.CommissionPerContract);
+
+    private static Fill Bought(decimal ask) =>
+        new(-ContractTerms.CashFor(ask), Costs.CommissionPerContract);
 
     /// <summary>§6.3's trial at its first expiry, with the close as supplied.</summary>
     private static Transition Resolve(decimal close)

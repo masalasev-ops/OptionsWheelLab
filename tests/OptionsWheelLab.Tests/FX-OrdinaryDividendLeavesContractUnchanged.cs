@@ -190,6 +190,6 @@ public sealed class FX_OrdinaryDividendLeavesContractUnchanged
         var holding = machine.Advance(OpenedTrial(), Session(FirstExpiry, close: 48.90m)).State;
 
         return machine.WriteCall(
-            holding, MondayAfter, Call(52.50m, ThirdExpiry), credit: 69.35m).State;
+            holding, MondayAfter, Call(52.50m, ThirdExpiry), Sold(0.70m)).State;
     }
 }
