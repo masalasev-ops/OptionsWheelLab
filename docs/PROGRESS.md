@@ -5,8 +5,8 @@ Appended to, never rewritten. The repository is the authority on build state.
 ## Current state
 
 **Phase 0 complete and reviewed. Phases 1 and 2 complete. Phase 3 started.**
-Checkpoints 0.1 to 0.8, 1.1 to 1.5, 2.1 to 2.5 and 3.1 built and signed off. 3.2
-to 3.5 are not started. The documentation corpus is at v1.37.1.
+Checkpoints 0.1 to 0.8, 1.1 to 1.5, 2.1 to 2.5, 3.1 and 3.2 built and signed
+off. 3.3 to 3.5 are not started. The documentation corpus is at v1.39.0.
 
 ## Log
 
@@ -1409,3 +1409,215 @@ down**, because the record makes it look covered. 2.5 established this sweep and
 found three; 3.1 wrote it into the archive's lessons two commits before sign-off
 and then closed on the acts it had been handed. What makes a sweep run is being
 part of the sign-off, not being described in a document the sign-off produces.
+
+### 2026-08-02 — corpus v1.38.0
+**Checkpoint 3.2 opened. This entry is the completeness pass's scope, and it is
+written and committed before the walk.** The definition of done requires the
+pass to be recorded with what it examined and not only with what it found, and a
+scope written afterwards is a reconstruction. Committing it first is the only
+thing that makes the order checkable rather than asserted, which is the same
+argument that made 3.1's marker sweep worthless when it existed as a lesson
+rather than as an act.
+
+**The method has to compare the corpus against something outside it.** The
+obligation's own argument is that every check this repository has compares one
+part of the corpus against another, so an omission from the domain model is
+invisible to all of them. A pass that reads the corpus and asks whether it looks
+complete is another such check. Each axis is therefore walked against an external
+enumeration where one exists, and against first principles where none does, with
+the source named per axis and stated as which of the two it was.
+
+**Five axes, and each will be recorded whether or not it produces a finding.** An
+axis that produces nothing is the more valuable record, because it is the only
+evidence that the axis was walked at all: a finding proves the walk by existing,
+and an absence proves nothing unless it is written down. That is the vacuity
+guard this repository puts on every scanning check, applied to a pass.
+
+| Axis | What the corpus holds | Walked against |
+|---|---|---|
+| States and events | four states and six events [`SYSTEM_DESIGN.md` §3.8] | OCC's adjustment provisions and the filings retrieved at 3.1 |
+| Cash movements | premium, assignment, call-away, commission, assignment fee, dividend | the filings' own cash language, then first principles |
+| What an account can hold | cash, shares, a short put, a short call; `deliverable_shares` as an integer on identity [1.5] | the adjustment method in force |
+| What a trial's return includes | [D-W17], [D-W18], [D-W12] and [D-W41] | first principles, no external authority |
+| The two controls | buy-and-hold and the hold-cash floor [D-W13] | first principles |
+
+**Scope, stated in both directions.** In: the turn's states and events, every
+cash movement, what an account can hold, what a trial's return includes, and both
+controls. Out, each because it is a phase whose own detail is unwritten and a
+pass over unwritten intent surveys nothing: the learner, the walk-forward
+boundary, pre-registration, the UI, and Phase 8's vendor ingest.
+
+**Why the controls are in and the turn alone is not enough.** The wheel turn by
+itself would not have caught the dividend gap, which was a hole in [D-W13]'s
+control as much as in `ledger_entries`, and that gap is the founding instance of
+the class this pass exists for. A scope that misses its own founding example is
+the wrong scope.
+
+**Anything the walk turns up outside this scope is recorded as out of scope and
+raised, never absorbed.** A scope that grew to fit what was found is not a scope.
+
+**Each finding will be classified as it is recorded.** Settleable inside 3.2 when
+the corpus can answer it from what it already holds, being a decision, a schema,
+or an arithmetic consequence of either. An obligation when the answer needs an
+external source, depends on work not yet built, or is a modelling choice large
+enough to deserve its own argument. 3.1's mechanics were all of the second kind,
+which is what made it a retrieval checkpoint. Recording which kind each finding
+is, rather than only what it is, is what stops "settled" meaning "answerable from
+what happened to be to hand".
+
+### 2026-08-02 — corpus v1.38.0, the walk
+**The completeness pass, walked against the scope committed above.** All five
+axes are recorded, including those that produced nothing, because an axis with no
+finding is the only evidence that it was walked. No decision is authored in this
+entry; the findings are classified and the decisions follow.
+
+**The external enumeration, retrieved 2026-08-02 from GPO.** OCC states the
+events that adjust a contract: "Certain corporate actions -- such as declaration
+of dividends or distributions, stock splits, rights offerings, reorganizations,
+or the merger or liquidation of an issuer -- affecting an underlying security may
+require an adjustment to the terms of the overlying options" (Release No.
+34-69642, File No. SR-OCC-2013-05, 78 FR 33138, 3 June 2013). The substantive
+rules are By-Laws Article VI Section 11A and the procedural ones Section 11.
+
+#### Axis 1, states and events. Three findings.
+
+Walked against that enumeration. The corpus names four states and six events:
+expiry, assignment, exercise, dividend, split, earnings [`SYSTEM_DESIGN.md`
+§3.8].
+
+- **The event vocabulary is short by five.** Rights offerings, reorganizations,
+  mergers, liquidations and spin-offs adjust a contract and no document in this
+  corpus names any of them. `CorporateActionKind` holds `Split` alone.
+  **Obligation**: each is a modelling choice about what a trial does when its
+  underlying stops being the thing the trial opened against, and that is larger
+  than an omission to close here.
+- **Ordinary and special dividends are one concept in this corpus and two in the
+  market, with opposite consequences.** An ordinary cash dividend pays the holder
+  and does not adjust the contract. A non-ordinary one adjusts it, "by calling
+  for the delivery of the dividend". Under the rule in force a dividend is
+  ordinary regardless of size when "declared pursuant to a policy or practice of
+  paying such dividends or distributions on a quarterly or other regular basis",
+  and as a general rule one below $12.50 per contract does not trigger adjustment
+  at all (Release No. 34-54748, File No. SR-OCC-2006-01, 71 FR 67415, 21 November
+  2006, approved at Release No. 34-55258, 72 FR 7701, 16 February 2007).
+  **Settleable**: [D-W41] decided that a dividend is ledgered and did not
+  distinguish the two, and the distinction is a consequence of a source already
+  in the corpus.
+- **[D-W42]'s condition is right and its scope is unstated.** Early exercise to
+  capture a dividend is the behaviour OCC's own rationale describes for dividends
+  it does *not* adjust for: "If adjustments are not made in response to special
+  dividends (i.e., by calling for the delivery of the dividend) call holders can
+  capture the dividends only by exercising their options." Where the contract is
+  adjusted the holder receives the dividend through the deliverable and has no
+  reason to exercise early, so the model applies to unadjusted dividends only.
+  **Settleable**: it narrows a decision authored yesterday, from a source
+  retrieved for a different question.
+
+The **10% Rule** was read and rejected as the answer. It defines ordinary by size
+and appears in that filing's Background as the rule the filing exists to revise,
+which is the second time in two checkpoints that the passage which looks like the
+answer is the one being retired.
+
+#### Axis 2, cash movements. One finding, shared with axes 4 and 5.
+
+Walked against the filings' own cash language, then first principles. The corpus
+names premium, the assignment purchase, call-away proceeds, commission, the
+assignment fee and now the dividend.
+
+- **Cash earns nothing in this model and the corpus never says so.** Measured:
+  the word appears three times in the corpus and not once as a financial concept,
+  being `open_interest` as a quote column, "underlying equity interest" inside
+  [D-W38]'s quotation, and "interesting" in the primer. **Obligation**: a rate is
+  an external source and a decision about which one is a modelling choice with
+  its own argument. Recorded under Axis 5 with its consequence, since that is
+  where it bites.
+
+Nothing else was missing. Every other cash movement a wheel turn makes has a name
+in the corpus, which is what the ledger's `kind` column exists to carry.
+
+#### Axis 3, what an account can hold. One finding, and it reaches identity.
+
+Walked against the adjustment method in force.
+
+- **A deliverable can be shares plus cash, and this schema cannot express one.**
+  The method states that a 4-for-3 split of an $80 option gives a deliverable
+  "adjusted to 133 shares plus the cash value of the eliminated fractional share
+  (.3333 x the post-split value of a share of XYZ stock as determined by OCC)",
+  with the strike unchanged (same filing as above). `deliverable_shares` is an
+  integer, it is one of the five components of contract identity [1.5], and
+  nothing anywhere in the corpus or the sources names cash in lieu.
+  **Obligation**: it changes contract identity, which is the one structure this
+  project has been most careful with, and a change there is not a thing to settle
+  inside a survey.
+
+#### Axis 4, what a trial's return includes. One finding, minor.
+
+Walked against first principles; there is no external authority for what a lab
+chooses to measure. [D-W17] fixes the denominator, [D-W18] the horizon, [D-W12]
+the costs, [D-W41] the dividends.
+
+- **Tax is not mentioned anywhere and is presumably out of scope, which is not
+  the same as being out of scope.** **Settleable**: stating an exclusion needs no
+  source, and an unstated exclusion is indistinguishable from an omission, which
+  is this pass's entire subject.
+
+Otherwise the axis produced nothing: every component of a trial's return has a
+decision, and the interest question belongs to Axis 5.
+
+#### Axis 5, the two controls. One finding.
+
+Walked against first principles. [D-W13] runs buy-and-hold on the same
+underlyings with the same capital over the same window, and a hold-cash floor.
+
+- **The absence of interest biases two of the three comparisons in opposite
+  directions, which is why it is a finding rather than a rounding error.** The
+  wheel holds cash securing its puts and the floor holds cash outright, so both
+  are understated by roughly the same amount and their comparison survives.
+  Buy-and-hold holds no cash and is not understated at all, so the comparison the
+  lab exists to make is biased against the wheel by whatever the rate is.
+  **Obligation**: the same one Axis 2 raised, recorded here because this is where
+  its consequence lands, and it is a control gap of the same kind as the dividend
+  gap and in the same decision.
+
+#### Out of scope, raised rather than absorbed
+
+Nothing. The walk stayed inside the scope as committed, and the axes that reach
+Phase 8's vendor ingest and the learner were stopped at that boundary rather than
+followed.
+
+### 2026-08-02 — corpus v1.39.0
+**Checkpoint 3.2 signed off.** The completeness pass ran over five axes and found
+six things, three settled here and three raised. D-W44 splits the dividend into
+the two events the market has, D-W45 puts tax outside the lab and says so, and
+[D-W42] is narrowed to unadjusted dividends a day after it was written.
+
+**What the pass was, as distinct from what it found.** Its scope was committed
+before the walk, in its own commit, so the order is checkable rather than
+asserted. Every axis is recorded whether or not it produced a finding, because an
+axis that found nothing is the only evidence it was walked. Four axes were walked
+against OCC's own enumeration of the corporate actions that adjust a contract;
+the fifth had no external authority and says so, since nothing governs what a
+laboratory chooses to measure. The survey committed before any decision did.
+
+**The finding that justifies the ordering.** [D-W44] narrowed [D-W42], authored
+the day before, because a holder who receives a dividend through an adjusted
+deliverable has no reason to exercise early to capture it. Run after 3.3 the pass
+would have found that against transitions already written, which is the argument
+the phase's preamble makes and the first time this project has watched it pay.
+
+**The retired rule looked like the answer for the second checkpoint running.**
+The 10% Rule defines an ordinary dividend by size, and sits in the Background of
+the filing that replaced size with regularity. That is why 3.1's lesson is stated
+as a rule about a quotation's position in a document rather than as a fact about
+one filing.
+
+**The marker sweep ran as an act of sign-off**, which is what 3.1 recorded and did
+not do. Seventeen markers read, one stale, and it was Phase 3's own: it named 3.1
+alone. The registry's holds at forty-three implemented entries against 0.2 to
+2.5, counted rather than carried, since 3.2 registered one row at 3.3 and
+implemented nothing.
+
+**The table stands at fourteen rows**, seven at checkpoint granularity and seven
+at phase. 3.2 closed its own and raised three: the state machine's event set at
+3.3, a deliverable that is shares plus cash at Phase 8, and whether cash earns at
+Phase 5.

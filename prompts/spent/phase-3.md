@@ -18,18 +18,18 @@ sign-off leaves nothing describing the present in between.
 
 # Current state
 
-Corpus v1.37.1.
+Corpus v1.39.0.
 
 | | |
 |---|---|
 | Phase 0 | complete and reviewed, 0.1 to 0.8 built and signed off |
 | Phase 1 | complete, 1.1 to 1.5 built and signed off |
 | Phase 2 | complete, 2.1 to 2.5 built and signed off |
-| Phase 3 | 3.1 built and signed off, 3.2 to 3.5 not started |
+| Phase 3 | 3.1 and 3.2 built and signed off, 3.3 to 3.5 not started |
 | CI | green, 503 tests, guards then restore then build then test, on push to `main` and every pull request |
 
-**3.1 changed no code**, so every section below except this table, `Owed` and
-`Lessons that transfer` stands as it did at Phase 2's close. The suite is
+**Neither 3.1 nor 3.2 changed any code**, so every section below except this
+table, `Owed` and `Lessons that transfer` stands as it did at Phase 2's close. The suite is
 unchanged at 503 and the guards scan the same 149 files.
 
 Which branch the work sits on and which pull requests have merged are not recorded
@@ -533,12 +533,13 @@ obligations, which is where planning for the phase that owns it will look. It is
 copied here: two registers of one list is how an obligation comes to exist in the one
 nobody reads.
 
-Entries stand against checkpoints 3.2 to 3.5 and against Phases 4, 8, 9 and 11.
+Entries stand against checkpoints 3.3 to 3.5 and against Phases 4, 5, 8, 9 and 11.
 The count is not restated here. **The column now names a checkpoint once the
 owning phase's detail exists and a phase otherwise**, stated at the table
 because two readings of it disagreed: a count over phase names alone misses the
-rows that have moved on. **3.1 owes nothing**, and it closed four rows while
-raising three, all three at 3.3. **Phase 2 owes nothing.** 2.1 discharged the reconciliation row raised at
+rows that have moved on. **3.1 and 3.2 owe nothing.** 3.1 closed four rows while
+raising three; 3.2 closed its own and raised three more, at 3.3, Phase 5 and
+Phase 8. **Phase 2 owes nothing.** 2.1 discharged the reconciliation row raised at
 v1.6.0, the table's oldest and open for twenty-three corpus versions, 2.3
 discharged the crossed-quote row while opening two of its own, and 2.4
 discharged the risk row while opening one of its own. All three discharged rows
@@ -767,3 +768,56 @@ Federal Register documents and have no such fallback.
 - Counts are read off the table they describe, at the moment they are written.
 - `CommittedCapital.cs` is not edited. 3.1 is not code, and the correction is
   scheduled at 3.3 rather than remembered.
+
+## 3.2 The completeness pass
+
+Docs only. New branch `phase-3/checkpoint-3.2` off `main`. No code, and the suite
+must come out unchanged. One obligation is owed here and it is the pass itself.
+
+### The method, which the obligation's own argument forces
+
+Every check this repository has compares one part of the corpus against another,
+so an omission from the domain model is invisible to all of them. A survey that
+reads the corpus and asks whether it looks complete is another such check.
+**Each axis is walked against an external enumeration where one exists, and
+against first principles where none does, with the source named per axis and
+stated as which of the two it was.** Where there is no external authority, say so
+and say why: nothing governs what a laboratory chooses to measure.
+
+### Three properties the record must have, and each is a separate act
+
+- **The scope is committed before the walk.** A scope written afterwards is a
+  reconstruction, and committing it first is the only thing that makes the order
+  checkable rather than asserted.
+- **The scope is stated in both directions.** A record saying what was examined
+  cannot be checked for whether it examined enough; one that also says what was
+  left out, with the reason, can. Exclude phases whose own detail is unwritten,
+  because a pass over unwritten intent surveys nothing.
+- **Every axis is recorded whether or not it found anything.** An axis that found
+  nothing is the more valuable record, being the only evidence it was walked at
+  all. That is the vacuity guard this repository puts on every scanning check,
+  applied to a pass rather than to a test.
+
+### Where a finding lands, and the criterion
+
+Settleable inside the checkpoint when the corpus can answer it from what it
+already holds: a decision, a schema, or an arithmetic consequence of either. An
+obligation when the answer needs an external source, depends on work not yet
+built, or is a modelling choice large enough to deserve its own argument.
+**Record which kind each finding is, not only what it is**, which is what stops
+"settled" meaning "answerable from what happened to be to hand".
+
+The survey commits before any decision does. A pass that authors while it walks
+is no longer a survey, and its record becomes a summary of what was concluded
+rather than evidence of what was looked at.
+
+### Constraints
+
+- Anything outside the stated scope is recorded as out of scope and raised, never
+  absorbed. A scope that grew to fit what was found is not a scope.
+- A quotation is not evidence until its position in the document is established.
+  The 10% Rule looks like the answer to what makes a dividend ordinary and sits
+  in the Background of the filing that replaced it, which is the second time in
+  two checkpoints that the passage that looks like the answer is the retired one.
+- **The marker sweep is an act of sign-off**, not a lesson recorded in a document
+  the sign-off produces. 3.1 wrote it down and did not run it.

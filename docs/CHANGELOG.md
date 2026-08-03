@@ -1,5 +1,71 @@
 # CHANGELOG
 
+## [1.39.0] — 2026-08-02
+
+**Checkpoint 3.2**, the completeness pass. Five axes walked, six findings, three
+settled and three raised. Documentation only; no code, no config key, and the
+suite is unchanged at 503.
+
+### Added
+- **D-W44**: an ordinary cash dividend pays the holder and leaves the overlying
+  contracts untouched; a non-ordinary one adjusts them by calling for delivery of
+  the dividend. Ordinary means declared pursuant to a regular policy or practice,
+  regardless of size, under the rule in force.
+- **D-W45**: tax is outside the lab. Every comparison it reports is pre-tax on
+  both sides, which is a fair comparison of decisions and not a claim about what
+  an investor keeps.
+- Three obligations: the state machine's event set at 3.3, a deliverable that is
+  shares plus cash at Phase 8, and whether cash earns at Phase 5.
+
+### Changed
+- **[D-W42] is narrowed to unadjusted dividends**, a day after it was authored. A
+  holder who receives a dividend through an adjusted deliverable has no reason to
+  surrender the option's time value to capture it, so early exercise is the
+  behaviour for dividends OCC does not adjust for.
+- The table stands at fourteen rows, seven at checkpoint granularity and seven at
+  phase.
+
+### Fixed
+- **The carried-obligations table now states its own count, which was asked for
+  at v1.36.0 and reported in conversation instead.** That clause stated the
+  granularity convention and then asked for the figure once, so the next
+  disagreement would be about the corpus rather than about how to read it. The
+  convention landed and the figure did not, so the table went on diagnosing the
+  disagreement without settling it. The count is now read off the table and
+  written beneath it.
+- **The sentence that makes counting unambiguous is new**: a count of the table
+  is a count of rows, rows sharing an `Owed at` value are separate obligations,
+  and a count of distinct values is not a count of the table. Measured at this
+  sign-off, the difference is fourteen against eight, which is larger than the
+  disagreement that prompted the convention in the first place.
+
+### Notes
+- **A remedy placed where the person who needs it will not meet it is not a
+  remedy.** The count went into a message rather than into the table it
+  describes; 3.1's marker sweep went into an archive's lessons rather than into
+  the acts of sign-off. Different omissions with one shape, and the corpus is the
+  only place either of them counts as done.
+- **The pass compared the corpus against something outside it, which its own
+  argument forces.** If every existing check is corpus against corpus, so is a
+  survey that reads the corpus and asks whether it looks complete. Four axes were
+  walked against OCC's enumeration of the corporate actions that adjust a
+  contract; the fifth had no external authority and records that as the reason
+  rather than as a gap in the method.
+- **The scope was committed before the walk and every axis is recorded whether or
+  not it found anything.** A record written afterwards cannot show it preceded
+  what it describes, and five axes reporting two findings would leave a record
+  silent on three. An axis that found nothing is the only evidence it was walked.
+- **The ordering paid immediately.** D-W44 narrowed a decision authored the day
+  before. Run after 3.3 the pass would have found it against transitions already
+  written, which is the argument the phase preamble makes and the first occasion
+  this project has watched it pay.
+- **The retired rule looked like the answer for the second checkpoint running.**
+  The 10% Rule defines an ordinary dividend by size and sits in the Background of
+  the filing that replaced size with regularity, exactly as footnote 6 did for
+  the adjustment question at 3.1.
+- **The marker sweep ran as an act of sign-off**, which 3.1 recorded and did not
+  do. Seventeen read, one stale, and it was Phase 3's own.
+
 ## [1.37.1] — 2026-08-02
 
 The marker sweep 3.1's sign-off should have run. Raised immediately after that
