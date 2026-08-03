@@ -1434,13 +1434,14 @@ settlement cannot resolve a next session without one.
   rather than records.
 
 Reconciled at sign-off against what shipped. Three decisions, three migrations,
-four tables, the state machine, the ledger and its projections, and the twelve
+four tables, the state machine, the ledger and its projections, and the fifteen
 registry rows, which is every entry standing against this checkpoint. Four
-obligations closed and five raised. The suite went from 503 to 611.
+obligations closed and five raised. The suite went from 503 to 629, and the guard
+script from two named checks to three.
 
 **The branch paused for review after the decisions and before any DDL existed.**
 One checkpoint and two review points: what a split would have bought, without
-moving twelve registry rows and four obligations to buy it. A checkpoint is a
+moving fifteen registry rows and four obligations to buy it. A checkpoint is a
 unit of work rather than a unit of review, which 3.1 already showed by being
 pushed eleven times.
 

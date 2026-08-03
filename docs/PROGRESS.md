@@ -1629,12 +1629,13 @@ the first checkpoint in Phase 3 that writes code. D-W46, D-W47 and D-W48
 registered and [D-W35] amended. Migrations 6 to 8 add `market_sessions`,
 `trials`, `positions` and `ledger_entries`, and rebuild `corporate_actions` for
 the `CHECK` its vocabulary has gone without since 1.1. Twelve registry rows, which
-is every entry standing at 3.3. 611 tests, up from 503; guards over 176 files.
+is every entry standing at 3.3. 629 tests, up from 503; guards over 179 files by
+three named checks, up from two.
 
 **One checkpoint, two review points.** The branch pushed and stopped after the
 three decisions, before any DDL existed to freeze the vocabularies they settle,
 and ran to sign-off after that review. That is what a split would have bought
-without moving twelve registry rows and four obligations to buy it.
+without moving fifteen registry rows and four obligations to buy it.
 
 **The ordering paid twice, both on something a migration would have frozen.** The
 event set was not a list of five more names: §3.8's six lie on three axes,
@@ -1676,6 +1677,12 @@ until an adjusted contract is gated. It was wrong that no test did, which 3.3
 found by inverting two; it was right about what that means for anything built
 afterwards. The suite went from 503 to 611 without one adjusted contract reaching
 the state machine, and 616 with three.
+
+**Twelve rows of the fifteen were built and three were reviewed into existence**,
+which the registry's own marker now records. A checkpoint's registry growing after
+its sign-off is new here, and it is the honest shape: the entry-to-artefact rule
+was met at sign-off against the twelve that existed, and met again against
+fifteen.
 
 The lesson is narrower than "review the code". A correction that argues a quantity
 lives in one place makes that claim false the moment new code computes the same
@@ -1731,8 +1738,14 @@ loop. Both rows stay **Unverified** with the reason recorded, because writing th
 type onto an unverified row would make that column mean one thing on verified rows
 and another on unverified ones.
 
-**The marker sweep ran as an act of sign-off.** Seventeen read, six changed and
-one added, so eighteen now stand. `SYSTEM_DESIGN.md` §3.8 gained its first;
+**The marker sweep ran twice, and the second run is why it is an act.** At
+sign-off: seventeen read, six changed and one added, so eighteen stand. At merge,
+after the review added four commits: eighteen read again, and the registry's was
+the one that had moved, from fifty-five implemented entries to fifty-eight. A
+sweep run once and trusted afterwards is a sweep that describes the tree it was
+run against rather than the tree being merged.
+
+At sign-off the six were these. `SYSTEM_DESIGN.md` §3.8 gained its first;
 Phase 3's names three checkpoints; §4's records what 3.3 built; the registry's
 went from forty-three implemented entries to fifty-five; `CONFIG_REFERENCE.md`'s
 records the two consumers it could not verify; and `WORKED_EXAMPLE.md`'s gains

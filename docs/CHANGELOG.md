@@ -4,8 +4,10 @@
 
 **Checkpoint 3.3**, the state machine and the ledger, and the first checkpoint in
 Phase 3 that writes code. Three decisions, three migrations, four tables, the
-transitions, the ledger and its two projections, and twelve registry rows. Four
-obligations closed and five raised. The suite goes from 503 to 611.
+transitions, the ledger and its two projections, and fifteen registry rows. Four
+obligations closed and five raised. The suite goes from 503 to 629, and the guard
+script from two named checks to three. Three of the fifteen rows and six of the
+fixes below came from reviewing the checkpoint after it first signed off.
 
 ### Added
 - **D-W46**: the session calendar is transcribed, never derived. It answers what
