@@ -150,9 +150,9 @@ public sealed class LedgerSchemaTests
 
         foreach (var kind in new[]
         {
-            "premium_received", "premium_paid", "expired_worthless", "assignment",
-            "call_away", "shares_sold", "dividend", "commission", "assignment_fee",
-            "stopped",
+            "premium_received", "premium_paid", "bought_to_close", "expired_worthless",
+            "assignment", "call_away", "shares_sold", "dividend", "commission",
+            "assignment_fee", "stopped",
         })
         {
             using var insert = connection.CreateCommand();
@@ -171,6 +171,68 @@ public sealed class LedgerSchemaTests
             """
             INSERT INTO ledger_entries (trial_id, entry_date, known_on, kind, amount)
             VALUES (1, '2026-03-02', '2026-03-02', 'premium', '0.00000000');
+            """;
+
+        var refusal = Assert.Throws<SqliteException>(() => refused.ExecuteNonQuery());
+        Assert.Contains("CHECK", refusal.Message, StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    /// A trial's close kind is enforced too, and an open trial carries none.
+    /// </summary>
+    /// <remarks>
+    /// The column is nullable because a trial that has not closed has not closed
+    /// in any particular way, so the CHECK has to admit null alongside the five.
+    /// SQLite evaluates a CHECK to null for a null column and treats that as
+    /// satisfied, which is the behaviour wanted here and worth pinning rather
+    /// than relying on: a schema that forced a close kind on an open trial would
+    /// make the state machine invent one at the first write.
+    /// </remarks>
+    [Fact]
+    public void The_close_kind_check_admits_the_vocabulary_and_null_and_refuses_a_word_outside_it()
+    {
+        using var store = SeededStore();
+        using var connection = store.Connections.Open(StoreAccess.Write);
+
+        var trialId = 1;
+
+        foreach (var closeKind in new[]
+        {
+            "expired_worthless", "called_away", "closed_at_bound", "closed_by_choice",
+            "stopped",
+        })
+        {
+            using var insert = connection.CreateCommand();
+            insert.CommandText =
+                """
+                INSERT INTO trials
+                    (trial_id, maker_id, symbol, opened_on, closed_on, open_strike,
+                     committed_capital, rolls_used, close_kind)
+                VALUES ($id, 'baseline', 'WDGT', '2026-03-02', '2026-04-17', '50.00000000',
+                        '5000.00000000', 0, $closeKind);
+                """;
+            insert.Parameters.AddWithValue("$id", ++trialId);
+            insert.Parameters.AddWithValue("$closeKind", closeKind);
+
+            insert.ExecuteNonQuery();
+        }
+
+        // The seeded trial carries no close kind at all, which is what an open
+        // trial looks like.
+        using (var open = connection.CreateCommand())
+        {
+            open.CommandText = "SELECT COUNT(*) FROM trials WHERE close_kind IS NULL;";
+            Assert.Equal(1L, open.ExecuteScalar());
+        }
+
+        using var refused = connection.CreateCommand();
+        refused.CommandText =
+            """
+            INSERT INTO trials
+                (trial_id, maker_id, symbol, opened_on, open_strike, committed_capital,
+                 rolls_used, close_kind)
+            VALUES (99, 'baseline', 'WDGT', '2026-03-02', '50.00000000', '5000.00000000',
+                    0, 'closed');
             """;
 
         var refusal = Assert.Throws<SqliteException>(() => refused.ExecuteNonQuery());

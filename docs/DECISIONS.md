@@ -1378,11 +1378,11 @@ The corpus already reads this way. `WORKED_EXAMPLE.md` §6.3 carries a leg dated
 2026-05-15 reading "call expires worthless" against a cash column of `0.00`, in
 the same table as the five legs that move money.
 
-The vocabulary: `premium_received`, `premium_paid`, `expired_worthless`,
-`assignment`, `call_away`, `shares_sold`, `dividend`, `commission`,
-`assignment_fee` and `stopped`.
+The vocabulary: `premium_received`, `premium_paid`, `bought_to_close`,
+`expired_worthless`, `assignment`, `call_away`, `shares_sold`, `dividend`,
+`commission`, `assignment_fee` and `stopped`.
 
-Three of those pairs exist because the same cash direction hides two different
+Four of those pairs exist because the same cash direction hides two different
 events. A short leaves by expiring worthless, by being assigned, or by being
 bought back, and only the last is a premium. Shares leave by being called away at
 the strike or sold at market when the roll bound binds [D-W14], and the two
@@ -1390,6 +1390,15 @@ prices are not the same fact. The two premium kinds are named rather than carrie
 as a signed amount under one kind, because a roll is a debit and a credit on one
 day and the rebuild has to read which leg opened a position rather than infer it
 from a sign.
+
+A short is bought back either to roll into a new leg or to end the trial, and
+only the first is followed by a `premium_received` on the same day. The rebuild
+cannot infer the difference from the sequence, because a trial closed at its last
+permitted roll and a trial closed by choice look identical after the fact. So the
+paying leg of a roll is `premium_paid` and a buy-back that ends a trial is
+`bought_to_close`: a roll pays a premium and opens a position, a close pays a
+premium and ends one, and this decision's own rule is that a kind missing from
+here is a fact the rebuild cannot recover.
 
 `commission` and `assignment_fee` are in the vocabulary although nothing writes
 them yet. Whether the fill model records them as entries of their own or nets
@@ -1404,6 +1413,8 @@ schema has one.
 Consequence for the projections. This is the vocabulary [D-W35]'s rebuild test
 exercises, and that test is what makes `trials` and `positions` projections
 rather than rewritable tables with a flattering name. A kind missing from here is
-a fact the rebuild cannot recover, and nothing else would find it.
+a fact the rebuild cannot recover, and nothing else would find it. `trials`'
+`close_kind` is the column that shows it: four of its five values read straight
+off a kind here, and the fifth is what `bought_to_close` exists for.
 
 Test FX-ProjectionRebuildsFromLedger: covered, registered at 3.3.

@@ -379,20 +379,33 @@ every row invent boilerplate.
 `state` is the discriminated union tag: `cash`, `short_put`, `holding_shares`,
 `short_call`. Both basis conventions are stored [D-W19].
 
-`ledger_entries.kind` is `premium_received`, `premium_paid`, `expired_worthless`,
-`assignment`, `call_away`, `shares_sold`, `dividend`, `commission`,
-`assignment_fee` or `stopped`, with a `CHECK` as every other stored vocabulary
-here has. **The table records events and not only cash** [D-W48], so an expiry
-that pays nothing is a row carrying a zero amount: the projection rebuilt from
-this table has to know the short closed and no other table says so, which is what
-`WORKED_EXAMPLE.md` §6.3 already shows by giving its worthless expiry a leg of
+`ledger_entries.kind` is `premium_received`, `premium_paid`, `bought_to_close`,
+`expired_worthless`, `assignment`, `call_away`, `shares_sold`, `dividend`,
+`commission`, `assignment_fee` or `stopped`, with a `CHECK` as every other stored
+vocabulary here has. **The table records events and not only cash** [D-W48], so an
+expiry that pays nothing is a row carrying a zero amount: the projection rebuilt
+from this table has to know the short closed and no other table says so, which is
+what `WORKED_EXAMPLE.md` §6.3 already shows by giving its worthless expiry a leg of
 its own. The pairs are there because one cash direction covers two events. A
 short leaves by expiring, by assignment or by being bought back, and only the
 last is a premium; shares leave at the strike when called away or at market when
-the roll bound binds [D-W14], and those are not the same fact. `commission` and
+the roll bound binds [D-W14]; and a buy-back either rolls into a new leg or ends
+the trial, which the sequence cannot tell apart after the fact. `commission` and
 `assignment_fee` are in the vocabulary before anything writes them, because
 whether the fill model gives them entries of their own is 3.4's [D-W12] and a
 value nothing writes costs nothing where a migration adding one costs a rebuild.
+
+`trials.close_kind` is `expired_worthless`, `called_away`, `closed_at_bound`,
+`closed_by_choice` or `stopped`, with its own `CHECK`. They are what returns a
+trial to cash: the short expired with no shares ever held [D-W38]; shares were
+taken at the strike [D-W19]; the position closed at market when `Trial:MaxRolls`
+or `Trial:MaxTrialDays` bound [D-W14]; a maker bought the short back to end the
+trial rather than to roll it; or an action the lab does not model ended it
+[D-W47]. `closed_at_bound` is one value because D-W14 names one mechanism with two
+triggers, and `rolls_used` beside `opened_on` and `closed_on` says which fired, so
+two values would state one fact twice. Nothing writes `closed_by_choice` before
+Phase 4 has a maker, and it is recoverable from the day one does, being a
+`bought_to_close` with no `premium_received` following.
 
 `entry_date` is the session an entry occurred in and `known_on` the session the
 account could act on it. They differ because assignment is determined after the

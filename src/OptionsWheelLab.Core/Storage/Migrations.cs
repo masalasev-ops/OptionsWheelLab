@@ -358,10 +358,19 @@ public static class Migrations
             -- states unwritable. A zero basis would be a false observation, not a
             -- missing one.
             --
-            -- close_kind carries no CHECK, alone among the vocabularies here. Its
-            -- permitted values are stated nowhere in the corpus, and inventing
-            -- them at the migration that freezes them is the error this
-            -- checkpoint's ordering exists to avoid.
+            -- close_kind carries its own CHECK. Its values are what returns a
+            -- trial to cash rather than what the schema found convenient, and
+            -- closed_at_bound is one value because D-W14 names one mechanism with
+            -- two triggers: rolls_used beside opened_on and closed_on says which
+            -- of them fired, so two values would state one fact twice.
+            --
+            -- closed_by_choice is in the CHECK before anything writes it. No
+            -- maker exists until Phase 4, and it is recoverable from the day one
+            -- does, being a bought_to_close with no premium_received following.
+            -- That is why the ledger has both kinds: a roll pays a premium and
+            -- opens a position, a close pays a premium and ends one, and a trial
+            -- closed at its last permitted roll and one closed by choice look
+            -- identical in the sequence alone.
             --
             -- No foreign keys, which §4.3 already said by carrying no arrows
             -- where §4.1 carries three. It read as an omission and is not, and
@@ -380,7 +389,12 @@ public static class Migrations
                 open_strike       TEXT    NOT NULL,
                 committed_capital TEXT    NOT NULL,
                 rolls_used        INTEGER NOT NULL,
-                close_kind        TEXT    NULL
+                close_kind        TEXT    NULL CHECK (close_kind IN (
+                                      'expired_worthless',
+                                      'called_away',
+                                      'closed_at_bound',
+                                      'closed_by_choice',
+                                      'stopped'))
             );
 
             -- No key of its own, on corporate_actions' precedent: a trial carries
@@ -406,6 +420,7 @@ public static class Migrations
                 kind        TEXT    NOT NULL CHECK (kind IN (
                                 'premium_received',
                                 'premium_paid',
+                                'bought_to_close',
                                 'expired_worthless',
                                 'assignment',
                                 'call_away',
