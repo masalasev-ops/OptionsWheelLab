@@ -1,5 +1,22 @@
 # CHANGELOG
 
+## [1.40.0] — 2026-08-03
+
+**Checkpoint 3.3**, the state machine and the ledger. In flight; this entry is
+completed at sign-off and opened early to hold the note below, which explains a
+sentence already in the corpus.
+
+### Fixed
+- **A figure written in the present tense is a claim about now, and dating it
+  does not make it historical**, so a count is restated at each sign-off rather
+  than stamped with the moment it was true. The carried-obligations preamble read
+  "Fourteen rows stand" against a table holding fifteen, under a clause naming
+  3.2's sign-off, and it read as current because the sentence was current. That
+  is why the preamble now says the count is read again at each sign-off. Third
+  instance of the same shape: Phase 2's archive was frozen at a version its
+  Current state did not describe, and the fixture marker's count was exact inside
+  a clause that was false.
+
 ## [1.39.0] — 2026-08-02
 
 **Checkpoint 3.2**, the completeness pass. Five axes walked, six findings, three
