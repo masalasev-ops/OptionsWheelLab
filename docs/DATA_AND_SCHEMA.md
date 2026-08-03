@@ -12,9 +12,10 @@ specification, and §4.3 splits across two phases rather than falling to one:
 `trials`, `positions` and `ledger_entries` at 3.3, `decisions` and `candidates`
 Phase 4, scores Phase 5, pre-registration Phase 9. `ledger_entries` gained
 `known_on` at 3.1 while still specification, deduced from [D-W35] rather than
-built. §4.1 is the one built section carrying an unbuilt part: `market_sessions`
-and `corporate_actions`' `CHECK` are stated there from 3.3's decisions and are
-specification until 3.3 lands them.
+built. §4.1 grew at 3.3, which added `market_sessions` and rebuilt
+`corporate_actions` for its `CHECK`; §4.3's `trials`, `positions` and
+`ledger_entries` are implemented there too, leaving `decisions` and `candidates`
+as the section's remaining specification.
 
 ## 1. Sources
 

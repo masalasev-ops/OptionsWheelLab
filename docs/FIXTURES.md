@@ -4,11 +4,15 @@ The single registry of test fixtures and source guards. Prompts and checkpoints
 reference the entries registered against them here; they never enumerate names
 inline.
 
-Build state: **partly built**. The forty-three entries registered against
-0.2 to 2.5 are implemented, being forty-one fixtures and two guards. 3.3 is
-in progress: one of its twelve is implemented, and that count moves until it
-signs off. The rest belong to checkpoints not yet reached. 1.2 and 2.1
-registered none, which their details state.
+Build state: **partly built**. The fifty-five entries registered against 0.2 to
+3.3 are implemented, being fifty-three fixtures and two guards; the rest belong
+to checkpoints not yet reached. 1.2 and 2.1 registered none, which their details
+state.
+
+3.3 is the first checkpoint to discharge the entry-to-artefact direction against
+a full set rather than against one or two: twelve rows, twelve files. Every
+earlier checkpoint met it too, but with counts small enough that meeting it and
+noticing it were the same act.
 
 ## Why this file exists
 

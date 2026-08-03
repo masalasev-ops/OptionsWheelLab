@@ -5,8 +5,8 @@ Appended to, never rewritten. The repository is the authority on build state.
 ## Current state
 
 **Phase 0 complete and reviewed. Phases 1 and 2 complete. Phase 3 started.**
-Checkpoints 0.1 to 0.8, 1.1 to 1.5, 2.1 to 2.5, 3.1 and 3.2 built and signed
-off. 3.3 to 3.5 are not started. The documentation corpus is at v1.39.0.
+Checkpoints 0.1 to 0.8, 1.1 to 1.5, 2.1 to 2.5, and 3.1 to 3.3 built and signed
+off. 3.4 and 3.5 are not started. The documentation corpus is at v1.40.0.
 
 ## Log
 
@@ -1621,3 +1621,73 @@ implemented nothing.
 at phase. 3.2 closed its own and raised three: the state machine's event set at
 3.3, a deliverable that is shares plus cash at Phase 8, and whether cash earns at
 Phase 5.
+
+### 2026-08-03 — corpus v1.40.0
+
+**Checkpoint 3.3 built and signed off**, the state machine and the ledger, and
+the first checkpoint in Phase 3 that writes code. D-W46, D-W47 and D-W48
+registered and [D-W35] amended. Migrations 6 to 8 add `market_sessions`,
+`trials`, `positions` and `ledger_entries`, and rebuild `corporate_actions` for
+the `CHECK` its vocabulary has gone without since 1.1. Twelve registry rows, which
+is every entry standing at 3.3. 611 tests, up from 503; guards over 176 files.
+
+**One checkpoint, two review points.** The branch pushed and stopped after the
+three decisions, before any DDL existed to freeze the vocabularies they settle,
+and ran to sign-off after that review. That is what a split would have bought
+without moving twelve registry rows and four obligations to buy it.
+
+**The ordering paid twice, both on something a migration would have frozen.** The
+event set was not a list of five more names: §3.8's six lie on three axes,
+earnings drives no transition and is a gate input, and exercise is assignment seen
+from the side this lab is never on. And the ledger needed an eleventh kind,
+because a short bought back to roll and one bought back to end a trial are two
+events under one cash direction that the sequence cannot separate afterwards.
+
+**Four defects found by building the check rather than by reading it.** A foreign
+key from the record into a projection would have made the rebuild impossible, and
+§4.3's absence of arrows turned out to be a statement rather than an omission.
+Both SQL detectors were reading `--` comments as SQL, which two sentences of
+ordinary English in new migrations were the first to collide with. `MembershipKind`
+was the one enum in the store's vocabulary set starting at zero, so `default` read
+as `Joined` and an uninitialised transition would have put a name on the
+watchlist. And the roll bound sold shares on the session they were assigned,
+which is a decision depending on an assignment that occurred that day.
+
+That is the same shape four times, and it is 1.1's finding again: the check that
+finds something is the one built against the real subject rather than the one
+reasoned about. Three of the four were invisible until a second thing existed to
+disagree with the first.
+
+**The third citation defect, found the same way as the two before it.** Adding
+`market_sessions` to the append-only list needed a decision stating the property,
+and D-W46 as first drafted gave the reason and not the property. It never reached
+`main` in that form. Both steps are now recorded at the entry, as are
+`ledger_entries`' own two, because a citation is verified by what rests on it.
+
+**Migration 8 was edited in place rather than superseded.** 0.3 took the other
+course and stated the rule: an amended migration never re-runs, so amending is
+available only while nothing has run it. Four measurements found that condition
+absent here, and the clause raising it cited 1.3 where the record is 0.3.
+
+**Two consumers could not be verified, which `CONFIG_REFERENCE.md` calls a defect
+rather than a gap.** `TrialBounds` reads both trial bounds as of the simulated
+date and nothing in `src/` constructs it, the component that would being the run
+loop. Both rows stay **Unverified** with the reason recorded, because writing the
+type onto an unverified row would make that column mean one thing on verified rows
+and another on unverified ones.
+
+**The marker sweep ran as an act of sign-off.** Seventeen read, six changed and
+one added, so eighteen now stand. `SYSTEM_DESIGN.md` §3.8 gained its first;
+Phase 3's names three checkpoints; §4's records what 3.3 built; the registry's
+went from forty-three implemented entries to fifty-five; `CONFIG_REFERENCE.md`'s
+records the two consumers it could not verify; and `WORKED_EXAMPLE.md`'s gains
+§6.3's duration and positions, which are computed now rather than stated, while
+its count of implemented fixtures holds at six of eleven because 3.3 added none.
+`ORIENTATION.md`'s was the one no measurement would have caught: it said no trial
+had been run, which stayed true and stopped being the whole truth the moment a
+trial could be walked through its states.
+
+**The table stands at fifteen rows**, five at checkpoint granularity and ten at
+phase. 3.3 closed its own four and raised five, so the total moved by one and the
+split moved by two, which is why the two counts are read separately rather than
+derived from each other.
