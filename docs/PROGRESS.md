@@ -1694,6 +1694,17 @@ was half right and the ask was added. Two fixtures registered, taking 3.3 from
 twelve rows to fourteen, and the registry's marker from fifty-five implemented
 entries to fifty-seven.
 
+**The one-place claim is now held by a check rather than by the comment that made
+it.** FX-NoShareCountInOptionCash scans `src/` for a strike or a price multiplied
+by a share count, which is the shape all four sites had. Reintroducing the three
+corrected sites made it name each by line, and it needs no permitted file,
+because the one legitimate computation multiplies by the multiplier and trips
+nothing. `guards.ps1` gained a scope so a check can state which tree its rule
+governs, since a test may legitimately compute the wrong figure to assert that
+the right one differs. The registry grew from a review rather than from a build
+for the first time, and 3.3 stands at fifteen rows against fourteen files and one
+named check.
+
 **Four of the checkpoint's defects were priced wrong in the same direction, and
 none of them by accident of arithmetic.** Reading the deliverable, zeroing a
 stop, and closing at intrinsic each made a trial look better or a loss look

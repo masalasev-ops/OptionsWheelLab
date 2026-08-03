@@ -31,8 +31,16 @@ obligations closed and five raised. The suite goes from 503 to 611.
   rather than at intrinsic value. Both errors had a sign and pointed the same
   way: zeroing made every name with a corporate action a total loss, and closing
   at intrinsic flattered exactly the trials the bound exists to terminate.
-- **FX-StoppedTrialIsValuedAtTheClose** and **FX-BoundClosePaysTheAsk**, which
-  take 3.3 from twelve registry rows to fourteen.
+- **FX-StoppedTrialIsValuedAtTheClose** and **FX-BoundClosePaysTheAsk**, and
+  **FX-NoShareCountInOptionCash**, a guard, which take 3.3 from twelve registry
+  rows to fifteen.
+- The guard scans `src/` for a strike or a price multiplied by a share count,
+  which is the shape all four deliverable sites had. It exists because the claim
+  that the quantity sat in one place was made in a comment, was true when
+  written, was false three commits later, and was unchecked throughout. It needs
+  no permitted file: the one legitimate computation multiplies by the multiplier
+  and trips nothing. `guards.ps1` gains a scope, so a check can state which tree
+  its rule governs and still assert over a non-empty set.
 - `SessionFacts` carries the ask beside the bid. A sale fills at the bid and a
   purchase pays the ask, because both are the side of the spread the account does
   not choose [D-W12].

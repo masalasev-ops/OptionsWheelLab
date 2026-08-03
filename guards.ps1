@@ -124,6 +124,36 @@ public sealed class Reader(IClock clock)
 // A line comment mentioning DateTime.Now and Stopwatch.GetTimestamp.
 '@
 
+# The three shapes 3.3 shipped and its review found, one per site: an assignment,
+# a call-away and a forced close, each pricing an option from a share count.
+$shareCountMustFire = @'
+public static class Probe
+{
+    public static decimal Paid(ContractIdentity put) => put.Strike * put.DeliverableShares;
+    public static decimal Proceeds(ContractIdentity call, TrialState s) => call.Strike * s.Shares;
+    public static decimal Debit(decimal intrinsic, ContractIdentity c) => intrinsic * c.DeliverableShares;
+}
+'@
+
+# Every legitimate multiplication by a share count in this repository. A dividend
+# and a mark are per share and multiply by shares correctly; the aggregate
+# exercise price multiplies by the multiplier; and a basis divides rather than
+# multiplies. The comment is here because the doc that explains this rule names
+# the forbidden shape.
+$shareCountMustNotFire = @'
+/// <summary>Never write Strike * DeliverableShares: an adjustment moves one and not the other.</summary>
+/* A block comment mentioning call.Strike * state.Shares as the error. */
+public static class Probe
+{
+    public static decimal Aggregate(ContractIdentity c) => c.Strike * StandardMultiplier;
+    public static decimal Dividend(decimal perShare, int shares) => perShare * shares;
+    public static decimal Marked(decimal close, int shares) => close * shares;
+    public static decimal Basis(decimal paid, int deliverable) => paid / deliverable;
+    public static int Delivered(ContractIdentity c) => c.DeliverableShares;
+}
+// A line comment mentioning put.Strike * put.DeliverableShares.
+'@
+
 # --------------------------------------------------------------------------
 # The checks. Each Name is a row in FIXTURES.md of Kind `guard`.
 # --------------------------------------------------------------------------
@@ -190,6 +220,43 @@ monotonic counter with no epoch, so no date can be derived from them and they
 cannot commit the error above. A duration reaching a stored row would be a
 determinism defect, but that is the row comparison's business and not this
 guard's.
+'@
+    }
+
+    @{
+        Name = 'FX-NoShareCountInOptionCash'
+        Subject = 'an option priced from a share count'
+        Scope = 'src/'
+        PermittedFile = $null
+        MustFire = $shareCountMustFire
+        MustNotFire = $shareCountMustNotFire
+        Patterns = @(
+            @{ Pattern = '\bStrike\b\s*\*\s*[\w.]*\b\w*[Ss]hares\b';   Meaning = 'a strike multiplied by a share count' }
+            @{ Pattern = '\b[\w.]*\w*[Ss]hares\b\s*\*\s*[\w.]*\bStrike\b'; Meaning = 'a share count multiplied by a strike' }
+            @{ Pattern = '\bDeliverableShares\b\s*\*';                  Meaning = 'the deliverable used as a money multiplier' }
+            @{ Pattern = '\*\s*[\w.]*\bDeliverableShares\b';            Meaning = 'the deliverable used as a money multiplier' }
+        )
+        Explanation = @'
+An adjustment moves the deliverable and leaves the strike and the aggregate
+exercise price where it found them [D-W17], so cash from a contract multiplies by
+the MULTIPLIER and the deliverable says only how many shares change hands. The
+two are both one hundred for a standard contract, which is why this reads
+correctly and is wrong for every adjusted one.
+
+Use ContractTerms.AggregateExercisePrice for what exercising costs or realises,
+and ContractTerms.CashFor for a per-share option price. Multiplying a share count
+is right for a dividend and for marking shares at a close, because those are per
+share; it is never right for an option.
+
+This exists because 3.3 corrected exactly this error at one site, argued in that
+type's own remarks that the quantity therefore sat in one place, and then made
+the same error three more times in new code within the same checkpoint. Every
+test passed throughout, because no contract in the suite had a deliverable
+differing from its multiplier. The claim is held here now rather than by the
+comment that made it.
+
+It scans src only. A test may legitimately compute the wrong figure to assert
+that the right one differs, which is what the adjusted-contract cases do.
 '@
     }
 )
@@ -366,9 +433,26 @@ file that never needed excusing.
         }
     }
 
+    # A scope states which tree the rule governs, which is not an exemption
+    # mechanism either: it is part of stating the rule, as the permitted file is.
+    # A scope that matched nothing would make the check assert over an empty set,
+    # so it earns its place the same way.
+    $subject = @($scanned | Where-Object {
+        $null -eq $check.Scope -or
+        $_.Relative.StartsWith($check.Scope, [StringComparison]::OrdinalIgnoreCase)
+    })
+
+    if ($subject.Count -eq 0) {
+        throw @"
+$($check.Name) is scoped to $($check.Scope) and the scan found no files there, so
+it asserted over nothing. The scope is wrong, or the tree moved and it did not
+move with it.
+"@
+    }
+
     $offences = @()
 
-    foreach ($file in $scanned) {
+    foreach ($file in $subject) {
         if ($file.Relative -eq $check.PermittedFile) {
             continue
         }

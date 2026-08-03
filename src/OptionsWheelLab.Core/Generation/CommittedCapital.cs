@@ -15,9 +15,12 @@ namespace OptionsWheelLab.Core.Generation;
 /// reading the deliverable would misprice every adjusted position.
 /// <para>
 /// <b>2.4 read the deliverable, stated why, and named 3.1 to decide it.</b> It
-/// was the only quantity in reach and it decided the other way, which is what
-/// that reasoning was for: the choice sat in one place, so this correction is one
-/// expression rather than a sweep.
+/// was the only quantity in reach and it decided the other way, and the
+/// correction was one expression here. That it stayed one expression is a
+/// separate claim, which this file asserted and did not hold: the state machine
+/// made the same error three more times in the same checkpoint.
+/// FX-NoShareCountInOptionCash holds it now, and
+/// <see cref="ContractTerms"/> states why.
 /// </para>
 /// <para>
 /// <b>The multiplier is a constant because no transcribed one is in reach, and

@@ -17,8 +17,15 @@ namespace OptionsWheelLab.Core.Identity;
 /// argued the quantity sat in one place, and then the state machine computed an
 /// assignment, a call-away and a forced close from the deliverable, so it sat in
 /// four. The arithmetic is a fact about a contract rather than about committed
-/// capital, and putting it where contract terms live is what makes the one-site
-/// claim true instead of asserted.
+/// capital, and putting it where contract terms live is where it belongs.
+/// </para>
+/// <para>
+/// <b>That it sits in one place is held by FX-NoShareCountInOptionCash, not by
+/// this paragraph.</b> The claim was made in a comment, was true when written,
+/// was false three commits later, and was unchecked throughout. The guard scans
+/// <c>src/</c> for a strike or a price multiplied by a share count, which is the
+/// shape all four sites had, and it fires when the build does not. A claim about
+/// the codebase that nothing asserts is what this checkpoint demonstrated twice.
 /// </para>
 /// <para>
 /// <b>A constant because a decision states it, not because nothing could change
