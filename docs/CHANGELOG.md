@@ -1,5 +1,31 @@
 # CHANGELOG
 
+## [1.41.1] — 2026-08-03
+
+**A correction.** Two rules this corpus established were not being followed.
+
+### Fixed
+- **`prompts/spent/phase-3.md`'s Current state was stale for two checkpoints.**
+  It read v1.39.0 through 3.3's and 3.4's sign-offs, saying both were not started
+  while both were built and merged. That file opens by calling the block the only
+  description of the present, so nothing was describing one. Re-measured rather
+  than edited: schema five to eight, nine tables to thirteen, twenty-three seeded
+  keys to twenty-four, seventeen decimal columns to twenty-one, two guards to
+  three, 503 tests to 650 with the per-fixture table regenerated from a run, and
+  `Not built` and `Owed` rewritten. A section describing the state machine, the
+  ledger, the projections and the fill model was missing and now exists.
+- **[CLAUDE.md §11]'s reconciliation question was asked at no sign-off in this
+  phase**, across thirteen decisions added and three amended.
+
+### Changed
+- Asked now against 3.5, the only unspent prompt, it finds that **3.5's premise is
+  false**. Its detail says "this is the checkpoint that has one" of a run, and
+  after 3.4 there is no run: nothing drives the machine, so what advances a trial
+  is a test. 3.5 is about determinism and says nothing about composing a run,
+  while Phase 3's preamble promises one trial from cash to cash. Either 3.5
+  composes it and its detail does not say so, or a piece between 3.4 and 3.5 has
+  no owner. Reported rather than closed, checkpoint scope being authored.
+
 ## [1.41.0] — 2026-08-03
 
 **Checkpoint 3.4**, the fill model and the costs. One decision, the model, a leg
