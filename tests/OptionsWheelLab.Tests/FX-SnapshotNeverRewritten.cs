@@ -182,16 +182,31 @@ public sealed class FX_SnapshotNeverRewritten
     }
 
     /// <summary>
-    /// Every table this checkpoint adds is in the append-only vocabulary.
+    /// Every table this checkpoint adds is append-only or is a declared
+    /// projection.
     /// </summary>
     /// <remarks>
     /// The direction that was unmeetable at 0.7, when the vocabulary named all six
     /// forward and none existed. It is the per-checkpoint definition of done from
-    /// <c>DecimalColumns</c>'s two-way contract, and this is the first checkpoint
-    /// that can discharge it against real tables.
+    /// <c>DecimalColumns</c>'s two-way contract, and 1.1 was the first checkpoint
+    /// that could discharge it against real tables.
+    /// <para>
+    /// <b>Widened at 3.3, when the first table that is neither arrived.</b> Until
+    /// then every table in this store was append-only, so a single-list assertion
+    /// was total by accident rather than by design. <c>trials</c> and
+    /// <c>positions</c> are projections and may be rewritten [D-W35], so the
+    /// claim is now a partition: every created table falls in exactly one list.
+    /// </para>
+    /// <para>
+    /// <b>Exactly one, not at least one, and the disjointness is the half that
+    /// matters.</b> A table appearing in both would be permitted to be rewritten
+    /// by one rule and forbidden by the other, and every check downstream would
+    /// read whichever list it happened to consult. That is how a vocabulary stops
+    /// meaning anything, and it costs one assertion to make impossible.
+    /// </para>
     /// </remarks>
     [Fact]
-    public void Every_table_this_checkpoint_adds_is_in_the_append_only_vocabulary()
+    public void Every_table_this_checkpoint_adds_is_append_only_or_a_projection()
     {
         using var store = MigratedStore();
         using var connection = store.Connections.Open(StoreAccess.Write);
@@ -205,11 +220,33 @@ public sealed class FX_SnapshotNeverRewritten
 
         Assert.All(
             created,
-            table => Assert.Contains(table, AppendOnlyTables.All));
+            table => Assert.True(
+                AppendOnlyTables.All.Contains(table) ^ ProjectionTables.All.Contains(table),
+                $"'{table}' is in {(AppendOnlyTables.All.Contains(table) ? "both" : "neither")} "
+                + "vocabulary. A created table is append-only or it is a projection rebuilt "
+                + "from one, and a table in both is governed by two rules that contradict "
+                + "[D-W35]."));
+    }
+
+    /// <summary>
+    /// The two vocabularies share no name, asserted over the lists rather than
+    /// over the tables that happen to exist.
+    /// </summary>
+    /// <remarks>
+    /// The assertion above can only see created tables, and both lists carry
+    /// forward declarations for phases not yet built: <c>decisions</c> and
+    /// <c>candidates</c> are Phase 4's. A collision declared there would sit
+    /// undetected until the migration that created it.
+    /// </remarks>
+    [Fact]
+    public void The_two_vocabularies_are_disjoint()
+    {
+        Assert.Empty(AppendOnlyTables.All.Intersect(ProjectionTables.All, StringComparer.OrdinalIgnoreCase));
     }
 
     public static TheoryData<string> SnapshotTables() =>
     [
+        "market_sessions",
         "underlying_bars",
         "corporate_actions",
         "earnings_calendar",
@@ -228,8 +265,16 @@ public sealed class FX_SnapshotNeverRewritten
     /// be refused, since the rule is that the row is never rewritten and not that its
     /// value must differ.
     /// </remarks>
-    private static string AColumnOf(string table) =>
-        table == "contract_quotes" ? "snapshot_date" : "symbol";
+    private static string AColumnOf(string table) => table switch
+    {
+        "contract_quotes" => "snapshot_date",
+
+        // The one table with no symbol at all, which is what it is for: a
+        // session is a fact about the market rather than about a name [D-W46].
+        "market_sessions" => "session_date",
+
+        _ => "symbol",
+    };
 
     /// <summary>
     /// One minimal row per table, so a row-level trigger has something to fire on.
@@ -244,6 +289,10 @@ public sealed class FX_SnapshotNeverRewritten
 
         var sql = table switch
         {
+            "market_sessions" =>
+                "INSERT INTO market_sessions (session_date, observed_at) "
+                + $"VALUES ('{SessionDate}', '{stamp}');",
+
             "underlying_bars" =>
                 "INSERT INTO underlying_bars "
                 + "(symbol, session_date, open, high, low, close, adj_close, volume, observed_at) "

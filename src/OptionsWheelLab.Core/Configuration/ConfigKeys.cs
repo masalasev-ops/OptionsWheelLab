@@ -23,6 +23,14 @@ namespace OptionsWheelLab.Core.Configuration;
 /// date.
 /// </para>
 /// <para>
+/// 3.3 adds `Trial:MaxRolls` on the second ground and nothing else. It was the
+/// seeder's literal while `Trial:MaxTrialDays` beside it was a constant, which
+/// looked like an oversight and was the rule: the day bound belongs to D-W24's
+/// invariant and the roll bound belongs to no invariant and had no reader until
+/// the state machine. Both are read as of the simulated date now
+/// [<see cref="Positions.TrialBounds"/>].
+/// </para>
+/// <para>
 /// The rest of the store's keys are still the seeder's business and are
 /// declared with their values, because a key with no code that reads it has
 /// nothing to name it for.
@@ -36,6 +44,7 @@ public static class ConfigKeys
     public const string GateMinDte = "Gate:MinDte";
     public const string GateMaxDte = "Gate:MaxDte";
     public const string GateEarningsClearanceDays = "Gate:EarningsClearanceDays";
+    public const string TrialMaxRolls = "Trial:MaxRolls";
     public const string TrialMaxTrialDays = "Trial:MaxTrialDays";
 
     public const string RiskEquity = "Risk:Equity";

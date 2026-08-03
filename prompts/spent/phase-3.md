@@ -821,3 +821,65 @@ rather than evidence of what was looked at.
   two checkpoints that the passage that looks like the answer is the retired one.
 - **The marker sweep is an act of sign-off**, not a lesson recorded in a document
   the sign-off produces. 3.1 wrote it down and did not run it.
+
+---
+
+## 3.3 The state machine and the ledger
+
+The first checkpoint in Phase 3 that writes code. Branch
+`phase-3/checkpoint-3.3` off `main`. Four tables, not the three the detail named:
+a transcribed calendar is a table like any other stated fact.
+
+### One checkpoint, two review points
+
+Push after the decisions and stop, before any DDL exists to freeze the
+vocabularies they settle. That is what a split would have bought, without moving
+twelve registry rows, four obligations and every reference in the phase's detail
+to buy it. **A checkpoint is a unit of work rather than a unit of review**, which
+3.1 already showed by being pushed eleven times on one branch. This corpus does
+not renumber a decision or a migration for the same reason, and a checkpoint
+number is that kind of identifier.
+
+### The ordering inside a code checkpoint
+
+Phase 3's preamble says a precondition answered late is a schema or a transition
+built twice, and 3.1 existed to answer them first. **Three of the four remaining
+obligations were preconditions of the same kind**, because each fixes a
+vocabulary or a table that a migration would freeze. The fourth was one
+expression at one site and went first for being independent of them.
+
+It paid twice, and both times on something a migration would have frozen. The
+event set was not a list of more names: §3.8's six lie on three axes, and one of
+them drives no transition at all. The ledger needed an eleventh kind, because a
+short bought back to roll and one bought back to end a trial are two events under
+one cash direction that the sequence cannot separate after the fact.
+
+### Amending a migration, and the condition that permits it
+
+0.3 stated the rule while taking the other course: **an amended migration never
+re-runs, so amending is available only while nothing has run it.** That is a
+condition rather than a prohibition, and the condition is measured rather than
+assumed. Four things establish it: what `main` carries, whether any store file
+exists, whether the configured store path is set at any scope, and whether the
+checkpoint's own detail has a demonstration step. Say which were checked.
+
+### Constraints
+
+- **A citation is verified by what rests on it.** Adding an entry to the
+  append-only list needed a decision stating the property, and the decision as
+  first drafted gave the reason. Third occurrence, found the same way as the two
+  before it: by building the thing that rests on the citation.
+- **A record cannot reference a projection.** Rebuilding a projection means
+  discarding it, so a foreign key from the record refuses the discard. The schema
+  document's absence of arrows was a statement and read as an omission.
+- **A count written in the present tense is a claim about now**, and dating it
+  does not make it historical, so a count is restated at each sign-off rather
+  than stamped with the moment it was true.
+- **A detector reads what it is given, including the comments.** Two sentences of
+  ordinary English in a migration matched a table-alias pattern. The fix belongs
+  in the extractor, never in the prose: a comment rewritten to please a regex is
+  a comment optimised for the wrong reader.
+- **A vocabulary written twice is a vocabulary that can disagree with itself.**
+  Six of them now exist, one eleven values long, and nothing held them together
+  until a check compared each declaration against the CHECK enforcing it. It
+  found a defect in code shipped two phases earlier on its first run.

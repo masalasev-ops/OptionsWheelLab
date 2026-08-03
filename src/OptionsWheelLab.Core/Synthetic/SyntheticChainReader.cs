@@ -48,9 +48,16 @@ public static class SyntheticChainReader
         AllowTrailingCommas = true,
     };
 
-    private static readonly string[] RootProperties = ["symbol", "bars", "chains", "earnings"];
+    private static readonly string[] RootProperties =
+        ["symbol", "bars", "chains", "earnings", "actions"];
 
     private static readonly string[] EarningsProperties = ["date", "session"];
+
+    private static readonly string[] ActionProperties =
+        ["exDate", "kind", "ratio", "amount", "successor"];
+
+    private static readonly string[] SuccessorProperties =
+        ["strike", "deliverableShares", "multiplier", "vendorSymbol"];
 
     private static readonly string[] BarProperties =
         ["date", "close", "open", "high", "low", "adjustedClose", "volume"];
@@ -115,6 +122,7 @@ public static class SyntheticChainReader
         var bars = ReadBars(root, symbol, problems);
         var quotes = ReadChains(root, symbol, problems);
         var earnings = ReadEarnings(root, problems);
+        var actions = ReadActions(root, problems);
 
         if (symbol is null)
         {
@@ -131,8 +139,165 @@ public static class SyntheticChainReader
             [.. quotes
                 .OrderBy(quote => quote.SnapshotDate)
                 .ThenBy(quote => quote.Contract)],
-            [.. earnings.OrderBy(report => report.ReportDate)]);
+            [.. earnings.OrderBy(report => report.ReportDate)],
+            [.. actions
+                .OrderBy(action => action.Action.ExDate)
+                .ThenBy(action => StoreCorporateActionKind.ToStored(action.Action.Kind),
+                    StringComparer.Ordinal)]);
     }
+
+    /// <summary>
+    /// The corporate actions the file states, or none when it states no
+    /// <c>actions</c> array at all.
+    /// </summary>
+    /// <remarks>
+    /// <b>Optional, on <c>earnings</c>' precedent</b>, and for the same two
+    /// reasons: every scenario written before 3.3 predates this property, and a
+    /// name with no corporate action is the ordinary case rather than an
+    /// incomplete file.
+    /// <para>
+    /// <b>No duplicate refusal, unlike bars, quotes and earnings.</b> A name can
+    /// carry several actions on one ex-date, which is why <c>corporate_actions</c>
+    /// has no key of its own [§4.1]. Refusing a repeat here would forbid a
+    /// scenario the schema was deliberately shaped to hold.
+    /// </para>
+    /// <para>
+    /// <b>Deterministically ordered by ex-date and then by stored kind</b>, on
+    /// <see cref="SyntheticChain"/>'s rule that no sequence is in file order. Two
+    /// actions on one date are ordered by a total order rather than by whoever
+    /// last edited the file.
+    /// </para>
+    /// </remarks>
+    private static List<ActionOnUnderlying> ReadActions(JsonElement root, List<string> problems)
+    {
+        var actions = new List<ActionOnUnderlying>();
+
+        if (!root.TryGetProperty("actions", out var array))
+        {
+            return actions;
+        }
+
+        if (array.ValueKind != JsonValueKind.Array)
+        {
+            problems.Add("the file.actions: expected an array.");
+            return actions;
+        }
+
+        var index = 0;
+
+        foreach (var element in array.EnumerateArray())
+        {
+            var path = $"the file.actions[{index++}]";
+
+            if (!IsObject(element, path, problems))
+            {
+                continue;
+            }
+
+            RefuseUnknown(element, ActionProperties, path, problems);
+
+            var exDate = RequiredDate(element, "exDate", path, problems);
+            var kind = RequiredActionKind(element, path, problems);
+            var ratio = OptionalDecimal(element, "ratio", path, problems);
+            var amount = OptionalDecimal(element, "amount", path, problems);
+            var successor = ReadSuccessor(element, path, problems);
+
+            if (exDate is null || kind is null)
+            {
+                continue;
+            }
+
+            actions.Add(new ActionOnUnderlying(
+                new CorporateAction(kind.Value, exDate.Value, ratio, amount), successor));
+        }
+
+        return actions;
+    }
+
+    /// <summary>
+    /// The successor terms an adjusting action states, transcribed and never
+    /// derived [D-W36].
+    /// </summary>
+    /// <remarks>
+    /// Absent for an action that adjusts nothing, which is every ordinary
+    /// dividend. An adjusting action stating none is not refused here: the state
+    /// machine refuses it when it reaches a contract to adjust, which is where the
+    /// refusal can say what it was asked to adjust.
+    /// </remarks>
+    private static StatedSuccessorTerms? ReadSuccessor(
+        JsonElement action,
+        string path,
+        List<string> problems)
+    {
+        if (!action.TryGetProperty("successor", out var element))
+        {
+            return null;
+        }
+
+        var successorPath = $"{path}.successor";
+
+        if (!IsObject(element, successorPath, problems))
+        {
+            return null;
+        }
+
+        RefuseUnknown(element, SuccessorProperties, successorPath, problems);
+
+        var strike = RequiredDecimal(element, "strike", successorPath, problems);
+        var deliverable = OptionalCount(element, "deliverableShares", successorPath, problems);
+        var multiplier = OptionalCount(element, "multiplier", successorPath, problems);
+
+        if (strike is null || deliverable is null)
+        {
+            if (deliverable is null && strike is not null)
+            {
+                problems.Add(
+                    $"{successorPath}: 'deliverableShares' is required. An adjustment moves the "
+                    + "deliverable and leaves the strike [D-W17], so a successor that states "
+                    + "only a strike states nothing that changed.");
+            }
+
+            return null;
+        }
+
+        return new StatedSuccessorTerms(
+            strike.Value,
+            (int)deliverable.Value,
+            (int)(multiplier ?? Identity.ContractTerms.StandardMultiplier),
+            RequiredStringIfPresent(element, "vendorSymbol", successorPath, problems));
+    }
+
+    private static CorporateActionKind? RequiredActionKind(
+        JsonElement element,
+        string path,
+        List<string> problems)
+    {
+        var raw = RequiredString(element, "kind", path, problems);
+
+        if (raw is null)
+        {
+            return null;
+        }
+
+        try
+        {
+            return StoreCorporateActionKind.ParseStored(raw);
+        }
+        catch (FormatException exception)
+        {
+            problems.Add($"{path}.kind: {exception.Message}");
+            return null;
+        }
+    }
+
+    private static string? RequiredStringIfPresent(
+        JsonElement parent,
+        string name,
+        string path,
+        List<string> problems) =>
+        parent.TryGetProperty(name, out _)
+            ? RequiredString(parent, name, path, problems)
+            : null;
 
     /// <summary>
     /// The scheduled reports the file states, or none when it states no

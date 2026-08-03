@@ -630,8 +630,11 @@ to differ. A count of this table is a count of rows. Rows sharing an Owed at
 value are separate obligations, and a count of distinct values is not a count of
 this table.
 
-**Fourteen rows stand, seven at checkpoint granularity and seven at phase**, read
-off the table below at 3.2's sign-off.
+**Fifteen rows stand, five at checkpoint granularity and ten at phase**, read off
+the table below at 3.3's sign-off. It stood at fourteen, seven and seven, at
+3.2's; 3.3 closed its own four and raised five, so the total moved by one and the
+split moved by two, which is why a count of rows and a count of granularities are
+read separately rather than derived from each other.
 
 | Owed at | Obligation | Raised |
 |---|---|---|
@@ -643,12 +646,13 @@ off the table below at 3.2's sign-off.
 | Phase 8 | Extract the market rules out of `SyntheticChainReader`, so one definition serves the synthetic reader and the vendor ingest. Refusing a negative bid, a negative ask and a crossed market are statements about what a market can be, not JSON concerns, and they sit as private statics on the reader, so a second producer of quotes can only duplicate them. Phase 8 is where that second producer arrives. **The crossed-quote coupling is discharged at 2.3**: the gate handles a crossed quote [D-W22, as amended], so that rule moved to the gate and left the loader, and what remains to extract is the two negative-price refusals. Not extracted at 0.8 because there is one caller and the second does not exist. | PR #9 |
 | Phase 4 | Decide how a candidate's gate reasons are stored. `candidates.gate_reason` is a single nullable TEXT column and the domain type is a set in declared order [2.3], which FX-GateRecordsAllReasons at 2.5 asserts by requiring two reasons on one candidate. The options include a delimited list, which makes a reason unqueryable, and a row per reason, which changes the table's grain. Raised at 2.3 when the vocabulary was declared. **The grain this assumes is the one the v1.17.0 row decides.** | v1.32.0 |
 | Phase 9 | Decide how configuration resolves for a simulated date that precedes the value being written. `SeedCommand` stamps `set_at` from the wall clock, so every gate bound resolves null for any simulated date before the seed ran, which is every date in a walk-forward over real history. [D-W26] requires resolution as of the simulated date and [D-W37] stops the evaluation rather than guessing, so the collision surfaces loudly at the first walk-forward rather than silently. The options include backdating the seed, which costs the audit trail its truthfulness, and resolving a registered run's configuration as of its pre-registration instant [D-W15], which keeps both rules intact. Raised at 2.3 while answering what an unresolvable bound does. | v1.32.0 |
-| 3.3 | Decide what the state machine's event set is, and do not declare it closed at six. OCC names the corporate actions that adjust a contract as "declaration of dividends or distributions, stock splits, rights offerings, reorganizations, or the merger or liquidation of an issuer"; [`SYSTEM_DESIGN.md` §3.8] names expiry, assignment, exercise, dividend, split and earnings, so rights offerings, reorganizations, mergers, liquidations and spin-offs are unnamed anywhere in this corpus and `CorporateActionKind` holds `Split` alone. Each is a modelling choice about what a trial does when its underlying stops being what the trial opened against. The transitions may be deferred; the vocabulary must not silently exclude them, which is 3.2's own argument that a missing concept is cheapest before the transitions exist. Raised at 3.2. | v1.38.0 |
 | Phase 8 | Decide how a deliverable that is shares plus cash is recorded. The adjustment method in force gives a 4-for-3 split of an $80 option a deliverable "adjusted to 133 shares plus the cash value of the eliminated fractional share", strike unchanged; `contracts.deliverable_shares` is an integer and one of the five components of contract identity [1.5], and nothing in this corpus or its sources names cash in lieu. Owed at Phase 8 rather than 3.3 because no synthetic chain can express a corporate action at all, so the first deliverable of this shape arrives with vendor data, and the change is to a built structure with a migration cost that is no cheaper now. 3.3 must not assume a deliverable is wholly shares. Raised at 3.2. | v1.38.0 |
 | Phase 5 | Decide whether cash earns, and at what rate. Nothing in this corpus names interest as a financial concept. The absence biases two of the three comparisons in opposite directions: the wheel holds cash securing its puts and the hold-cash floor holds cash outright, so both are understated by roughly the same amount and their comparison survives, while buy-and-hold holds no cash and is not understated at all, so the comparison the lab exists to make is biased against the wheel by whatever the rate is. A rate is an external source and choosing one is a modelling choice with its own argument. Owed at Phase 5, where the outcome metric and the controls' returns are computed. A control gap of the same kind as the dividend gap and in the same decision [D-W13]. Raised at 3.2. | v1.38.0 |
-| 3.3 | Correct `CommittedCapital.For` to strike times multiplier, per [D-W17] as amended. 2.4 read the deliverable as the only quantity in reach and named 3.1 as the checkpoint that would decide; it decided the other way. Its own reasoning was that the choice sits in one place so Phase 3 changes one site, and this is that site. Every current contract carries one hundred as both quantities, so no test distinguishes them today and none will until an adjusted contract is gated. Raised at 3.1. | v1.36.0 |
-| 3.3 | Give the record a dividend to hold, per [D-W41]. `ledger_entries.kind` needs a `dividend` value, `CorporateActionKind` is `Split` only and names that decision in its own remarks, and the synthetic-chain format carries no corporate actions at all, so no hand-written scenario can express one. Whether `corporate_actions` gains a CHECK the way `right` and membership's `kind` have one rides with it. Raised at 3.1, where the decision named all three rather than adding any. | v1.36.0 |
-| 3.3 | Decide what a session calendar is, since [D-W40] resolves settlement to "the first business day after" and nothing in this lab can answer that. The only session sequence in the store is `underlying_bars.session_date`, which is per symbol and cannot distinguish a market holiday from a name that did not trade. Whether the calendar is derived from bars or stored is the question; Phase 8's vendor ingest is the other consumer. Raised at 3.1. | v1.36.0 |
+| Phase 4 | Resolve configuration in the projection rebuild as of the simulated date the run used, never as-now [D-W26]. Telling `closed_at_bound` from `closed_by_choice` means asking whether a bound had been reached, which reads `Trial:MaxRolls` and `Trial:MaxTrialDays`, and a rebuild reading current bounds would disagree with the run it is rebuilding while presenting the disagreement as a ledger defect. Not live at 3.3, where nothing writes `closed_by_choice` because no maker exists. Raised at 3.3 by building the rebuild. | v1.40.0 |
+| 3.4 | Decide whether `Costs:AssignmentFee` can carry a non-zero figure without contradicting `WORKED_EXAMPLE.md`. §1 states the commission and states no assignment fee, and §6.3's assignment leg is exactly `-5,000.00` against a total of `498.05`, so that document's arithmetic assumes the fee is zero while `FX-TrialCompleteIncludesAssignment` asserts the total against the document. A stated figure therefore either changes §6.3 or breaks the fixture's source, which is the collision the PR #7 row could not see when it warned that a zero inferred from an absent ledger line is invisible when wrong. **The figure this constrains is the one that row sets.** Raised at 3.3, where the ledger the fee would appear in was built. | v1.40.0 |
+| 3.4 | Decide whether a commission is its own ledger entry or is netted into the premium. [D-W12] requires per-contract commission and assignment fees explicit without saying where, and `WORKED_EXAMPLE.md` §6.3 nets them, writing "bid 0.95 less commission" as one leg of `+94.35`. A netted cost is not separately auditable, and a separate entry changes what the projection rebuilds from. Both `commission` and `assignment_fee` are already in the ledger's vocabulary [D-W48], so this settles what writes them rather than whether they can be written. Raised at 3.3. | v1.40.0 |
+| Phase 4 | Verify the consumers of `Trial:MaxRolls` and `Trial:MaxTrialDays`, which 3.3 could not. `TrialBounds` reads both as of the simulated date and nothing in `src/` constructs it: the state machine is handed resolved bounds, and the component that would resolve them is the run loop. `CONFIG_REFERENCE.md` calls a consumer that cannot be verified once its checkpoint has landed a defect rather than a documentation gap, and 3.3 was that checkpoint, so both rows stay **Unverified** with the reason recorded rather than the column loosened to admit a type with no component behind it. Raised at 3.3. | v1.40.0 |
+| Phase 4 | Decide which simulated date the trial bounds resolve as of. A trial spans many sessions and [D-W26] resolves configuration as of the simulated date, so nothing states whether an open trial is bound by the values in force at its open or by each session's, and `Trial:MaxRolls` changing mid-trial would move the bound under a position already taken. 3.3 built the machine taking bounds at construction, on `GateBounds`' resolve-once-per-evaluation shape, and invented no answer. **The rebuild row above asks the same as-of question from the other side.** Raised at 3.3. | v1.40.0 |
 
 ---
 
@@ -1290,9 +1294,10 @@ obligation rows now point at each other.
 
 ## Phase 3 — Thin slice: one full wheel turn
 
-Build state: **partly built**. 3.1 and 3.2 built and signed off, settling the
-mechanics as decisions and running the completeness pass; 3.3 to 3.5 not started,
-and no code exists for this phase. Delivers
+Build state: **partly built**. 3.1, 3.2 and 3.3 built and signed off: the
+mechanics settled as decisions, the completeness pass run, and the state machine,
+the ledger and its projections built against four tables. 3.4 and 3.5 not
+started, so nothing prices a fill and no run is byte-identical yet. Delivers
 one trial from cash to cash: a put sold, assignment or expiry, shares held, calls
 written, called away or closed at the roll bound, with every cash movement in the
 ledger and the trial and position rebuildable from it. On synthetic chains; no
@@ -1409,10 +1414,15 @@ position in a document rather than as a fact about one filing.
 
 ### 3.3 The state machine and the ledger
 Four states as a discriminated union, daily events driving transitions
-[SYSTEM_DESIGN §3.8]. `trials`, `positions` and `ledger_entries` land here.
+[SYSTEM_DESIGN §3.8]. Four tables land here: `trials`, `positions` and
+`ledger_entries` from §4.3, and `market_sessions`, because a calendar that is
+transcribed rather than derived is a table like any other stated fact [D-W46] and
+settlement cannot resolve a next session without one.
 - Rolling bounded by whichever of the roll count and the trial days binds
-  first, closing at market at the bound [D-W14]. A roll is a recorded
-  decision.
+  first, closing at market at the bound [D-W14]. Both legs of a roll reach the
+  ledger, without which the projection cannot rebuild [D-W35]. The roll's
+  decision row is Phase 4's, alongside every other decision, because
+  `decisions` lands there [§4.3].
 - Cost basis recorded both gross and net, with the covered-call constraint
   reading gross [D-W19], which 2.4 built against a parameter and this
   supplies.
@@ -1422,6 +1432,64 @@ Four states as a discriminated union, daily events driving transitions
 - **Test**: `trials` and `positions` discarded and rebuilt from
   `ledger_entries` give the same rows, which is what makes them projections
   rather than records.
+
+Reconciled at sign-off against what shipped. Three decisions, three migrations,
+four tables, the state machine, the ledger and its projections, and the fifteen
+registry rows, which is every entry standing against this checkpoint. Four
+obligations closed and five raised. The suite went from 503 to 629, and the guard
+script from two named checks to three.
+
+**The branch paused for review after the decisions and before any DDL existed.**
+One checkpoint and two review points: what a split would have bought, without
+moving fifteen registry rows and four obligations to buy it. A checkpoint is a
+unit of work rather than a unit of review, which 3.1 already showed by being
+pushed eleven times.
+
+**The ordering paid twice, and both times on something a migration would have
+frozen.** The event set turned out not to be a list of five more names: §3.8's
+six lie on three axes, earnings drives no transition and is a gate input, and
+exercise is assignment seen from the side this lab is never on. And the ledger
+needed an eleventh kind, because a short bought back to roll and one bought back
+to end a trial are two events under one cash direction and the sequence cannot
+tell them apart afterwards.
+
+**Migration 8 was edited in place rather than superseded, and the ground was
+measured rather than assumed.** 0.3 took the other course and stated the rule
+that decides between them: an amended migration never re-runs, so amending is
+available only while nothing has run it. That is a condition, and four
+measurements found it absent here. The clause raising this cited 1.3; it is 0.3,
+and a wrong pointer sends the next reader to a phase that never had the question.
+
+**Four defects were found by building the check rather than by reading.**
+A foreign key from the record into a projection would have made the rebuild
+impossible. Both SQL detectors were reading `--` comments as SQL, which two
+sentences of ordinary English in new migrations were the first to collide with.
+`MembershipKind` was the one enum in the store's vocabulary set starting at zero,
+so `default` read as `Joined` and an uninitialised transition would have put a
+name on the watchlist. And the bound sold shares on the session they were
+assigned, which is a decision depending on an assignment that occurred that day.
+
+**A review after sign-off found four more, and one of them was this checkpoint's
+own correction made again.** Two were settled by [D-W49], which values a stopped
+trial at the close rather than zeroing it and buys a forced close back at the ask
+rather than at intrinsic. All four were priced in the same direction: each made a
+trial look better or a loss look cleaner than it was, which is why nothing
+prompted anyone to look for them. Committed capital was fixed at strike times the
+multiplier on the argument that the quantity sat in one place; the state machine
+then priced an assignment, a call-away and a forced close from the deliverable.
+An adjusted put charged a trial 7,500 against the 5,000 it had committed. The
+second was the cost bases, which are divisions bound through the refusing decimal
+path, throwing on any premium the ledger's own scale admits and the share count
+does not divide. Neither was visible to a test, because every contract in the
+suite carried one hundred as both quantities and every premium divided cleanly,
+which is exactly the condition the obligation described.
+
+**Two consumers could not be verified, and that is recorded as a defect rather
+than as a gap.** `TrialBounds` reads both trial bounds as of the simulated date
+and nothing in `src/` constructs it, because the component that would is the run
+loop. Loosening the Consumer column to name a type with no component behind it
+would make that column mean one thing on verified rows and another on unverified
+ones.
 
 ### 3.4 The fill model and the costs
 Sells at the bid with explicit per-contract commission and assignment fees

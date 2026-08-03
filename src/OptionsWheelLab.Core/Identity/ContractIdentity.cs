@@ -189,11 +189,13 @@ public sealed record ContractIdentity : IComparable<ContractIdentity>
 /// stated terms, transcribed and never derived [D-W36].
 /// </para>
 /// <para>
-/// <b>Which of the two the outcome metric uses is open.</b> D-W17's first paragraph
-/// says the contract multiplier and its third says the deliverable. That is a
-/// carried obligation owed at Phase 3, which computes committed capital, and
-/// nothing here presumes the answer: the metric reads the multiplier from this
-/// record or the deliverable from the identity, both transcribed values.
+/// <b>Which of the two the outcome metric uses was settled at 3.1: the
+/// multiplier</b> [D-W17, as amended]. An adjustment moves the deliverable and
+/// leaves the strike and the aggregate exercise price alone, so committed capital
+/// is strike times multiplier and a metric reading the deliverable would misprice
+/// every adjusted position. The deliverable keeps its other job, separating an
+/// adjusted series from a standard one at the same strike, which is why it is a
+/// component of identity and the multiplier is not.
 /// </para>
 /// </remarks>
 public sealed record Contract(

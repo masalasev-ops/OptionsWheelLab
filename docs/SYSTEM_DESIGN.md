@@ -185,9 +185,25 @@ entirely by that one choice.
 
 ### 3.8 Wheel state machine and ledger
 
+Build state: **built at 3.3**, on synthetic scenarios: the four states, the
+transitions, `ledger_entries` and the two projections rebuilt from it. What is
+not built is anything that drives it. No maker chooses to roll and no loop steps
+a session, so what advances the machine today is a test, and the roll's own
+decision row is Phase 4's alongside every other decision.
+
 Four states modelled as a discriminated union: cash, short put, holding shares,
-short call. Daily events drive transitions: expiry, assignment, exercise,
-dividend, split, earnings.
+short call. Daily events drive transitions, and they lie on two axes rather than
+in one list: contract events, being expiry and assignment, and corporate actions,
+which reach a trial from its underlying and carry OCC's own enumeration rather
+than this lab's [D-W47]. Earnings is on neither axis. It refuses a candidate
+whose life spans a report date and moves no position, so it is a gate input.
+Exercise is assignment seen from the side this lab is never on, since the wheel
+writes options rather than buying them.
+
+An action the lab does not model stops the trial and is recorded as its reason.
+What each action does to a contract may be deferred; what an unmodelled one does
+may not, because a position carried past a merger is priced on terms the lab
+cannot compute.
 
 Rolling is permitted but bounded, and a rolled chain terminates at a configured
 maximum number of rolls or maximum trial days, whichever binds first, at which

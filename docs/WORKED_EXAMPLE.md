@@ -11,13 +11,25 @@ Reproduced: §2's chain and §5's bars, which load and persist to the cent; §3
 whole, every strike enumerated and every verdict and reason reached; and §1's
 caps, which are configuration now and whose 5,100.00 and 22,000.00 headrooms are
 asserted. §1's fill rule and policy bands are configuration too and nothing
-consumes them yet. Of §6, only 6.3's two bases are read, by the constraint that
-binds a call strike.
+consumes them yet. Of §6, 6.3's two bases are read by the constraint that binds a
+call strike, and 3.3 added its shape: the state machine reaches the call-away on
+2026-06-19 from the assignment on 2026-04-17, so the trial's 109 days are
+computed rather than stated, and its four positions rebuild from the ledger.
 
 Not built: §4's decisions and fills, §6.1 and §6.2, §6.3's 498.05 total, and §7
 and §8's scores and regret. Six of the eleven fixtures naming this document are
 implemented and the other five belong to Phases 3, 4 and 5, which is where the
-makers, the trials and the scores arrive.
+makers, the trials and the scores arrive. 3.3 added none: its twelve rows are all
+`authored`, taking their expectations from the decisions rather than from here,
+and what they borrow is the shape of §5's sessions.
+
+**§6.3's trial never observably holds bare shares, which 3.3 found by rebuilding
+it.** The covered call is written on the session the assignment becomes known and
+again on the session the first call expires, so `holding_shares` begins and ends
+within one session both times. The shares are carried on the `short_call`
+positions, which is what the account held at each close, and a lab that observes
+closes [D-W12] cannot claim to have seen a state that began and ended between two
+of them.
 
 Nothing here is decorative. A figure this document states that the code
 contradicts fails a fixture rather than going unnoticed, which is what made §3's

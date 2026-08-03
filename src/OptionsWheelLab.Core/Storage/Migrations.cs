@@ -8,7 +8,8 @@ public sealed record Migration(int Id, string Name, string Sql);
 /// </summary>
 /// <remarks>
 /// Configuration at 0.3, the market-data tables at 1.1, membership at 1.3,
-/// the bars nullability rebuild at 1.4.
+/// the bars nullability rebuild at 1.4, and at 3.3 the corporate-action CHECK,
+/// the session calendar, and §4.3's three.
 /// </remarks>
 public static class Migrations
 {
@@ -208,6 +209,263 @@ public static class Migrations
             BEGIN
                 SELECT RAISE(ABORT, 'underlying_bars is append-only: rows are never deleted');
             END;
+            """),
+
+        new Migration(
+            6,
+            "corporate_actions_kind_check",
+            """
+            -- corporate_actions.kind gains the CHECK it has gone without since
+            -- 1.1. The reason is the one `right` and watchlist_membership.kind
+            -- already carry: a stored form the database does not enforce has one
+            -- guard rather than two. It was left off while the vocabulary was one
+            -- value; it is eight from here [D-W47], and an unenforced vocabulary
+            -- starts costing at the second value, not the eighth.
+            --
+            -- The values are OCC's own enumeration of what adjusts a contract,
+            -- complete before the transitions that read it exist. The two
+            -- dividend values are D-W44's ordinary and non-ordinary split, and a
+            -- reverse split is a `split` whose ratio is below one rather than a
+            -- value of its own: the ratio is a recorded fact about the event
+            -- [D-W36], and a second name for one event is a second place to get
+            -- it wrong.
+            --
+            -- SQLite cannot add a CHECK in place, so this is migration 5's
+            -- rebuild: create the replacement, copy across, drop, rename, and
+            -- recreate what DROP TABLE takes with it, which here is both triggers
+            -- AND the as-of index.
+            --
+            -- What differs from migration 5, and it is the whole risk. That one
+            -- rebuilt a table no writer had ever touched, so its copy could not
+            -- lose a row that existed. This table has had CorporateActionWriter
+            -- since 1.5, so the copy carries rows a real store really holds. It
+            -- is asserted rather than trusted: a test seeds through the writer,
+            -- migrates, and reads the rows back.
+            CREATE TABLE corporate_actions_checked (
+                symbol      TEXT NOT NULL,
+                ex_date     TEXT NOT NULL,
+                kind        TEXT NOT NULL CHECK (kind IN (
+                                'ordinary_dividend',
+                                'non_ordinary_dividend',
+                                'split',
+                                'rights_offering',
+                                'reorganization',
+                                'merger',
+                                'liquidation',
+                                'spin_off')),
+                ratio       TEXT NULL,
+                amount      TEXT NULL,
+                observed_at TEXT NOT NULL
+            );
+
+            INSERT INTO corporate_actions_checked
+                (symbol, ex_date, kind, ratio, amount, observed_at)
+            SELECT symbol, ex_date, kind, ratio, amount, observed_at
+            FROM corporate_actions;
+
+            DROP TABLE corporate_actions;
+
+            ALTER TABLE corporate_actions_checked RENAME TO corporate_actions;
+
+            CREATE INDEX corporate_actions_as_of
+                ON corporate_actions (symbol, ex_date, observed_at);
+
+            CREATE TRIGGER corporate_actions_no_update
+            BEFORE UPDATE ON corporate_actions
+            BEGIN
+                SELECT RAISE(ABORT, 'corporate_actions is append-only: a correction appends a row with its own observed_at');
+            END;
+
+            CREATE TRIGGER corporate_actions_no_delete
+            BEFORE DELETE ON corporate_actions
+            BEGIN
+                SELECT RAISE(ABORT, 'corporate_actions is append-only: rows are never deleted');
+            END;
+            """),
+
+        new Migration(
+            7,
+            "market_sessions",
+            """
+            -- The session calendar of §4.1, transcribed and never derived
+            -- [D-W46]. It answers what the next session after a date is, which
+            -- settlement needs [D-W40] and nothing in this store could answer.
+            --
+            -- No symbol, which is the point of it. A session is a fact about the
+            -- market rather than about a name, and underlying_bars.session_date
+            -- is per symbol and cannot tell a market holiday from a name that
+            -- did not trade.
+            --
+            -- A snapshot table, so a correction appends a row carrying its own
+            -- observed_at [D-W8, D-W46] and the stamp is in the key. A
+            -- transcribed session that could be edited would move a past date's
+            -- answer, which is exactly what the decision refuses to let a derived
+            -- one do.
+            --
+            -- No monotonic third trigger. That one is set_at moving forward per
+            -- key [D-W26] and observed_at per symbol [1.3]; this table has no
+            -- axis crossing the stamp, and backfill legitimately supplies
+            -- historical stamps, which is the reason the six snapshot tables
+            -- carry no analogue either.
+            CREATE TABLE market_sessions (
+                session_date TEXT NOT NULL,
+                observed_at  TEXT NOT NULL,
+                PRIMARY KEY (session_date, observed_at)
+            );
+
+            CREATE TRIGGER market_sessions_no_update
+            BEFORE UPDATE ON market_sessions
+            BEGIN
+                SELECT RAISE(ABORT, 'market_sessions is append-only: a correction appends a row with its own observed_at');
+            END;
+
+            CREATE TRIGGER market_sessions_no_delete
+            BEFORE DELETE ON market_sessions
+            BEGIN
+                SELECT RAISE(ABORT, 'market_sessions is append-only: rows are never deleted');
+            END;
+            """),
+
+        new Migration(
+            8,
+            "trials_positions_ledger",
+            """
+            -- §4.3's three, the first tables Phase 3 writes.
+            --
+            -- This migration was edited in place after it was first written,
+            -- adding two CHECK vocabularies. 0.3 took the other course, a new
+            -- migration rather than amending migration 1, and stated the rule
+            -- that decides between them: an amended migration never re-runs, so
+            -- amending is only available while nothing has run it. That is a
+            -- condition rather than a prohibition, and it was measured absent
+            -- here rather than assumed. main carried five migrations; no store
+            -- file existed in the tree; Storage__Path was unset at every scope,
+            -- so StoreLocation refused and migrate.ps1 could not run; and 3.3's
+            -- detail carries no demonstration bullet, both its tests running
+            -- against per-test stores that are created and destroyed. Once this
+            -- branch merges the same change is a new migration.
+            --
+            -- ledger_entries is the record and carries both triggers; trials and
+            -- positions are projections of it and deliberately carry none. That
+            -- is [D-W35]'s two halves in one migration: a record is the only
+            -- place a fact is held, and a projection is derived from an
+            -- append-only source and may be rebuilt. The permission to rebuild is
+            -- conditional on the test that discards and rebuilds them, which is
+            -- this checkpoint's definition of done rather than a comment here.
+            --
+            -- entry_date is the session an entry occurred in and known_on the
+            -- session the account could act on it [D-W39]. Both are stored
+            -- because a projection rebuilt from this table has to reproduce what
+            -- was known when, and one date cannot answer both.
+            --
+            -- kind carries a CHECK and records events rather than only cash
+            -- [D-W48], so an expiry that pays nothing is a row with a zero
+            -- amount. commission and assignment_fee are in the vocabulary before
+            -- anything writes them: whether the fill model gives them entries of
+            -- their own is 3.4's, and a value nothing writes costs nothing where
+            -- a migration adding one costs the rebuild above.
+            --
+            -- Both bases are nullable, corrected at 3.3 against §4.3's unmarked
+            -- convention. Cost basis exists after assignment [D-W19], so cash and
+            -- short_put have none, and NOT NULL would have made two of the four
+            -- states unwritable. A zero basis would be a false observation, not a
+            -- missing one.
+            --
+            -- close_kind carries its own CHECK. Its values are what returns a
+            -- trial to cash rather than what the schema found convenient, and
+            -- closed_at_bound is one value because D-W14 names one mechanism with
+            -- two triggers: rolls_used beside opened_on and closed_on says which
+            -- of them fired, so two values would state one fact twice.
+            --
+            -- closed_by_choice is in the CHECK before anything writes it. No
+            -- maker exists until Phase 4, and it is recoverable from the day one
+            -- does, being a bought_to_close with no premium_received following.
+            -- That is why the ledger has both kinds: a roll pays a premium and
+            -- opens a position, a close pays a premium and ends one, and a trial
+            -- closed at its last permitted roll and one closed by choice look
+            -- identical in the sequence alone.
+            --
+            -- No foreign keys, which §4.3 already said by carrying no arrows
+            -- where §4.1 carries three. It read as an omission and is not, and
+            -- one of them would have been a defect: a reference from
+            -- ledger_entries into trials points the record at the projection
+            -- derived from it, so discarding trials to rebuild it would be
+            -- refused by the store. Written that way first and found by the test
+            -- that discards a projection, which is the rebuild condition [D-W35]
+            -- earning its place before the rebuild exists.
+            CREATE TABLE trials (
+                trial_id          INTEGER PRIMARY KEY,
+                maker_id          TEXT    NOT NULL,
+                symbol            TEXT    NOT NULL,
+                opened_on         TEXT    NOT NULL,
+                closed_on         TEXT    NULL,
+                open_strike       TEXT    NOT NULL,
+                committed_capital TEXT    NOT NULL,
+                rolls_used        INTEGER NOT NULL,
+                close_kind        TEXT    NULL CHECK (close_kind IN (
+                                      'expired_worthless',
+                                      'called_away',
+                                      'closed_at_bound',
+                                      'closed_by_choice',
+                                      'stopped'))
+            );
+
+            -- No key of its own, on corporate_actions' precedent: a trial carries
+            -- several positions and what would distinguish them is a question
+            -- the state machine answers, not the schema.
+            CREATE TABLE positions (
+                trial_id       INTEGER NOT NULL,
+                state          TEXT    NOT NULL CHECK (state IN (
+                                   'cash', 'short_put', 'holding_shares', 'short_call')),
+                effective_from TEXT    NOT NULL,
+                effective_to   TEXT    NULL,
+                shares         INTEGER NOT NULL,
+                gross_basis    TEXT    NULL,
+                net_basis      TEXT    NULL,
+                contract_id    INTEGER NULL
+            );
+
+            CREATE TABLE ledger_entries (
+                entry_id    INTEGER PRIMARY KEY,
+                trial_id    INTEGER NOT NULL,
+                entry_date  TEXT    NOT NULL,
+                known_on    TEXT    NOT NULL,
+                kind        TEXT    NOT NULL CHECK (kind IN (
+                                'premium_received',
+                                'premium_paid',
+                                'bought_to_close',
+                                'expired_worthless',
+                                'assignment',
+                                'call_away',
+                                'shares_sold',
+                                'dividend',
+                                'commission',
+                                'assignment_fee',
+                                'stopped')),
+                amount      TEXT    NOT NULL,
+                contract_id INTEGER NULL,
+                note        TEXT    NULL
+            );
+
+            CREATE TRIGGER ledger_entries_no_update
+            BEFORE UPDATE ON ledger_entries
+            BEGIN
+                SELECT RAISE(ABORT, 'ledger_entries is append-only: it is the record trials and positions are rebuilt from');
+            END;
+
+            CREATE TRIGGER ledger_entries_no_delete
+            BEFORE DELETE ON ledger_entries
+            BEGIN
+                SELECT RAISE(ABORT, 'ledger_entries is append-only: rows are never deleted');
+            END;
+
+            -- The rebuild reads every entry for a trial in order, which is the
+            -- only query these tables have until the state machine has more.
+            CREATE INDEX ledger_entries_by_trial
+                ON ledger_entries (trial_id, entry_date, entry_id);
+
+            CREATE INDEX positions_by_trial
+                ON positions (trial_id, effective_from);
             """),
     ];
 

@@ -92,5 +92,15 @@ public static class DecimalColumns
         "gamma",
         "theta",
         "vega",
+
+        // trials and positions [3.3]. ledger_entries.amount needs no entry: the
+        // name is already here for corporate_actions, and entries are column
+        // names in any table rather than table.column pairs, which is the
+        // unqualified-names decision above arriving as a saving instead of a
+        // cost for once.
+        "open_strike",
+        "committed_capital",
+        "gross_basis",
+        "net_basis",
     };
 }

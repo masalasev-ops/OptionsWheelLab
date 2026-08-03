@@ -9,6 +9,15 @@ checkpoint lands and is specified-only until then; unverified rows carry
 **Unverified**. A row whose consumer cannot be verified once its checkpoint has
 landed is a defect, not a documentation gap.
 
+**Two rows are that defect, and it is recorded here rather than resolved by
+loosening the column.** `Trial:MaxRolls` and `Trial:MaxTrialDays` name the state
+machine, which landed at 3.3, and `TrialBounds` reads both as of the simulated
+date. Nothing in `src/` constructs it: the machine is handed resolved bounds and
+the component that would resolve them is the run loop, which is Phase 4's.
+Writing the type onto an unverified row would make this column mean one thing on
+verified rows and another on unverified ones, which is the failure the column's
+own definition names. Carried as an obligation at Phase 4.
+
 The Consumer column names the component that READS the value, and once verified
 also names the type it binds through, as `component via TypeName`. Both are
 wanted and they are different facts: the type is where the value enters the

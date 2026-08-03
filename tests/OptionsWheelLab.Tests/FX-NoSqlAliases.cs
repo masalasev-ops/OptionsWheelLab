@@ -302,6 +302,50 @@ public sealed class FX_NoSqlAliases
         Assert.Equal(2, SqlAliases.Offences(Sql).Count);
     }
 
+    /// <summary>
+    /// English prose in a comment is not a table alias, which is what found the
+    /// scan was reading comments at all.
+    /// </summary>
+    /// <remarks>
+    /// Both sentences are real, from migrations 7 and 8. "cannot tell a market
+    /// holiday from a name that did not trade" reads as <c>FROM a name</c> and
+    /// "rebuilt from this table" as <c>FROM this table</c>, so the detector
+    /// reported two offences in documentation. The fix is in
+    /// <see cref="DecimalOrderingInSql.WithoutComments"/>, shared by both
+    /// detectors, rather than a keyword added here: <c>a</c> and <c>this</c> are
+    /// not SQL keywords and adding them would blind the rule to a real alias
+    /// named <c>a</c>.
+    /// </remarks>
+    [Fact]
+    public void Prose_in_a_comment_is_not_a_table_alias()
+    {
+        const string Sql =
+            """
+            -- underlying_bars.session_date cannot tell a market holiday from a
+            -- name that did not trade, and a projection rebuilt from this table
+            -- has to reproduce what was known when.
+            SELECT session_date FROM market_sessions;
+            """;
+
+        Assert.Empty(SqlAliases.Offences(DecimalOrderingInSql.WithoutComments(Sql)));
+    }
+
+    /// <summary>
+    /// The statement beside the comment is still scanned, so the fix removed
+    /// noise rather than coverage.
+    /// </summary>
+    [Fact]
+    public void An_alias_beside_a_comment_is_still_reported()
+    {
+        const string Sql =
+            """
+            -- A note mentioning contracts and nothing else.
+            SELECT c.strike FROM contracts c ORDER BY c.strike;
+            """;
+
+        Assert.Single(SqlAliases.Offences(DecimalOrderingInSql.WithoutComments(Sql)));
+    }
+
     private static IReadOnlyList<string> SourceFiles() =>
         RepoRoot.SourceFilesUnder(RepoRoot.SourcePath);
 }

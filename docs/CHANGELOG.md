@@ -1,5 +1,134 @@
 # CHANGELOG
 
+## [1.40.0] — 2026-08-03
+
+**Checkpoint 3.3**, the state machine and the ledger, and the first checkpoint in
+Phase 3 that writes code. Three decisions, three migrations, four tables, the
+transitions, the ledger and its two projections, and fifteen registry rows. Four
+obligations closed and five raised. The suite goes from 503 to 629, and the guard
+script from two named checks to three. Three of the fifteen rows and six of the
+fixes below came from reviewing the checkpoint after it first signed off.
+
+### Added
+- **D-W46**: the session calendar is transcribed, never derived. It answers what
+  the next session after a date is and redefines no day count, so days to expiry
+  and a trial's day bound stay calendar days.
+- **D-W47**: the state machine's events lie on three axes rather than in one
+  list. Earnings drives no transition and is a gate input; exercise is assignment
+  seen from the side this lab is never on; and the corporate-action vocabulary is
+  completed to OCC's own enumeration while the transitions stay deferred, with an
+  unmodelled action stopping the trial.
+- **D-W48**: the ledger records events and not only cash, so an expiry that pays
+  nothing is a row with a zero amount. Eleven kinds, four of them pairs because
+  one cash direction covers two events.
+- `market_sessions`, `trials`, `positions` and `ledger_entries`, across
+  migrations 6 to 8. `corporate_actions` was rebuilt for the `CHECK` its
+  vocabulary has gone without since 1.1.
+- **FX-StoredVocabulariesMatchTheirChecks**: every declared stored vocabulary and
+  the `CHECK` enforcing it admit exactly the same values, in both directions.
+- The synthetic scenario format states corporate actions, which is the third of
+  the three things [D-W41] named and could not add.
+- **D-W49**: a trial stopped by an unmodelled action is valued at the session's
+  close rather than zeroed, and a forced close buys its short back at the ask
+  rather than at intrinsic value. Both errors had a sign and pointed the same
+  way: zeroing made every name with a corporate action a total loss, and closing
+  at intrinsic flattered exactly the trials the bound exists to terminate.
+- **FX-StoppedTrialIsValuedAtTheClose** and **FX-BoundClosePaysTheAsk**, and
+  **FX-NoShareCountInOptionCash**, a guard, which take 3.3 from twelve registry
+  rows to fifteen.
+- The guard scans `src/` for a strike or a price multiplied by a share count,
+  which is the shape all four deliverable sites had. It exists because the claim
+  that the quantity sat in one place was made in a comment, was true when
+  written, was false three commits later, and was unchecked throughout. It needs
+  no permitted file: the one legitimate computation multiplies by the multiplier
+  and trips nothing. `guards.ps1` gains a scope, so a check can state which tree
+  its rule governs and still assert over a non-empty set.
+- `SessionFacts` carries the ask beside the bid. A sale fills at the bid and a
+  purchase pays the ask, because both are the side of the spread the account does
+  not choose [D-W12].
+- Five obligations: the assignment fee against §6.3's total and the commission's
+  ledger grain at 3.4, and the rebuild's configuration resolution, the two
+  unverifiable trial consumers, and which date the trial bounds resolve as of, at
+  Phase 4.
+
+### Changed
+- **[D-W35] takes more than one source.** `trials` derives from
+  `ledger_entries` for everything a trial did and from `decisions` for which
+  maker did it, because `maker_id` is a fact about a decision and no ledger entry
+  carries it. The rebuild condition is unchanged: every source must itself be
+  append-only.
+- **Committed capital is strike times the multiplier** [D-W17, as amended], which
+  discharges the obligation 2.4 raised. Two assertions were inverted rather than
+  removed, and the obligation's claim that no test distinguished the two
+  quantities was wrong: two did, both built around a 150-share deliverable.
+- `CorporateActionKind` widens from `Split` alone to OCC's eight.
+- The table stands at fifteen rows, five at checkpoint granularity and ten at
+  phase.
+
+### Fixed
+- **A foreign key from the record into a projection would have made the rebuild
+  impossible.** `ledger_entries.trial_id` was written `REFERENCES trials`, and
+  with foreign keys on, discarding `trials` to rebuild it is refused by the
+  store. §4.3 carries no arrows where §4.1 carries three, which read as an
+  omission and is a statement.
+- **Both SQL detectors were reading `--` comments as SQL.** Two sentences of
+  ordinary English in new migrations matched the table-alias pattern. Nothing had
+  collided before, so the flaw was invisible rather than absent, and leaving it
+  would put a standing pressure on every migration comment to avoid a regex.
+- **`MembershipKind` was the one enum in the store's vocabulary set starting at
+  zero**, so `default` read as `Joined` and an uninitialised transition would
+  have put a name on the watchlist. Found by the check that had to assume the
+  property held across all six to assert it once.
+- **The roll bound sold shares on the session they were assigned**, which is a
+  decision depending on an assignment that occurred that day. It is the one place
+  where one step of a session reads another's output, and a test found it.
+- **A closed trial carried a gross basis and a null net basis.** One convention
+  nulling itself while the other did not is what made it visible; basis is a
+  per-share figure and a trial back in cash holds no shares.
+- **`Trial:MaxRolls` gains a `ConfigKeys` constant.** It was the seeder's literal
+  while its sibling was a constant, which was the rule rather than an oversight:
+  a key is named when an invariant operates over it or code reads it, and the
+  roll bound had neither until the state machine.
+- **The deliverable-versus-multiplier error, reintroduced three times inside the
+  checkpoint that corrected it.** Committed capital was fixed at strike times the
+  multiplier on the argument that the quantity sat in one place, and the state
+  machine then priced an assignment, a call-away and a forced close from the
+  deliverable, so it sat in four. Measured against a three-for-two successor, a
+  trial committing 5,000 was charged 7,500 for the assignment. The arithmetic now
+  lives on `ContractTerms` as the aggregate exercise price, which is where a fact
+  about a contract belongs and what makes the one-site claim true rather than
+  asserted. Gross basis follows from it: what was paid divided by what arrived,
+  which is the strike only while the two quantities agree.
+- **Both cost bases were bound through the refusing decimal path and threw on
+  ordinary data.** They are divisions, and a premium carrying the eight places the
+  ledger's own scale admits gives a basis needing ten. `StoredParameters` had
+  stated since 0.4 that Phase 3 would need `ToStoredRounded` called at the site,
+  and 3.3 did not. `AddStoredRounded` is that path, named rather than defaulted so
+  a call site reaching for it while binding an exact value is visible.
+
+- **Two refusals that were not refusing.** A call expiring against a position
+  that never held shares read a nullable basis with the null-forgiving operator
+  and threw a `NullReferenceException` naming nothing; and the replay treated a
+  premium received on a closed trial as a roll, silently resurrecting it. Both
+  now refuse and say what was wrong, which is what everything else here does.
+
+Everything above under Fixed was found by reviewing the checkpoint after it
+signed off, and none of it was visible to any test: every contract in the suite
+carried one hundred as both quantities, every premium divided cleanly, and no
+forced close met a position with time value left. That is the condition the
+committed-capital obligation described in advance when it said no test would
+distinguish the quantities until an adjusted contract was gated, and it turned
+out to describe three more defects than the one it was about.
+- **A figure written in the present tense is a claim about now, and dating it
+  does not make it historical**, so a count is restated at each sign-off rather
+  than stamped with the moment it was true. The carried-obligations preamble read
+  "Fourteen rows stand" against a table holding fifteen, under a clause naming
+  3.2's sign-off, and it read as current because the sentence was current. That
+  is why the preamble now says the count is read again at each sign-off. Third
+  instance of the same shape: Phase 2's archive was frozen at a version its
+  Current state did not describe, and the fixture marker's count was exact inside
+  a clause that was false.
+
 ## [1.39.0] — 2026-08-02
 
 **Checkpoint 3.2**, the completeness pass. Five axes walked, six findings, three

@@ -4,10 +4,17 @@ The single registry of test fixtures and source guards. Prompts and checkpoints
 reference the entries registered against them here; they never enumerate names
 inline.
 
-Build state: **partly built**. The forty-three entries registered against
-0.2 to 2.5 are implemented, being forty-one fixtures and two guards; the
-rest belong to checkpoints not yet reached. 1.2 and 2.1 registered none,
-which their details state.
+Build state: **partly built**. The fifty-eight entries registered against 0.2 to
+3.3 are implemented, being fifty-five fixtures and three guards; the rest belong
+to checkpoints not yet reached. 1.2 and 2.1 registered none, which their details
+state.
+
+3.3 is the first checkpoint to discharge the entry-to-artefact direction against
+a full set rather than against one or two: fifteen rows, fourteen files and a
+named check in the script. Every earlier checkpoint met it too, but with counts
+small enough that meeting it and noticing it were the same act. Twelve landed
+before it signed off and three came from reviewing it afterwards, which is the
+first time this registry has grown from a review rather than from a build.
 
 ## Why this file exists
 
@@ -118,6 +125,12 @@ to carry the wrong cell.
 | FX-EarlyAssignmentOnDividend | fixture | 3.3 | a short call whose underlying goes ex-dividend by more than the call's remaining time value is assigned on the preceding session, and one where the time value is larger is not [D-W42] | authored |
 | FX-CoveredCallCommitsNothingFurther | fixture | 3.3 | a trial holding assigned shares gates a call candidate against the committed capital it already carries, and the per-name headroom is unchanged by the call [D-W43] | authored |
 | FX-OrdinaryDividendLeavesContractUnchanged | fixture | 3.3 | an ordinary dividend produces a ledger entry and no contract adjustment, and a non-ordinary one produces the adjustment its corporate action states [D-W44] | authored |
+| FX-NextSessionSkipsAClosedDate | fixture | 3.3 | an assignment whose following date is absent from the calendar settles on the next date the calendar carries, and a date the calendar does not reach stops rather than resolving [D-W46] | authored |
+| FX-UnmodelledActionStopsTheTrial | fixture | 3.3 | a merger on a held underlying stops the trial with the action recorded as its reason, and a split does not [D-W47] | authored |
+| FX-StoredVocabulariesMatchTheirChecks | fixture | 3.3 | every declared stored vocabulary and the CHECK enforcing it admit exactly the same values | authored |
+| FX-StoppedTrialIsValuedAtTheClose | fixture | 3.3 | a trial holding shares that meets an unmodelled action reports entries summing to the marked value, not to the outlay [D-W49] | authored |
+| FX-BoundClosePaysTheAsk | fixture | 3.3 | a forced close debits the ask, and a case where intrinsic and ask differ shows which was used [D-W49] | authored |
+| FX-NoShareCountInOptionCash | guard | 3.3 | no file under `src/` prices an option from a share count: cash from a contract multiplies by the multiplier and the deliverable says only how many shares move [D-W17] | authored |
 | FX-ThreeMakersSameFeasibleSet | fixture | 4 | all makers receive byte-identical candidate sets | WORKED_EXAMPLE §3 |
 | FX-RecordCarriesFeasibleSet | fixture | 4 | a decision is re-scorable from its record alone | authored |
 | FX-ExcursionRecordedOnWin | fixture | 5 | a positive outcome still carries its adverse excursion | WORKED_EXAMPLE §6.2 |

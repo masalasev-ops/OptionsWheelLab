@@ -26,6 +26,25 @@ public sealed record CorporateAction(
     decimal? Amount = null);
 
 /// <summary>
+/// An event on an underlying, with the successor terms the adjusting authority
+/// stated when it adjusts a contract.
+/// </summary>
+/// <remarks>
+/// The terms travel with the event because they are transcribed and never
+/// derived [D-W36]. Nothing computes an adjusted strike or deliverable from a
+/// ratio, so an action that adjusts a contract and states no terms cannot be
+/// applied, which is a refusal rather than a guess.
+/// <para>
+/// Here rather than beside the state machine that reads it, because an event and
+/// its stated terms are market data. A synthetic scenario states them [D-W31] and
+/// Phase 8's vendor ingest will too, and neither is a position.
+/// </para>
+/// </remarks>
+public sealed record ActionOnUnderlying(
+    CorporateAction Action,
+    StatedSuccessorTerms? StatedSuccessor = null);
+
+/// <summary>
 /// Mints an adjusted contract: the event row and the stated successor, atomic.
 /// </summary>
 /// <remarks>
