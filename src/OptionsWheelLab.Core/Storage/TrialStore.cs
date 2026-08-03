@@ -64,7 +64,7 @@ public sealed class TrialStore
         insert.Parameters.AddStored("$openedOn", openedOn);
         insert.Parameters.AddStored("$openStrike", openStrike);
         insert.Parameters.AddStored(
-            "$committed", openStrike * Generation.CommittedCapital.ContractMultiplier);
+            "$committed", openStrike * Identity.ContractTerms.StandardMultiplier);
 
         return (long)insert.ExecuteScalar()!;
     }
@@ -223,8 +223,15 @@ public sealed class TrialStore
                 "$to",
                 position.EffectiveTo is { } to ? StoreDate.ToStored(to) : (object)DBNull.Value);
             insert.Parameters.AddWithValue("$shares", position.Shares);
-            insert.Parameters.AddStored("$gross", position.GrossBasis);
-            insert.Parameters.AddStored("$net", position.NetBasis);
+
+            // Both bases are divisions and round at the bind, visibly, which is
+            // what this seam prescribes for a computed value. Gross is what the
+            // assignment paid divided by the shares it delivered, and net
+            // subtracts the premium per share; either can need more places than
+            // the scale holds. Every other value written here is exact and takes
+            // the refusing path.
+            insert.Parameters.AddStoredRounded("$gross", position.GrossBasis);
+            insert.Parameters.AddStoredRounded("$net", position.NetBasis);
             insert.Parameters.AddWithValue(
                 "$contract",
                 ContractIdOf(transaction, position.Contract) ?? (object)DBNull.Value);

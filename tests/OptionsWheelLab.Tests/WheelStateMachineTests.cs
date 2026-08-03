@@ -32,6 +32,8 @@ public sealed class WheelStateMachineTests
     private static readonly TrialBounds Seeded = new(MaxRolls: 2, MaxTrialDays: 120);
 
     private static readonly DateOnly Opened = new(2026, 3, 2);
+    private static readonly DateOnly SecondExpiry = new(2026, 5, 15);
+    private static readonly DateOnly ThirdExpiry = new(2026, 6, 19);
     private static readonly DateOnly FirstExpiry = new(2026, 4, 17);
     private static readonly DateOnly MondayAfter = new(2026, 4, 20);
 
@@ -336,6 +338,97 @@ public sealed class WheelStateMachineTests
 
         Assert.Same(closed, after.State);
         Assert.Empty(after.Entries);
+    }
+
+    /// <summary>
+    /// An adjusted put assigns for the aggregate exercise price and delivers the
+    /// deliverable [D-W17].
+    /// </summary>
+    /// <remarks>
+    /// <b>The case 3.3's review found, and the one no test could see.</b> Every
+    /// contract in this suite carried one hundred as both quantities, so strike
+    /// times deliverable and strike times multiplier agreed everywhere. Against a
+    /// three-for-two successor they do not: the trial committed 5,000 at open and
+    /// the assignment charged it 7,500 for the same event.
+    /// <para>
+    /// An adjustment moves the deliverable and leaves the aggregate exercise
+    /// price alone, so more shares arrive for the same cash. That is the whole of
+    /// what an adjustment does, and it is why gross basis is what was paid
+    /// divided by what arrived rather than the strike.
+    /// </para>
+    /// </remarks>
+    [Fact]
+    public void An_adjusted_put_assigns_for_the_aggregate_exercise_price()
+    {
+        var adjusted = ContractIdentity.Of(
+            Symbol, FirstExpiry, OptionRight.Put, 50.00m, deliverableShares: 150);
+
+        var opened = TrialState.OpenShortPut(adjusted, credit: 94.35m, Opened);
+        var assigned = Machine().Advance(opened, Session(FirstExpiry, close: 45.00m));
+
+        Assert.Equal(5_000.00m, opened.CommittedCapital);
+        Assert.Equal(-5_000.00m, Assert.Single(assigned.Entries).Amount);
+        Assert.Equal(150, assigned.State.Shares);
+
+        // Paid divided by delivered, which is not the strike once they differ.
+        Assert.Equal(
+            33.33333333m,
+            decimal.Round(assigned.State.GrossBasis!.Value, 8, MidpointRounding.AwayFromZero));
+        Assert.NotEqual(adjusted.Strike, assigned.State.GrossBasis);
+    }
+
+    /// <summary>
+    /// An adjusted call delivers more shares for the same cash.
+    /// </summary>
+    [Fact]
+    public void An_adjusted_call_away_realises_the_aggregate_exercise_price()
+    {
+        var machine = Machine();
+        var adjusted = ContractIdentity.Of(
+            Symbol, FirstExpiry, OptionRight.Put, 50.00m, deliverableShares: 150);
+
+        var holding = machine.Advance(
+            TrialState.OpenShortPut(adjusted, credit: 94.35m, Opened),
+            Session(FirstExpiry, close: 45.00m)).State;
+
+        var adjustedCall = ContractIdentity.Of(
+            Symbol, SecondExpiry, OptionRight.Call, 52.50m, deliverableShares: 150);
+
+        var written = machine.WriteCall(holding, MondayAfter, adjustedCall, credit: 69.35m).State;
+        var away = machine.Advance(written, Session(SecondExpiry, close: 55.00m));
+
+        Assert.Equal(TrialCloseKind.CalledAway, away.State.CloseKind);
+        Assert.Equal(5_250.00m, Assert.Single(away.Entries).Amount);
+    }
+
+    /// <summary>
+    /// An adjusted short costs the multiplier's worth to buy back, not the
+    /// deliverable's.
+    /// </summary>
+    /// <remarks>
+    /// A premium is quoted per share and multiplies by the multiplier to give the
+    /// cash for one contract. Reading the deliverable made an adjusted contract
+    /// cost half as much again to close, which is the third of the three sites
+    /// the review found.
+    /// </remarks>
+    [Fact]
+    public void An_adjusted_short_is_bought_back_at_the_multipliers_worth()
+    {
+        var machine = Machine();
+        var adjusted = ContractIdentity.Of(
+            Symbol, ThirdExpiry, OptionRight.Put, 50.00m, deliverableShares: 150);
+
+        var state = TrialState.OpenShortPut(adjusted, credit: 94.35m, Opened);
+
+        for (var roll = 0; roll < Seeded.MaxRolls; roll++)
+        {
+            state = machine.Roll(state, new DateOnly(2026, 4, 8), 1m, adjusted, 1m).State;
+        }
+
+        var bound = machine.Advance(state, Session(SecondExpiry, close: 45.00m));
+
+        // Five points in the money, times the multiplier.
+        Assert.Equal(-500.00m, Assert.Single(bound.Entries).Amount);
     }
 
     private static WheelStateMachine Machine() => new(Calendar, Seeded);

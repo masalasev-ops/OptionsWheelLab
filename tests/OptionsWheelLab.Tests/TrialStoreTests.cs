@@ -206,6 +206,115 @@ public sealed class TrialStoreTests
     }
 
     /// <summary>
+    /// A basis needing more places than the scale holds rounds at the bind rather
+    /// than refusing.
+    /// </summary>
+    /// <remarks>
+    /// <b>The defect 3.3's review found, on data the ledger's own scale admits.</b>
+    /// Both bases are divisions, and a premium carrying eight places gives a net
+    /// basis needing ten. They were bound through the refusing path, so a rebuild
+    /// threw <c>ArgumentOutOfRangeException</c> rather than storing a rounded
+    /// figure. <c>StoredParameters</c> had said since 0.4 that Phase 3 would need
+    /// the rounding path called at the site.
+    /// <para>
+    /// The trial here is standard in every other way, so nothing but the premium's
+    /// precision distinguishes it from the worked example's.
+    /// </para>
+    /// </remarks>
+    [Fact]
+    public void A_basis_beyond_the_scale_is_rounded_rather_than_refused()
+    {
+        using var store = TempStore.Empty();
+        using var connection = Migrated(store);
+
+        var put = Written(connection, new(2026, 4, 17), OptionRight.Put, 50.00m);
+        var trials = new TrialStore(connection);
+        var trialId = trials.OpenTrial("baseline", Symbol, new(2026, 3, 2), 50.00m);
+
+        trials.Append(
+            trialId,
+            [
+                new LedgerEntry(
+                    new(2026, 3, 2), new(2026, 3, 2),
+                    LedgerEntryKind.PremiumReceived, 0.12345678m, put),
+                new LedgerEntry(
+                    new(2026, 4, 17), new(2026, 4, 20),
+                    LedgerEntryKind.Assignment, -5_000.00m, put),
+            ]);
+
+        trials.Rebuild(trialId, Seeded);
+
+        using var read = connection.CreateCommand();
+        read.CommandText =
+            """
+            SELECT gross_basis, net_basis
+            FROM positions
+            WHERE trial_id = $trial AND state = 'holding_shares';
+            """;
+        read.Parameters.AddWithValue("$trial", trialId);
+
+        using var row = read.ExecuteReader();
+
+        Assert.True(row.Read());
+        Assert.Equal("50.00000000", row.GetString(0));
+
+        // 50 - 0.12345678 / 100 is 49.9987654322, which the scale cannot hold.
+        Assert.Equal("49.99876543", row.GetString(1));
+    }
+
+    /// <summary>
+    /// The rebuild reconstructs an adjusted assignment the way the machine
+    /// resolved it [D-W17].
+    /// </summary>
+    /// <remarks>
+    /// The projection replays the same arithmetic and carried the same defect, so
+    /// this is the store-side half of the review's first finding: an adjusted put
+    /// pays the aggregate exercise price for the deliverable's worth of shares,
+    /// and the basis is the quotient rather than the strike.
+    /// </remarks>
+    [Fact]
+    public void An_adjusted_assignment_rebuilds_at_the_aggregate_exercise_price()
+    {
+        using var store = TempStore.Empty();
+        using var connection = Migrated(store);
+
+        var adjusted = WrittenAdjusted(connection, new(2026, 4, 17), 50.00m, deliverable: 150);
+        var trials = new TrialStore(connection);
+        var trialId = trials.OpenTrial("baseline", Symbol, new(2026, 3, 2), 50.00m);
+
+        trials.Append(
+            trialId,
+            [
+                new LedgerEntry(
+                    new(2026, 3, 2), new(2026, 3, 2),
+                    LedgerEntryKind.PremiumReceived, 94.35m, adjusted),
+                new LedgerEntry(
+                    new(2026, 4, 17), new(2026, 4, 20),
+                    LedgerEntryKind.Assignment, -5_000.00m, adjusted),
+            ]);
+
+        trials.Rebuild(trialId, Seeded);
+
+        using var read = connection.CreateCommand();
+        read.CommandText =
+            """
+            SELECT shares, gross_basis, net_basis
+            FROM positions
+            WHERE trial_id = $trial AND state = 'holding_shares';
+            """;
+        read.Parameters.AddWithValue("$trial", trialId);
+
+        using var row = read.ExecuteReader();
+
+        Assert.True(row.Read());
+        Assert.Equal(150L, row.GetInt64(0));
+
+        // 5,000 paid for 150 shares, less the 94.35 premium over the same 150.
+        Assert.Equal("33.33333333", row.GetString(1));
+        Assert.Equal("32.70433333", row.GetString(2));
+    }
+
+    /// <summary>
     /// A ledger that does not open with a sale cannot be replayed.
     /// </summary>
     /// <remarks>
@@ -277,6 +386,31 @@ public sealed class TrialStoreTests
             ]);
 
         return (trials, trialId);
+    }
+
+    /// <summary>An adjusted put: the strike stands and the deliverable moves [D-W17].</summary>
+    private static ContractIdentity WrittenAdjusted(
+        SqliteConnection connection,
+        DateOnly expiry,
+        decimal strike,
+        int deliverable)
+    {
+        var identity = ContractIdentity.Of(
+            Symbol, expiry, OptionRight.Put, strike, deliverable);
+
+        using var insert = connection.CreateCommand();
+        insert.CommandText =
+            """
+            INSERT INTO contracts (symbol, expiry, right, strike, multiplier, deliverable_shares)
+            VALUES ($symbol, $expiry, 'put', $strike, 100, $deliverable);
+            """;
+        insert.Parameters.AddWithValue("$symbol", Symbol.Value);
+        insert.Parameters.AddStored("$expiry", expiry);
+        insert.Parameters.AddStored("$strike", strike);
+        insert.Parameters.AddWithValue("$deliverable", deliverable);
+        insert.ExecuteNonQuery();
+
+        return identity;
     }
 
     private static ContractIdentity Written(

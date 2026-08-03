@@ -45,6 +45,34 @@ public static class StoredParameters
             name, value is null ? DBNull.Value : StoreDecimal.ToStored(value.Value));
     }
 
+    /// <summary>
+    /// A computed value, rounded to the stored scale.
+    /// </summary>
+    /// <remarks>
+    /// <b>The path this type's remarks promised Phase 3 would need, arriving at
+    /// 3.3 and one review late.</b> Both cost bases are divisions: gross is what
+    /// an assignment paid divided by the shares it delivered, and net subtracts
+    /// the premium per share. A premium carrying the eight places the ledger's own
+    /// scale admits gives a basis needing ten, and 3.3 bound both through
+    /// <see cref="AddStored(SqliteParameterCollection, string, decimal?)"/>, whose
+    /// refusing path threw on a rebuild of ordinary data.
+    /// <para>
+    /// <b>Named rather than made the default, which is the distinction that
+    /// matters.</b> The concern this type states is that rounding must not be a
+    /// quiet property of the seam: a strike or a vendor quote losing a digit is a
+    /// different contract or a different market. A separately named method is a
+    /// visible choice at the call site, and a call site that reaches for it while
+    /// binding an exact value is a review finding rather than a silent loss.
+    /// </para>
+    /// </remarks>
+    public static void AddStoredRounded(
+        this SqliteParameterCollection parameters, string name, decimal? value)
+    {
+        ArgumentNullException.ThrowIfNull(parameters);
+        parameters.AddWithValue(
+            name, value is null ? DBNull.Value : StoreDecimal.ToStoredRounded(value.Value));
+    }
+
     public static void AddStored(
         this SqliteParameterCollection parameters, string name, DateOnly date)
     {

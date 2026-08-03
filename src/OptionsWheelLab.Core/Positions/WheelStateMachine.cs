@@ -401,33 +401,42 @@ public sealed class WheelStateMachine
     /// <b>The state takes effect on the next session, not this one.</b>
     /// Assignment is determined after the close and is not known to the account
     /// until the next morning [D-W39], so no decision made on this session may
-    /// depend on it. Gross basis is the strike per share, with premium tracked
-    /// separately [D-W19].
+    /// depend on it.
+    /// <para>
+    /// <b>The cash is the aggregate exercise price and the shares are the
+    /// deliverable, which are the same number only for a standard contract.</b>
+    /// This paid strike times the deliverable until 3.3's review, so an adjusted
+    /// put charged 7,500 against a trial that had committed 5,000 [D-W17]. Gross
+    /// basis follows from the pair rather than from the strike: it is what was
+    /// paid divided by what arrived, and for a 150-share deliverable that is not
+    /// the strike. `WORKED_EXAMPLE.md` §6.3's 50.00 is the standard case of the
+    /// same arithmetic, which is why reading the strike looked right.
+    /// </para>
     /// </remarks>
     private Transition Assign(TrialState state, DateOnly session, ContractIdentity put)
     {
         var known = _calendar.NextSessionAfter(session);
         var shares = put.DeliverableShares;
+        var paid = ContractTerms.AggregateExercisePrice(put);
 
         return new Transition(
-            state.HoldingSharesFrom(known, shares, put.Strike, state.PremiumBanked),
-            [
-                new LedgerEntry(
-                    session,
-                    known,
-                    LedgerEntryKind.Assignment,
-                    -(put.Strike * shares),
-                    put),
-            ]);
+            state.HoldingSharesFrom(known, shares, paid / shares, state.PremiumBanked),
+            [new LedgerEntry(session, known, LedgerEntryKind.Assignment, -paid, put)]);
     }
 
     /// <summary>
     /// Shares taken at the strike, which ends the trial [D-W19, D-W39].
     /// </summary>
+    /// <remarks>
+    /// The proceeds are the aggregate exercise price and not the strike times the
+    /// shares delivered. An adjustment moves the deliverable and leaves that
+    /// figure alone [D-W17], so an adjusted call delivers more shares for the same
+    /// cash, which is the whole of what an adjustment does.
+    /// </remarks>
     private Transition CallAway(TrialState state, DateOnly session, ContractIdentity call)
     {
         var known = _calendar.NextSessionAfter(session);
-        var proceeds = call.Strike * state.Shares;
+        var proceeds = ContractTerms.AggregateExercisePrice(call);
 
         return new Transition(
             state.ClosedTo(known, session, TrialCloseKind.CalledAway, state.PremiumBanked),
@@ -482,7 +491,10 @@ public sealed class WheelStateMachine
                 ? Math.Max(0m, contract.Strike - facts.UnderlyingClose)
                 : Math.Max(0m, facts.UnderlyingClose - contract.Strike);
 
-            var debit = intrinsic * contract.DeliverableShares;
+            // A price per share times the multiplier, which is what a premium is
+            // [D-W17]. Reading the deliverable here would have made an adjusted
+            // contract cost half as much again to buy back.
+            var debit = ContractTerms.CashFor(intrinsic);
             banked -= debit;
 
             entries.Add(new LedgerEntry(

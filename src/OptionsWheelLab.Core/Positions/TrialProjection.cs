@@ -214,9 +214,16 @@ public static class TrialProjection
             LedgerEntryKind.PremiumPaid =>
                 state.WithPremiumBanked(state.PremiumBanked + entry.Amount),
 
+            // The shares are the deliverable and the basis is what was paid for
+            // them, which is the aggregate exercise price [D-W17]. Reading the
+            // strike as the basis is the standard case of the same arithmetic and
+            // was how this was written until 3.3's review.
             LedgerEntryKind.Assignment when entry.Contract is { } put =>
                 state.HoldingSharesFrom(
-                    entry.KnownOn, put.DeliverableShares, put.Strike, state.PremiumBanked),
+                    entry.KnownOn,
+                    put.DeliverableShares,
+                    ContractTerms.AggregateExercisePrice(put) / put.DeliverableShares,
+                    state.PremiumBanked),
 
             LedgerEntryKind.ExpiredWorthless when entry.Contract is { Right: OptionRight.Put } =>
                 state.ClosedTo(

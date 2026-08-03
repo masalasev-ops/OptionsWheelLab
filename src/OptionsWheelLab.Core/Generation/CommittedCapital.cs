@@ -20,16 +20,16 @@ namespace OptionsWheelLab.Core.Generation;
 /// expression rather than a sweep.
 /// </para>
 /// <para>
-/// <b>The multiplier is a constant here because no transcribed one is in
-/// reach.</b> <see cref="ContractIdentity"/> carries the deliverable and not the
-/// multiplier, and <see cref="Synthetic.ContractQuote"/> excludes it deliberately:
-/// a synthetic chain expresses what was quoted rather than the store's record of
+/// <b>The multiplier is a constant because no transcribed one is in reach, and
+/// it lives on <see cref="ContractTerms"/> rather than here.</b>
+/// <see cref="ContractIdentity"/> carries the deliverable and not the multiplier,
+/// and <see cref="Synthetic.ContractQuote"/> excludes it deliberately: a
+/// synthetic chain expresses what was quoted rather than the store's record of
 /// the instrument. The transcribed multiplier lives on <see cref="Contract"/>
-/// [D-W36] and reaches no path a candidate travels. So
-/// <see cref="ContractMultiplier"/> stands in, on D-W17's own statement that one
-/// hundred is the contract multiplier and no adjustment changes it. That
-/// statement is what makes this a stated figure rather than a magic number, and
-/// it is not a tunable [CLAUDE.md §3].
+/// [D-W36] and reaches no path a candidate travels. The figure stood here from
+/// 3.3's first commit until its review, which found the state machine computing
+/// an assignment, a call-away and a forced close from the deliverable: the
+/// quantity was in four places while this file claimed it was in one.
 /// </para>
 /// <para>
 /// <b>What a covered call commits is settled and is not read here.</b> A call
@@ -43,27 +43,15 @@ namespace OptionsWheelLab.Core.Generation;
 public static class CommittedCapital
 {
     /// <summary>
-    /// The contract multiplier for an equity option, which no adjustment changes
-    /// [D-W17].
-    /// </summary>
-    /// <remarks>
-    /// Named rather than written at the expression below, so the one place this
-    /// figure appears is the place that cites the decision stating it. When a
-    /// transcribed multiplier reaches this site the transcribed value is what to
-    /// read [D-W36]; that is owed at Phase 8, where vendor data first carries one.
-    /// </remarks>
-    public const int ContractMultiplier = 100;
-
-    /// <summary>
     /// What <paramref name="contracts"/> of <paramref name="contract"/> commit,
-    /// being strike times the multiplier times quantity.
+    /// being the aggregate exercise price times quantity.
     /// </summary>
     public static decimal For(ContractIdentity contract, int contracts = 1)
     {
         ArgumentNullException.ThrowIfNull(contract);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(contracts);
 
-        return contract.Strike * ContractMultiplier * contracts;
+        return ContractTerms.AggregateExercisePrice(contract) * contracts;
     }
 
     /// <summary>

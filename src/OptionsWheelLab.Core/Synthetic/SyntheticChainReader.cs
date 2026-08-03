@@ -263,7 +263,7 @@ public static class SyntheticChainReader
         return new StatedSuccessorTerms(
             strike.Value,
             (int)deliverable.Value,
-            (int)(multiplier ?? Generation.CommittedCapital.ContractMultiplier),
+            (int)(multiplier ?? Identity.ContractTerms.StandardMultiplier),
             RequiredStringIfPresent(element, "vendorSymbol", successorPath, problems));
     }
 

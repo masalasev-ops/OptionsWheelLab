@@ -1658,6 +1658,31 @@ finds something is the one built against the real subject rather than the one
 reasoned about. Three of the four were invisible until a second thing existed to
 disagree with the first.
 
+**A review after sign-off found two more, and the first was this checkpoint's own
+correction made again.** Committed capital was fixed at strike times the
+multiplier on the argument that the quantity sat in one place, and the state
+machine then priced an assignment, a call-away and a forced close from the
+deliverable, so it sat in four. Measured against a three-for-two successor, a
+trial committing 5,000 was charged 7,500 for the assignment. The second was the
+two cost bases, which are divisions bound through the refusing decimal path:
+`StoredParameters` had stated since 0.4 that Phase 3 would need the rounding path
+called at the site, and a premium carrying the eight places the ledger admits made
+a rebuild throw.
+
+**Neither was visible to any test, and the reason was written down in advance.**
+The obligation that raised the committed-capital correction said every current
+contract carries one hundred as both quantities, so no test distinguishes them
+until an adjusted contract is gated. It was wrong that no test did, which 3.3
+found by inverting two; it was right about what that means for anything built
+afterwards. The suite went from 503 to 611 without one adjusted contract reaching
+the state machine, and 616 with three.
+
+The lesson is narrower than "review the code". A correction that argues a quantity
+lives in one place makes that claim false the moment new code computes the same
+quantity, and nothing in this repository checks it. Both defects sat in the one
+direction no fixture could see: arithmetic that is right whenever two numbers
+happen to be equal.
+
 **The third citation defect, found the same way as the two before it.** Adding
 `market_sessions` to the append-only list needed a decision stating the property,
 and D-W46 as first drafted gave the reason and not the property. It never reached

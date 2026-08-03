@@ -69,6 +69,27 @@ obligations closed and five raised. The suite goes from 503 to 611.
   while its sibling was a constant, which was the rule rather than an oversight:
   a key is named when an invariant operates over it or code reads it, and the
   roll bound had neither until the state machine.
+- **The deliverable-versus-multiplier error, reintroduced three times inside the
+  checkpoint that corrected it.** Committed capital was fixed at strike times the
+  multiplier on the argument that the quantity sat in one place, and the state
+  machine then priced an assignment, a call-away and a forced close from the
+  deliverable, so it sat in four. Measured against a three-for-two successor, a
+  trial committing 5,000 was charged 7,500 for the assignment. The arithmetic now
+  lives on `ContractTerms` as the aggregate exercise price, which is where a fact
+  about a contract belongs and what makes the one-site claim true rather than
+  asserted. Gross basis follows from it: what was paid divided by what arrived,
+  which is the strike only while the two quantities agree.
+- **Both cost bases were bound through the refusing decimal path and threw on
+  ordinary data.** They are divisions, and a premium carrying the eight places the
+  ledger's own scale admits gives a basis needing ten. `StoredParameters` had
+  stated since 0.4 that Phase 3 would need `ToStoredRounded` called at the site,
+  and 3.3 did not. `AddStoredRounded` is that path, named rather than defaulted so
+  a call site reaching for it while binding an exact value is visible.
+
+Both were found by reviewing the checkpoint after it signed off, and neither was
+visible to any test: every contract in the suite carried one hundred as both
+quantities, and every premium divided cleanly. That is the condition the
+obligation described when it said no test would distinguish them.
 - **A figure written in the present tense is a claim about now, and dating it
   does not make it historical**, so a count is restated at each sign-off rather
   than stamped with the moment it was true. The carried-obligations preamble read

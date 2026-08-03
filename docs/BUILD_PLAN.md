@@ -1468,6 +1468,17 @@ so `default` read as `Joined` and an uninitialised transition would have put a
 name on the watchlist. And the bound sold shares on the session they were
 assigned, which is a decision depending on an assignment that occurred that day.
 
+**A review after sign-off found two more, and one of them was this checkpoint's
+own correction made again.** Committed capital was fixed at strike times the
+multiplier on the argument that the quantity sat in one place; the state machine
+then priced an assignment, a call-away and a forced close from the deliverable.
+An adjusted put charged a trial 7,500 against the 5,000 it had committed. The
+second was the cost bases, which are divisions bound through the refusing decimal
+path, throwing on any premium the ledger's own scale admits and the share count
+does not divide. Neither was visible to a test, because every contract in the
+suite carried one hundred as both quantities and every premium divided cleanly,
+which is exactly the condition the obligation described.
+
 **Two consumers could not be verified, and that is recorded as a defect rather
 than as a gap.** `TrialBounds` reads both trial bounds as of the simulated date
 and nothing in `src/` constructs it, because the component that would is the run
