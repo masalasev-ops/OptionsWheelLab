@@ -1271,6 +1271,14 @@ A calendar is a fact about the market rather than about the data this lab happen
 to hold, which is [D-W36]'s shape: a stated term is transcribed and never
 computed.
 
+**It is a stored snapshot, so it is never rewritten and a correction appends a row
+carrying its own observation stamp** [D-W8]. That is this decision's own argument
+turned on itself: what makes a derived calendar unusable is that a past date's
+answer could move, and a transcribed one that could be edited would move it the
+same way. Stated here rather than left to follow, because the append-only list
+records the decision behind each entry and a classification carried only in prose
+is not one.
+
 What it does not do, and this clause is what keeps it from spreading. Days to
 expiry and a trial's day bound are calendar days and stay calendar days.
 `WORKED_EXAMPLE.md` counts 46 days from 2026-03-02 to 2026-04-17 and 109 to

@@ -51,7 +51,16 @@ public static class AppendOnlyTables
     /// <c>trials</c> and <c>positions</c> stay out for that decision's other half:
     /// they are projections of <c>ledger_entries</c> and may be rebuilt, so
     /// append-only is not their rule, conditional on the rebuild test registered at
-    /// Phase 3.
+    /// 3.3.
+    /// </para>
+    /// <para>
+    /// <b>Two of the 3.3 entries reach their decision in two steps, and both
+    /// steps are written at the entry.</b> Neither <see cref="Migrations"/> nor
+    /// prose is the authority: this list's rule is that the decision states the
+    /// property, and a classification carried only in a schema document is a
+    /// third citation of the kind this corpus has twice found wrong. Recording
+    /// the steps is what makes the citation checkable by someone who did not
+    /// write it.
     /// </para>
     /// </remarks>
     public static IReadOnlySet<string> All { get; } = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
@@ -69,6 +78,21 @@ public static class AppendOnlyTables
 
         // The membership record [D-W35], created by migration 4 at 1.3.
         "watchlist_membership",
+
+        // The session calendar, created by migration 7 at 3.3. Two steps rather
+        // than one, and the steps are recorded because that is what this list
+        // exists to make checkable: [D-W46] makes the calendar a transcribed
+        // stored snapshot, and [D-W8] states that a stored snapshot is never
+        // rewritten. As first drafted D-W46 gave the reason and not the
+        // property, which classifying it here is what found.
+        "market_sessions",
+
+        // The trial record, created by migration 8 at 3.3. Two steps again, and
+        // [D-W35] never calls this a record: it says a projection is derived
+        // from an append-only SOURCE, and names trials and positions as
+        // projections of this table. The property is in the definition of the
+        // other half.
+        "ledger_entries",
 
         // The decision record [D-W3]. Phase 4 adds them.
         "decisions",

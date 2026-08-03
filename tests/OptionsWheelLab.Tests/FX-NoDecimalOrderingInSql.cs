@@ -239,6 +239,85 @@ public sealed class FX_NoDecimalOrderingInSql
         Assert.Single(DecimalOrderingInSql.Offences(Sql, Vocabulary("last")));
     }
 
+    /// <summary>
+    /// A comment describing an ordering is not an ordering.
+    /// </summary>
+    /// <remarks>
+    /// The migrations carry their reasoning in <c>--</c> comments, and a comment
+    /// explaining why something is NOT ordered would have been reported as
+    /// ordering it. Nothing in the tree had collided before 3.3, so this was
+    /// invisible rather than absent.
+    /// </remarks>
+    [Fact]
+    public void A_comment_naming_a_decimal_column_is_not_an_offence()
+    {
+        const string Sql =
+            """
+            -- Never ORDER BY strike: the canonical form is not order-preserving.
+            SELECT contract_id FROM contracts WHERE strike = $strike;
+            """;
+
+        Assert.Empty(
+            DecimalOrderingInSql.Offences(
+                DecimalOrderingInSql.WithoutComments(Sql), Vocabulary("strike")));
+    }
+
+    /// <summary>
+    /// A dash pair inside a quoted string is text, and the statement around it
+    /// survives.
+    /// </summary>
+    /// <remarks>
+    /// The case a regex gets wrong. Deleting from <c>--</c> to end of line would
+    /// truncate the string and take the rest of the statement with it, so a real
+    /// ordering after the message would go unreported: the false-negative
+    /// direction, which is the one this codebase treats as unrecoverable.
+    /// </remarks>
+    [Fact]
+    public void A_dash_pair_inside_a_string_is_not_a_comment()
+    {
+        const string Sql =
+            """
+            CREATE TRIGGER t BEFORE UPDATE ON contracts
+            BEGIN
+                SELECT RAISE(ABORT, 'append-only -- never rewritten');
+            END;
+            SELECT contract_id FROM contracts ORDER BY strike;
+            """;
+
+        var stripped = DecimalOrderingInSql.WithoutComments(Sql);
+
+        Assert.Contains("never rewritten", stripped, StringComparison.Ordinal);
+        Assert.Single(DecimalOrderingInSql.Offences(stripped, Vocabulary("strike")));
+    }
+
+    /// <summary>An escaped quote does not end the string it is inside.</summary>
+    [Fact]
+    public void A_doubled_quote_does_not_close_the_string()
+    {
+        const string Sql = "SELECT RAISE(ABORT, 'it''s -- fine') FROM contracts;";
+
+        Assert.Contains("-- fine", DecimalOrderingInSql.WithoutComments(Sql), StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    /// The stripping is live on the tree, not only on synthetic input.
+    /// </summary>
+    /// <remarks>
+    /// Migration 6 onward carry comments holding SQL keywords, so a scan that
+    /// stopped stripping would show it here rather than in whichever detector
+    /// happened to collide next.
+    /// </remarks>
+    [Fact]
+    public void The_scanned_sql_carries_no_comments()
+    {
+        var withComments = SourceFiles()
+            .SelectMany(file => DecimalOrderingInSql.SqlIn(File.ReadAllText(file)))
+            .Where(sql => sql.Contains("--", StringComparison.Ordinal))
+            .ToList();
+
+        Assert.Empty(withComments);
+    }
+
     private static IReadOnlyList<string> SourceFiles() =>
         RepoRoot.SourceFilesUnder(RepoRoot.SourcePath);
 
@@ -399,6 +478,17 @@ internal static class DecimalOrderingInSql
     /// repository is in one, and their bodies contain quotes and <c>--</c>
     /// comments that a single-line literal pattern would misread.
     /// </para>
+    /// <para>
+    /// <b>Comments are stripped, because both detectors were reading them as
+    /// SQL.</b> The migrations carry their reasoning in <c>--</c> comments, and
+    /// at 3.3 two sentences of ordinary English matched the table-alias pattern:
+    /// "cannot tell a market holiday from a name that did not trade" reads as
+    /// <c>FROM a name</c>, and "rebuilt from this table" as <c>FROM this
+    /// table</c>. Nothing had collided before, so the flaw was invisible rather
+    /// than absent. Leaving it would put a standing pressure on every future
+    /// migration comment to avoid a regex, which is the wrong thing to optimise a
+    /// comment for in a codebase whose comments carry its arguments.
+    /// </para>
     /// </remarks>
     internal static IReadOnlyList<string> SqlIn(string source)
     {
@@ -418,7 +508,90 @@ internal static class DecimalOrderingInSql
             .Matches(withoutRawStrings)
             .Select(match => match.Groups["body"].Value));
 
-        return [.. literals.Where(literal => Statement.IsMatch(literal))];
+        return
+        [
+            .. literals
+                .Select(WithoutComments)
+                .Where(literal => Statement.IsMatch(literal)),
+        ];
+    }
+
+    /// <summary>
+    /// The SQL with its <c>--</c> comments removed.
+    /// </summary>
+    /// <remarks>
+    /// <b>A scanner rather than a regex, because of the one case a regex gets
+    /// wrong.</b> A <c>--</c> inside a single-quoted string is text, not a
+    /// comment, and this store's triggers put prose inside
+    /// <c>RAISE(ABORT, '...')</c> where a dash pair is entirely plausible. A
+    /// pattern deleting from <c>--</c> to end of line would truncate such a
+    /// statement mid-string and could hide the rest of it, which is the
+    /// false-negative direction.
+    /// <para>
+    /// The line itself is kept, replaced by nothing rather than removed, so
+    /// nothing on either side of a stripped comment joins up into a token pair
+    /// that was never written.
+    /// </para>
+    /// </remarks>
+    internal static string WithoutComments(string sql)
+    {
+        ArgumentNullException.ThrowIfNull(sql);
+
+        var kept = new System.Text.StringBuilder(sql.Length);
+        var inString = false;
+
+        for (var index = 0; index < sql.Length; index++)
+        {
+            var character = sql[index];
+
+            if (inString)
+            {
+                kept.Append(character);
+
+                if (character == '\'')
+                {
+                    // A doubled quote is an escaped quote and does not close the
+                    // string, so consume its partner here rather than letting the
+                    // next iteration read it as an opener.
+                    if (index + 1 < sql.Length && sql[index + 1] == '\'')
+                    {
+                        kept.Append(sql[++index]);
+                    }
+                    else
+                    {
+                        inString = false;
+                    }
+                }
+
+                continue;
+            }
+
+            if (character == '\'')
+            {
+                inString = true;
+                kept.Append(character);
+                continue;
+            }
+
+            if (character == '-' && index + 1 < sql.Length && sql[index + 1] == '-')
+            {
+                while (index < sql.Length && sql[index] is not ('\n' or '\r'))
+                {
+                    index++;
+                }
+
+                if (index < sql.Length)
+                {
+                    kept.Append(sql[index]);
+                }
+
+                continue;
+            }
+
+            kept.Append(character);
+        }
+
+        return kept.ToString();
     }
 
     /// <summary>

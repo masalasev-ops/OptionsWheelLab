@@ -343,12 +343,34 @@ trials
 
 positions
   trial_id INTEGER, state TEXT, effective_from TEXT, effective_to TEXT NULL,
-  shares INTEGER, gross_basis TEXT, net_basis TEXT, contract_id INTEGER NULL
+  shares INTEGER, gross_basis TEXT NULL, net_basis TEXT NULL,
+  contract_id INTEGER NULL
 
 ledger_entries
   entry_id INTEGER PK, trial_id INTEGER, entry_date TEXT, known_on TEXT,
-  kind TEXT, amount TEXT, contract_id INTEGER NULL, note TEXT
+  kind TEXT, amount TEXT, contract_id INTEGER NULL, note TEXT NULL
 ```
+
+**No foreign keys here, which the blocks above already said by carrying no
+arrows** where §4.1 carries three. That read as an omission at 3.3 and is not, and
+one of the keys it appears to be missing would have been a defect: a reference
+from `ledger_entries` into `trials` points the record at the projection derived
+from it, so discarding `trials` to rebuild it is refused by the store, and the
+rebuild is the condition on rewriting a projection at all [D-W35]. Whether
+`contract_id` should reference `contracts` the way `contract_quotes.contract_id`
+does is a separate question and open: that target is a record and outlives every
+rebuild, so it carries none of the same risk.
+
+**Both bases are nullable, corrected at 3.3 when the table was built.** Cost basis
+exists after assignment [D-W19], so a position in `cash` or `short_put` has none,
+and under the unmarked convention above they would have been `NOT NULL` and made
+two of the four states unwritable. A zero would be a false observation rather
+than a missing one, which is the rule §4.1 states about a gamma.
+
+`note` is nullable on `config_rows.note`'s precedent, which §4.2 already cites
+for the same shape. That one is a judgement rather than a correction: no decision
+says whether a ledger entry must carry a note, and a required one would make
+every row invent boilerplate.
 
 `state` is the discriminated union tag: `cash`, `short_put`, `holding_shares`,
 `short_call`. Both basis conventions are stored [D-W19].

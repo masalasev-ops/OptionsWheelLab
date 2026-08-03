@@ -1409,7 +1409,10 @@ position in a document rather than as a fact about one filing.
 
 ### 3.3 The state machine and the ledger
 Four states as a discriminated union, daily events driving transitions
-[SYSTEM_DESIGN §3.8]. `trials`, `positions` and `ledger_entries` land here.
+[SYSTEM_DESIGN §3.8]. Four tables land here: `trials`, `positions` and
+`ledger_entries` from §4.3, and `market_sessions`, because a calendar that is
+transcribed rather than derived is a table like any other stated fact [D-W46] and
+settlement cannot resolve a next session without one.
 - Rolling bounded by whichever of the roll count and the trial days binds
   first, closing at market at the bound [D-W14]. Both legs of a roll reach the
   ledger, without which the projection cannot rebuild [D-W35]. The roll's
