@@ -90,7 +90,7 @@ public static class SeedValues
             + "call commits shares rather than cash."),
 
         // Trial bounds. No value is proposed anywhere, so both are judged.
-        new("Trial:MaxRolls", "2",
+        new(ConfigKeys.TrialMaxRolls, "2",
             "Judged. No value is proposed anywhere [D-W14]. Low enough to bind sometimes rather "
             + "than be decorative: with MaxDte at 70 and MaxTrialDays at 120, the day bound "
             + "already caps most rolled chains, so a high roll count would never be the "
