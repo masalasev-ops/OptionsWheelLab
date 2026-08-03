@@ -14,7 +14,7 @@ predates this file and cannot be relied on.
 
 ## Topical index
 
-**Purpose and measurement**: D-W2, D-W3, D-W5, D-W17, D-W18, D-W20, D-W21
+**Purpose and measurement**: D-W2, D-W3, D-W5, D-W17, D-W18, D-W20, D-W21, D-W49
 **Isolation and controls**: D-W1, D-W4, D-W6, D-W13, D-W41, D-W45
 **Data and identity**: D-W7, D-W8, D-W9, D-W15, D-W26, D-W27, D-W28, D-W29, D-W30, D-W31, D-W32, D-W34, D-W35, D-W36, D-W39, D-W44, D-W46, D-W47, D-W48
 **Risk**: D-W10, D-W11, D-W14, D-W19, D-W23, D-W25, D-W37, D-W43
@@ -1425,3 +1425,38 @@ a fact the rebuild cannot recover, and nothing else would find it. `trials`'
 off a kind here, and the fifth is what `bought_to_close` exists for.
 
 Test FX-ProjectionRebuildsFromLedger: covered, registered at 3.3.
+
+---
+
+### D-W49 A trial that stops is valued, and a forced close pays the ask
+`active` · 2026-08-03
+
+A trial stopped by an unmodelled action [D-W47] is valued at the session's close:
+shares at the close, a short at its quoted price, and the cash recorded so the
+trial's entries sum to what the account actually held. A trial closed at a bound
+[D-W14] buys its short back at the ask, not at intrinsic value.
+
+Why stopping must value rather than zero. D-W47 says the trial stops and carries
+the action as its reason; it does not say the position is liquidated at nothing.
+Zeroing it makes every name that has a corporate action a total loss, which is a
+bias with a sign, in a lab whose whole criterion is comparing decision quality
+across makers. A maker that happened to hold the name with the merger would be
+scored worse for an event no maker chose. The value is a model rather than a
+measurement, and it is recorded as one: the position is marked at the close, and
+the trial is scored on that mark.
+
+Why a forced close pays the ask. An option costs at least its intrinsic value to
+buy back and normally more, so pricing a forced close at intrinsic closes below
+the bid and manufactures an edge from the accounting, which is what [D-W12] fixes
+fills at the bid to prevent. It flatters precisely the trials the bound exists to
+terminate, which are the losing ones, so the error has a sign and points the same
+way as the first.
+
+The asymmetry is deliberate and is [D-W12]'s. A sale fills at the bid and a
+purchase pays the ask, because both are the side of the spread the account does
+not choose. `SessionFacts` already carries the quote.
+
+Test FX-StoppedTrialIsValuedAtTheClose: a trial holding shares that meets an
+unmodelled action reports entries summing to the marked value, not to the outlay.
+Test FX-BoundClosePaysTheAsk: a forced close debits the ask, and a case where
+intrinsic and ask differ shows which was used.

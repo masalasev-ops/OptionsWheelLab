@@ -1468,8 +1468,12 @@ so `default` read as `Joined` and an uninitialised transition would have put a
 name on the watchlist. And the bound sold shares on the session they were
 assigned, which is a decision depending on an assignment that occurred that day.
 
-**A review after sign-off found two more, and one of them was this checkpoint's
-own correction made again.** Committed capital was fixed at strike times the
+**A review after sign-off found four more, and one of them was this checkpoint's
+own correction made again.** Two were settled by [D-W49], which values a stopped
+trial at the close rather than zeroing it and buys a forced close back at the ask
+rather than at intrinsic. All four were priced in the same direction: each made a
+trial look better or a loss look cleaner than it was, which is why nothing
+prompted anyone to look for them. Committed capital was fixed at strike times the
 multiplier on the argument that the quantity sat in one place; the state machine
 then priced an assignment, a call-away and a forced close from the deliverable.
 An adjusted put charged a trial 7,500 against the 5,000 it had committed. The

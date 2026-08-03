@@ -39,9 +39,35 @@ public sealed class FX_UnmodelledActionStopsTheTrial
         var entry = Assert.Single(stopped.Entries);
 
         Assert.Equal(LedgerEntryKind.Stopped, entry.Kind);
-        Assert.Equal(0m, entry.Amount);
+
+        // Marked, not zeroed: no shares are held and the short costs 4.50 times
+        // the multiplier to buy back [D-W49].
+        Assert.Equal(-450.00m, entry.Amount);
         Assert.Contains("merger", entry.Note!, StringComparison.Ordinal);
         Assert.Contains("2026-04-08", entry.Note, StringComparison.Ordinal);
+        Assert.Contains("marked at the close", entry.Note, StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    /// A session with no ask for the short refuses rather than marking it at a
+    /// price this lab cannot observe [D-W49, D-W37].
+    /// </summary>
+    [Fact]
+    public void A_session_with_no_quote_for_the_short_cannot_value_the_stop()
+    {
+        var thrown = Assert.Throws<InvalidOperationException>(
+            () => Machine().Advance(
+                OpenedTrial(),
+                Session(
+                    ExDate,
+                    close: 45.80m,
+                    actions:
+                    [
+                        new ActionOnUnderlying(
+                            new CorporateAction(CorporateActionKind.Merger, ExDate)),
+                    ])));
+
+        Assert.Contains("cannot be valued", thrown.Message, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -156,11 +182,20 @@ public sealed class FX_UnmodelledActionStopsTheTrial
                 StoreCorporateActionKind.ToStored(stated.Action.Kind)));
     }
 
+    /// <summary>
+    /// The trial is short a put, so stopping it has to mark that short [D-W49].
+    /// </summary>
+    /// <remarks>
+    /// The ask is what buying it back would cost, which is the side of the spread
+    /// the account does not choose [D-W12]. A session without one refuses rather
+    /// than marking at a price this lab cannot observe, which is asserted below.
+    /// </remarks>
     private static Transition Resolve(CorporateActionKind kind) =>
         Machine().Advance(
             OpenedTrial(),
             Session(
                 ExDate,
                 close: 45.80m,
-                actions: [new ActionOnUnderlying(new CorporateAction(kind, ExDate))]));
+                actions: [new ActionOnUnderlying(new CorporateAction(kind, ExDate))],
+                ask: 4.50m));
 }

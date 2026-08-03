@@ -62,8 +62,9 @@ internal static class TrialScenario
         DateOnly session,
         decimal close,
         IReadOnlyList<ActionOnUnderlying>? actions = null,
-        decimal? bid = null) =>
-        new(session, close, actions ?? [], bid);
+        decimal? bid = null,
+        decimal? ask = null) =>
+        new(session, close, actions ?? [], bid, ask);
 
     internal static ActionOnUnderlying Ordinary(DateOnly exDate, decimal perShare) =>
         new(new CorporateAction(CorporateActionKind.OrdinaryDividend, exDate, Amount: perShare));

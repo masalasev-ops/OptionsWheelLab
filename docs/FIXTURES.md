@@ -4,15 +4,16 @@ The single registry of test fixtures and source guards. Prompts and checkpoints
 reference the entries registered against them here; they never enumerate names
 inline.
 
-Build state: **partly built**. The fifty-five entries registered against 0.2 to
-3.3 are implemented, being fifty-three fixtures and two guards; the rest belong
+Build state: **partly built**. The fifty-seven entries registered against 0.2 to
+3.3 are implemented, being fifty-five fixtures and two guards; the rest belong
 to checkpoints not yet reached. 1.2 and 2.1 registered none, which their details
 state.
 
 3.3 is the first checkpoint to discharge the entry-to-artefact direction against
-a full set rather than against one or two: twelve rows, twelve files. Every
+a full set rather than against one or two: fourteen rows, fourteen files. Every
 earlier checkpoint met it too, but with counts small enough that meeting it and
-noticing it were the same act.
+noticing it were the same act. Twelve of the fourteen landed before it signed
+off, and two came from reviewing it afterwards.
 
 ## Why this file exists
 
@@ -126,6 +127,8 @@ to carry the wrong cell.
 | FX-NextSessionSkipsAClosedDate | fixture | 3.3 | an assignment whose following date is absent from the calendar settles on the next date the calendar carries, and a date the calendar does not reach stops rather than resolving [D-W46] | authored |
 | FX-UnmodelledActionStopsTheTrial | fixture | 3.3 | a merger on a held underlying stops the trial with the action recorded as its reason, and a split does not [D-W47] | authored |
 | FX-StoredVocabulariesMatchTheirChecks | fixture | 3.3 | every declared stored vocabulary and the CHECK enforcing it admit exactly the same values | authored |
+| FX-StoppedTrialIsValuedAtTheClose | fixture | 3.3 | a trial holding shares that meets an unmodelled action reports entries summing to the marked value, not to the outlay [D-W49] | authored |
+| FX-BoundClosePaysTheAsk | fixture | 3.3 | a forced close debits the ask, and a case where intrinsic and ask differ shows which was used [D-W49] | authored |
 | FX-ThreeMakersSameFeasibleSet | fixture | 4 | all makers receive byte-identical candidate sets | WORKED_EXAMPLE §3 |
 | FX-RecordCarriesFeasibleSet | fixture | 4 | a decision is re-scorable from its record alone | authored |
 | FX-ExcursionRecordedOnWin | fixture | 5 | a positive outcome still carries its adverse excursion | WORKED_EXAMPLE §6.2 |

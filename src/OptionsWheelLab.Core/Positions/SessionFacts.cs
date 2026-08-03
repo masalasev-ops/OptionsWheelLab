@@ -14,19 +14,26 @@ namespace OptionsWheelLab.Core.Positions;
 /// shape carrying only today's would make the one transition that looks forward
 /// impossible to express.
 /// <para>
-/// <b>The bid, because it is the only price this lab reads.</b> [D-W12] fixes the
-/// fill at the bid on the ground that end-of-day granularity never shows the
-/// realised price, and the same argument reaches any price read off a daily
-/// quote. For the early-assignment test it is also the conservative direction: a
-/// lower price is a lower time value, so more exercises are modelled, which is
-/// the outcome adverse to the lab.
+/// <b>Both sides of the short's quote, because the account is on whichever side
+/// it did not choose</b> [D-W12, D-W49]. A sale fills at the bid and a purchase
+/// pays the ask. The bid prices what a holder gives up by exercising early
+/// [D-W42], where a lower price is a lower time value and so models more
+/// exercises, which is the direction adverse to the lab. The ask prices a forced
+/// close and marks a short that a stopped trial still owes.
+/// </para>
+/// <para>
+/// This carried the bid alone until D-W49, which needed the other half. Neither
+/// is required: a session with no quote for the short is one where nothing that
+/// reads a price may act, and each of those sites says so rather than assuming a
+/// figure.
 /// </para>
 /// </remarks>
 public sealed record SessionFacts(
     DateOnly Session,
     decimal UnderlyingClose,
     IReadOnlyList<ActionOnUnderlying> Actions,
-    decimal? ShortContractBid = null);
+    decimal? ShortContractBid = null,
+    decimal? ShortContractAsk = null);
 
 /// <summary>
 /// The two bounds a rolled chain terminates at [D-W14], resolved once.

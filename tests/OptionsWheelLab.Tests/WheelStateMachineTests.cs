@@ -139,7 +139,7 @@ public sealed class WheelStateMachineTests
     public void The_roll_bound_closes_the_position_at_market()
     {
         var bound = Machine().Advance(
-            RolledTwice(), Session(new(2026, 5, 15), close: 45.00m));
+            RolledTwice(), Session(new(2026, 5, 15), close: 45.00m, ask: 5.40m));
 
         Assert.Equal(PositionState.Cash, bound.State.State);
         Assert.Equal(TrialCloseKind.ClosedAtBound, bound.State.CloseKind);
@@ -148,7 +148,7 @@ public sealed class WheelStateMachineTests
         var entry = Assert.Single(bound.Entries);
 
         Assert.Equal(LedgerEntryKind.BoughtToClose, entry.Kind);
-        Assert.Equal(-500.00m, entry.Amount);
+        Assert.Equal(-540.00m, entry.Amount);
         Assert.Equal(new DateOnly(2026, 5, 18), entry.KnownOn);
     }
 
@@ -261,14 +261,17 @@ public sealed class WheelStateMachineTests
                 [
                     new ActionOnUnderlying(
                         new CorporateAction(CorporateActionKind.Merger, new(2026, 4, 8))),
-                ]));
+                ],
+                ask: 4.50m));
 
         Assert.Equal(TrialCloseKind.Stopped, stopped.State.CloseKind);
 
         var entry = Assert.Single(stopped.Entries);
 
         Assert.Equal(LedgerEntryKind.Stopped, entry.Kind);
-        Assert.Equal(0m, entry.Amount);
+
+        // The short marked at the ask, since no shares are held [D-W49].
+        Assert.Equal(-450.00m, entry.Amount);
         Assert.Contains("merger", entry.Note!, StringComparison.Ordinal);
     }
 
@@ -425,10 +428,11 @@ public sealed class WheelStateMachineTests
             state = machine.Roll(state, new DateOnly(2026, 4, 8), 1m, adjusted, 1m).State;
         }
 
-        var bound = machine.Advance(state, Session(SecondExpiry, close: 45.00m));
+        var bound = machine.Advance(state, Session(SecondExpiry, close: 45.00m, ask: 5.40m));
 
-        // Five points in the money, times the multiplier.
-        Assert.Equal(-500.00m, Assert.Single(bound.Entries).Amount);
+        // The ask times the multiplier. Times the 150-share deliverable it would
+        // be 810.00, which is the reading this test exists to refuse.
+        Assert.Equal(-540.00m, Assert.Single(bound.Entries).Amount);
     }
 
     private static WheelStateMachine Machine() => new(Calendar, Seeded);
@@ -445,8 +449,9 @@ public sealed class WheelStateMachineTests
         DateOnly session,
         decimal close,
         IReadOnlyList<ActionOnUnderlying>? actions = null,
-        decimal? bid = null) =>
-        new(session, close, actions ?? [], bid);
+        decimal? bid = null,
+        decimal? ask = null) =>
+        new(session, close, actions ?? [], bid, ask);
 
     private static ActionOnUnderlying Ordinary(DateOnly exDate, decimal perShare) =>
         new(new CorporateAction(CorporateActionKind.OrdinaryDividend, exDate, Amount: perShare));

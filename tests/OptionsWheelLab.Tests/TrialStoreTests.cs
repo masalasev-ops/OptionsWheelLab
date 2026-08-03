@@ -315,6 +315,68 @@ public sealed class TrialStoreTests
     }
 
     /// <summary>
+    /// A closed trial receiving premium is refused rather than resurrected.
+    /// </summary>
+    /// <remarks>
+    /// The replay treated it as a roll, which silently reopened a trial that had
+    /// returned to cash [D-W14] and produced a projection this rebuild would then
+    /// agree with, since it compares the projection against itself. A ledger like
+    /// this cannot have been written by the state machine.
+    /// </remarks>
+    [Fact]
+    public void A_closed_trial_receiving_premium_is_refused()
+    {
+        var put = ContractIdentity.Of(Symbol, new(2026, 4, 17), OptionRight.Put, 50.00m);
+
+        var thrown = Assert.Throws<InvalidOperationException>(
+            () => TrialProjection.Replay(
+                [
+                    new LedgerEntry(
+                        new(2026, 3, 2), new(2026, 3, 2),
+                        LedgerEntryKind.PremiumReceived, 94.35m, put),
+                    new LedgerEntry(
+                        new(2026, 4, 17), new(2026, 4, 20),
+                        LedgerEntryKind.ExpiredWorthless, 0m, put),
+                    new LedgerEntry(
+                        new(2026, 4, 20), new(2026, 4, 20),
+                        LedgerEntryKind.PremiumReceived, 69.35m, put),
+                ],
+                Seeded));
+
+        Assert.Contains("A closed trial sells nothing", thrown.Message, StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    /// A call expiring against a position that never held shares is refused by
+    /// name.
+    /// </summary>
+    /// <remarks>
+    /// This read a nullable basis with the null-forgiving operator and threw a
+    /// <c>NullReferenceException</c> naming nothing, where everything else here
+    /// refuses and says what was wrong.
+    /// </remarks>
+    [Fact]
+    public void A_call_expiring_with_no_shares_behind_it_is_refused()
+    {
+        var put = ContractIdentity.Of(Symbol, new(2026, 4, 17), OptionRight.Put, 50.00m);
+        var call = ContractIdentity.Of(Symbol, new(2026, 5, 15), OptionRight.Call, 52.50m);
+
+        var thrown = Assert.Throws<InvalidOperationException>(
+            () => TrialProjection.Replay(
+                [
+                    new LedgerEntry(
+                        new(2026, 3, 2), new(2026, 3, 2),
+                        LedgerEntryKind.PremiumReceived, 94.35m, put),
+                    new LedgerEntry(
+                        new(2026, 5, 15), new(2026, 5, 18),
+                        LedgerEntryKind.ExpiredWorthless, 0m, call),
+                ],
+                Seeded));
+
+        Assert.Contains("never held shares", thrown.Message, StringComparison.Ordinal);
+    }
+
+    /// <summary>
     /// A ledger that does not open with a sale cannot be replayed.
     /// </summary>
     /// <remarks>

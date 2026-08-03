@@ -199,6 +199,16 @@ public static class TrialProjection
     private static TrialState? Apply(TrialState state, LedgerEntry entry, TrialBounds bounds) =>
         entry.Kind switch
         {
+            // A closed trial has returned to cash [D-W14] and sells nothing more.
+            // Replaying this as a roll resurrected it silently, producing a trial
+            // no machine wrote and a projection this rebuild would then agree with.
+            LedgerEntryKind.PremiumReceived when state.IsClosed =>
+                throw new InvalidOperationException(
+                    $"The trial closed on {state.ClosedOn:yyyy-MM-dd} and the ledger carries a "
+                    + $"premium received on {entry.EntryDate:yyyy-MM-dd}. A closed trial sells "
+                    + "nothing, so this ledger cannot have been written by the state machine "
+                    + "and the rebuild will not invent a trial to fit it."),
+
             // A credit against a contract is either the second leg of a roll or a
             // covered call, and which one the state says: only held shares can
             // carry a call [D-W16, D-W43].
@@ -231,6 +241,13 @@ public static class TrialProjection
                     entry.EntryDate,
                     TrialCloseKind.ExpiredWorthless,
                     state.PremiumBanked),
+
+            // A call expiring leaves the shares behind, so there have to be some.
+            LedgerEntryKind.ExpiredWorthless when state.GrossBasis is null =>
+                throw new InvalidOperationException(
+                    $"The ledger carries a call expiring on {entry.EntryDate:yyyy-MM-dd} against "
+                    + "a position that never held shares, so there is no basis for it to leave "
+                    + "behind. A covered call is written against held shares [D-W16, D-W19]."),
 
             LedgerEntryKind.ExpiredWorthless =>
                 state.HoldingSharesFrom(

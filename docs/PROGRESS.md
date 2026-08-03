@@ -1683,6 +1683,25 @@ quantity, and nothing in this repository checks it. Both defects sat in the one
 direction no fixture could see: arithmetic that is right whenever two numbers
 happen to be equal.
 
+**D-W49 settles what the review could not.** A stopped trial is valued at the
+session's close rather than zeroed, and a forced close buys its short back at the
+ask rather than at intrinsic. Both errors had a sign and pointed the same way:
+zeroing made every name with a corporate action a total loss, in a lab whose
+criterion is comparing decision quality across makers, and closing at intrinsic
+flattered exactly the trials the bound exists to terminate. `SessionFacts`
+carried only the bid, so the decision's remark that it already carries the quote
+was half right and the ask was added. Two fixtures registered, taking 3.3 from
+twelve rows to fourteen, and the registry's marker from fifty-five implemented
+entries to fifty-seven.
+
+**Four of the checkpoint's defects were priced wrong in the same direction, and
+none of them by accident of arithmetic.** Reading the deliverable, zeroing a
+stop, and closing at intrinsic each made a trial look better or a loss look
+cleaner than it was. That they all point one way is the finding: an error that
+flatters is an error nobody is prompted to look for, which is the argument
+[D-W12] already makes about filling at the mid and which now reaches three more
+sites than the fill model.
+
 **The third citation defect, found the same way as the two before it.** Adding
 `market_sessions` to the append-only list needed a decision stating the property,
 and D-W46 as first drafted gave the reason and not the property. It never reached

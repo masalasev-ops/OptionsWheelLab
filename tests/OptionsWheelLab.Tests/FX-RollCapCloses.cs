@@ -30,7 +30,7 @@ public sealed class FX_RollCapCloses
     {
         var machine = Machine();
 
-        var bound = machine.Advance(RolledToTheBound(), Session(SecondExpiry, close: 45.00m));
+        var bound = machine.Advance(RolledToTheBound(), Session(SecondExpiry, close: 45.00m, ask: 5.40m));
 
         Assert.Equal(PositionState.Cash, bound.State.State);
         Assert.Equal(TrialCloseKind.ClosedAtBound, bound.State.CloseKind);
@@ -39,23 +39,26 @@ public sealed class FX_RollCapCloses
     }
 
     /// <summary>
-    /// At market means at the session's close, which is the only price this lab
-    /// has.
+    /// At market means at the ask, which is what buying the short back costs
+    /// [D-W49].
     /// </summary>
     /// <remarks>
-    /// The put is 5.00 in the money against a close of 45.00, so buying it back
-    /// costs 500.00 for a hundred-share deliverable. A bound closing at the
-    /// strike, or at nothing, would satisfy every assertion about the state.
+    /// The put is 5.00 in the money against a close of 45.00 and the ask is 5.40,
+    /// so the debit is 540.00 rather than the 500.00 intrinsic value would give.
+    /// A bound closing at the strike, or at nothing, would satisfy every assertion
+    /// about the state, and one closing at intrinsic would satisfy every
+    /// assertion here until the two figures differed.
     /// </remarks>
     [Fact]
-    public void The_close_is_at_the_sessions_price()
+    public void The_close_pays_the_ask()
     {
-        var bound = Machine().Advance(RolledToTheBound(), Session(SecondExpiry, close: 45.00m));
+        var bound = Machine().Advance(
+            RolledToTheBound(), Session(SecondExpiry, close: 45.00m, ask: 5.40m));
 
         var entry = Assert.Single(bound.Entries);
 
         Assert.Equal(LedgerEntryKind.BoughtToClose, entry.Kind);
-        Assert.Equal(-500.00m, entry.Amount);
+        Assert.Equal(-540.00m, entry.Amount);
         Assert.Equal(SecondExpiry, entry.EntryDate);
         Assert.Equal(SecondMonday, entry.KnownOn);
     }
@@ -100,7 +103,7 @@ public sealed class FX_RollCapCloses
 
         var bound = machine.Advance(
             TrialState.OpenShortPut(Put(50.00m, ThirdExpiry), credit: 94.35m, Opened),
-            Session(SecondExpiry, close: 45.00m));
+            Session(SecondExpiry, close: 45.00m, ask: 5.40m));
 
         Assert.Equal(TrialCloseKind.ClosedAtBound, bound.State.CloseKind);
         Assert.Equal(0, bound.State.RollsUsed);

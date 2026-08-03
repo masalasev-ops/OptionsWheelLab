@@ -26,6 +26,16 @@ obligations closed and five raised. The suite goes from 503 to 611.
   the `CHECK` enforcing it admit exactly the same values, in both directions.
 - The synthetic scenario format states corporate actions, which is the third of
   the three things [D-W41] named and could not add.
+- **D-W49**: a trial stopped by an unmodelled action is valued at the session's
+  close rather than zeroed, and a forced close buys its short back at the ask
+  rather than at intrinsic value. Both errors had a sign and pointed the same
+  way: zeroing made every name with a corporate action a total loss, and closing
+  at intrinsic flattered exactly the trials the bound exists to terminate.
+- **FX-StoppedTrialIsValuedAtTheClose** and **FX-BoundClosePaysTheAsk**, which
+  take 3.3 from twelve registry rows to fourteen.
+- `SessionFacts` carries the ask beside the bid. A sale fills at the bid and a
+  purchase pays the ask, because both are the side of the spread the account does
+  not choose [D-W12].
 - Five obligations: the assignment fee against §6.3's total and the commission's
   ledger grain at 3.4, and the rebuild's configuration resolution, the two
   unverifiable trial consumers, and which date the trial bounds resolve as of, at
@@ -86,10 +96,19 @@ obligations closed and five raised. The suite goes from 503 to 611.
   and 3.3 did not. `AddStoredRounded` is that path, named rather than defaulted so
   a call site reaching for it while binding an exact value is visible.
 
-Both were found by reviewing the checkpoint after it signed off, and neither was
-visible to any test: every contract in the suite carried one hundred as both
-quantities, and every premium divided cleanly. That is the condition the
-obligation described when it said no test would distinguish them.
+- **Two refusals that were not refusing.** A call expiring against a position
+  that never held shares read a nullable basis with the null-forgiving operator
+  and threw a `NullReferenceException` naming nothing; and the replay treated a
+  premium received on a closed trial as a roll, silently resurrecting it. Both
+  now refuse and say what was wrong, which is what everything else here does.
+
+Everything above under Fixed was found by reviewing the checkpoint after it
+signed off, and none of it was visible to any test: every contract in the suite
+carried one hundred as both quantities, every premium divided cleanly, and no
+forced close met a position with time value left. That is the condition the
+committed-capital obligation described in advance when it said no test would
+distinguish the quantities until an adjusted contract was gated, and it turned
+out to describe three more defects than the one it was about.
 - **A figure written in the present tense is a claim about now, and dating it
   does not make it historical**, so a count is restated at each sign-off rather
   than stamped with the moment it was true. The carried-obligations preamble read

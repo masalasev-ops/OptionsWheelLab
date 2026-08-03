@@ -211,9 +211,44 @@ public sealed class WheelStateMachine
         or CorporateActionKind.NonOrdinaryDividend
         or CorporateActionKind.Split;
 
+    /// <summary>
+    /// A trial ended by an action the lab does not model, valued at the close
+    /// [D-W47, D-W49].
+    /// </summary>
+    /// <remarks>
+    /// <b>Valued rather than zeroed.</b> [D-W47] says the trial stops and carries
+    /// the action as its reason; it does not say the position is liquidated at
+    /// nothing. Zeroing it made every name with a corporate action a total loss,
+    /// which is a bias with a sign in a lab whose criterion is comparing decision
+    /// quality across makers: a maker that happened to hold the name with the
+    /// merger would be scored worse for an event no maker chose.
+    /// <para>
+    /// <b>The mark is a model and the entry says so.</b> Shares at the session's
+    /// close and the short at the ask, which is what buying it back would cost and
+    /// the side of the spread the account does not choose [D-W12]. Nothing is
+    /// traded here, so this is one <c>stopped</c> entry carrying the mark rather
+    /// than a sale and a buy-back that did not happen.
+    /// </para>
+    /// </remarks>
     private Transition Stop(TrialState state, SessionFacts facts, CorporateAction action)
     {
         var settles = _calendar.NextSessionAfter(facts.Session);
+        var marked = facts.UnderlyingClose * state.Shares;
+
+        if (state.Contract is { } contract)
+        {
+            if (facts.ShortContractAsk is not { } ask)
+            {
+                throw new InvalidOperationException(
+                    $"The trial is short '{contract}' and this session carries no ask for it, so "
+                    + $"the position cannot be marked and the {action.Kind} on "
+                    + $"{action.ExDate:yyyy-MM-dd} cannot be valued. A stopped trial is valued "
+                    + "at the close [D-W49], and a mark this lab cannot observe is not one it "
+                    + "invents.");
+            }
+
+            marked -= ContractTerms.CashFor(ask);
+        }
 
         return new Transition(
             state.ClosedTo(settles, facts.Session, TrialCloseKind.Stopped, state.PremiumBanked),
@@ -222,10 +257,10 @@ public sealed class WheelStateMachine
                     facts.Session,
                     settles,
                     LedgerEntryKind.Stopped,
-                    0m,
+                    marked,
                     state.Contract,
                     $"{Storage.StoreCorporateActionKind.ToStored(action.Kind)} on "
-                    + $"{action.ExDate:yyyy-MM-dd}"),
+                    + $"{action.ExDate:yyyy-MM-dd}, marked at the close"),
             ]);
     }
 
@@ -383,15 +418,30 @@ public sealed class WheelStateMachine
         var entry = new LedgerEntry(
             session, next, LedgerEntryKind.ExpiredWorthless, 0m, contract);
 
-        return contract.Right is OptionRight.Put
-            ? new Transition(
+        if (contract.Right is OptionRight.Put)
+        {
+            return new Transition(
                 state.ClosedTo(
                     next, session, TrialCloseKind.ExpiredWorthless, state.PremiumBanked),
-                [entry])
-            : new Transition(
-                state.HoldingSharesFrom(
-                    next, state.Shares, state.GrossBasis!.Value, state.PremiumBanked),
                 [entry]);
+        }
+
+        // A call expiring leaves the shares behind, so there have to be shares
+        // with a basis. Without this the null-forgiving read below threw a
+        // NullReferenceException naming nothing, where everything else here
+        // refuses and says what was wrong.
+        if (state.GrossBasis is not { } basis)
+        {
+            throw new InvalidOperationException(
+                $"'{contract}' is a call expiring against a position that never held shares, so "
+                + "there is no basis for it to leave behind. A covered call is written against "
+                + "held shares [D-W16, D-W19], and a trial reaching here without them was "
+                + "assembled rather than played.");
+        }
+
+        return new Transition(
+            state.HoldingSharesFrom(next, state.Shares, basis, state.PremiumBanked),
+            [entry]);
     }
 
     /// <summary>
@@ -487,14 +537,24 @@ public sealed class WheelStateMachine
 
         if (state.Contract is { } contract)
         {
-            var intrinsic = contract.Right is OptionRight.Put
-                ? Math.Max(0m, contract.Strike - facts.UnderlyingClose)
-                : Math.Max(0m, facts.UnderlyingClose - contract.Strike);
-
+            // The ask, not the intrinsic value [D-W49]. An option costs at least
+            // its intrinsic to buy back and normally more, so closing at intrinsic
+            // closes below the bid and flatters exactly the trials this bound
+            // exists to terminate, which are the losing ones.
+            //
             // A price per share times the multiplier, which is what a premium is
             // [D-W17]. Reading the deliverable here would have made an adjusted
             // contract cost half as much again to buy back.
-            var debit = ContractTerms.CashFor(intrinsic);
+            if (facts.ShortContractAsk is not { } ask)
+            {
+                throw new InvalidOperationException(
+                    $"The bound binds on {facts.Session:yyyy-MM-dd} and this session carries no "
+                    + $"ask for '{contract}', so the position cannot be closed at market. A "
+                    + "forced close pays the ask [D-W49], and a price this lab cannot observe "
+                    + "is not one it invents.");
+            }
+
+            var debit = ContractTerms.CashFor(ask);
             banked -= debit;
 
             entries.Add(new LedgerEntry(
