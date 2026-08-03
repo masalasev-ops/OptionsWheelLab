@@ -351,15 +351,19 @@ ledger_entries
   kind TEXT, amount TEXT, contract_id INTEGER NULL, note TEXT NULL
 ```
 
-**No foreign keys here, which the blocks above already said by carrying no
-arrows** where §4.1 carries three. That read as an omission at 3.3 and is not, and
-one of the keys it appears to be missing would have been a defect: a reference
-from `ledger_entries` into `trials` points the record at the projection derived
-from it, so discarding `trials` to rebuild it is refused by the store, and the
-rebuild is the condition on rewriting a projection at all [D-W35]. Whether
-`contract_id` should reference `contracts` the way `contract_quotes.contract_id`
-does is a separate question and open: that target is a record and outlives every
-rebuild, so it carries none of the same risk.
+**A record cannot reference a projection, so `ledger_entries` carries no foreign
+key into `trials` or `positions`.** The rule arrives in two steps and both are the
+same decision's: `trials` and `positions` are projections of `ledger_entries` and
+may be rebuilt, and the permission to rewrite one holds only where a test discards
+it and rebuilds it from its source [D-W35]. A reference from the record would
+refuse the discard, so the second step is what makes the first unsatisfiable. The
+three arrows in §4.1 run between records, where nothing is ever discarded, which
+is why the absence of arrows here is a statement rather than an omission. Written
+the other way first at 3.3 and found by the test that discards a projection.
+
+Whether `contract_id` should reference `contracts` the way
+`contract_quotes.contract_id` does is a separate question and open: that target is
+a record and outlives every rebuild, so it carries none of the same risk.
 
 **Both bases are nullable, corrected at 3.3 when the table was built.** Cost basis
 exists after assignment [D-W19], so a position in `cash` or `short_put` has none,
