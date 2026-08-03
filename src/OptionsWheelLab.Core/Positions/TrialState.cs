@@ -185,6 +185,24 @@ public sealed record TrialState
             ClosedOn,
             CloseKind);
 
+    /// <summary>
+    /// Premium moved without the position moving, which is the paying leg of a
+    /// roll waiting for the credit that follows it.
+    /// </summary>
+    internal TrialState WithPremiumBanked(decimal premiumBanked) =>
+        new(
+            State,
+            EffectiveFrom,
+            CommittedCapital,
+            Shares,
+            GrossBasis,
+            premiumBanked,
+            Contract,
+            RollsUsed,
+            OpenedOn,
+            ClosedOn,
+            CloseKind);
+
     /// <summary>One short bought back and another sold, on one session [D-W14].</summary>
     internal TrialState RolledInto(
         DateOnly effectiveFrom,
@@ -212,6 +230,15 @@ public sealed record TrialState
     /// <c>WORKED_EXAMPLE.md</c>'s 109 days at 109: §6.3 dates the call-away
     /// 2026-06-19 and counts to there. The cash's availability is the entry's
     /// <c>known_on</c> and a separate question [D-W40].
+    /// <para>
+    /// <b>Both bases go with the shares.</b> A trial back in cash holds none, and
+    /// basis is a per-share figure, so carrying the old gross basis forward would
+    /// state a cost for a position that no longer exists. Written the other way
+    /// first, and the rebuild is what showed it: the <c>cash</c> row came back
+    /// with a gross basis and a null net basis, since net is derived and already
+    /// answered null on zero shares. One convention nulling itself while the other
+    /// did not is what made the inconsistency visible rather than plausible.
+    /// </para>
     /// </remarks>
     internal TrialState ClosedTo(
         DateOnly effectiveFrom,
@@ -223,7 +250,7 @@ public sealed record TrialState
             effectiveFrom,
             CommittedCapital,
             shares: 0,
-            GrossBasis,
+            grossBasis: null,
             premiumBanked,
             contract: null,
             RollsUsed,
