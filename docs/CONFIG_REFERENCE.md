@@ -125,13 +125,13 @@ judgement, which is what D-W20 left open, set at version 1 in Phase 0.8.
 
 ## Costs
 
-Provenance is judged per key, not per section. Two are set in Phase 0.8 and the
-third is owed.
+Provenance is judged per key, not per section. Two were set in Phase 0.8 and the
+third at 3.4, which is the checkpoint that first computes with it.
 
 | Key | Store | Meaning | Consumer | Notes |
 |---|---|---|---|---|
-| `Costs:CommissionPerContract` | rows | per-contract commission | Fill model **Unverified** | 0.65, from `WORKED_EXAMPLE.md` section 1, which that document's fills, ledger and expected total all depend on [D-W12]. A real broker's rate replaces it by version + 1 |
-| `Costs:AssignmentFee` | rows | fee on assignment or exercise | Fill model **Unverified** | **Unset.** Phase 3. No document states it, and zero inferred from an absent ledger line is weaker than a stated number and invisible when wrong [D-W12] |
+| `Costs:CommissionPerContract` | rows | per-contract commission | Fill model **Unverified** | 0.65, from `WORKED_EXAMPLE.md` section 1, which that document's fills, ledger and expected total all depend on [D-W12]. Corroborated at 3.4 against a broker's published schedule carrying the same figure, having been judged from the document until then [D-W50]. A real broker's rate replaces it by version + 1 |
+| `Costs:AssignmentFee` | rows | fee on assignment or exercise | Fill model **Unverified** | 0.00, transcribed from a named broker's April 2026 schedule with a retrieval date [D-W50]. One schedule establishes the common case rather than a market rule, so the key is what makes a broker that charges a change to a stored value rather than to code. A zero inferred from an absent ledger line would be invisible when wrong; this one is stated |
 | `Costs:FillPoint` | rows | where in the spread a sale fills | Fill model **Unverified** | `bid`, fixed in advance and not a tunable [D-W12]. Set anyway because a fixed value still has to be readable, and a `rows` key never written cannot be resolved as-of at all |
 
 ## Policy bands

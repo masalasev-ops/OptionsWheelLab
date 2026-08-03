@@ -20,6 +20,7 @@ predates this file and cannot be relied on.
 **Risk**: D-W10, D-W11, D-W14, D-W19, D-W23, D-W25, D-W37, D-W43
 **Gate constraints**: D-W10, D-W22, D-W23, D-W24, D-W25
 **Settlement mechanics**: D-W38, D-W39, D-W40, D-W41, D-W42, D-W43, D-W44, D-W46
+**Costs and fills**: D-W12, D-W49, D-W50
 **Scope**: D-W12, D-W16, D-W45
 **Verification mechanisms**: D-W28, D-W33
 
@@ -1460,3 +1461,58 @@ Test FX-StoppedTrialIsValuedAtTheClose: a trial holding shares that meets an
 unmodelled action reports entries summing to the marked value, not to the outlay.
 Test FX-BoundClosePaysTheAsk: a forced close debits the ask, and a case where
 intrinsic and ask differ shows which was used.
+
+---
+
+### D-W50 What a fill costs, and where each cost is recorded
+`active` · 2026-08-03
+
+A fill's cash for one contract is the price times the multiplier [D-W17], taken
+at the bid for a sale and the ask for a purchase [D-W12, D-W49]. **The commission
+is its own ledger entry beside the premium, per contract and per leg, and the
+assignment fee is zero.**
+
+The commission is separate because [D-W12]'s word is explicit and a netted cost is
+not. `ledger_entries.kind` has carried `commission` since [D-W48] for this, and
+the two questions a ledger should answer without arithmetic are what a trial paid
+in commission and what it received in premium. Netting makes each answerable only
+by recomputing it from the other.
+
+Consequence for the projection, and it is not a rounding difference. A rebuild
+folds `commission` entries into the premium banked, because net basis is what the
+account paid per share and the account paid the commission. A projection ignoring
+the entry would be wrong rather than coarse: `WORKED_EXAMPLE.md` §6.3 states a net
+basis of 49.0565, which is 50.00 less the credit after commission, and ignoring it
+gives 49.05.
+
+The third arrangement is rejected and named, because it is the one a later reader
+reaches for. Writing the gross premium, the commission, and a net figure on the
+premium entry states one fact twice, which this corpus has removed counts,
+ordinals and markers for. A query wanting the net sums two rows.
+
+Source for the fee. Charles Schwab's Pricing Guide for Individual Investors,
+April 2026: "There are no commissions or per-contract fees assessed on
+transactions resulting from options exercises and assignments." The same page
+gives an online option commission of "$0 base commission, plus $0.65
+per-contract fee", which is the figure `Costs:CommissionPerContract` has carried
+from §1 of the worked example since 0.8 with no external source. Retrieved
+2026-08-03.
+
+What that source does not reach. It is one broker's published schedule and not a
+market rule, so it establishes that zero is the common case rather than that it is
+universal. Another broker may charge, and the lab models the common case and
+records that it is a model, which is the disclosure [D-W38] makes about the
+one-cent threshold. **A fee of zero still earns a configuration key**, because the
+key is what makes a different broker a change to a stored value rather than to
+code, and because a zero inferred from an absent ledger line is invisible when
+wrong where a stated one is not.
+
+`Costs:FillPoint` is readable and is not a tunable [D-W12]. The fill point is
+fixed in advance, and the key exists so a fixed value can still be resolved as of
+a simulated date rather than assumed by whatever reads it.
+
+Test FX-TrialCompleteIncludesAssignment: the assigned trial totals 498.05, each of
+§6.3's cash cells equals the sum of that date's ledger entries, and its net basis
+reads 49.0565. The cell correspondence is a reconciliation and not a row for row
+match, because the document nets what this decision separates and the ledger
+therefore carries more rows than the table.

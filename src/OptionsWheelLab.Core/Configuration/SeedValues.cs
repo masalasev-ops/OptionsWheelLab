@@ -10,12 +10,20 @@ namespace OptionsWheelLab.Core.Configuration;
 /// taken from a proposed value in a decision, or judged. The third is the one
 /// worth arguing, and there are four of them.
 /// <para>
-/// Twenty-three of the twenty-four `rows`-classed keys are here. Nineteen
-/// landed at 0.8; the four <c>Risk:</c> keys landed at 2.4, which is the
-/// checkpoint that first reads them, and <c>Costs:AssignmentFee</c> is still
-/// owed at Phase 3. That last one has no statement anywhere, and it stayed a
-/// carried obligation rather than a gap because leaving a key unseeded and
+/// All twenty-four `rows`-classed keys are here. Nineteen landed at 0.8; the
+/// four <c>Risk:</c> keys landed at 2.4, which is the checkpoint that first
+/// reads them; and <c>Costs:AssignmentFee</c> landed at 3.4, which is the
+/// checkpoint that first computes with it. It stayed a carried obligation
+/// rather than a gap for four phases, because leaving a key unseeded and
 /// leaving it unscheduled are different things.
+/// </para>
+/// <para>
+/// <b>That key brought a kind of provenance this file did not have</b>
+/// [D-W50]: transcribed from a named external source with a retrieval date,
+/// where every other entry is transcribed from this corpus, taken from a
+/// decision's proposed value, or judged. It is the shape Phase 3's decisions
+/// carry, and it states what the source does not reach, since one broker's
+/// schedule establishes a common case and not a market rule.
 /// </para>
 /// <para>
 /// <b>The <c>Risk:</c> block is a fourth kind of provenance and it is stated per
@@ -131,11 +139,22 @@ public static class SeedValues
             "Chosen, not stated. The value is arbitrary; that it is fixed is not, since the "
             + "random control has to draw the same way on a re-run."),
 
-        // Costs. Two of the three, judged per key.
+        // Costs. All three from 3.4, and the third is the last key this corpus
+        // owed a value to.
         new("Costs:CommissionPerContract", "0.65",
             "WORKED_EXAMPLE section 1, which section 4's fills, section 6.3's ledger and "
-            + "FX-TrialCompleteIncludesAssignment's total all depend on. A real broker's rate "
-            + "replaces it by version + 1, which is what the versioned store is for."),
+            + "FX-TrialCompleteIncludesAssignment's total all depend on. Corroborated at 3.4 "
+            + "against Schwab's April 2026 pricing guide, which publishes the same figure; the "
+            + "value was judged from the document until then. A real broker's rate replaces it "
+            + "by version + 1, which is what the versioned store is for."),
+        new("Costs:AssignmentFee", "0.00",
+            "Transcribed [D-W50]. Schwab's Pricing Guide for Individual Investors, April 2026: "
+            + "there are no commissions or per-contract fees assessed on transactions resulting "
+            + "from options exercises and assignments. One broker's schedule is not a market "
+            + "rule, so this is the common case rather than a universal one, and the key is "
+            + "what makes a broker that charges a change to a stored value rather than to code. "
+            + "A zero inferred from an absent ledger line would be invisible when wrong; this "
+            + "one is stated."),
         new("Costs:FillPoint", "bid",
             "Fixed in advance and not a tunable [D-W12]. Seeded anyway because a fixed value "
             + "still has to be readable, and a rows-classed key never written cannot be "

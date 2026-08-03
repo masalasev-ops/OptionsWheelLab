@@ -356,11 +356,14 @@ paying before Phase 8 buys nothing.
 
 ## 8. Open parameters, closed at 0.8
 
-Build state: **closed at 0.8**. The values are config rows in the store. Three
-of the four keys left unset then have since been set by the phase that first
-consumed them, the `Risk:` block at 2.4, which turned out to be four keys rather
-than three because every cap divides by an account value nothing held.
-`Costs:AssignmentFee` is the one still unset, owed at Phase 3.
+Build state: **closed at 0.8, and closed completely from 3.4**. The values are
+config rows in the store. Every key left unset then has since been set by the
+phase that first consumed it: the `Risk:` block at 2.4, which turned out to be
+four keys rather than three because every cap divides by an account value nothing
+held, and `Costs:AssignmentFee` at 3.4, which is where the assignment path first
+computes with it. That last one was the only key in the store with no statement
+anywhere behind it, and it took a broker's published schedule rather than a
+judgement [D-W50].
 
 The roll bounds [D-W14], the divergence threshold and window [D-W20] and the six
 gate constraints [D-W22 to D-W25] were left unset in this document deliberately,
