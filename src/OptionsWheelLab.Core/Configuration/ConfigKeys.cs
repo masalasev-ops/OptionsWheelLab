@@ -31,6 +31,12 @@ namespace OptionsWheelLab.Core.Configuration;
 /// [<see cref="Positions.TrialBounds"/>].
 /// </para>
 /// <para>
+/// 3.4 adds the three <c>Costs:</c> keys on the second ground, which completes
+/// the fill model's set: the model resolves all three as of the simulated date
+/// [<see cref="Positions.CostBounds"/>], and <c>Costs:FillPoint</c> is the first
+/// word-valued key anything in this repository reads.
+/// </para>
+/// <para>
 /// The rest of the store's keys are still the seeder's business and are
 /// declared with their values, because a key with no code that reads it has
 /// nothing to name it for.
@@ -46,6 +52,10 @@ public static class ConfigKeys
     public const string GateEarningsClearanceDays = "Gate:EarningsClearanceDays";
     public const string TrialMaxRolls = "Trial:MaxRolls";
     public const string TrialMaxTrialDays = "Trial:MaxTrialDays";
+
+    public const string CostsCommissionPerContract = "Costs:CommissionPerContract";
+    public const string CostsAssignmentFee = "Costs:AssignmentFee";
+    public const string CostsFillPoint = "Costs:FillPoint";
 
     public const string RiskEquity = "Risk:Equity";
     public const string RiskPerNameCapFraction = "Risk:PerNameCapFraction";
