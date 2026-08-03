@@ -18,19 +18,27 @@ sign-off leaves nothing describing the present in between.
 
 # Current state
 
-Corpus v1.39.0.
+Corpus v1.41.0.
 
 | | |
 |---|---|
 | Phase 0 | complete and reviewed, 0.1 to 0.8 built and signed off |
 | Phase 1 | complete, 1.1 to 1.5 built and signed off |
 | Phase 2 | complete, 2.1 to 2.5 built and signed off |
-| Phase 3 | 3.1 and 3.2 built and signed off, 3.3 to 3.5 not started |
-| CI | green, 503 tests, guards then restore then build then test, on push to `main` and every pull request |
+| Phase 3 | 3.1 to 3.4 built and signed off, 3.5 not started |
+| CI | green, 650 tests, guards then restore then build then test, on push to `main` and every pull request |
 
-**Neither 3.1 nor 3.2 changed any code**, so every section below except this
-table, `Owed` and `Lessons that transfer` stands as it did at Phase 2's close. The suite is
-unchanged at 503 and the guards scan the same 149 files.
+**This block was stale for two checkpoints and is the reason to distrust the
+rest.** It read v1.39.0 through 3.3's and 3.4's sign-offs, saying 3.3 to 3.5 were
+not started while both were built and merged. The file's own opening calls it the
+only description of the present, so nothing else was describing one. Every section
+below is re-measured against `main` at this version rather than edited where it
+looked wrong.
+
+3.1 and 3.2 changed no code. 3.3 and 3.4 changed a great deal: four tables across
+three migrations, the wheel state machine, the ledger and its two projections, the
+fill model, six new stored vocabularies and a third named guard. The suite went
+from 503 to 650 and the guards from 149 files by two checks to 186 by three.
 
 Which branch the work sits on and which pull requests have merged are not recorded
 here. Git holds both exactly, and a fact kept in two places drifts.
@@ -64,16 +72,37 @@ Snapshot-first migrations. The runner takes a `VACUUM INTO` snapshot before appl
 Schema version comes from `schema_migrations` rather than `PRAGMA user_version`
 [D-W32].
 
-**Schema 5.** Migration 1 is `config_rows`, 2 its monotonic `set_at` trigger, 3 the
+**Schema 8.** Migration 1 is `config_rows`, 2 its monotonic `set_at` trigger, 3 the
 six market-data tables of §4.1 [1.1], 4 the membership record [1.3], 5 the bars
-nullability rebuild [1.4].
+nullability rebuild [1.4], 6 the `corporate_actions` rebuild for its `kind` CHECK,
+7 `market_sessions`, and 8 `trials`, `positions` and `ledger_entries` [3.3].
+
+Thirteen tables, and they fall in two vocabularies rather than one. Eleven are
+append-only, being the seven snapshot tables, membership, `ledger_entries`,
+`config_rows` and `schema_migrations`. Two are projections of the ledger and may
+be rewritten, conditional on the test that discards and rebuilds them [D-W35].
+`ProjectionTables` names the second set, and the two lists are asserted disjoint
+over the declarations rather than over the tables that happen to exist.
+
+Migration 6 is the second rebuild and the first with rows to lose: migration 5
+rebuilt a table no writer had touched, where `corporate_actions` has had one since
+1.5, so the copy is asserted through that writer rather than trusted. Migration 8
+carries no foreign keys, which §4.3 already said by carrying no arrows: a record
+referencing a projection would refuse the discard the rebuild needs.
 
 ## Market data
 
-Six tables: `underlying_bars`, `corporate_actions`, `earnings_calendar`,
-`chain_snapshots`, `contracts`, `contract_quotes`. Two of the six carry no key of
-their own and have an index instead; three carry `observed_at` in the key, because a
-correction appends rather than replaces [D-W8].
+Seven tables: `market_sessions`, `underlying_bars`, `corporate_actions`,
+`earnings_calendar`, `chain_snapshots`, `contracts`, `contract_quotes`. Two carry no
+key of their own and have an index instead; four carry `observed_at` in the key,
+because a correction appends rather than replaces [D-W8].
+
+`market_sessions` landed at 3.3 and carries no symbol, which is the point of it. A
+session is a fact about the market and not about a name, and the only other session
+sequence is `underlying_bars.session_date`, which is per symbol and cannot tell a
+market holiday from a name that did not trade. It is transcribed rather than
+derived [D-W46], because a derived calendar's answer about a past date would change
+when another symbol was ingested.
 
 `contracts` carries no `observed_at`, since a corporate action mints a new identity
 rather than restating a row. It carries two quantities that read as one until 1.1
@@ -107,9 +136,10 @@ the successor with its predecessor link in one transaction; an adjustment whose
 stated terms change nothing is refused, and the predecessor reads back
 byte-identical. `ContractLineage` walks the link as the recursive CTE the alias
 convention was proven to permit, timeless because contracts carry no
-observation axis. The corporate-action kind vocabulary is `split` only, with
-the fuller set and the CHECK question recorded at Phase 3's dividend
-obligation.
+observation axis. The corporate-action kind vocabulary widened at 3.3 from `split`
+alone to OCC's own enumeration of what adjusts a contract, complete before the
+transitions that read it exist [D-W47], and `corporate_actions.kind` gained the
+`CHECK` it went without since 1.1.
 
 **One read surface, `AsOfMarketData`, and no current-value counterpart exists at
 all** [1.2]. Market data has no operational current-read consumer anywhere in the
@@ -346,16 +376,59 @@ because no document states what a roll enumerates, the bounds are Phase 3's
 decision path. The test asserting that is written to fail the day Phase 3
 writes the rule.
 
+## Trials, the ledger and the fill
+
+**Built at 3.3 and 3.4, and nothing drives it.** The machine is a function from a
+state and a session's facts to a state and its entries; the bounds, the calendar
+and the costs arrive resolved, so it reads no configuration, no clock and no
+table.
+
+Four states as a discriminated union, and the events that move between them lie
+on two axes rather than in one list [D-W47]. Contract events are expiry and
+assignment; corporate actions reach a trial from its underlying and carry OCC's
+enumeration rather than the lab's. Earnings is on neither, being a gate input that
+moves no position, and exercise is assignment seen from the side this lab is never
+on. An action the lab does not model stops the trial and is valued at the close
+rather than zeroed [D-W49], because zeroing made every name with a corporate
+action a total loss.
+
+The order within a session is stated at the type and is not arbitrary: an
+unmodelled action stops the trial before anything prices it, early assignment is
+checked before expiry because it acts on the session before an ex-date, and the
+bound is last because a trial that expired to cash has already ended. The bound
+also waits for a state the account knows about, since an expiry resolving to
+assignment leaves a state effective on the next session [D-W39].
+
+`ledger_entries` is the record and carries eleven kinds, four of them pairs
+because one cash direction hides two events [D-W48]. It records events and not
+only cash, so an expiry that pays nothing is a row with a zero amount. `trials`
+and `positions` are projections of it, rewritable only because a test discards and
+rebuilds them, which is also the only thing proving the vocabulary carries enough
+to rebuild from.
+
+`FillModel` prices a quote: the price times the multiplier [D-W17], at the bid for
+a sale and the ask for a purchase [D-W12, D-W49]. A leg writes two entries, the
+premium and the commission, per contract and per leg [D-W50], and the projection
+folds the commission back because net basis is what the account paid per share.
+
+**Two quantities that agree for every standard contract, and money follows only
+one.** An adjustment moves the deliverable and leaves the strike and the aggregate
+exercise price alone, so cash multiplies by the multiplier and the deliverable
+says how many shares change hands. `ContractTerms` is the one site, and
+FX-NoShareCountInOptionCash is what keeps it one.
+
 ## Configuration
 
 Two sections bound, `Eodhd` and `Storage`, both verified. Six sections deliberately
 unbound because `CONFIG_REFERENCE.md` classes them `rows` and a registered options
 type is itself a current-value accessor.
 
-Twenty-three of the 24 `rows`-classed keys hold a value at version 1, written by
-the `seed` verb. One carries an `Unset` marker and names the phase that owes it,
-being `Costs:AssignmentFee` at Phase 3. The store is the authority on what is in
-force, not the document.
+All 24 `rows`-classed keys hold a value at version 1, written by the `seed` verb.
+`Costs:AssignmentFee` was the last one owed and was set at 3.4, transcribed from a
+named broker's published schedule with a retrieval date [D-W50], which is a kind
+of provenance the seeder did not previously have: every other entry is transcribed
+from this corpus, taken from a decision's proposed value, or judged. The store is
+the authority on what is in force, not the document.
 
 The gate's six contract bounds were seeded at 0.8: a spread cap of 0.12 of mid
 and a premium floor of 0.30 [D-W22], a delta ceiling of 0.35 [D-W23], an expiry
@@ -380,6 +453,20 @@ and 60,000.00 of assignment exposure. On §1's book of 19,900.00 in `WDGT` and
 the other two. Two names at the full per-name cap commit 50,000.00, so the total
 binds part-way through a third rather than at a whole number of them.
 
+The three `Costs:` keys were seeded at 0.8 and 3.4 and are read as of the
+simulated date by `CostBounds`, which `FillModel` resolves. Seventeen rows carry a
+verified consumer and eleven do not, of which nine are specified-only because
+their checkpoints are Phase 4's and Phase 5's. **The two `Trial:` rows are the
+only unverified rows whose checkpoint has landed, which is a defect rather than a
+gap.** `TrialBounds` exists and resolves both as of the simulated date, and no
+file under `src/` calls it: the machine is handed resolved bounds and the
+component that would resolve them is the run loop.
+
+What verifying takes was measured at 3.4 rather than assumed. A type in `src/`
+resolves the key and a component in `src/` calls that type; it is not about who
+constructs the component, since `CandidateGenerator` is built only by tests and
+its ten keys have been verified since 2.4.
+
 Both directions of the key contract are standing checks for `app` keys. For `rows`
 keys only the types-to-document direction holds, because most are deliberately
 unbound until their phase.
@@ -397,17 +484,32 @@ Dates are `yyyy-MM-dd`, timestamps `yyyy-MM-ddTHH:mm:ss.fffZ`, filenames
 entry point and a rounding one, lenient on padding and strict on precision.
 
 The form is not order-preserving, so no SQL orders, ranges over or aggregates a
-decimal column. `DecimalColumns` holds seventeen names as of 1.1.
+decimal column. `DecimalColumns` holds twenty-one names as of 3.3.
 
 Decimals reach `TEXT` columns through `AddStored`, rendering through the refusing
-entry point; rounding is a deliberate call visible at a site, never a default
-inside the seam. `ConfigWriter` still takes strings, `config_rows.value` being
+entry point. `AddStoredRounded` is the rounding path, added at 3.4 and named
+rather than defaulted, and the only values taking it are the two cost bases, which
+are divisions: a premium carrying the eight places the scale admits gives a basis
+needing ten. `ConfigWriter` still takes strings, `config_rows.value` being
 polymorphic by design.
+
+Six vocabularies have a declared stored form and a `CHECK` that must agree with
+it, asserted in both directions and including that no `CHECK` admits a value the
+code cannot produce. A seventh, `StoreFillPoint`, has no `CHECK` to compare
+against, because `config_rows.value` carries every section's values and a
+constraint there would have to know which key a row belongs to. That exclusion is
+stated at the type, at the fixture and in the registry row, and a case fails if
+that column ever gains one.
 
 ## Guards and detectors
 
-`guards.ps1` runs before restore, so it reports on a tree where nothing else can. Two
-named checks, no exemption mechanism, self-testing on their own samples.
+`guards.ps1` runs before restore, so it reports on a tree where nothing else can.
+Three named checks, no exemption mechanism, self-testing on their own samples. The
+third arrived at 3.3's review: no file under `src/` prices an option from a share
+count, which holds the claim that the quantity sits in one place. That claim had
+been made in a comment, was true when written, was false three commits later, and
+was unchecked throughout. A check may now state which tree its rule governs, and a
+scope matching no files throws.
 
 Three SQL detectors, all reading `src/` only: no decimal ordering, no rewrite of an
 append-only table, and no alias of a table or a column. The third is the convention
@@ -425,8 +527,8 @@ bands the list names.
 
 ## Tests
 
-503: 307 across forty-one fixtures, and 196 across thirty-one unregistered
-suites. The two guards are checks rather than tests and are counted in neither.
+650: 395 across fifty-six fixtures, and 255 across thirty-seven unregistered
+suites. The three guards are checks rather than tests and are counted in neither.
 2.1 registered none and changed none, which is what a document-only checkpoint
 pinned by existing fixtures looks like; 2.2 registered two, 2.3 seven, 2.4
 four and 2.5 one.
@@ -440,38 +542,53 @@ number is visible from a green run.
 | Fixture | Tests |
 |---|---|
 | FX-ClockIsNotADateSource | 34 |
-| FX-SnapshotNeverRewritten | 23 |
+| FX-SnapshotNeverRewritten | 27 |
 | FX-NoRewriteOfAppendOnlyTables | 20 |
 | FX-MalformedChainFailsWhole | 18 |
+| FX-NoDecimalOrderingInSql | 18 |
 | FX-MoneyRoundTrip | 17 |
+| FX-NoSqlAliases | 17 |
 | FX-ConfigWriteRefusesInvariantBreach | 16 |
-| FX-NoSqlAliases | 15 |
-| FX-NoDecimalOrderingInSql | 14 |
 | FX-ConfigStoreClassHonoured | 12 |
 | FX-TickerDashForm | 12 |
+| FX-UnmodelledActionStopsTheTrial | 12 |
+| FX-StoredVocabulariesMatchTheirChecks | 10 |
 | FX-CeilingNotInsidePolicyBand | 7 |
 | FX-ConfigResolvesAsOf | 6 |
 | FX-EveryConfigSectionBinds | 6 |
 | FX-MigrateFromEmpty | 6 |
+| FX-AssignmentStressRejects | 5 |
+| FX-BoundClosePaysTheAsk | 5 |
+| FX-EarlyAssignmentOnDividend | 5 |
 | FX-EarningsClearanceRejects | 5 |
 | FX-EveryBoundKeyIsDocumented | 5 |
 | FX-EveryPolicyBandIsChecked | 5 |
+| FX-OrdinaryDividendLeavesContractUnchanged | 5 |
 | FX-RegistryMatchesDisk | 5 |
+| FX-StoppedTrialIsValuedAtTheClose | 5 |
 | FX-TotalCapRejectsAboveHeadroom | 5 |
-| FX-AssignmentStressRejects | 5 |
+| FX-TrialCompleteIncludesAssignment | 5 |
+| FX-AssignmentKnownNextSession | 4 |
 | FX-ChainLoadsInIdentityOrder | 4 |
 | FX-CrossedQuoteRejected | 4 |
 | FX-DeltaCeilingRejects | 4 |
+| FX-DividendReachesLedger | 4 |
+| FX-ExpiryResolvesAtOneCent | 4 |
 | FX-GateRecordsAllReasons | 4 |
 | FX-GateRejectsAboveHeadroom | 4 |
 | FX-GrossBasisBindsCallStrike | 4 |
 | FX-MaxDteBelowTrialBound | 4 |
+| FX-NextSessionSkipsAClosedDate | 4 |
 | FX-OffWatchlistRejected | 4 |
+| FX-ProceedsUsableOnSettlement | 4 |
+| FX-ProjectionRebuildsFromLedger | 4 |
+| FX-RollCapCloses | 4 |
 | FX-WorkedExampleChainLoads | 4 |
 | FX-WorkedExampleEnumerates | 4 |
 | FX-WorkedExampleGateVerdicts | 4 |
 | FX-ApiCannotWrite | 3 |
 | FX-CorporateActionMintsSuccessor | 3 |
+| FX-CoveredCallCommitsNothingFurther | 3 |
 | FX-EveryAppKeyBinds | 3 |
 | FX-NoCurrentConfigReadOnSimulatedPath | 3 |
 | FX-PitMembershipExcludesLaterJoiner | 3 |
@@ -491,40 +608,42 @@ append-only triggers make the tables impossible to clean between cases.
 
 ## Not built
 
-Every table beyond the nine that exist. `decisions` and `candidates` are
-Phase 4's.
+**Nothing drives anything.** No maker chooses, and no loop steps a calendar. The
+state machine is a function a caller applies one session at a time and the fill
+model prices a quote a caller hands it, so what advances a trial today is a test.
+That is the largest single gap in the repository and it is what 3.5's own detail
+assumes away.
+
+`decisions` and `candidates` are Phase 4's, so nothing persists a candidate or its
+reasons and a roll's decision row has nowhere to go. The trial's `maker_id` is the
+one projection column the ledger cannot supply, which is why a rebuild preserves it
+rather than reconstructing it [D-W35, as amended].
 
 No `FeasibleSet` type, and that is a choice rather than a gap. `GateFor`
 returning every candidate with its reasons in identity order is assembly,
 ordering and the refusal record; a type justified only by a later consumer is
 speculation, and no maker exists until Phase 4. The set's grain is (symbol,
-date) and Phase 4's obligation carries it, so that phase models the set with
-`candidates` in front of it rather than inheriting a shape guessed early.
+date) and Phase 4's obligation carries it.
 
-No book to gate against. `BookState` is a parameter and nothing computes one:
-`positions` is Phase 3's, so every caller states its own exposure and basis, and
-the backward edge SYSTEM_DESIGN §3.3 names as the only one in the daily path is
-a parameter rather than a read.
+`BookState` is still a parameter and nothing computes one. `positions` exists from
+3.3, so the backward edge SYSTEM_DESIGN §3.3 names as the only one in the daily
+path could now be a read, and is not: no caller assembles a book from the table.
 
-Nothing persists a candidate or its reasons. `GatedCandidate` is returned and
-dropped; `decisions` and `candidates` are Phase 4's, and how a set of reasons
-reaches one nullable column is a carried obligation.
+Rolling has no rule. `WheelStateMachine.Roll` applies a roll a caller has already
+chosen and the bound terminates a rolled chain [D-W14], but which contracts a roll
+offers is a maker's question and unwritten.
 
-Rolling has no rule, so `short_put` and `short_call` enumerate nothing. D-W14
-permits rolling and bounds it; which contracts a roll offers is Phase 3's and
-unwritten.
+`corporate_actions` has a writer and no as-of read. 1.5 reaches a predecessor
+through `ContractLineage`, which is timeless, and the state machine takes the
+actions on a session as a parameter rather than reading them, so nothing yet asks
+what was in force at a date.
 
-`corporate_actions` has its first writer, the mint, and no as-of read: 1.5
-reaches a predecessor through `ContractLineage`, which is timeless, and nothing
-wants the actions in force at a date yet. `earnings_calendar` got both its
-writer and its read at 2.3, when the clearance constraint became its first
-consumer.
+No operator entry point ingests a chain, and none runs a trial. `ChainWriter`,
+`TrialStore` and `FillModel` have tests as their only callers.
 
-No operator entry point ingests a chain. `ChainWriter`'s only callers are tests
-until Phase 8's vendor ingest needs a verb, and a verb nothing calls is
-speculation.
-
-Nothing runs, so nothing produces output. Determinism is asserted over stored rows.
+**Nothing produces output, so determinism is still asserted over stored rows.**
+0.5 restated the byte-identical definition of done that way because no run
+existed; after 3.4 there is still no run, only the pieces one would compose.
 
 ## Owed
 
@@ -533,25 +652,28 @@ obligations, which is where planning for the phase that owns it will look. It is
 copied here: two registers of one list is how an obligation comes to exist in the one
 nobody reads.
 
-Entries stand against checkpoints 3.3 to 3.5 and against Phases 4, 5, 8, 9 and 11.
-The count is not restated here. **The column now names a checkpoint once the
-owning phase's detail exists and a phase otherwise**, stated at the table
-because two readings of it disagreed: a count over phase names alone misses the
-rows that have moved on. **3.1 and 3.2 owe nothing.** 3.1 closed four rows while
-raising three; 3.2 closed its own and raised three more, at 3.3, Phase 5 and
-Phase 8. **Phase 2 owes nothing.** 2.1 discharged the reconciliation row raised at
+Entries stand against checkpoint 3.5 and against Phases 4, 5, 8, 9 and 11. The
+count is not restated here. **The column names a checkpoint once the owning
+phase's detail exists and a phase otherwise**, stated at the table because two
+readings of it disagreed: a count over phase names alone misses the rows that have
+moved on. **3.1 to 3.4 owe nothing, and both remaining checkpoint rows are
+3.5's**, which is the whole of what Phase 3 has left. 3.1 closed four rows while
+raising three; 3.2 closed its own and raised three; 3.3 closed four and raised
+five; 3.4 closed three and raised one. **Phase 2 owes nothing.** 2.1 discharged the reconciliation row raised at
 v1.6.0, the table's oldest and open for twenty-three corpus versions, 2.3
 discharged the crossed-quote row while opening two of its own, and 2.4
 discharged the risk row while opening one of its own. All three discharged rows
 were preconditions rather than work items, which is what put them at the front
 of the phase.
 
-2.4's row is what a covered call commits, owed at Phase 3. D-W17 fixes a trial's
-committed capital at open, so a call written against shares already assigned may
-commit nothing new, while 2.4 charges the candidate's own figure regardless of
-right. That is the conservative reading and binds a cap that may not apply, and
-no fixture reaches it because no covered call is gated before the state machine
-exists.
+2.4's row asked what a covered call commits and 3.1 answered it: nothing beyond
+the trial's committed capital [D-W43], which the caps read as one figure from open
+to close. 2.4's own reasoning held, that the choice sat in one place so Phase 3
+would change one site. **The claim that it stayed in one place did not**, and 3.3's
+review found the state machine pricing an assignment, a call-away and a forced
+close from the deliverable where D-W17 says the multiplier governs the cash. A
+guard holds it now, because a claim about the codebase asserted nowhere is what
+this phase demonstrated twice.
 
 The risk row named three fractions and took four keys, because every cap is a
 fraction of an account value that no key, column or table held. That is the
@@ -575,6 +697,33 @@ walk-forward.
 - A checkpoint's pull request is merged as a merge commit, never squashed.
 - Fixture names are not enumerated in checkpoint detail [`CLAUDE.md` §5, as
   narrowed at v1.31.0]. A prompt may name them, being spent and archived.
+
+### Sign-off is three acts, and each produces an artefact someone can read
+
+**A rule recorded is indistinguishable from a rule performed until someone reads
+the artefact it should have produced.** That is why these are here rather than in
+`Lessons that transfer`: a lesson is read when someone goes looking, and these
+have to happen whether or not anyone does. All three failed at least once, and in
+each case the work they govern was done carefully while the act itself was
+skipped.
+
+- **The marker sweep is run, not recalled.** Every `Build state:` line is read
+  off disk and checked against what shipped. It produces the markers. 3.1
+  recorded the practice two commits before signing off and did not perform it;
+  3.3's second run at merge found four figures the first could not have seen,
+  which is why it runs again if the branch moved.
+- **The archive's state block is re-measured, not carried.** It is the only
+  description of the present, so every count in it comes from a measurement taken
+  at sign-off rather than from the previous one adjusted. It produces the
+  description. **A checkpoint that changed no code still changes what is built**,
+  which is the sentence that made this fail: "neither changed any code, so every
+  section below stands" was true at 3.2 and false from the next commit, and
+  nothing re-read it for two checkpoints.
+- **[`CLAUDE.md` §11]'s question is asked against every unspent prompt** whenever
+  a decision was added, amended or superseded, **and the answer is recorded even
+  when it is none.** It produces the answer. Recording a "none" is what
+  distinguishes a question asked from one skipped, which is the whole of why the
+  omission across thirteen decisions and three amendments left no trace.
 
 ## Lessons that transfer
 

@@ -6,7 +6,7 @@ Appended to, never rewritten. The repository is the authority on build state.
 
 **Phase 0 complete and reviewed. Phases 1 and 2 complete. Phase 3 started.**
 Checkpoints 0.1 to 0.8, 1.1 to 1.5, 2.1 to 2.5, and 3.1 to 3.4 built and signed
-off. 3.5 is not started. The documentation corpus is at v1.41.0.
+off. 3.5 is not started. The documentation corpus is at v1.41.1.
 
 ## Log
 
@@ -1827,3 +1827,53 @@ guessed.
 **The table stands at thirteen rows**, two at checkpoint granularity and eleven at
 phase. 3.4 closed its own three and raised one, and both remaining checkpoint rows
 are 3.5's, which is the whole of what Phase 3 has left.
+
+### 2026-08-03 — corpus v1.41.1
+
+**A correction, not a checkpoint.** Two rules established in this corpus were not
+being followed, and both were noticed by their owner rather than by me.
+
+**The phase archive's Current state was stale for two checkpoints.** It read
+v1.39.0 through 3.3's and 3.4's sign-offs, saying 3.3 to 3.5 were not started
+while both were built and merged, and carrying 503 tests, 149 files and the
+sentence "Neither 3.1 nor 3.2 changed any code, so every section below stands as
+it did at Phase 2's close". That sentence was true when written and false from
+3.3's first commit. `prompts/spent/phase-3.md` opens by calling that block the
+only description of the present, so for two checkpoints nothing was describing
+one, and the sign-offs that should have caught it were adding prompt sections to
+the same file.
+
+Brought current by re-measuring rather than by editing where it looked wrong: the
+schema from five migrations to eight and nine tables to thirteen, the seeded keys
+from twenty-three of twenty-four to all of them, `DecimalColumns` from seventeen
+names to twenty-one, the guards from two named checks to three, the suite from 503
+to 650 with its per-fixture table regenerated from a run, and `Not built` and
+`Owed` rewritten against what the two checkpoints left. A section was missing
+entirely, since nothing in that block described the state machine, the ledger, the
+projections or the fill model, and one now does.
+
+**The reconciliation question was never asked.** [CLAUDE.md §11] requires asking,
+whenever a decision is added or amended, whether it changes a prompt not yet
+spent. Thirteen decisions were added across 3.1 to 3.4 and three amended, and the
+question was asked at no sign-off.
+
+**Asked now against 3.5, the only unspent prompt, it finds one thing and it is
+not small.** 3.5's detail opens "0.5 restated its byte-identical definition of
+done as identical stored rows because no run existed; this is the checkpoint that
+has one", and its Test is a simulated run producing byte-identical output across
+two invocations. After 3.4 there is still no run. Nothing drives the machine: no
+maker chooses and no loop steps a calendar, so what advances a trial is a test.
+3.5's detail is about determinism and says nothing about composing a run, and
+Phase 3's own preamble promises one trial from cash to cash.
+
+So either 3.5 composes the run and its detail does not say so, or a piece is
+missing between 3.4 and 3.5 that no checkpoint currently owns. **Checkpoint scope
+is authored, so this is reported rather than closed.** It is exactly the class of
+gap §11 exists to surface, and it would have surfaced at 3.3 had the question been
+asked then.
+
+The two failures share a shape. Both are rules this corpus wrote down, and both
+were skipped while the work they govern was done carefully, which is the same
+thing 3.1's sign-off did with the marker sweep. A rule recorded and not performed
+is indistinguishable from one that was performed, until someone reads the artefact
+it was supposed to produce.
