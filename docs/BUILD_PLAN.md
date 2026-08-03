@@ -630,8 +630,10 @@ to differ. A count of this table is a count of rows. Rows sharing an Owed at
 value are separate obligations, and a count of distinct values is not a count of
 this table.
 
-**Fourteen rows stand, seven at checkpoint granularity and seven at phase**, read
-off the table below at 3.2's sign-off.
+**Fifteen rows stand, seven at checkpoint granularity and eight at phase**, read
+off the table below while 3.3 was in flight. It stood at fourteen, seven and
+seven at 3.2's sign-off; 3.3 raised the rebuild's configuration row before
+closing any of its own, and the count is read again at its sign-off.
 
 | Owed at | Obligation | Raised |
 |---|---|---|
@@ -648,6 +650,7 @@ off the table below at 3.2's sign-off.
 | Phase 5 | Decide whether cash earns, and at what rate. Nothing in this corpus names interest as a financial concept. The absence biases two of the three comparisons in opposite directions: the wheel holds cash securing its puts and the hold-cash floor holds cash outright, so both are understated by roughly the same amount and their comparison survives, while buy-and-hold holds no cash and is not understated at all, so the comparison the lab exists to make is biased against the wheel by whatever the rate is. A rate is an external source and choosing one is a modelling choice with its own argument. Owed at Phase 5, where the outcome metric and the controls' returns are computed. A control gap of the same kind as the dividend gap and in the same decision [D-W13]. Raised at 3.2. | v1.38.0 |
 | 3.3 | Correct `CommittedCapital.For` to strike times multiplier, per [D-W17] as amended. 2.4 read the deliverable as the only quantity in reach and named 3.1 as the checkpoint that would decide; it decided the other way. Its own reasoning was that the choice sits in one place so Phase 3 changes one site, and this is that site. Every current contract carries one hundred as both quantities, so no test distinguishes them today and none will until an adjusted contract is gated. Raised at 3.1. | v1.36.0 |
 | 3.3 | Give the record a dividend to hold, per [D-W41]. `ledger_entries.kind` needs a `dividend` value, `CorporateActionKind` is `Split` only and names that decision in its own remarks, and the synthetic-chain format carries no corporate actions at all, so no hand-written scenario can express one. Whether `corporate_actions` gains a CHECK the way `right` and membership's `kind` have one rides with it. Raised at 3.1, where the decision named all three rather than adding any. | v1.36.0 |
+| Phase 4 | Resolve configuration in the projection rebuild as of the simulated date the run used, never as-now [D-W26]. Telling `closed_at_bound` from `closed_by_choice` means asking whether a bound had been reached, which reads `Trial:MaxRolls` and `Trial:MaxTrialDays`, and a rebuild reading current bounds would disagree with the run it is rebuilding while presenting the disagreement as a ledger defect. Not live at 3.3, where nothing writes `closed_by_choice` because no maker exists. Raised at 3.3 by building the rebuild. | v1.40.0 |
 | 3.3 | Decide what a session calendar is, since [D-W40] resolves settlement to "the first business day after" and nothing in this lab can answer that. The only session sequence in the store is `underlying_bars.session_date`, which is per symbol and cannot distinguish a market holiday from a name that did not trade. Whether the calendar is derived from bars or stored is the question; Phase 8's vendor ingest is the other consumer. Raised at 3.1. | v1.36.0 |
 
 ---

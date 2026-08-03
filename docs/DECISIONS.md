@@ -853,7 +853,7 @@ case, not only the violating one.
 ---
 
 ### D-W35 Records are append-only; projections may be rebuilt
-`active` · 2026-07-29
+`active` · 2026-07-29, amended 2026-08-03 (more than one source)
 
 A **record** is the only place a fact is held. Rewriting it destroys the fact, so
 a record is append-only: a change appends a new version and nothing already
@@ -862,6 +862,13 @@ written is altered. `watchlist_membership` is a record.
 A **projection** is derived from an append-only source. Rewriting it destroys
 nothing, because it can be rebuilt. `trials` and `positions` are projections of
 `ledger_entries` and may carry a nullable close column and be updated in place.
+
+A projection may derive from more than one append-only source. `trials` derives
+from `ledger_entries` for everything a trial did and from `decisions` for which
+maker did it, because `maker_id` is a fact about a decision and no ledger entry
+carries it [§4.3]. The rebuild condition is unchanged: every source it reads must
+itself be append-only, and a projection deriving from anything rewritable is not
+a projection.
 
 Rationale. The lab exists so a decision can be re-scored later from what stood at
 the time, which holds only if what stood at the time is still there. That argument
