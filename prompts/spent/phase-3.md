@@ -698,6 +698,33 @@ walk-forward.
 - Fixture names are not enumerated in checkpoint detail [`CLAUDE.md` §5, as
   narrowed at v1.31.0]. A prompt may name them, being spent and archived.
 
+### Sign-off is three acts, and each produces an artefact someone can read
+
+**A rule recorded is indistinguishable from a rule performed until someone reads
+the artefact it should have produced.** That is why these are here rather than in
+`Lessons that transfer`: a lesson is read when someone goes looking, and these
+have to happen whether or not anyone does. All three failed at least once, and in
+each case the work they govern was done carefully while the act itself was
+skipped.
+
+- **The marker sweep is run, not recalled.** Every `Build state:` line is read
+  off disk and checked against what shipped. It produces the markers. 3.1
+  recorded the practice two commits before signing off and did not perform it;
+  3.3's second run at merge found four figures the first could not have seen,
+  which is why it runs again if the branch moved.
+- **The archive's state block is re-measured, not carried.** It is the only
+  description of the present, so every count in it comes from a measurement taken
+  at sign-off rather than from the previous one adjusted. It produces the
+  description. **A checkpoint that changed no code still changes what is built**,
+  which is the sentence that made this fail: "neither changed any code, so every
+  section below stands" was true at 3.2 and false from the next commit, and
+  nothing re-read it for two checkpoints.
+- **[`CLAUDE.md` §11]'s question is asked against every unspent prompt** whenever
+  a decision was added, amended or superseded, **and the answer is recorded even
+  when it is none.** It produces the answer. Recording a "none" is what
+  distinguishes a question asked from one skipped, which is the whole of why the
+  omission across thirteen decisions and three amendments left no trace.
+
 ## Lessons that transfer
 
 Carried forward because each cost something to learn and none is visible from
