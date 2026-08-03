@@ -332,6 +332,19 @@ public static class Migrations
             """
             -- §4.3's three, the first tables Phase 3 writes.
             --
+            -- This migration was edited in place after it was first written,
+            -- adding two CHECK vocabularies. 0.3 took the other course, a new
+            -- migration rather than amending migration 1, and stated the rule
+            -- that decides between them: an amended migration never re-runs, so
+            -- amending is only available while nothing has run it. That is a
+            -- condition rather than a prohibition, and it was measured absent
+            -- here rather than assumed. main carried five migrations; no store
+            -- file existed in the tree; Storage__Path was unset at every scope,
+            -- so StoreLocation refused and migrate.ps1 could not run; and 3.3's
+            -- detail carries no demonstration bullet, both its tests running
+            -- against per-test stores that are created and destroyed. Once this
+            -- branch merges the same change is a new migration.
+            --
             -- ledger_entries is the record and carries both triggers; trials and
             -- positions are projections of it and deliberately carry none. That
             -- is [D-W35]'s two halves in one migration: a record is the only
