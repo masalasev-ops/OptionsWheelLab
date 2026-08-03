@@ -186,8 +186,18 @@ entirely by that one choice.
 ### 3.8 Wheel state machine and ledger
 
 Four states modelled as a discriminated union: cash, short put, holding shares,
-short call. Daily events drive transitions: expiry, assignment, exercise,
-dividend, split, earnings.
+short call. Daily events drive transitions, and they lie on two axes rather than
+in one list: contract events, being expiry and assignment, and corporate actions,
+which reach a trial from its underlying and carry OCC's own enumeration rather
+than this lab's [D-W47]. Earnings is on neither axis. It refuses a candidate
+whose life spans a report date and moves no position, so it is a gate input.
+Exercise is assignment seen from the side this lab is never on, since the wheel
+writes options rather than buying them.
+
+An action the lab does not model stops the trial and is recorded as its reason.
+What each action does to a contract may be deferred; what an unmodelled one does
+may not, because a position carried past a merger is priced on terms the lab
+cannot compute.
 
 Rolling is permitted but bounded, and a rolled chain terminates at a configured
 maximum number of rolls or maximum trial days, whichever binds first, at which

@@ -12,7 +12,9 @@ specification, and §4.3 splits across two phases rather than falling to one:
 `trials`, `positions` and `ledger_entries` at 3.3, `decisions` and `candidates`
 Phase 4, scores Phase 5, pre-registration Phase 9. `ledger_entries` gained
 `known_on` at 3.1 while still specification, deduced from [D-W35] rather than
-built.
+built. §4.1 is the one built section carrying an unbuilt part: `market_sessions`
+and `corporate_actions`' `CHECK` are stated there from 3.3's decisions and are
+specification until 3.3 lands them.
 
 ## 1. Sources
 
@@ -136,13 +138,18 @@ version comes from rather than from `PRAGMA user_version` [0.3]. Never rewritten
 
 ### 4.1 Market data
 
-These six are the **snapshot tables**: they record what was observable on a date
+These seven are the **snapshot tables**: they record what was observable on a date
 and are never rewritten [D-W8]. `contracts` is one of them despite carrying no
 `observed_at`, because a corporate action mints a new identity with a predecessor
 link rather than editing the existing row [§2]. The phrase is used in four
-documents and this is where it is defined.
+documents and this is where it is defined. Six landed at 1.1; `market_sessions`
+joined them at 3.3.
 
 ```
+market_sessions
+  session_date TEXT, observed_at TEXT
+  PK (session_date, observed_at)
+
 underlying_bars
   symbol TEXT, session_date TEXT, open TEXT NULL, high TEXT NULL,
   low TEXT NULL, close TEXT, adj_close TEXT NULL, volume INTEGER NULL,
@@ -152,6 +159,9 @@ underlying_bars
 corporate_actions
   symbol TEXT, ex_date TEXT, kind TEXT, ratio TEXT NULL, amount TEXT NULL,
   observed_at TEXT
+  CHECK (kind IN ('ordinary_dividend', 'non_ordinary_dividend', 'split',
+                  'rights_offering', 'reorganization', 'merger', 'liquidation',
+                  'spin_off'))
 
 earnings_calendar
   symbol TEXT, report_date TEXT, session TEXT, observed_at TEXT
@@ -181,6 +191,20 @@ than zero, because a gamma of zero is a false observation and not a missing one,
 `ContractQuote` is the same shape. A split carries a ratio and a special dividend an
 amount, so `corporate_actions` has one of each. A chain the loader accepts is a chain
 this schema holds.
+
+`market_sessions` carries no symbol, which is the point of it. A session is a
+fact about the market and not about a name, and the only session sequence this
+schema otherwise holds is `underlying_bars.session_date`, which is per symbol and
+cannot tell a market holiday from a name that did not trade [D-W46]. It is
+transcribed rather than derived, so it is a snapshot table like the rest and a
+correction to it appends.
+
+`corporate_actions.kind` carries OCC's own enumeration of the events that adjust
+a contract, complete before the transitions that read it are written [D-W47]. The
+two dividend values are the ordinary and non-ordinary split that [D-W44] draws,
+and which side an event falls on is transcribed per event [D-W36]. A reverse
+split is a `split` whose ratio is below one rather than a value of its own. The
+`CHECK` is here for the reason `right` has one below.
 
 `session` is `before_open`, `after_close` or `unspecified`, lower case, matching
 `right` and `kind` elsewhere in this schema. It records when in the session the
@@ -232,11 +256,13 @@ as well, because a stored form only the code enforces has one guard.
 **`contracts` carries two quantities that are easy to read as one.**
 `multiplier` is the number a quoted premium multiplies by to give the cash paid for
 one contract, and an adjustment does not change it. `deliverable_shares` is what one
-contract conveys on exercise, and an adjustment does change it: a three-for-two
-split takes a 90 strike to 60 and the deliverable to 150. **Which of the two the
-outcome metric uses is open**, and the carried obligation owed at Phase 3 settles it
-against OCC's adjustment memos. Neither column is described here by what consumes
-it, because that is the open question.
+contract conveys on exercise, and an adjustment does change it. **The outcome
+metric uses the multiplier**, settled at 3.1 against the filing that states the
+method in force [D-W17, as amended]: an adjustment moves the deliverable and
+leaves the strike and the aggregate exercise price where it found them, so
+committed capital is strike times multiplier and a metric reading the deliverable
+would misprice every adjusted position. The deliverable keeps the job the next
+paragraph gives it.
 
 A contract is unique on its identity tuple together with what it delivers. An
 adjusted series can carry a strike that collides with a standard one on the same
@@ -326,6 +352,21 @@ ledger_entries
 
 `state` is the discriminated union tag: `cash`, `short_put`, `holding_shares`,
 `short_call`. Both basis conventions are stored [D-W19].
+
+`ledger_entries.kind` is `premium_received`, `premium_paid`, `expired_worthless`,
+`assignment`, `call_away`, `shares_sold`, `dividend`, `commission`,
+`assignment_fee` or `stopped`, with a `CHECK` as every other stored vocabulary
+here has. **The table records events and not only cash** [D-W48], so an expiry
+that pays nothing is a row carrying a zero amount: the projection rebuilt from
+this table has to know the short closed and no other table says so, which is what
+`WORKED_EXAMPLE.md` §6.3 already shows by giving its worthless expiry a leg of
+its own. The pairs are there because one cash direction covers two events. A
+short leaves by expiring, by assignment or by being bought back, and only the
+last is a premium; shares leave at the strike when called away or at market when
+the roll bound binds [D-W14], and those are not the same fact. `commission` and
+`assignment_fee` are in the vocabulary before anything writes them, because
+whether the fill model gives them entries of their own is 3.4's [D-W12] and a
+value nothing writes costs nothing where a migration adding one costs a rebuild.
 
 `entry_date` is the session an entry occurred in and `known_on` the session the
 account could act on it. They differ because assignment is determined after the

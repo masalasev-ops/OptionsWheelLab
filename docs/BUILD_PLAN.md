@@ -1411,8 +1411,10 @@ position in a document rather than as a fact about one filing.
 Four states as a discriminated union, daily events driving transitions
 [SYSTEM_DESIGN §3.8]. `trials`, `positions` and `ledger_entries` land here.
 - Rolling bounded by whichever of the roll count and the trial days binds
-  first, closing at market at the bound [D-W14]. A roll is a recorded
-  decision.
+  first, closing at market at the bound [D-W14]. Both legs of a roll reach the
+  ledger, without which the projection cannot rebuild [D-W35]. The roll's
+  decision row is Phase 4's, alongside every other decision, because
+  `decisions` lands there [§4.3].
 - Cost basis recorded both gross and net, with the covered-call constraint
   reading gross [D-W19], which 2.4 built against a parameter and this
   supplies.

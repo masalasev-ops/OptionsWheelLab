@@ -16,10 +16,10 @@ predates this file and cannot be relied on.
 
 **Purpose and measurement**: D-W2, D-W3, D-W5, D-W17, D-W18, D-W20, D-W21
 **Isolation and controls**: D-W1, D-W4, D-W6, D-W13, D-W41, D-W45
-**Data and identity**: D-W7, D-W8, D-W9, D-W15, D-W26, D-W27, D-W28, D-W29, D-W30, D-W31, D-W32, D-W34, D-W35, D-W36, D-W39, D-W44
+**Data and identity**: D-W7, D-W8, D-W9, D-W15, D-W26, D-W27, D-W28, D-W29, D-W30, D-W31, D-W32, D-W34, D-W35, D-W36, D-W39, D-W44, D-W46, D-W47, D-W48
 **Risk**: D-W10, D-W11, D-W14, D-W19, D-W23, D-W25, D-W37, D-W43
 **Gate constraints**: D-W10, D-W22, D-W23, D-W24, D-W25
-**Settlement mechanics**: D-W38, D-W39, D-W40, D-W41, D-W42, D-W43, D-W44
+**Settlement mechanics**: D-W38, D-W39, D-W40, D-W41, D-W42, D-W43, D-W44, D-W46
 **Scope**: D-W12, D-W16, D-W45
 **Verification mechanisms**: D-W28, D-W33
 
@@ -1248,3 +1248,154 @@ no sentence anywhere naming tax in either direction.
 Consequence for reading a result. Every comparison this lab reports is pre-tax on
 both sides, which is a fair comparison of decisions and not a claim about what an
 investor keeps.
+
+---
+
+### D-W46 The session calendar is transcribed, never derived
+`active` · 2026-08-02
+
+A session is a date the market traded, and the lab holds that calendar as a
+transcribed record. It answers one question, which is what the next session after
+a given date is, and it redefines no day count that already exists.
+
+Why not derived from bars, and the weaker objection is the obvious one.
+`underlying_bars.session_date` is per symbol, so a union over symbols cannot tell
+a market holiday from a name that did not trade, which is what [D-W40] named when
+it raised this. The stronger objection is point-in-time. A derived calendar's
+answer to whether some past date was a session changes the moment another symbol
+is ingested, so a question about the past would get a different answer after new
+data arrived, which is the leak an as-of read exists to close [D-W8] arriving
+through a derived value rather than through a stored one.
+
+A calendar is a fact about the market rather than about the data this lab happens
+to hold, which is [D-W36]'s shape: a stated term is transcribed and never
+computed.
+
+What it does not do, and this clause is what keeps it from spreading. Days to
+expiry and a trial's day bound are calendar days and stay calendar days.
+`WORKED_EXAMPLE.md` counts 46 days from 2026-03-02 to 2026-04-17 and 109 to
+2026-06-19, both on the calendar, and `Gate:MaxDte` and `Trial:MaxTrialDays` are
+compared against counts of that kind [D-W24]. A session calendar that silently
+redefined either would move every gate verdict in that document and put its total
+out of reach.
+
+A shortened session is a session. The lab observes a closing price and cannot use
+the hours a session kept, so the calendar carries dates and no hours.
+
+One market, so no market column. Every name this lab holds trades against one US
+holiday schedule. A second market would need the column, which is a change to a
+built structure rather than one to add now against an eventuality.
+
+A date the calendar does not reach stops the evaluation rather than resolving
+either way [D-W37]. Guessing forward would put an unrecorded market assumption
+inside a settlement date, and guessing that the date is a session would settle
+proceeds on a day the market was shut.
+
+Consequence. This is the first thing [D-W40] needs and its first schema
+consequence. Phase 8's vendor ingest is the second producer of the calendar;
+before it, a scenario states its own sessions, which is exact rather than
+approximate, because a hand-written scenario's session dates are what its author
+wrote and there is no name that did not trade.
+
+Test FX-NextSessionSkipsAClosedDate: an assignment whose following date is absent
+from the calendar settles on the next date the calendar carries, and a date the
+calendar does not reach stops rather than resolving.
+
+---
+
+### D-W47 The state machine's events lie on three axes, not in one list
+`active` · 2026-08-02
+
+An event is what changes a trial's state. [`SYSTEM_DESIGN.md` §3.8] named six and
+they cover three different kinds of thing, so separating them is what a longer
+list would not have fixed.
+
+**Contract events** arise from a contract the trial holds: expiry and assignment.
+**Corporate actions** arise from the underlying on an ex-date and reach the trial
+through `corporate_actions`. **Earnings is neither.**
+
+Earnings drives no transition. It refuses a candidate whose life spans a buffered
+report date [D-W25], which is a gate input, built at 2.3 and asserted there. An
+event union carrying it would let a report date change a position, which nothing
+in this lab does.
+
+Exercise is assignment seen from the other side. This lab is never long an
+option: the four states are cash, short put, holding shares and short call, a
+roll buys a short back rather than opening a long, and the wheel writes options
+rather than buying them [D-W16]. So the lab is never the party that exercises,
+and naming exercise as an event of its own describes a transition no state can
+make.
+
+**The corporate-action vocabulary is complete before the transitions are, which
+is the whole of what this settles.** OCC's adjustment provisions reach the
+"declaration of dividends or distributions, stock splits, rights offerings,
+reorganizations, or the merger or liquidation of an issuer", and
+`CorporateActionKind` held `Split` alone. The enumeration carries all of them,
+plus the ordinary and non-ordinary dividend that [D-W44] separates, and the
+spin-off that a distribution can be. A reverse split is a split whose ratio is
+less than one and is not a separate kind: the ratio is a recorded fact about the
+event [D-W36], and a second name for one event is a second place to get it wrong.
+
+**An action the lab does not model stops the trial rather than passing through
+it.** What each action does to a contract is deferred, which the obligation
+raising this permitted. What an unmodelled action does is not deferred, because
+that is the silence it forbade. After a merger the trial's contract no longer
+overlies what the trial opened against, so carrying on would price a position on
+terms the lab cannot compute and dropping the event would leave a return that
+reads as ordinary. The trial stops and carries the action as its reason. That is
+[`CLAUDE.md` §6]'s rule that doubt about an identity excludes the security,
+applied to an event that ends an identity rather than to one that questions it.
+
+Consequence. `corporate_actions.kind` gains a CHECK, on the reason `right` and
+`watchlist_membership.kind` have one: a stored form the database does not enforce
+has one guard, and a vocabulary going from one value to several is when that
+starts to cost. The synthetic scenario format gains corporate actions, without
+which no hand-written scenario can express a dividend at all, which [D-W41] named
+and could not add.
+
+Test FX-UnmodelledActionStopsTheTrial: a merger on a held underlying stops the
+trial with the action recorded as its reason, and a split does not.
+
+---
+
+### D-W48 The ledger records events, not only cash
+`active` · 2026-08-02
+
+`ledger_entries` records every event that moves a trial, whether or not it moves
+cash. An expiry that pays nothing is an entry carrying a zero amount, because the
+projection rebuilt from this table has to know the short closed and no other
+table says so.
+
+The corpus already reads this way. `WORKED_EXAMPLE.md` §6.3 carries a leg dated
+2026-05-15 reading "call expires worthless" against a cash column of `0.00`, in
+the same table as the five legs that move money.
+
+The vocabulary: `premium_received`, `premium_paid`, `expired_worthless`,
+`assignment`, `call_away`, `shares_sold`, `dividend`, `commission`,
+`assignment_fee` and `stopped`.
+
+Three of those pairs exist because the same cash direction hides two different
+events. A short leaves by expiring worthless, by being assigned, or by being
+bought back, and only the last is a premium. Shares leave by being called away at
+the strike or sold at market when the roll bound binds [D-W14], and the two
+prices are not the same fact. The two premium kinds are named rather than carried
+as a signed amount under one kind, because a roll is a debit and a credit on one
+day and the rebuild has to read which leg opened a position rather than infer it
+from a sign.
+
+`commission` and `assignment_fee` are in the vocabulary although nothing writes
+them yet. Whether the fill model records them as entries of their own or nets
+them into the premium is 3.4's, and [D-W12] requires them explicit without saying
+where. A vocabulary admitting a value nothing writes costs nothing, and a
+migration adding one costs a table rebuild, which is the argument [D-W47]'s
+enumeration rests on.
+
+`kind` carries a CHECK, for the reason every other stored vocabulary in this
+schema has one.
+
+Consequence for the projections. This is the vocabulary [D-W35]'s rebuild test
+exercises, and that test is what makes `trials` and `positions` projections
+rather than rewritable tables with a flattering name. A kind missing from here is
+a fact the rebuild cannot recover, and nothing else would find it.
+
+Test FX-ProjectionRebuildsFromLedger: covered, registered at 3.3.

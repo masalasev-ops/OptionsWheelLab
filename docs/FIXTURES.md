@@ -118,6 +118,8 @@ to carry the wrong cell.
 | FX-EarlyAssignmentOnDividend | fixture | 3.3 | a short call whose underlying goes ex-dividend by more than the call's remaining time value is assigned on the preceding session, and one where the time value is larger is not [D-W42] | authored |
 | FX-CoveredCallCommitsNothingFurther | fixture | 3.3 | a trial holding assigned shares gates a call candidate against the committed capital it already carries, and the per-name headroom is unchanged by the call [D-W43] | authored |
 | FX-OrdinaryDividendLeavesContractUnchanged | fixture | 3.3 | an ordinary dividend produces a ledger entry and no contract adjustment, and a non-ordinary one produces the adjustment its corporate action states [D-W44] | authored |
+| FX-NextSessionSkipsAClosedDate | fixture | 3.3 | an assignment whose following date is absent from the calendar settles on the next date the calendar carries, and a date the calendar does not reach stops rather than resolving [D-W46] | authored |
+| FX-UnmodelledActionStopsTheTrial | fixture | 3.3 | a merger on a held underlying stops the trial with the action recorded as its reason, and a split does not [D-W47] | authored |
 | FX-ThreeMakersSameFeasibleSet | fixture | 4 | all makers receive byte-identical candidate sets | WORKED_EXAMPLE §3 |
 | FX-RecordCarriesFeasibleSet | fixture | 4 | a decision is re-scorable from its record alone | authored |
 | FX-ExcursionRecordedOnWin | fixture | 5 | a positive outcome still carries its adverse excursion | WORKED_EXAMPLE §6.2 |
