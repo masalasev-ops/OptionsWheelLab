@@ -137,8 +137,10 @@ to carry the wrong cell.
 | FX-RunIsByteIdentical | fixture | 3.5 | a composed run produces byte-identical output across two invocations | authored |
 | FX-RunRefusesAChoiceTheStateCannotHonour | fixture | 3.5 | a supplied choice a trial's state cannot accept is refused by name rather than skipped | authored |
 | FX-NoNondeterministicSql | fixture | 3.5 | no SQL under `src/` calls a function whose value varies between runs, and the barred list is checked against the bundled binary | authored |
-| FX-ThreeMakersSameFeasibleSet | fixture | 4 | all makers receive byte-identical candidate sets | WORKED_EXAMPLE §3 |
-| FX-RecordCarriesFeasibleSet | fixture | 4 | a decision is re-scorable from its record alone | authored |
+| FX-RecordCarriesFeasibleSet | fixture | 4.2 | a decision is re-scorable from its record alone | authored |
+| FX-DecisionsShareOneFeasibleSet | fixture | 4.2 | two decisions made against the same symbol, session and right reference one stored set rather than two copies, and their portfolio verdicts differ where their books do | authored |
+| FX-ThreeMakersSameFeasibleSet | fixture | 4.3 | all makers holding the same position in a name receive byte-identical candidate sets | WORKED_EXAMPLE §3 |
+| FX-TrialBoundsFixedAtOpen | fixture | 4.4 | a trial spanning a configuration change is bound by the values in force when it opened, a trial opened after the change is bound by the new ones, and a rebuild reaches the same verdict as the run | authored |
 | FX-ExcursionRecordedOnWin | fixture | 5 | a positive outcome still carries its adverse excursion | WORKED_EXAMPLE §6.2 |
 | FX-NoAnnualizeInObjective | fixture | 5 | equal returns over unequal durations store identically | authored |
 | FX-FastSlowDivergenceFires | fixture | 5 | inverted fast and slow rankings raise the monitor | WORKED_EXAMPLE §7 |

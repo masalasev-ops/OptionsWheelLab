@@ -17,6 +17,12 @@ is not duplicated here.
 phases ahead is what made the equivalent AlphaLab document go stale, because a
 checkpoint's acceptance criteria depend on decisions that have not landed yet.
 
+Writing a phase's detail promotes rows in two registers, not one. The obligations
+table's Owed at column and `FIXTURES.md`'s Checkpoint column both name a phase
+until its detail exists and a checkpoint once it does, and moving one without the
+other leaves every checkpoint's entry-to-artefact definition of done resolving to
+nothing. Both are moved in the commit that authors the detail.
+
 A checkpoint's detail passes through three states, and the middle one is a single
 event rather than a period.
 
@@ -630,30 +636,29 @@ to differ. A count of this table is a count of rows. Rows sharing an Owed at
 value are separate obligations, and a count of distinct values is not a count of
 this table.
 
-**Eleven rows stand, five at checkpoint granularity and six at phase**, read off
-the table below when Phase 4's detail was authored. It stood at eleven, none and
-eleven, at 3.5's sign-off; at thirteen, two and eleven, at 3.4's; at fifteen,
-five and ten, at 3.3's; and at fourteen, seven and seven, at 3.2's.
+**Eight rows stand, two at checkpoint granularity and six at phase**, read off
+the table below at 4.1's sign-off. It stood at eleven, five and six, when Phase
+4's detail was authored; at eleven, none and eleven, at 3.5's sign-off; at
+thirteen, two and eleven, at 3.4's; at fifteen, five and ten, at 3.3's; and at
+fourteen, seven and seven, at 3.2's. 4.1 closed its own three and raised none.
 
-**Nothing was closed or raised between those two readings and five rows still
+**Between the last two readings nothing was closed or raised and five rows still
 moved**, which is this column's rule doing what it is for: it names a checkpoint
 once the owning phase's detail exists and a phase otherwise, so authoring Phase
 4's detail moved every Phase 4 row without changing what any of them owes. Three
 went to 4.1, which is where the grains are settled, one to 4.4 and one to 4.5. A
-reading that counted phase names would report five obligations vanishing.
+reading that counted phase names would report five obligations vanishing. The
+three that went to 4.1 are the three it has now closed.
 
 | Owed at | Obligation | Raised |
 |---|---|---|
 | Phase 11 | Re-add `Microsoft.AspNetCore.OpenApi` against a version whose `Microsoft.OpenApi` dependency clears the audit. Removed at 0.1 rather than suppressing the advisory; the reason is in the Api project file. | PR #1 |
-| 4.1 | Store one feasible set per name and date rather than one per decision. `candidates` is keyed on `decision_id`, so three makers acting on one set write it three times, while [D-W4] requires the three to be byte-identical and `FX-ThreeMakersSameFeasibleSet` asserts it. Storing once and referencing thrice makes it true by construction and divides the largest uncertain table by three. Raised while estimating store size over a ten-year lifetime, before the table exists. The grain is (symbol, date) and nothing carries it as a type; 2.5 declined to ship one because no maker exists to consume it, so Phase 4 models the set with `candidates` in front of it rather than inheriting a shape guessed three checkpoints early. `FX-ThreeMakersSameFeasibleSet` is also where the byte-level property is asserted, restated from 2.5's definition of done for want of a subject. **The reason-storage row raised at v1.32.0 is answered by whatever grain this settles.** | v1.17.0 |
 | Phase 8 | Extract the market rules out of `SyntheticChainReader`, so one definition serves the synthetic reader and the vendor ingest. Refusing a negative bid, a negative ask and a crossed market are statements about what a market can be, not JSON concerns, and they sit as private statics on the reader, so a second producer of quotes can only duplicate them. Phase 8 is where that second producer arrives. **The crossed-quote coupling is discharged at 2.3**: the gate handles a crossed quote [D-W22, as amended], so that rule moved to the gate and left the loader, and what remains to extract is the two negative-price refusals. Not extracted at 0.8 because there is one caller and the second does not exist. | PR #9 |
-| 4.1 | Decide how a candidate's gate reasons are stored. `candidates.gate_reason` is a single nullable TEXT column and the domain type is a set in declared order [2.3], which FX-GateRecordsAllReasons at 2.5 asserts by requiring two reasons on one candidate. The options include a delimited list, which makes a reason unqueryable, and a row per reason, which changes the table's grain. Raised at 2.3 when the vocabulary was declared. **The grain this assumes is the one the v1.17.0 row decides.** | v1.32.0 |
 | Phase 9 | Decide how configuration resolves for a simulated date that precedes the value being written. `SeedCommand` stamps `set_at` from the wall clock, so every gate bound resolves null for any simulated date before the seed ran, which is every date in a walk-forward over real history. [D-W26] requires resolution as of the simulated date and [D-W37] stops the evaluation rather than guessing, so the collision surfaces loudly at the first walk-forward rather than silently. The options include backdating the seed, which costs the audit trail its truthfulness, and resolving a registered run's configuration as of its pre-registration instant [D-W15], which keeps both rules intact. Raised at 2.3 while answering what an unresolvable bound does. | v1.32.0 |
 | Phase 8 | Decide how a deliverable that is shares plus cash is recorded. The adjustment method in force gives a 4-for-3 split of an $80 option a deliverable "adjusted to 133 shares plus the cash value of the eliminated fractional share", strike unchanged; `contracts.deliverable_shares` is an integer and one of the five components of contract identity [1.5], and nothing in this corpus or its sources names cash in lieu. Owed at Phase 8 rather than 3.3 because no synthetic chain can express a corporate action at all, so the first deliverable of this shape arrives with vendor data, and the change is to a built structure with a migration cost that is no cheaper now. 3.3 must not assume a deliverable is wholly shares. Raised at 3.2. | v1.38.0 |
 | Phase 5 | Decide whether cash earns, and at what rate. Nothing in this corpus names interest as a financial concept. The absence biases two of the three comparisons in opposite directions: the wheel holds cash securing its puts and the hold-cash floor holds cash outright, so both are understated by roughly the same amount and their comparison survives, while buy-and-hold holds no cash and is not understated at all, so the comparison the lab exists to make is biased against the wheel by whatever the rate is. A rate is an external source and choosing one is a modelling choice with its own argument. Owed at Phase 5, where the outcome metric and the controls' returns are computed. A control gap of the same kind as the dividend gap and in the same decision [D-W13]. Raised at 3.2. | v1.38.0 |
 | 4.4 | Resolve configuration in the projection rebuild as of the simulated date the run used, never as-now [D-W26]. Telling `closed_at_bound` from `closed_by_choice` means asking whether a bound had been reached, which reads `Trial:MaxRolls` and `Trial:MaxTrialDays`, and a rebuild reading current bounds would disagree with the run it is rebuilding while presenting the disagreement as a ledger defect. Not live at 3.3, where nothing writes `closed_by_choice` because no maker exists. Raised at 3.3 by building the rebuild. | v1.40.0 |
 | 4.5 | Verify the consumers of `Trial:MaxRolls` and `Trial:MaxTrialDays`, which 3.3 could not. `TrialBounds` reads both as of the simulated date and nothing in `src/` constructs it: the state machine is handed resolved bounds. **The reason this row gave was that the component resolving them is the run loop, which it called Phase 4's, and 3.5 landed the run loop without closing it.** `TrialRun` is handed a machine already constructed, so what is missing is not the loop but a composition root that resolves bounds and builds the machine from them, which arrives with the maker that drives a run. `CONFIG_REFERENCE.md` calls a consumer that cannot be verified once its checkpoint has landed a defect rather than a documentation gap, and 3.3 was that checkpoint, so both rows stay **Unverified** with the reason recorded rather than the column loosened to admit a type with no component behind it. Raised at 3.3, and its reason corrected at 3.5 by the run loop arriving early. | v1.40.0 |
-| 4.1 | Decide which simulated date the trial bounds resolve as of. A trial spans many sessions and [D-W26] resolves configuration as of the simulated date, so nothing states whether an open trial is bound by the values in force at its open or by each session's, and `Trial:MaxRolls` changing mid-trial would move the bound under a position already taken. 3.3 built the machine taking bounds at construction, on `GateBounds`' resolve-once-per-evaluation shape, and invented no answer. **The rebuild row above asks the same as-of question from the other side.** Raised at 3.3. | v1.40.0 |
 | Phase 5 | Decide what `ResolvedBound`'s refusal calls the thing it could not resolve. It reads "a gate bound", which has covered `Risk:` caps since 2.4 and covers a trial bound and a cost from 3.4, so it is wrong for three of the four records that use it. That type's own remarks anticipated this and call changing what the message carries a decision rather than an edit, because what [D-W37]'s refusal says is the reason the type exists. Owed at Phase 5 rather than sooner: the fourth record makes the wording wrong and the fifth is where a reader stops being able to infer the family from the key, since scores are the first values that are neither a bound nor a cost. Raised at 3.4. | v1.41.0 |
 
 ---
@@ -1614,9 +1619,14 @@ its reason is corrected.
 
 ## Phase 4 — Decision record and three makers in parallel
 
-Build state: **not built**. Nothing chooses. A loop steps a calendar from 3.5 and
-the choices it applies are supplied, so the whole of this phase is the thing that
-supplies them and the record of what it supplied. Delivers three makers acting
+Build state: **partly built**. 4.1 built and signed off, which settled the grains
+and wrote no code: the feasible set is keyed on symbol, session and right, its
+gate reasons split by whether they are computed against a book, and a trial's
+bounds are fixed at its open. 4.2 to 4.5 not started, so the decision record is
+five tables of specification and none of them exists. Nothing chooses. A loop
+steps a calendar from 3.5 and the choices it applies are supplied, so the rest of
+this phase is the thing that supplies them and the record of what it supplied.
+Delivers three makers acting
 every session on one feasible set with separate ledgers [D-W4], and the journal
 that makes each of their decisions re-scorable later [D-W3]. On synthetic chains;
 no vendor data until Phase 8.
@@ -1659,6 +1669,54 @@ either a document already in this corpus or a property the build can measure.
   decision, and no decision here is justified by a number that does not yet
   exist [D-W15].
 
+Reconciled at sign-off against what shipped. Two decisions, one amendment, three
+obligations closed and none raised. The suite went from 672 to 673, which the
+detail did not anticipate and the last clause of this checkpoint asked for.
+
+**The key came from the generator and not from the obligation, and the obligation
+was wrong.** It asked for one feasible set per name and date. `EnumerateFor` takes
+a position state and `GateFor` takes a state and a book, neither of which existed
+when that row was written at v1.17.0, so the wording described a generator that no
+longer runs. The key is symbol, session and right, because state reaches
+enumeration only through the right it makes sellable, and at most two non-empty
+sets exist per name and session however many makers there are. **A table drawn
+around the obligation's wording would have been the schema built twice that this
+checkpoint exists to prevent.**
+
+**The storage argument survived in a different form.** It was framed as division
+by three, the maker count. What is true is a bound of two rows per name and
+session, set by the count of sellable rights, which is a constant rather than a
+divisor and does not grow when a maker is added.
+
+**Three obligations turned out to be two questions, which the rows said
+themselves.** Each of the first two ends by naming the other as the one that
+settles its grain, and the third ends by naming 4.4's as the same question from
+the other side. That is 3.4's shape, where three cost obligations were one
+question asked three times.
+
+**[D-W4] needed amending and not for the reason the work began with.** Its test
+line asserted unconditionally what its fixture has always tested conditionally,
+that all three makers are offered byte-identical sets, which is false on any day
+they have diverged. Reading it to find out what it required of storage is what
+surfaced that. The same unconditional wording sat in four other places and they
+did not resolve alike: one was unaffected, one was a live gap in this phase's own
+unspent detail, one was a registry cell, and one was a design sentence that stands
+and needed saying which sense of permission it uses.
+
+**Authoring a phase's detail promotes rows in two registers, and at v1.43.0 it
+promoted one.** The obligations table moved and `FIXTURES.md` did not, which
+FIXTURES rule 2 says makes every checkpoint's entry-to-artefact definition of done
+resolve to nothing. Found by registering a fixture rather than by reading the
+rule. The practice is now recorded where the trigger is.
+
+**A measurement was reported wrong and corrected by measuring differently.** A
+probe opened its own connection, set `PRAGMA foreign_keys` and then read it, so it
+reported the value it had just written and three claims rested on it: that the
+schema's references were inert, that a composite constraint did not bind, and that
+an obligation was owed. Reading through `StoreConnectionFactory` gives one. The
+comment in `ChainWriter` was right all along and needed no correction, which is
+the outcome the clause asking for the measurement anticipated.
+
 ### 4.2 The decision record
 The journal, and the tables Phase 3 left unbuilt. `decisions` and the feasible
 set at whatever grain 4.1 settled, written once per name and date and referenced
@@ -1691,8 +1749,8 @@ compiled code, so a variant is a new row.
   phase the learner is a maker reading rows; the channel that writes those rows
   is Phase 7, and the firewall is stated here because the shape that violates it
   is a feature derived from a previous decision.
-- **Test**: on a given session all three makers are offered byte-identical
-  candidate sets.
+- **Test**: on a session where the three makers hold the same position in a
+  name, all three are offered byte-identical candidate sets.
 - **DoD**: the byte-identical property holds by construction from 4.1's grain
   rather than by three writes agreeing, and breaking the generator makes the
   test fail rather than making three copies wrong in the same way.

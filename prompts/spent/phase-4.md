@@ -1,30 +1,24 @@
-# Phase 3 Thin slice, one full wheel turn: spent prompts
+# Phase 4 Decision record and three makers in parallel: spent prompts
 
-**This file is closed.** It closed when `phase-4.md` opened at 4.1's sign-off,
-corpus v1.44.0, and is not corrected further. Its Current state was last brought
-current at v1.42.0 and describes the repository as it stood then, which is what it
-is frozen at rather than what it closed at; the two differ because Phase 4's
-detail was authored at v1.43.0 and 4.1 signed off at v1.44.0, between them adding
-one test and no other code. `phase-4.md` holds the description of the present.
-Phase 0's, Phase 1's and Phase 2's files are frozen the same way.
+Current state below is the whole state of the repository and the only description
+of the present. Phase 0's, Phase 1's, Phase 2's and Phase 3's files hold the state
+as it stood when the next file opened and are not corrected further.
 
 One prompt per checkpoint, being the prompt that produces the checkpoint as it now
 stands. Corrections found while building are folded back into the checkpoint's
 prompt rather than appended as further entries, so replaying the prompts in order
 against the corpus reproduces the current state without replaying the mistakes.
 
-One file per phase. **This file stayed open past Phase 3's sign-off and closed
-when `phase-4.md` opened**, which is the practice `phase-2.md` already records:
-a phase's archive stays open past its own sign-off and closes when the next one
-opens, because closing at sign-off leaves nothing describing the present in
-between. Phase 3 signed off at v1.42.0 and this file described the present for
-two further corpus versions.
+One file per phase. This file opened at 4.1's sign-off, which closed
+`phase-3.md`, on the practice that file records: a phase's archive stays open
+past its own sign-off and closes when the next one opens, because closing at
+sign-off leaves nothing describing the present in between.
 
 ---
 
 # Current state
 
-Corpus v1.42.0.
+Corpus v1.44.0.
 
 | | |
 |---|---|
@@ -32,20 +26,20 @@ Corpus v1.42.0.
 | Phase 1 | complete, 1.1 to 1.5 built and signed off |
 | Phase 2 | complete, 2.1 to 2.5 built and signed off |
 | Phase 3 | complete, 3.1 to 3.5 built and signed off |
-| CI | green, 672 tests, guards then restore then build then test, on push to `main` and every pull request |
+| Phase 4 | 4.1 built and signed off, 4.2 to 4.5 not started |
+| CI | green, 673 tests, guards then restore then build then test, on push to `main` and every pull request |
 
-**This block was stale for two checkpoints and is the reason to distrust the
-rest.** It read v1.39.0 through 3.3's and 3.4's sign-offs, saying 3.3 to 3.5 were
-not started while both were built and merged. The file's own opening calls it the
-only description of the present, so nothing else was describing one. Every section
-below is re-measured against `main` at this version rather than edited where it
-looked wrong, which is now one of the three acts a sign-off performs.
+**The block this one inherits was stale for two checkpoints, which is why
+re-measuring it is an act rather than a habit.** In `phase-3.md` it read v1.39.0
+through two sign-offs, saying checkpoints were not started while they were built
+and merged, and that file's own opening calls the block the only description of
+the present. Every section below is re-measured against `main` at this version
+rather than edited where it looked wrong.
 
-3.1 and 3.2 changed no code. 3.3 to 3.5 changed a great deal: four tables across
-three migrations, the wheel state machine, the ledger and its two projections, the
-fill model, the run that steps a session range, six new stored vocabularies and a
-third named guard. The suite went from 503 to 672 and the guards from 149 files by
-two checks to 191 by three.
+4.1 changed one `.cs` file, a test pinning a pragma, so almost everything below is
+Phase 3's state carried forward unchanged. What 4.1 changed is documentation: two
+decisions, one amendment, five tables specified where two were, and a fixture
+registered against a checkpoint that has not landed.
 
 Which branch the work sits on and which pull requests have merged are not recorded
 here. Git holds both exactly, and a fact kept in two places drifts.
@@ -544,8 +538,10 @@ bands the list names.
 
 ## Tests
 
-672: 417 across fifty-nine fixtures, and 255 across thirty-seven unregistered
-suites. The three guards are checks rather than tests and are counted in neither.
+673: 417 across fifty-nine fixtures, and 256 across thirty-seven unregistered
+suites. The one 4.1 added pins that foreign keys are enforced on a connection this
+store opens, read through the real factory, because a probe written for the same
+question set the pragma before reading it and reported the value it had written. The three guards are checks rather than tests and are counted in neither.
 2.1 registered none and changed none, which is what a document-only checkpoint
 pinned by existing fixtures looks like; 2.2 registered two, 2.3 seven, 2.4
 four and 2.5 one.
@@ -630,7 +626,8 @@ append-only triggers make the tables impossible to clean between cases.
 
 **Nothing chooses.** A loop steps a calendar from 3.5, but the choices it applies
 are supplied, so no maker decides. That is the largest single gap in the
-repository and it is Phase 4's whole subject. `TrialRun` is also handed a machine
+repository and it is Phase 4's whole subject. The decision record is five tables
+of specification after 4.1 and none of them exists. `TrialRun` is also handed a machine
 already constructed, so no composition root resolves bounds and builds one, which
 is why two `Trial:` configuration rows are still unverified.
 
@@ -672,15 +669,18 @@ obligations, which is where planning for the phase that owns it will look. It is
 copied here: two registers of one list is how an obligation comes to exist in the one
 nobody reads.
 
-Entries stand against Phases 4, 5, 8, 9 and 11 and against no checkpoint. The
-count is not restated here. **The column names a checkpoint once the owning
+Entries stand against checkpoints 4.4 and 4.5 and against Phases 5, 8, 9 and 11.
+The count is not restated here. **The column names a checkpoint once the owning
 phase's detail exists and a phase otherwise**, stated at the table because two
 readings of it disagreed: a count over phase names alone misses the rows that have
-moved on. **3.1 to 3.5 owe nothing, and for the first time every outstanding row
-is owed at a phase**, which is what closing a phase with nothing carried inside it
-looks like. 3.1 closed four rows while raising three; 3.2 closed its own and
-raised three; 3.3 closed four and raised five; 3.4 closed three and raised one;
-3.5 closed two and raised none. **Phase 2 owes nothing.** 2.1 discharged the reconciliation row raised at
+moved on. **Authoring a phase's detail promotes rows in two registers**, this one
+and `FIXTURES.md`'s Checkpoint column, and v1.43.0 moved one and not the other,
+which leaves every checkpoint's entry-to-artefact definition of done resolving to
+nothing. Corrected at 4.1 and the practice recorded where the trigger is.
+
+**3.1 to 3.5 and 4.1 owe nothing.** 3.1 closed four rows while raising three; 3.2
+closed its own and raised three; 3.3 closed four and raised five; 3.4 closed three
+and raised one; 3.5 closed two and raised none; 4.1 closed three and raised none. **Phase 2 owes nothing.** 2.1 discharged the reconciliation row raised at
 v1.6.0, the table's oldest and open for twenty-three corpus versions, 2.3
 discharged the crossed-quote row while opening two of its own, and 2.4
 discharged the risk row while opening one of its own. All three discharged rows
@@ -852,315 +852,46 @@ the artefact it produced.
 
 # Prompts
 
-## 3.1 The mechanics, settled before the machine
+## 4.1 The record's grain, settled before the tables
 
-Docs only. New branch `phase-3/checkpoint-3.1` off `main`. No code, and the
-suite must come out unchanged. The branch stays open until all seven mechanics
-are settled: a half-settled 3.1 on `main` would leave the corpus asserting some
-mechanics and silent on the rest with nothing marking the difference.
+Branch `phase-4/checkpoint-4.1` off `main`. Not code. The grains that determine
+what this phase's tables are, settled before any of them exists, on the ordering
+Phases 1, 2 and 3 all used: a precondition answered late is a schema built twice.
 
-### The division of labour
+### The obligation describes a generator that no longer runs
 
-Verification is the build's and the decisions are authored, which is the
-v1.26.0 obligation's own wording: verify *before the state machine's decisions
-are authored*. Where the evidence is in the build's hands and the wording is
-not, draft and land for correction rather than wait for supplied prose, and
-record in the corpus that the prose is the build's. A reader must be able to
-tell which author produced a sentence.
+The row asking for one feasible set per name and date was raised at v1.17.0.
+`EnumerateFor` did not take a position state then and `GateFor` did not take a
+book. **Settle the key from what the generator reads now, not from what the
+obligation says**, and expect the two to differ whenever a precondition has been
+carried across phases.
 
-### The house form, which D-W38 sets
+### Three obligations, and the rows say they are two questions
 
-Each decision carries the operative statement first; one Source paragraph per
-authority, quoting the clause with its release number, file number, Federal
-Register citation and retrieval date; a paragraph naming what the authority does
-not reach and what the lab models instead; and a Test line naming a fixture
-registered at the checkpoint that builds it. 3.1 registers none against itself
-and says so, per `FIXTURES.md` rule 2.
-
-### Routes, measured before relying on them
-
-`theocc.com` and `infomemo.theocc.com` return 403 to this environment.
-`sec.gov` serves SRO filings to `curl` with a declared agent and 403s WebFetch.
-`govinfo.gov` serves GPO's own text of the Federal Register, and
-`federalregister.gov`'s JSON API locates documents by date and agency while its
-full-text path returns a bot wall. A rule whose text no filing exhibit
-reproduces can still be read in the notice that approved it, which is the route
-that reaches Rule 805 and Rule 903. Contract adjustment info memos are not
-Federal Register documents and have no such fallback.
-
-### The seven, and what each cites
-
-- **Expiry resolution.** One cent in the money against the session's close, from
-  Release No. 34-57163, File No. SR-OCC-2007-18, 73 FR 4297, 24 January 2008,
-  which amended Rule 805 to reduce the threshold from $.05 to $.01 and states
-  the in-the-money test. The Options Industry Council supplies the limit that
-  the filing does not: the threshold runs between OCC and its clearing members
-  rather than binding an account.
-- **When assignment is known.** Determined after the close and known the next
-  morning, which is [D-W8] applied to the account. Split by authority: Rule 803
-  and its Interpretation .01 for the clearing layer, with SR-OCC-95-16 for why
-  the method is deliberately outside the rule; Rule 804 for the account layer,
-  where the member's own fixed procedures govern and no rule fixes when a
-  customer is told.
-- **T+1 cash availability.** Rule 15c6-1(a) for the cycle and OCC Rule 903 for
-  the exercise leg, an exercise being a clearing event rather than a purchase or
-  sale. When a broker releases proceeds to trade against is house policy.
-- **Dividend entitlement.** FINRA Rule 11140(b)(1) as amended fixes the ex-date
-  at the record date. Whether a dividend enters the record has no authority and
-  the lab decides it: it does, in `ledger_entries` and in the control [D-W13].
-- **Early exercise around ex-dividend.** No rule governs whether a holder
-  exercises, so the decision cites nothing and says that citing nothing differs
-  from citing weakly. The condition is chosen.
-- **Committed capital's quantity.** Strike times the multiplier, from Release
-  No. 34-54748, File No. SR-OCC-2006-01, 71 FR 67415, 21 November 2006, approved
-  by Release No. 34-55258, 72 FR 7701, 16 February 2007. Amend [D-W17] rather
-  than adding a decision, and stamp the amendment.
-- **What a covered call commits.** Nothing beyond the trial's figure, fixed at
-  open. Chosen, with no external source of any kind.
-
-### The two checks that are not about sources
-
-- **Run [D-W35] against every decision.** Can a projection rebuilt from
-  `ledger_entries` reproduce what this decision requires? `known_on` falls out
-  of that question, not out of any rule. The session calendar does not resolve
-  and is raised rather than deduced.
-- **State which claims are transcribed and which are chosen before retrieving,
-  not after.** That is 2.4's distinction moved from numbers to mechanics, and it
-  is what stops the last one arriving dressed as a fact.
+Each of the first two ends by naming the other as the one that settles its grain,
+and the third ends by naming a fourth row as the same question from the other
+side. Read the rows before deciding how many decisions a checkpoint owes.
 
 ### Constraints
 
-- Every citation is checked against retrieved text before it lands, never from
-  a search snippet or from recollection. A quotation is not evidence until its
-  position in the document is established: the footnote that appears to settle
-  the adjustment question sits in the Background describing what the filing
-  exists to replace.
-- Counts are read off the table they describe, at the moment they are written.
-- `CommittedCapital.cs` is not edited. 3.1 is not code, and the correction is
-  scheduled at 3.3 rather than remembered.
-
-## 3.2 The completeness pass
-
-Docs only. New branch `phase-3/checkpoint-3.2` off `main`. No code, and the suite
-must come out unchanged. One obligation is owed here and it is the pass itself.
-
-### The method, which the obligation's own argument forces
-
-Every check this repository has compares one part of the corpus against another,
-so an omission from the domain model is invisible to all of them. A survey that
-reads the corpus and asks whether it looks complete is another such check.
-**Each axis is walked against an external enumeration where one exists, and
-against first principles where none does, with the source named per axis and
-stated as which of the two it was.** Where there is no external authority, say so
-and say why: nothing governs what a laboratory chooses to measure.
-
-### Three properties the record must have, and each is a separate act
-
-- **The scope is committed before the walk.** A scope written afterwards is a
-  reconstruction, and committing it first is the only thing that makes the order
-  checkable rather than asserted.
-- **The scope is stated in both directions.** A record saying what was examined
-  cannot be checked for whether it examined enough; one that also says what was
-  left out, with the reason, can. Exclude phases whose own detail is unwritten,
-  because a pass over unwritten intent surveys nothing.
-- **Every axis is recorded whether or not it found anything.** An axis that found
-  nothing is the more valuable record, being the only evidence it was walked at
-  all. That is the vacuity guard this repository puts on every scanning check,
-  applied to a pass rather than to a test.
-
-### Where a finding lands, and the criterion
-
-Settleable inside the checkpoint when the corpus can answer it from what it
-already holds: a decision, a schema, or an arithmetic consequence of either. An
-obligation when the answer needs an external source, depends on work not yet
-built, or is a modelling choice large enough to deserve its own argument.
-**Record which kind each finding is, not only what it is**, which is what stops
-"settled" meaning "answerable from what happened to be to hand".
-
-The survey commits before any decision does. A pass that authors while it walks
-is no longer a survey, and its record becomes a summary of what was concluded
-rather than evidence of what was looked at.
-
-### Constraints
-
-- Anything outside the stated scope is recorded as out of scope and raised, never
-  absorbed. A scope that grew to fit what was found is not a scope.
-- A quotation is not evidence until its position in the document is established.
-  The 10% Rule looks like the answer to what makes a dividend ordinary and sits
-  in the Background of the filing that replaced it, which is the second time in
-  two checkpoints that the passage that looks like the answer is the retired one.
-- **The marker sweep is an act of sign-off**, not a lesson recorded in a document
-  the sign-off produces. 3.1 wrote it down and did not run it.
-
----
-
-## 3.3 The state machine and the ledger
-
-The first checkpoint in Phase 3 that writes code. Branch
-`phase-3/checkpoint-3.3` off `main`. Four tables, not the three the detail named:
-a transcribed calendar is a table like any other stated fact.
-
-### One checkpoint, two review points
-
-Push after the decisions and stop, before any DDL exists to freeze the
-vocabularies they settle. That is what a split would have bought, without moving
-twelve registry rows, four obligations and every reference in the phase's detail
-to buy it. **A checkpoint is a unit of work rather than a unit of review**, which
-3.1 already showed by being pushed eleven times on one branch. This corpus does
-not renumber a decision or a migration for the same reason, and a checkpoint
-number is that kind of identifier.
-
-### The ordering inside a code checkpoint
-
-Phase 3's preamble says a precondition answered late is a schema or a transition
-built twice, and 3.1 existed to answer them first. **Three of the four remaining
-obligations were preconditions of the same kind**, because each fixes a
-vocabulary or a table that a migration would freeze. The fourth was one
-expression at one site and went first for being independent of them.
-
-It paid twice, and both times on something a migration would have frozen. The
-event set was not a list of more names: §3.8's six lie on three axes, and one of
-them drives no transition at all. The ledger needed an eleventh kind, because a
-short bought back to roll and one bought back to end a trial are two events under
-one cash direction that the sequence cannot separate after the fact.
-
-### Amending a migration, and the condition that permits it
-
-0.3 stated the rule while taking the other course: **an amended migration never
-re-runs, so amending is available only while nothing has run it.** That is a
-condition rather than a prohibition, and the condition is measured rather than
-assumed. Four things establish it: what `main` carries, whether any store file
-exists, whether the configured store path is set at any scope, and whether the
-checkpoint's own detail has a demonstration step. Say which were checked.
-
-### Constraints
-
-- **A citation is verified by what rests on it.** Adding an entry to the
-  append-only list needed a decision stating the property, and the decision as
-  first drafted gave the reason. Third occurrence, found the same way as the two
-  before it: by building the thing that rests on the citation.
-- **A record cannot reference a projection.** Rebuilding a projection means
-  discarding it, so a foreign key from the record refuses the discard. The schema
-  document's absence of arrows was a statement and read as an omission.
-- **A count written in the present tense is a claim about now**, and dating it
-  does not make it historical, so a count is restated at each sign-off rather
-  than stamped with the moment it was true.
-- **A detector reads what it is given, including the comments.** Two sentences of
-  ordinary English in a migration matched a table-alias pattern. The fix belongs
-  in the extractor, never in the prose: a comment rewritten to please a regex is
-  a comment optimised for the wrong reader.
-- **A vocabulary written twice is a vocabulary that can disagree with itself.**
-  Six of them now exist, one eleven values long, and nothing held them together
-  until a check compared each declaration against the CHECK enforcing it. It
-  found a defect in code shipped two phases earlier on its first run.
-
----
-
-## 3.4 The fill model and the costs
-
-Branch `phase-3/checkpoint-3.4` off `main`. The thing that turns a quote into a
-number: the state machine took every credit and debit as a parameter and computed
-none, and `Costs:FillPoint` had been seeded since 0.8 with no reader at all.
-
-### Three obligations that are one question
-
-What the assignment fee is, whether it can be non-zero without contradicting the
-worked example, and whether a commission is its own ledger entry. The first two
-are the same number and the third decides what they are arithmetic over.
-**Settle them together and stop for review before any code computes with them**,
-which is 3.3's two-review-point shape used for the same reason: the fee is a
-number an authored document's total depends on.
-
-### A stated zero is not the weak zero
-
-The obligation's own words are that a zero INFERRED from an absent ledger line is
-weaker than a stated number. So a fee of zero is admissible and it still needs
-the shape every decision in this phase carries: **a named source with a retrieval
-date, the claim, and what the source does not reach.** One broker's schedule
-establishes the common case and not a market rule, which is why a fee of zero
-still earns a configuration key: the key is what makes a broker that charges a
-stored value changing rather than code changing.
-
-### What a value that cannot vary is read for
-
-`Costs:FillPoint` has one permitted word and reading it looks pointless. It is
-not: a model that skipped the key would honour the rule by accident while a row
-asserted a different one. **Configuration nothing reads is configuration nothing
-can be wrong about.**
-
-### Constraints
-
-- **Verifying a Consumer is a type in `src/` resolving the key and a component in
-  `src/` calling that type**, measured rather than assumed. It is not about who
-  constructs the component: the generator is built only by tests and its keys
-  have been verified since 2.4. Measure the records before claiming either way.
-- **A correspondence a fixture cannot have is not one it should claim.** The
-  document nets what the ledger separates, so cells reconcile against sums and the
-  ledger carries more rows than the table. Say which correspondence is asserted.
-- **Break the code to find out which assertions notice.** Netting the commission
-  and re-running left three of five cases passing, which is how the two that carry
-  the grain were identified. An assertion nobody has seen fail is an assertion
-  nobody has read.
-- **A vocabulary with no second enforcer is named where each audience stands**:
-  at the type, at the fixture that holds the stored forms together, and in the
-  registry row a reader meets first. Written in one place reaches one reader.
-
-## 3.5 Determinism, end to end
-
-Branch `phase-3/checkpoint-3.5` off `main`. The checkpoint that composes a run:
-0.5 restated its byte-identical definition of done as identical stored rows
-because no run existed to make, and this is where one exists. A run takes a chain,
-a session range and the choices each session needs, supplied rather than chosen,
-steps every session and produces a ledger. No maker is needed, because determinism
-is a property of the loop rather than of the choice.
-
-### The loop was extracted, not written
-
-`FX-TrialCompleteIncludesAssignment` hand-inlined the walk over the worked
-example's six sessions. A run written fresh beside a test that walks the same
-trial would be **two producers of one sequence**, so the run is that loop lifted
-and the fixture became an assertion about its output, which is what it was always
-asserting.
-
-### A supplied choice the state cannot honour is refused, not skipped
-
-Skipping would give a run that walked, wrote entries and described a trial nobody
-asked for. **That is worse than stopping**, because the output would be readable,
-internally consistent and wrong. Every refusal names the session and the state,
-since a choice sequence is written by hand and the two facts a reader needs are
-which line is wrong and what the trial was holding when it got there.
-
-### What bars nondeterminism in SQL that is not a clock
-
-The second obligation, and the definition of done asks for two halves: the check
-covers every source it names **and names every source it does not cover**. The
-second half is where the decision goes, because a check that silently omitted a
-class would read as complete.
-
-### Constraints
-
-- **A plan precedes the build, and clauses describing scope are not
-  authorisation.** This checkpoint was built straight from its clauses while
-  `PROGRESS.md` still said it had not started. The branch was discarded and
-  re-laid rather than committed forward, and the code was restored byte-identical
-  because it was correct: what was wrong was the order, and the order exists so a
-  decision is reviewed before code rests on it.
-- **A fixture registration is authored.** Two rows were written unasked on the
-  discarded branch, with a Source column reading `authored` where that was false.
-  A registry wrong about provenance is wrong about the one thing it is the sole
-  source of.
-- **Check a supplied citation before landing it, not after.** The decision's first
-  draft cited a decision for a property that decision does not state. Four earlier
-  instances were found by building the thing that rested on them; this one was
-  found by reading the source the bracket named. Drop the unsupported half rather
-  than re-attributing it to a narrative document, which would put a second kind of
-  authority in the register.
-- **A flag that looks like the test usually is not.** `SQLITE_DETERMINISTIC` is
-  absent from 48 of 168 functions and only two of those matter; barring on it would
-  reject `count`, `sum`, `max` and `min`. Measure the set before writing the rule
-  over it, and assert the counts so an upgrade returns to the decision.
-- **Write the test expecting the answer you predict, and read the one you get.**
-  Two stores seeded at different instants were expected to compare equal. They do
-  not: the run stops, which is a better property than the equality that was
-  predicted, and a resolution rule that defaulted would have made the test pass
-  and the property false.
+- **A citation is verified by reading what it says, and a decision is read to
+  find out what it requires rather than to confirm what you expect it to.**
+  Reading [D-W4] to settle a storage key is what found its test line asserting
+  unconditionally what its fixture has always tested conditionally.
+- **An amended line is swept for wherever it is repeated**, and the copies do not
+  resolve alike. Five places carried the same unconditional wording: one was
+  unaffected on its own argument, one was a live gap in an unspent prompt, one
+  was a registry cell, one was a design sentence that stood and needed its terms
+  named, and one was the line itself.
+- **A probe that sets what it then reads measures the probe.** One written to
+  find whether foreign keys are enforced set the pragma first and reported the
+  value it had written, and three claims rested on it before a reading through
+  the real factory contradicted all three. Read through the composition the
+  application uses, not through one a test wrote.
+- **Say which part of a schema a decision determines and which part is
+  invention.** A decision settles a grain and a split; table and column names are
+  unavoidable to state a schema at all and are nobody's decision. Flagging which
+  is which puts the judgement where someone can disagree with it.
+- **A constraint the schema holds and one a test checks are different things**,
+  and the keys the first binds against are stated where the schema is stated
+  rather than left for the checkpoint that builds it to discover.

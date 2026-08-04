@@ -1,5 +1,54 @@
 # CHANGELOG
 
+## [1.44.0] — 2026-08-04
+
+**Checkpoint 4.1 signed off.** The grains settled before the tables exist. Two
+decisions, one amendment, three obligations closed and none raised.
+
+### Added
+- **D-W52: the feasible set is keyed on what the generator reads.** Symbol,
+  session and right, with the six contract-level gate verdicts stored beside it
+  and the four portfolio-level ones per decision, since a verdict computed from a
+  book belongs to the maker whose book it is. Reasons are rows rather than a
+  delimited list, carry no ordinal, and there is no `gate_status`, a candidate
+  being feasible exactly when no reason refused it.
+- **D-W53: a trial's bounds are fixed at its open.** A later version binds the
+  trials opened after it and no trial already running. States which question it
+  leaves to Phase 9, and holds under either answer there.
+- Two fixture registrations, `FX-DecisionsShareOneFeasibleSet` at 4.2 and
+  `FX-TrialBoundsFixedAtOpen` at 4.4.
+- One test, in an unregistered suite, pinning that foreign keys are enforced on a
+  connection this store opens.
+
+### Changed
+- **[D-W4]'s test line amended, `amended 2026-08-04 (the property is
+  conditional)`.** It asserted unconditionally what its fixture has always tested
+  conditionally: all three makers are offered byte-identical sets, which is false
+  on any day their positions have diverged, and the divergence is the experiment.
+- The same wording sat in four other places and they did not resolve alike. 0.4's
+  reconciled detail was unaffected, 4.3's Test line was a live gap in an unspent
+  prompt and took the qualifier, `FIXTURES.md`'s cell took it, and
+  `SYSTEM_DESIGN` §3.4 stands and gained a clause naming which sense of
+  permission it uses.
+- **`DATA_AND_SCHEMA.md` §4.3 goes from two specified tables to five**, with the
+  keys the composite references bind against stated in the block rather than left
+  for 4.2 to discover.
+- The obligations table falls from eleven rows to eight.
+- `prompts/spent/phase-4.md` opens and `phase-3.md` closes, on the practice that
+  an archive stays open past its own sign-off.
+
+### Fixed
+- **Authoring a phase's detail promotes rows in two registers and v1.43.0
+  promoted one.** `FIXTURES.md`'s Checkpoint column kept two rows at phase
+  granularity after Phase 4's detail existed, which rule 2 says leaves every
+  checkpoint's entry-to-artefact definition of done resolving to nothing. Both
+  rows moved, and the practice is recorded beside the one-phase-ahead rule.
+- **A measurement reported wrong, and three claims that rested on it.** A probe
+  set `PRAGMA foreign_keys` before reading it and reported the value it had
+  written. Read through `StoreConnectionFactory` it is one, so `ChainWriter`'s
+  comment was right, every `REFERENCES` enforces rather than documents, D-W52's
+  composite constraint binds, and no obligation was owed.
+
 ## [1.43.0] — 2026-08-04
 
 **Phase 4's detail authored, in five checkpoints.** No code. Phase 3 signed off at

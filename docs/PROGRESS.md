@@ -4,10 +4,9 @@ Appended to, never rewritten. The repository is the authority on build state.
 
 ## Current state
 
-**Phase 0 complete and reviewed. Phases 1, 2 and 3 complete.**
-Checkpoints 0.1 to 0.8, 1.1 to 1.5, 2.1 to 2.5, and 3.1 to 3.5 built and signed
-off. Phase 4 is not started and its detail is authored, in five checkpoints. The
-documentation corpus is at v1.43.0.
+**Phase 0 complete and reviewed. Phases 1, 2 and 3 complete. Phase 4 started.**
+Checkpoints 0.1 to 0.8, 1.1 to 1.5, 2.1 to 2.5, 3.1 to 3.5 and 4.1 built and
+signed off. 4.2 to 4.5 are not started. The documentation corpus is at v1.44.0.
 
 ## Log
 
@@ -2049,3 +2048,91 @@ built**. Eighteen have been read at each of the last two sign-offs.
 detail was drafted here on an explicit instruction to draft it, after the
 obligation was twice reported as the author's. It is recorded as drafted rather
 than as authored so that a later reader knows which it is.
+
+### 2026-08-04 — corpus v1.44.0
+
+**Checkpoint 4.1 signed off.** Two decisions, one amendment, three obligations
+closed and none raised, so the table falls from eleven rows to eight. The suite
+went from 672 to 673 and the guards are green over 191 files by three checks.
+`prompts/spent/phase-4.md` opens and `phase-3.md` closes.
+
+**The obligation was wrong about the key, and the generator said so.** It asked
+for one feasible set per name and date. `EnumerateFor` takes a position state and
+`GateFor` takes a state and a book, neither of which existed when that row was
+written at v1.17.0. State reaches enumeration only through the right it makes
+sellable, mapping cash to puts, holding shares to calls, and both short states to
+nothing at all, so **at most two non-empty sets exist per name and session however
+many makers there are**. D-W52 keys on symbol, session and right. A table drawn
+around the obligation's wording would have been the schema built twice that this
+checkpoint exists to prevent.
+
+**The gate reasons split along a boundary the code already draws.**
+`ContractConstraints` raises six from the candidate, the bounds and the report
+dates. `PortfolioConstraints` raises four against a book, and a verdict computed
+from a book belongs to the maker whose book it is. So the shared record carries
+the enumeration and the six, and the per-decision record carries the four.
+
+**The storage argument survived in a different form.** Framed as division by
+three, the maker count, it is really a bound of two rows per name and session set
+by the count of sellable rights: a constant rather than a divisor, which does not
+grow when a maker is added.
+
+**Three obligations were two questions and the rows said so themselves.** Each of
+the first two ends by naming the other as the one that settles its grain, and the
+third ends by naming 4.4's as the same question from the other side. That is
+3.4's shape, where three cost obligations were one question asked three times.
+
+**D-W53 fixes a trial's bounds at its open**, ratifying the shape 3.3 built rather
+than requiring a change, and states which question it leaves to Phase 9 so the
+same thing is not settled twice with two answers. It holds under either Phase 9
+answer.
+
+**[D-W4] needed amending, and reading it to settle a storage key is what found
+it.** Its test line asserted unconditionally what its fixture has always tested
+conditionally: that all three makers are offered byte-identical sets, which is
+false on any day they have diverged. **The same wording sat in four other places
+and they did not resolve alike.** 0.4's reconciled detail was unaffected on its
+own argument. Phase 4's own 4.3 detail was a live gap in an unspent prompt and
+took the qualifier. The registry cell took it. And `SYSTEM_DESIGN` §3.4 stands and
+gained a clause naming which sense of permission it uses, because the portfolio
+constraints do refuse one maker and not another, and a cap evaluated against the
+book that maker built by choosing is selection reaching forward.
+
+**Authoring a phase's detail promotes rows in two registers and v1.43.0 promoted
+one.** The obligations table moved and `FIXTURES.md`'s Checkpoint column did not,
+which rule 2 says leaves every checkpoint's entry-to-artefact definition of done
+resolving to nothing. Found by registering a fixture rather than by reading the
+rule, three commits after making the error. The practice is now recorded beside
+the one-phase-ahead rule, where the trigger is, rather than as a fourth sign-off
+act, because it fires once per phase and on authoring rather than on signing off.
+
+**A measurement was reported wrong and three claims rested on it.** A probe
+written to find whether foreign keys are enforced opened its own connection, set
+`PRAGMA foreign_keys` and then read it, so what it reported was the value it had
+just written. On that reading I told the author that the schema's two existing
+references were inert, that D-W52's composite constraint did not bind, and that an
+obligation was owed at 4.2. **All three were wrong.** Read through
+`StoreConnectionFactory` the pragma is one: `ChainWriter`'s comment was right and
+needed no correction, every `REFERENCES` enforces, the composite constraint binds,
+and there is nothing to raise. Pinned now in an unregistered suite, which is the
+one test 4.1 added.
+
+**The sweep ran as an act.** Nineteen markers read, one changed and none added.
+Phase 4's goes from not built to partly built and records that the decision record
+is five tables of specification where the document had two. `FIXTURES.md`'s is
+unchanged at sixty-two implemented entries, both new rows being registered against
+checkpoints not yet reached. `SYSTEM_DESIGN` §3.5 and §3.6 correctly carry no
+marker, that document's rule being that a section gains one once part of what it
+describes is built.
+
+**[CLAUDE.md §11] was asked mid-checkpoint rather than at sign-off**, because the
+amendment to D-W4 reached an unspent prompt and waiting would have meant signing
+off with a live gap open. The answer at sign-off is that nothing further is
+outstanding: 4.2 to 4.5 are unspent, and the two decisions landed here change
+nothing in them that is not already stated.
+
+**One `.cs` file, where the plan said none.** The plan's verification treated a
+changed test count as a signal that the checkpoint had done something it should
+not have. The last clause asked for the pragma reading to stop being a comment and
+start being a fact the suite holds, which is a test, so the count moved by one and
+the reason is recorded rather than the rule quietly dropped.

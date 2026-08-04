@@ -15,9 +15,9 @@ predates this file and cannot be relied on.
 ## Topical index
 
 **Purpose and measurement**: D-W2, D-W3, D-W5, D-W17, D-W18, D-W20, D-W21, D-W49
-**Isolation and controls**: D-W1, D-W4, D-W6, D-W13, D-W41, D-W45
-**Data and identity**: D-W7, D-W8, D-W9, D-W15, D-W26, D-W27, D-W28, D-W29, D-W30, D-W31, D-W32, D-W34, D-W35, D-W36, D-W39, D-W44, D-W46, D-W47, D-W48
-**Risk**: D-W10, D-W11, D-W14, D-W19, D-W23, D-W25, D-W37, D-W43
+**Isolation and controls**: D-W1, D-W4, D-W6, D-W13, D-W41, D-W45, D-W52
+**Data and identity**: D-W7, D-W8, D-W9, D-W15, D-W26, D-W27, D-W28, D-W29, D-W30, D-W31, D-W32, D-W34, D-W35, D-W36, D-W39, D-W44, D-W46, D-W47, D-W48, D-W52, D-W53
+**Risk**: D-W10, D-W11, D-W14, D-W19, D-W23, D-W25, D-W37, D-W43, D-W53
 **Gate constraints**: D-W10, D-W22, D-W23, D-W24, D-W25
 **Settlement mechanics**: D-W38, D-W39, D-W40, D-W41, D-W42, D-W43, D-W44, D-W46
 **Costs and fills**: D-W12, D-W49, D-W50
@@ -82,7 +82,7 @@ record alone, with no access to live state.
 ---
 
 ### D-W4 Three decision-makers run in parallel on identical data
-`active` · 2026-07-26
+`active` · 2026-07-26, amended 2026-08-04 (the property is conditional)
 
 A frozen baseline, a random-within-band control, and the learner act every day on
 the same feasible set with the same fill rules, keeping separate ledgers.
@@ -90,8 +90,10 @@ the same feasible set with the same fill rules, keeping separate ledgers.
 Rationale: without a frozen arm running the same schedule, an improving curve
 cannot be distinguished from an environment that became easier.
 
-Test FX-ThreeMakersSameFeasibleSet: on a given day all three makers are offered
-byte-identical candidate sets.
+Test FX-ThreeMakersSameFeasibleSet: on a day when the three makers hold the same
+position in a name, all three are offered byte-identical candidate sets. Their
+positions diverge by design and the divergence is the experiment, so the property
+is conditional on the states coinciding and the test asserts it there.
 
 ---
 
@@ -1551,3 +1553,118 @@ rather than by run, which is build determinism and a different property.
 
 Test FX-NoNondeterministicSql: no SQL under `src/` calls a barred function, and
 every name on the list is asserted to exist in the bundled binary.
+
+---
+
+### D-W52 The feasible set is keyed on what the generator reads
+`active` · 2026-08-04
+
+A feasible set is stored once per symbol, session date and option right, and is
+referenced by every decision made against it. The six contract-level gate verdicts
+are stored with it. The four portfolio-level verdicts are stored per decision,
+because they are computed from a book no two makers share once they diverge.
+
+**The key comes from the generator's inputs and not from the obligation's
+wording.** `EnumerateFor` takes a symbol, a simulated date and a position state,
+and `GateFor` takes those plus a book. Position state reaches enumeration through
+one function, which maps cash to puts, holding shares to calls, and both short
+states to nothing at all. So the enumerated set varies with the right and not with
+the state, and
+
+> at most two non-empty enumerations exist per symbol and session, however many
+> makers there are.
+
+The obligation this closes was raised at v1.17.0 and asked for one set per name and
+date. That wording describes a generator taking neither parameter, which is the
+generator that existed when it was written.
+
+**The split between shared and per-maker follows a boundary the code already
+draws.** `ContractConstraints` raises the spread cap, the premium floor, the
+crossed market, the delta ceiling, the expiry window and earnings clearance, from
+the candidate, the bounds and the report dates. `PortfolioConstraints` raises the
+per-name cap, the total cap, assignment stress and gross basis, every one against
+a book. A verdict computed from a book belongs to the maker whose book it is.
+
+**What this does for storage, measured rather than argued.** The obligation framed
+the saving as division by three, the number of makers. The shared part is bounded
+at two rows per symbol and session by the count of sellable rights, which is a
+constant rather than a divisor and does not grow when a maker is added. The
+per-maker verdicts do not share at all, and they are the small part: they are
+written per candidate only where a cap binds.
+
+**What [D-W4] requires, and it is not one row.** That decision says the three
+makers act on the same feasible set, and its rationale is that a control running a
+different schedule makes an improving curve indistinguishable from an easier
+environment. It is a requirement about confounds. Makers whose positions have
+diverged face different opportunities because of their own prior choices, which is
+the experiment rather than a defect in it. This key delivers [D-W4] by
+construction: makers whose states coincide share a row, and makers whose states
+differ are outside what that decision reaches.
+
+**A gate reason is a row, not a delimited list.** The reasons for one candidate are
+a set in declared order, and a delimited list makes a single reason unqueryable.
+They are stored one per row against the candidate they refuse, which leaves the
+candidate at one row per contract rather than changing its grain, and that is the
+third option the obligation did not name.
+
+**No ordinal column beside the reason.** The declared order is the domain type's
+own, so a stored position would be a second statement of a fact the vocabulary
+already carries. That is the arrangement [D-W50] rejected on the premium entry.
+
+**`gate_status` is not stored, because it is derivable.** A candidate is feasible
+exactly when no reason refused it, so a status column beside the reasons could
+disagree with them, and a schema admitting a rejected candidate with no reason
+admits a state [D-W22] forbids. Rejected candidates are still recorded, which is
+what [D-W10] asks; what goes is the second statement of whether they passed.
+
+**Whether a candidate's features are shareable is not settled here.** Nothing
+computes a feature yet, so what one contains is unknown, and a feature that is
+portfolio-relative belongs on the per-maker side rather than the shared one. The
+checkpoint that computes them answers it rather than inheriting the assumption.
+
+Test FX-DecisionsShareOneFeasibleSet: two decisions made against the same symbol,
+session and right reference one stored set rather than two copies, and their
+portfolio verdicts differ where their books do.
+
+---
+
+### D-W53 A trial's bounds are fixed at its open
+`active` · 2026-08-04
+
+`Trial:MaxRolls` and `Trial:MaxTrialDays` are resolved once, as of the session a
+trial opens, and hold for that trial's life. A later version of either binds the
+trials opened after it and no trial already running.
+
+Rationale. Configuration resolves as of the simulated date [D-W26], and a trial
+spans many sessions, so the rule leaves open which of those dates is meant.
+Resolving per session would let a bound move under a position already taken: a
+trial opened when three rolls were permitted could find itself over its cap
+without having rolled again, and the roll that breached it would be a roll that
+was permitted when it happened. A bound is a constraint on a decision, and a
+decision is made once.
+
+This ratifies a shape already built rather than requiring a change. 3.3 gave the
+state machine its bounds at construction, on the resolve-once-per-evaluation shape
+`GateBounds` uses, and settled nothing about which date that construction reads.
+The machine needs no change; what needed stating is which date the component
+constructing it resolves as of.
+
+**What this does not answer, stated so it is not answered twice.** It fixes the
+date within a run, not the configuration a run reads. Whether a run over history
+resolves configuration as of each simulated date or as of the instant its
+pre-registration was committed [D-W15] is a separate question, owed at Phase 9,
+and reached there by a seed stamped from the wall clock rather than by anything
+here. This decision holds under either answer: if Phase 9 pins a run's
+configuration, every trial in that run opens under the pinned values and the rule
+below is satisfied trivially; if it does not, the rule is what keeps a mid-run
+revision off the trials already open.
+
+Consequence for the rebuild. A projection asking whether a bound had been reached
+must read the values that trial opened under, not current ones and not the ones in
+force on the session being rebuilt. A rebuild reading anything else disagrees with
+the run it is rebuilding and presents the disagreement as a ledger defect, which
+is the wrong place to look.
+
+Test FX-TrialBoundsFixedAtOpen: a trial spanning a configuration change is bound
+by the values in force when it opened, and a trial opened after the change is
+bound by the new ones.
