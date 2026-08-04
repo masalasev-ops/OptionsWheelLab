@@ -134,6 +134,9 @@ to carry the wrong cell.
 | FX-StoppedTrialIsValuedAtTheClose | fixture | 3.3 | a trial holding shares that meets an unmodelled action reports entries summing to the marked value, not to the outlay [D-W49] | authored |
 | FX-BoundClosePaysTheAsk | fixture | 3.3 | a forced close debits the ask, and a case where intrinsic and ask differ shows which was used [D-W49] | authored |
 | FX-NoShareCountInOptionCash | guard | 3.3 | no file under `src/` prices an option from a share count: cash from a contract multiplies by the multiplier and the deliverable says only how many shares move [D-W17] | authored |
+| FX-RunIsByteIdentical | fixture | 3.5 | a composed run produces byte-identical output across two invocations | authored |
+| FX-RunRefusesAChoiceTheStateCannotHonour | fixture | 3.5 | a supplied choice a trial's state cannot accept is refused by name rather than skipped | authored |
+| FX-NoNondeterministicSql | fixture | 3.5 | no SQL under `src/` calls a function whose value varies between runs, and the barred list is checked against the bundled binary | authored |
 | FX-ThreeMakersSameFeasibleSet | fixture | 4 | all makers receive byte-identical candidate sets | WORKED_EXAMPLE §3 |
 | FX-RecordCarriesFeasibleSet | fixture | 4 | a decision is re-scorable from its record alone | authored |
 | FX-ExcursionRecordedOnWin | fixture | 5 | a positive outcome still carries its adverse excursion | WORKED_EXAMPLE §6.2 |
