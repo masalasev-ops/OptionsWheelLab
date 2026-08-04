@@ -15,7 +15,7 @@ predates this file and cannot be relied on.
 ## Topical index
 
 **Purpose and measurement**: D-W2, D-W3, D-W5, D-W17, D-W18, D-W20, D-W21, D-W49
-**Isolation and controls**: D-W1, D-W4, D-W6, D-W13, D-W41, D-W45
+**Isolation and controls**: D-W1, D-W4, D-W6, D-W13, D-W41, D-W45, D-W52
 **Data and identity**: D-W7, D-W8, D-W9, D-W15, D-W26, D-W27, D-W28, D-W29, D-W30, D-W31, D-W32, D-W34, D-W35, D-W36, D-W39, D-W44, D-W46, D-W47, D-W48, D-W52
 **Risk**: D-W10, D-W11, D-W14, D-W19, D-W23, D-W25, D-W37, D-W43
 **Gate constraints**: D-W10, D-W22, D-W23, D-W24, D-W25
@@ -1622,5 +1622,6 @@ computes a feature yet, so what one contains is unknown, and a feature that is
 portfolio-relative belongs on the per-maker side rather than the shared one. The
 checkpoint that computes them answers it rather than inheriting the assumption.
 
-Test FX-RecordCarriesFeasibleSet: a recorded decision is re-scorable from the
-record alone, with no access to live state.
+Test FX-DecisionsShareOneFeasibleSet: two decisions made against the same symbol,
+session and right reference one stored set rather than two copies, and their
+portfolio verdicts differ where their books do.
