@@ -3,7 +3,7 @@
 A paper-trading laboratory that studies whether a decision-maker's decisions
 improve over time, using the options wheel as its task environment.
 
-Corpus version 1.42.0. The corpus was regenerated from scratch at v1.0.0 on
+Corpus version 1.43.0. The corpus was regenerated from scratch at v1.0.0 on
 2026-07-26, superseding the lost v0.1 entirely.
 
 `BUILD_PLAN.md` carries each phase's build state in its own section, and
@@ -38,8 +38,9 @@ Read these when you need them:
 - `DECISIONS.md` — the numbered register. Looked up, not read start to finish.
 - `VALIDITY.md` — what the lab claims, what would falsify it, what it cannot test.
 - `DATA_AND_SCHEMA.md` — the data contract and the store.
-- `BUILD_PLAN.md` — phase map plus detail for the phase in progress, and the
-  reconciled detail of every checkpoint already signed off.
+- `BUILD_PLAN.md` — phase map plus the reconciled detail of every checkpoint
+  already signed off. A phase's detail is authored when the previous phase signs
+  off, so it always reaches one phase past what is built.
 - `FIXTURES.md` — the single registry of test fixtures.
 - `CONFIG_REFERENCE.md` — every configuration key and its verified consumer.
 - `CLAUDE.md` — rules for agents working in this repo.
@@ -89,3 +90,11 @@ is `MAX(version)`. Migrations are snapshot-first. Secrets live in
 `appsettings.Secrets.json` and are never committed. API surface is `/api/v1` with
 native OpenAPI and Scalar. State is modelled with discriminated unions. Tickers
 use the EODHD dash form, for example `BRK-B`.
+
+**OpenAPI is the stated convention and is deliberately absent from the build.**
+`Microsoft.AspNetCore.OpenApi` was dropped at 0.1 rather than suppressing a
+vulnerability advisory against its `Microsoft.OpenApi` dependency, since a
+suppression is repository-wide in effect even when it reads as local. The reason
+is recorded in the Api project file and re-adding it against a version that
+clears the audit is a carried obligation. So this paragraph states what the
+repository is built to and not, in that one respect, what it currently has.

@@ -630,25 +630,30 @@ to differ. A count of this table is a count of rows. Rows sharing an Owed at
 value are separate obligations, and a count of distinct values is not a count of
 this table.
 
-**Eleven rows stand, none at checkpoint granularity and eleven at phase**, read
-off the table below at 3.5's sign-off. It stood at thirteen, two and eleven, at
-3.4's; at fifteen, five and ten, at 3.3's; and at fourteen, seven and seven, at
-3.2's. 3.5 closed its own two and raised none, so for the first time every
-outstanding obligation is owed at a phase rather than at a checkpoint, which is
-what closing a phase with nothing carried inside it looks like.
+**Eleven rows stand, five at checkpoint granularity and six at phase**, read off
+the table below when Phase 4's detail was authored. It stood at eleven, none and
+eleven, at 3.5's sign-off; at thirteen, two and eleven, at 3.4's; at fifteen,
+five and ten, at 3.3's; and at fourteen, seven and seven, at 3.2's.
+
+**Nothing was closed or raised between those two readings and five rows still
+moved**, which is this column's rule doing what it is for: it names a checkpoint
+once the owning phase's detail exists and a phase otherwise, so authoring Phase
+4's detail moved every Phase 4 row without changing what any of them owes. Three
+went to 4.1, which is where the grains are settled, one to 4.4 and one to 4.5. A
+reading that counted phase names would report five obligations vanishing.
 
 | Owed at | Obligation | Raised |
 |---|---|---|
 | Phase 11 | Re-add `Microsoft.AspNetCore.OpenApi` against a version whose `Microsoft.OpenApi` dependency clears the audit. Removed at 0.1 rather than suppressing the advisory; the reason is in the Api project file. | PR #1 |
-| Phase 4 | Store one feasible set per name and date rather than one per decision. `candidates` is keyed on `decision_id`, so three makers acting on one set write it three times, while [D-W4] requires the three to be byte-identical and `FX-ThreeMakersSameFeasibleSet` asserts it. Storing once and referencing thrice makes it true by construction and divides the largest uncertain table by three. Raised while estimating store size over a ten-year lifetime, before the table exists. The grain is (symbol, date) and nothing carries it as a type; 2.5 declined to ship one because no maker exists to consume it, so Phase 4 models the set with `candidates` in front of it rather than inheriting a shape guessed three checkpoints early. `FX-ThreeMakersSameFeasibleSet` is also where the byte-level property is asserted, restated from 2.5's definition of done for want of a subject. **The reason-storage row raised at v1.32.0 is answered by whatever grain this settles.** | v1.17.0 |
+| 4.1 | Store one feasible set per name and date rather than one per decision. `candidates` is keyed on `decision_id`, so three makers acting on one set write it three times, while [D-W4] requires the three to be byte-identical and `FX-ThreeMakersSameFeasibleSet` asserts it. Storing once and referencing thrice makes it true by construction and divides the largest uncertain table by three. Raised while estimating store size over a ten-year lifetime, before the table exists. The grain is (symbol, date) and nothing carries it as a type; 2.5 declined to ship one because no maker exists to consume it, so Phase 4 models the set with `candidates` in front of it rather than inheriting a shape guessed three checkpoints early. `FX-ThreeMakersSameFeasibleSet` is also where the byte-level property is asserted, restated from 2.5's definition of done for want of a subject. **The reason-storage row raised at v1.32.0 is answered by whatever grain this settles.** | v1.17.0 |
 | Phase 8 | Extract the market rules out of `SyntheticChainReader`, so one definition serves the synthetic reader and the vendor ingest. Refusing a negative bid, a negative ask and a crossed market are statements about what a market can be, not JSON concerns, and they sit as private statics on the reader, so a second producer of quotes can only duplicate them. Phase 8 is where that second producer arrives. **The crossed-quote coupling is discharged at 2.3**: the gate handles a crossed quote [D-W22, as amended], so that rule moved to the gate and left the loader, and what remains to extract is the two negative-price refusals. Not extracted at 0.8 because there is one caller and the second does not exist. | PR #9 |
-| Phase 4 | Decide how a candidate's gate reasons are stored. `candidates.gate_reason` is a single nullable TEXT column and the domain type is a set in declared order [2.3], which FX-GateRecordsAllReasons at 2.5 asserts by requiring two reasons on one candidate. The options include a delimited list, which makes a reason unqueryable, and a row per reason, which changes the table's grain. Raised at 2.3 when the vocabulary was declared. **The grain this assumes is the one the v1.17.0 row decides.** | v1.32.0 |
+| 4.1 | Decide how a candidate's gate reasons are stored. `candidates.gate_reason` is a single nullable TEXT column and the domain type is a set in declared order [2.3], which FX-GateRecordsAllReasons at 2.5 asserts by requiring two reasons on one candidate. The options include a delimited list, which makes a reason unqueryable, and a row per reason, which changes the table's grain. Raised at 2.3 when the vocabulary was declared. **The grain this assumes is the one the v1.17.0 row decides.** | v1.32.0 |
 | Phase 9 | Decide how configuration resolves for a simulated date that precedes the value being written. `SeedCommand` stamps `set_at` from the wall clock, so every gate bound resolves null for any simulated date before the seed ran, which is every date in a walk-forward over real history. [D-W26] requires resolution as of the simulated date and [D-W37] stops the evaluation rather than guessing, so the collision surfaces loudly at the first walk-forward rather than silently. The options include backdating the seed, which costs the audit trail its truthfulness, and resolving a registered run's configuration as of its pre-registration instant [D-W15], which keeps both rules intact. Raised at 2.3 while answering what an unresolvable bound does. | v1.32.0 |
 | Phase 8 | Decide how a deliverable that is shares plus cash is recorded. The adjustment method in force gives a 4-for-3 split of an $80 option a deliverable "adjusted to 133 shares plus the cash value of the eliminated fractional share", strike unchanged; `contracts.deliverable_shares` is an integer and one of the five components of contract identity [1.5], and nothing in this corpus or its sources names cash in lieu. Owed at Phase 8 rather than 3.3 because no synthetic chain can express a corporate action at all, so the first deliverable of this shape arrives with vendor data, and the change is to a built structure with a migration cost that is no cheaper now. 3.3 must not assume a deliverable is wholly shares. Raised at 3.2. | v1.38.0 |
 | Phase 5 | Decide whether cash earns, and at what rate. Nothing in this corpus names interest as a financial concept. The absence biases two of the three comparisons in opposite directions: the wheel holds cash securing its puts and the hold-cash floor holds cash outright, so both are understated by roughly the same amount and their comparison survives, while buy-and-hold holds no cash and is not understated at all, so the comparison the lab exists to make is biased against the wheel by whatever the rate is. A rate is an external source and choosing one is a modelling choice with its own argument. Owed at Phase 5, where the outcome metric and the controls' returns are computed. A control gap of the same kind as the dividend gap and in the same decision [D-W13]. Raised at 3.2. | v1.38.0 |
-| Phase 4 | Resolve configuration in the projection rebuild as of the simulated date the run used, never as-now [D-W26]. Telling `closed_at_bound` from `closed_by_choice` means asking whether a bound had been reached, which reads `Trial:MaxRolls` and `Trial:MaxTrialDays`, and a rebuild reading current bounds would disagree with the run it is rebuilding while presenting the disagreement as a ledger defect. Not live at 3.3, where nothing writes `closed_by_choice` because no maker exists. Raised at 3.3 by building the rebuild. | v1.40.0 |
-| Phase 4 | Verify the consumers of `Trial:MaxRolls` and `Trial:MaxTrialDays`, which 3.3 could not. `TrialBounds` reads both as of the simulated date and nothing in `src/` constructs it: the state machine is handed resolved bounds. **The reason this row gave was that the component resolving them is the run loop, which it called Phase 4's, and 3.5 landed the run loop without closing it.** `TrialRun` is handed a machine already constructed, so what is missing is not the loop but a composition root that resolves bounds and builds the machine from them, which arrives with the maker that drives a run. `CONFIG_REFERENCE.md` calls a consumer that cannot be verified once its checkpoint has landed a defect rather than a documentation gap, and 3.3 was that checkpoint, so both rows stay **Unverified** with the reason recorded rather than the column loosened to admit a type with no component behind it. Raised at 3.3, and its reason corrected at 3.5 by the run loop arriving early. | v1.40.0 |
-| Phase 4 | Decide which simulated date the trial bounds resolve as of. A trial spans many sessions and [D-W26] resolves configuration as of the simulated date, so nothing states whether an open trial is bound by the values in force at its open or by each session's, and `Trial:MaxRolls` changing mid-trial would move the bound under a position already taken. 3.3 built the machine taking bounds at construction, on `GateBounds`' resolve-once-per-evaluation shape, and invented no answer. **The rebuild row above asks the same as-of question from the other side.** Raised at 3.3. | v1.40.0 |
+| 4.4 | Resolve configuration in the projection rebuild as of the simulated date the run used, never as-now [D-W26]. Telling `closed_at_bound` from `closed_by_choice` means asking whether a bound had been reached, which reads `Trial:MaxRolls` and `Trial:MaxTrialDays`, and a rebuild reading current bounds would disagree with the run it is rebuilding while presenting the disagreement as a ledger defect. Not live at 3.3, where nothing writes `closed_by_choice` because no maker exists. Raised at 3.3 by building the rebuild. | v1.40.0 |
+| 4.5 | Verify the consumers of `Trial:MaxRolls` and `Trial:MaxTrialDays`, which 3.3 could not. `TrialBounds` reads both as of the simulated date and nothing in `src/` constructs it: the state machine is handed resolved bounds. **The reason this row gave was that the component resolving them is the run loop, which it called Phase 4's, and 3.5 landed the run loop without closing it.** `TrialRun` is handed a machine already constructed, so what is missing is not the loop but a composition root that resolves bounds and builds the machine from them, which arrives with the maker that drives a run. `CONFIG_REFERENCE.md` calls a consumer that cannot be verified once its checkpoint has landed a defect rather than a documentation gap, and 3.3 was that checkpoint, so both rows stay **Unverified** with the reason recorded rather than the column loosened to admit a type with no component behind it. Raised at 3.3, and its reason corrected at 3.5 by the run loop arriving early. | v1.40.0 |
+| 4.1 | Decide which simulated date the trial bounds resolve as of. A trial spans many sessions and [D-W26] resolves configuration as of the simulated date, so nothing states whether an open trial is bound by the values in force at its open or by each session's, and `Trial:MaxRolls` changing mid-trial would move the bound under a position already taken. 3.3 built the machine taking bounds at construction, on `GateBounds`' resolve-once-per-evaluation shape, and invented no answer. **The rebuild row above asks the same as-of question from the other side.** Raised at 3.3. | v1.40.0 |
 | Phase 5 | Decide what `ResolvedBound`'s refusal calls the thing it could not resolve. It reads "a gate bound", which has covered `Risk:` caps since 2.4 and covers a trial bound and a cost from 3.4, so it is wrong for three of the four records that use it. That type's own remarks anticipated this and call changing what the message carries a decision rather than an edit, because what [D-W37]'s refusal says is the reason the type exists. Owed at Phase 5 rather than sooner: the fourth record makes the wording wrong and the fifth is where a reader stops being able to infer the family from the key, since scores are the first values that are neither a bound nor a cost. Raised at 3.4. | v1.41.0 |
 
 ---
@@ -1605,4 +1610,128 @@ the thing still missing is a composition root that resolves bounds and builds th
 machine, and that arrives with the maker. The obligation keeps its granularity and
 its reason is corrected.
 
-Detail for Phase 4 is authored when Phase 3 signs off.
+---
+
+## Phase 4 — Decision record and three makers in parallel
+
+Build state: **not built**. Nothing chooses. A loop steps a calendar from 3.5 and
+the choices it applies are supplied, so the whole of this phase is the thing that
+supplies them and the record of what it supplied. Delivers three makers acting
+every session on one feasible set with separate ledgers [D-W4], and the journal
+that makes each of their decisions re-scorable later [D-W3]. On synthetic chains;
+no vendor data until Phase 8.
+
+**The decision record is the primary artefact of this system and is more important
+than the position ledger.** Losing it is the one unrecoverable loss in the design,
+because a decision that cannot be re-scored from what stood at the time cannot
+contribute to the measurement the lab exists to make. That is why this phase
+precedes the scorer rather than arriving with it.
+
+Five of this phase's carried obligations determine what the tables are rather
+than sitting inside them, and those are settled at 4.1 before any row is written,
+on the ordering Phases 1, 2 and 3 all used: a precondition answered late is a
+schema built twice. Three of the five decide a grain, and a grain settled after
+the table exists is a migration rather than a decision.
+
+**Phase 3 left one figure and one rule to this phase, and they are not
+symmetrical.** `candidates.committed_capital` is a column Phase 3 computed and did
+not persist, so writing it is bookkeeping. Rolling has no rule at all: the state
+machine applies a roll a caller has already chosen [D-W14], and which contracts a
+roll offers has never been written down anywhere in this corpus.
+
+### 4.1 The record's grain, settled before the tables
+Not code. Each answer becomes a decision citing its source, and each source is
+either a document already in this corpus or a property the build can measure.
+- Settles the feasible set's grain. `candidates` is keyed on `decision_id`, so
+  three makers acting on one set write it three times while [D-W4] requires the
+  three to be byte-identical. Storing once per name and date and referencing it
+  three times makes that true by construction rather than by assertion, and
+  divides the largest uncertain table in the store by three.
+- Settles how a candidate's gate reasons are stored. The domain type is a set in
+  declared order [2.3] and the column is a single nullable TEXT. A delimited list
+  makes a reason unqueryable; a row per reason changes the table's grain.
+- Settles which simulated date a trial's bounds resolve as of. A trial spans many
+  sessions and configuration resolves as of the simulated date [D-W26], so a
+  bound changing mid-trial would move under a position already taken.
+- **Test**: none. A checkpoint that writes no code registers no fixture, which
+  2.1 and 3.1 both did.
+- **DoD**: every obligation this phase carries that names a grain is closed by a
+  decision, and no decision here is justified by a number that does not yet
+  exist [D-W15].
+
+### 4.2 The decision record
+The journal, and the tables Phase 3 left unbuilt. `decisions` and the feasible
+set at whatever grain 4.1 settled, written once per name and date and referenced
+by every maker that acted on it.
+- Append-only and never rewritten [D-W3]. A recorded decision updated in place
+  leaves the record present and the decision unrecoverable, which is a different
+  loss from the record being absent and a harder one to notice.
+- Records the rejected candidates too, so the gate's effect is auditable
+  [D-W10] rather than inferred from what survived.
+- A decision to do nothing is a decision and is recorded as one, since a maker
+  that declines every candidate on a session has made a choice the scorer must
+  be able to reach.
+- **Test**: a recorded decision is re-scorable from the record alone, with no
+  access to live state.
+- **DoD**: the re-scoring path reads no table the record does not name, which is
+  what makes the claim about unrecoverable loss testable rather than asserted.
+
+### 4.3 The three makers, on one set
+The frozen baseline, the random-within-band control, and the learner acting from
+its current policy rows [D-W4]. A policy is a configuration row rather than
+compiled code, so a variant is a new row.
+- The baseline never changes for the life of the experiment and is the yardstick.
+- The random maker draws inside the baseline's expiry window over a delta band of
+  its own, which is why `Policy:Random:` carries no DTE keys and why their absence
+  reads as an omission to anyone consulting `CONFIG_REFERENCE.md` alone.
+- **Its randomness comes from a seeded generator and never from the store**
+  [D-W51], which is the rule 3.5 settled and this is the checkpoint that first
+  has something to draw.
+- No learner output reaches anything that judges the learner [D-W6]. At this
+  phase the learner is a maker reading rows; the channel that writes those rows
+  is Phase 7, and the firewall is stated here because the shape that violates it
+  is a feature derived from a previous decision.
+- **Test**: on a given session all three makers are offered byte-identical
+  candidate sets.
+- **DoD**: the byte-identical property holds by construction from 4.1's grain
+  rather than by three writes agreeing, and breaking the generator makes the
+  test fail rather than making three copies wrong in the same way.
+
+### 4.4 What a maker does with an open trial
+The decisions Phase 3 took as a caller's parameter. A maker's session produces one
+of open, roll, close, or nothing, and only the first of those has ever been
+specified.
+- Rolling has no rule and this checkpoint writes one. Which contracts a roll
+  offers is a maker's question, and the bound that terminates a rolled chain
+  [D-W14] constrains when rolling stops rather than what it selects.
+- Closing by choice is distinguishable from closing at a bound, and the
+  projection rebuild must reach the same verdict as the run did, which means
+  resolving configuration as of the simulated date the run used and never
+  as-now [D-W26]. A rebuild reading current bounds would disagree with the run it
+  is rebuilding and present the disagreement as a ledger defect.
+- **Test**: a trial closed by choice and a trial closed at a bound rebuild to
+  their own verdicts, from a store whose current configuration differs from the
+  configuration the run used.
+- **DoD**: the rebuild's disagreement with the run is impossible rather than
+  unobserved, which means the test's two configurations differ in the bound
+  being read.
+
+### 4.5 The maker drives the run
+The composition root, which is the piece 3.5 turned out not to be. `TrialRun`
+takes a maker rather than a supplied sequence, and a maker produces one decision
+per session, which is the supplied sequence with the choosing already done.
+- Resolves `TrialBounds` and builds the state machine from them, which is what
+  verifies the two configuration rows carried unverified since 3.3. Those rows
+  have been a defect rather than a gap for two checkpoints, on the standard that
+  a consumer which cannot be verified once its checkpoint has landed is a defect.
+- Determinism is re-asserted over a run a maker drove, since 3.5 asserted it over
+  a run whose choices were supplied and a seeded maker is the part that was
+  missing.
+- **Test**: a run driven by all three makers produces byte-identical output
+  across two invocations, compared as produced artefacts and never as a database
+  file [D-W28].
+- **DoD**: `CONFIG_REFERENCE.md` carries a verified consumer for every `Policy:`
+  and `Trial:` row, or names the row that still cannot be verified and why, which
+  is the standard 3.3 and 3.4 set rather than a new one.
+
+Detail for Phase 5 is authored when Phase 4 signs off.

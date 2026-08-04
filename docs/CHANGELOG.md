@@ -1,5 +1,41 @@
 # CHANGELOG
 
+## [1.43.0] — 2026-08-04
+
+**Phase 4's detail authored, in five checkpoints.** No code. Phase 3 signed off at
+v1.42.0 and its detail said this becomes due then.
+
+### Added
+- **Phase 4 detail**, with a **not built** marker. 4.1 settles three grains before
+  a table exists, on the ordering every phase so far has used; 4.2 the decision
+  record; 4.3 the three makers on one feasible set; 4.4 what a maker does with an
+  open trial; 4.5 the composition root that drives the run.
+- **4.4 writes a rolling rule, which no document in this corpus states.** The
+  state machine applies a roll a caller has already chosen [D-W14] and the bound
+  terminates a rolled chain, but which contracts a roll offers has never been
+  specified. It is the one place this detail constrains something new rather than
+  composing pieces that exist.
+
+### Changed
+- **Five obligation rows moved from phase to checkpoint granularity without
+  anything being closed or raised**, because the Owed at column names a checkpoint
+  once the owning phase's detail exists. Three went to 4.1, one to 4.4, one to
+  4.5. The table stands at eleven rows and splits five and six. First time that
+  rule has fired.
+- The detail **names no fixture**, each definition of done stating a property
+  instead [CLAUDE.md §5].
+- `README.md`'s `BUILD_PLAN.md` line said the file carries detail for the phase in
+  progress. Phase 4's detail landed with no phase in progress, so it now states
+  the practice: detail reaches one phase past what is built.
+
+### Fixed
+- **`README.md` asserted native OpenAPI and Scalar as conventions in force.**
+  `Microsoft.AspNetCore.OpenApi` was dropped at 0.1 rather than suppressing a
+  vulnerability advisory against its `Microsoft.OpenApi` dependency, and re-adding
+  it is the oldest row in the carried obligations table. The paragraph now says it
+  states what the repository is built to and not, in that one respect, what it
+  currently has.
+
 ## [1.42.0] — 2026-08-03
 
 **Checkpoint 3.5 signed off, and Phase 3 closes with it.** The run is composed,
