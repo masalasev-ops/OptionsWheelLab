@@ -9,13 +9,18 @@ triggers and indexes. §4.2 is implemented at 1.3, its shape settled by D-W35 as
 transitions; §2's corporate-action paragraph is implemented at 1.5, its
 identity paragraph corrected and implemented there too [D-W36]. The rest is
 specification, and §4.3 splits across two phases rather than falling to one:
-`trials`, `positions` and `ledger_entries` at 3.3, `decisions` and `candidates`
-Phase 4, scores Phase 5, pre-registration Phase 9. `ledger_entries` gained
+`trials`, `positions` and `ledger_entries` at 3.3, the decision record at 4.2,
+scores Phase 5, pre-registration Phase 9. `ledger_entries` gained
 `known_on` at 3.1 while still specification, deduced from [D-W35] rather than
 built. §4.1 grew at 3.3, which added `market_sessions` and rebuilt
 `corporate_actions` for its `CHECK`; §4.3's `trials`, `positions` and
-`ledger_entries` are implemented there too, leaving `decisions` and `candidates`
-as the section's remaining specification.
+`ledger_entries` are implemented there too.
+
+**The decision record went from two tables to five at 4.1, before any of them
+existed.** [D-W52] keyed the feasible set on what the generator reads and split
+the gate reasons by whether they are computed against a book, so `decisions` and
+`candidates` became `feasible_sets`, `candidates`, `candidate_gate_reasons`,
+`decisions` and `decision_gate_reasons`. All five remain the section's specification.
 
 ## 1. Sources
 
@@ -319,22 +324,56 @@ cannot express re-entry.
 ### 4.3 Decisions and trials
 
 ```
-decisions
-  decision_id INTEGER PK, maker_id TEXT, decision_date TEXT, symbol TEXT,
-  kind TEXT, chosen_candidate_id INTEGER NULL, trial_id INTEGER NULL,
-  policy_version INTEGER, recorded_at TEXT
+feasible_sets
+  feasible_set_id INTEGER PK, symbol TEXT, session_date TEXT, right TEXT,
+  generated_at TEXT
+  UNIQUE (symbol, session_date, right)
 
 candidates
-  candidate_id INTEGER PK, decision_id INTEGER, contract_id INTEGER,
+  candidate_id INTEGER PK, feasible_set_id INTEGER, contract_id INTEGER,
   contracts_qty INTEGER, committed_capital TEXT, credit TEXT,
-  feature_json TEXT, gate_status TEXT, gate_reason TEXT NULL
+  feature_json TEXT
+
+candidate_gate_reasons
+  candidate_id INTEGER, reason TEXT
+  PRIMARY KEY (candidate_id, reason)
+
+decisions
+  decision_id INTEGER PK, maker_id TEXT, decision_date TEXT, symbol TEXT,
+  feasible_set_id INTEGER, kind TEXT, chosen_candidate_id INTEGER NULL,
+  trial_id INTEGER NULL, policy_version INTEGER, recorded_at TEXT
+
+decision_gate_reasons
+  decision_id INTEGER, candidate_id INTEGER, reason TEXT
+  PRIMARY KEY (decision_id, candidate_id, reason)
 ```
 
+**The set is keyed on symbol, session and right, and every decision made against
+it references it** [D-W52]. The key comes from what the generator reads: position
+state reaches enumeration only through the right it makes sellable, so at most two
+non-empty sets exist per symbol and session however many makers there are.
+
+**The reasons are split because their inputs are.** `candidate_gate_reasons`
+carries the six a contract earns from its own quote and the bounds, which every
+maker sharing the set earns identically. `decision_gate_reasons` carries the four
+computed against a book, being the per-name cap, the total cap, assignment stress
+and gross basis, which two makers do not share once their books diverge.
+
+A reason is a row rather than a delimited list, which keeps a single reason
+queryable, and carries no ordinal, the declared order being the domain type's own.
+
+There is no `gate_status`. A candidate is feasible exactly when no reason refused
+it, so a status column could disagree with the rows beside it. Rejected candidates
+are still recorded, which is what [D-W10] asks.
+
 `kind` is one of `open_put`, `open_call`, `roll`, `close`, `none`.
-`gate_status` is `feasible` or `rejected`; rejected candidates are recorded so
-the gate's effect is auditable [D-W10].
 `chosen_candidate_id` null means the maker chose to do nothing, which is a
 decision and is scored.
+
+**Whether `feature_json` belongs on the shared side is not settled.** Nothing
+computes a feature yet, and a feature that is portfolio-relative belongs with the
+per-decision verdicts rather than with the shared candidate. The checkpoint that
+computes them answers it [D-W52].
 
 ```
 trials

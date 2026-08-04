@@ -100,7 +100,13 @@ are the feasible set [D-W10].
 
 The gate lives inside the generator rather than downstream of the choice so that
 all three decision-makers receive an identical feasible set, and any difference
-between them is selection rather than permission.
+between them is selection rather than permission. Permission here means the lab's
+rules treating makers differently for reasons outside their own history. The
+portfolio constraints do refuse one maker and not another, because a cap is
+evaluated against the book that maker built by choosing [D-W11], and a difference
+arising from a maker's own prior decisions is selection reaching forward rather
+than permission withheld. The contract constraints refuse identically for all
+three, which is what the shared set delivers.
 
 The gate needs current portfolio state to evaluate concentration and committed
 capital, so the ledger feeds back into it. This is the only backward edge in the

@@ -1697,8 +1697,8 @@ compiled code, so a variant is a new row.
   phase the learner is a maker reading rows; the channel that writes those rows
   is Phase 7, and the firewall is stated here because the shape that violates it
   is a feature derived from a previous decision.
-- **Test**: on a given session all three makers are offered byte-identical
-  candidate sets.
+- **Test**: on a session where the three makers hold the same position in a
+  name, all three are offered byte-identical candidate sets.
 - **DoD**: the byte-identical property holds by construction from 4.1's grain
   rather than by three writes agreeing, and breaking the generator makes the
   test fail rather than making three copies wrong in the same way.
