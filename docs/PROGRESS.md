@@ -4,9 +4,10 @@ Appended to, never rewritten. The repository is the authority on build state.
 
 ## Current state
 
-**Phase 0 complete and reviewed. Phases 1 and 2 complete. Phase 3 started.**
-Checkpoints 0.1 to 0.8, 1.1 to 1.5, 2.1 to 2.5, and 3.1 to 3.4 built and signed
-off. 3.5 is not started. The documentation corpus is at v1.41.1.
+**Phase 0 complete and reviewed. Phases 1, 2 and 3 complete.**
+Checkpoints 0.1 to 0.8, 1.1 to 1.5, 2.1 to 2.5, and 3.1 to 3.5 built and signed
+off. Phase 4 is not started and its detail is authored now that Phase 3 has
+closed. The documentation corpus is at v1.42.0.
 
 ## Log
 
@@ -1877,3 +1878,102 @@ were skipped while the work they govern was done carefully, which is the same
 thing 3.1's sign-off did with the marker sweep. A rule recorded and not performed
 is indistinguishable from one that was performed, until someone reads the artefact
 it was supposed to produce.
+
+### 2026-08-03 — corpus v1.42.0
+
+**Checkpoint 3.5 signed off, and Phase 3 closes with it.** One decision, the run,
+and three registered checks. Both of 3.5's obligations closed and none raised, so
+the table falls from thirteen rows to eleven and every remaining one is owed at a
+phase rather than a checkpoint. The suite went from 650 to 672. Guards green over
+191 files by three checks.
+
+**The checkpoint was built before it was planned, and the branch was discarded to
+correct that.** The code was written straight from the clauses describing its
+scope, which read as authorisation and were not. The Current state block above
+said 3.5 was not started while its fixtures were passing, which is the artefact
+that made it visible. The branch was reset to `main` and re-laid in the order the
+last two checkpoints used, decisions pushed and reviewed before code rests on
+them. The code was restored byte-identical rather than rewritten, because it was
+correct and a rewrite would have produced the same files with a worse provenance.
+Two registry rows written unasked were discarded and re-landed as authored, and a
+README paragraph was declined outright.
+
+**D-W51 settles what bars nondeterminism in SQL that is not a clock.** The rule is
+narrower than barring randomness, which this lab requires: one of the three makers
+is a random-within-band control. What is barred is randomness whose source is the
+store, because a seeded run must reproduce and `random()` cannot be seeded. Three
+classes are named as not covered, since the definition of done asked for that half
+explicitly, and each is named in the check as well as in the register.
+
+**A citation was corrected before it landed rather than after, which is a first.**
+The decision's first draft cited [D-W4] for a uniform draw that D-W4 does not
+state; the uniform draw is in `SYSTEM_DESIGN.md` and `WORKED_EXAMPLE.md`, which are
+narrative. It was dropped rather than re-attributed, because citing narrative in a
+decision's rationale would put a second kind of authority in the register. This is
+the fifth instance of a citation naming a decision for a property it does not
+carry. The other four were found by building the thing that rested on them.
+
+**`SQLITE_DETERMINISTIC` is not the discriminator, measured rather than assumed.**
+Of the 168 functions the bundled SQLite 3.53.3 registers, 48 lack the flag and only
+two vary between two runs over the same data. The rest are aggregates, window
+functions, the seven clock functions FX-ClockIsNotADateSource already holds, the
+two uncovered classes, and full-text and r-tree internals. Barring on the flag
+would reject `count`, `sum`, `max` and `min`, and `MAX(version)` is how current
+configuration is read. Both counts are asserted rather than left in prose, so an
+upgrade adding a forty-ninth fails the check and returns to the decision.
+
+**The run reads no clock and the store it reads is not clock-free.** A store seeded
+after the run's own dates has no commission in force on its sessions, so the run
+stops [D-W37] rather than producing a different artefact. That reaches the Phase 9
+configuration-resolution obligation from determinism instead of from a
+walk-forward. The stop is a better answer than equality: a resolution rule that
+defaulted would have made the test pass and the property false.
+
+**The narrower reading of the test was declined and recorded as declined.**
+Asserting determinism over a trial that opens and expires would have proved it of
+the case with the fewest transitions and so the fewest chances to be
+nondeterministic. §6.3's trial was walked instead, through assignment, two covered
+calls and a call-away.
+
+**The run loop arrived at 3.5 and not at Phase 4, and it closed nothing that was
+waiting on it.** Two `Trial:` rows have been carried unverified since 3.3 on the
+stated reason that the component resolving them is the run loop, which
+`CONFIG_REFERENCE.md` and the obligations table both called Phase 4's. The run
+loop is this checkpoint's, and `TrialRun` takes a machine already constructed, so
+the missing component is a composition root that resolves bounds and builds the
+machine. Both statements of the reason are corrected; the obligation keeps its
+granularity.
+
+**The sweep ran as an act.** Eighteen markers read, five changed and none added.
+Phase 3's goes from partly built to complete and names five checkpoints; 3.8's
+spans 3.3 to 3.5 and its "no loop steps a session" becomes "no maker chooses"; the
+registry's goes from fifty-nine entries to sixty-two, being fifty-nine fixtures and
+three guards; `CONFIG_REFERENCE`'s carries the corrected reason; and
+`WORKED_EXAMPLE`'s records that 3.5 changed what produces §6.3 rather than what it
+is, since the trial is now walked by the run instead of by a test stepping the
+machine. Its fixture count is unchanged at seven of eleven, because all three new
+rows are `authored` and none names that document as its source.
+
+**The archive's state block is a separate act, and it found a sixth stale place
+the marker pass could not.** A table row inside it still read "3.1 to 3.4 built and
+signed off, 3.5 not started", beside a corpus version of v1.41.0, a CI line of 650
+tests and a guard measurement of 186 files. That is the block this corpus already
+caught going stale for two checkpoints, and it went stale again within a single
+one. Being a separate act is what found it, since nothing in it carries the word
+the marker sweep greps for.
+
+**README joins the sweep's scope, which is why its version was wrong.** It read
+1.32.0 against a corpus at 1.41.1, nine minor versions stale, because no act ever
+checked it: the sign-off touches eight files and README was never among them. The
+version is corrected and the sweep now includes it. The paragraph proposed
+alongside the correction was declined, because its claim was that the version is an
+exception to the pointer rule and it is not one: README points at `BUILD_PLAN.md`
+for phase state and at `PROGRESS.md` for present state, and keeps the version
+because a reader arrives here first. That it went stale argues for checking it, not
+for reframing it.
+
+**[CLAUDE.md §11] asked, and the answer is none.** No prompt remains unspent. 3.5
+was the last, and Phase 4's detail is authored now that Phase 3 has closed, so
+there is no unspent prompt for D-W51 to have changed. The gap this question found
+at 3.4, that 3.5's detail was about determinism and said nothing about composing a
+run, was closed by its author before this checkpoint began.

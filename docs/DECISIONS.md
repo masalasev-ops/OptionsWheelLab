@@ -22,7 +22,7 @@ predates this file and cannot be relied on.
 **Settlement mechanics**: D-W38, D-W39, D-W40, D-W41, D-W42, D-W43, D-W44, D-W46
 **Costs and fills**: D-W12, D-W49, D-W50
 **Scope**: D-W12, D-W16, D-W45
-**Verification mechanisms**: D-W28, D-W33
+**Verification mechanisms**: D-W28, D-W33, D-W51
 
 ## Status legend
 
@@ -1516,3 +1516,38 @@ Test FX-TrialCompleteIncludesAssignment: the assigned trial totals 498.05, each 
 reads 49.0565. The cell correspondence is a reconciliation and not a row for row
 match, because the document nets what this decision separates and the ledger
 therefore carries more rows than the table.
+
+---
+
+### D-W51 A run's randomness comes from a seeded generator, never the store
+`active` · 2026-08-04
+
+No SQL this lab issues calls `random()`, `randomblob()` or any function whose
+value varies between two runs over the same data. Randomness the lab needs is
+produced in code from a seeded generator, so a run reproduces.
+
+The rule is narrower than barring randomness, which the lab requires: one of the
+three makers is a random-within-band control [D-W4], and its seed is a config row
+whose value is arbitrary while its fixity is not [`Policy:Random:Seed`]. What is
+barred is randomness whose source is the store, because a seeded run must
+reproduce and `random()` cannot be seeded.
+
+**Three classes are not covered, and naming them is half the rule.**
+
+*Row order without `ORDER BY`.* A `SELECT` has no guaranteed order, so this is
+nondeterminism in SQL that is not a function at all. A scanner cannot tell a
+scalar read from a sequence read without understanding the query, and most reads
+here are single-row. What holds the property instead is the byte-identical run
+itself, which reads through the real paths, and any read whose result is kept as
+a sequence orders explicitly. This is [D-W28]'s argument one level up: row order
+is a fact about the storage engine until a caller keeps the rows as a sequence.
+
+*Connection-state functions.* `last_insert_rowid`, `changes` and `total_changes`
+are deterministic given an identical insertion history, so barring them would
+fail a run that already reproduces.
+
+*Version functions.* `sqlite_version` and `sqlite_source_id` vary by binary
+rather than by run, which is build determinism and a different property.
+
+Test FX-NoNondeterministicSql: no SQL under `src/` calls a barred function, and
+every name on the list is asserted to exist in the bundled binary.

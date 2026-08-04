@@ -12,11 +12,16 @@ landed is a defect, not a documentation gap.
 **Two rows are that defect, and it is recorded here rather than resolved by
 loosening the column.** `Trial:MaxRolls` and `Trial:MaxTrialDays` name the state
 machine, which landed at 3.3, and `TrialBounds` reads both as of the simulated
-date. Nothing in `src/` resolves it: the machine is handed resolved bounds, and
-the component that would resolve them is the run loop, which is Phase 4's.
+date. Nothing in `src/` resolves it: the machine is handed resolved bounds.
+
+**This paragraph said the component that would resolve them is the run loop and
+that the run loop is Phase 4's. The run loop landed at 3.5 and resolved
+nothing**, because `TrialRun` is handed a machine already constructed. So the
+missing component is not the loop but a composition root that resolves the bounds
+and builds the machine from them, which arrives with the maker that drives a run.
 Writing the type onto an unverified row would make this column mean one thing on
 verified rows and another on unverified ones, which is the failure the column's
-own definition names. Carried as an obligation at Phase 4.
+own definition names. Carried as an obligation at Phase 4, on a corrected reason.
 
 **What verifying a row takes, measured at 3.4 rather than assumed.** A `rows` key
 is verified when a type in `src/` resolves it and a component in `src/` calls

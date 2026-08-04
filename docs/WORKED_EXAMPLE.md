@@ -16,7 +16,11 @@ by the constraint that binds a call strike, and 3.3 added its shape: the state
 machine reaches the call-away on 2026-06-19 from the assignment on 2026-04-17, so
 the trial's 109 days are computed rather than stated, and its four positions
 rebuild from the ledger. **3.4 added its arithmetic**: §4's fill table, all three
-rows of it, and §6.3's 498.05 from a ledger the machine wrote.
+rows of it, and §6.3's 498.05 from a ledger the machine wrote. **3.5 changed what
+produces it rather than what it is**: §6.3's trial is now walked by the run from
+its three choices and its six sessions, where the figures were previously reached
+by a test stepping the machine itself, so the document is reproduced end to end by
+the thing the lab will run rather than by the thing that tests it.
 
 Not built: §4's three decisions, which need makers; §6.1 and §6.2, which are the
 totals of the two trials no maker has opened; and §7 and §8's scores and regret.
