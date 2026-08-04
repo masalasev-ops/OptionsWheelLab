@@ -2136,3 +2136,19 @@ changed test count as a signal that the checkpoint had done something it should
 not have. The last clause asked for the pragma reading to stop being a comment and
 start being a fact the suite holds, which is a test, so the count moved by one and
 the reason is recorded rather than the rule quietly dropped.
+
+### 2026-08-04 — the merge sweep for 4.1, which found nothing
+
+**Recorded because a sweep whose result is not written is indistinguishable from
+one that did not run.** 3.3 established the second pass when it found four stale
+figures the first could not have seen, since a sign-off commit changes counts the
+sign-off itself was measuring.
+
+Nothing was stale. Nineteen markers re-read against merged `main` at `077a0db`,
+and the obligations table, the suite at 673, the guards at 191 files and the
+corpus version in its four places all re-measured to the figures the sign-off
+recorded. Phase 4's marker reads partly built with 4.1 signed off, which is what
+it should read one checkpoint into a phase.
+
+It ran after the merge rather than before, the same way 3.5's did and for the
+same reason: a sweep run after a merge cannot block one.
