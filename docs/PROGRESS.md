@@ -6,8 +6,8 @@ Appended to, never rewritten. The repository is the authority on build state.
 
 **Phase 0 complete and reviewed. Phases 1, 2 and 3 complete.**
 Checkpoints 0.1 to 0.8, 1.1 to 1.5, 2.1 to 2.5, and 3.1 to 3.5 built and signed
-off. Phase 4 is not started and its detail is authored now that Phase 3 has
-closed. The documentation corpus is at v1.42.0.
+off. Phase 4 is not started and its detail is authored, in five checkpoints. The
+documentation corpus is at v1.43.0.
 
 ## Log
 
@@ -1994,3 +1994,58 @@ guards' 191 files all re-measured to the figures the sign-off recorded.
 **It ran after the merge rather than before it**, which is the one difference from
 3.4 and is recorded rather than smoothed over. The finding is the same either way,
 but a sweep run after a merge cannot block one.
+
+### 2026-08-04 — corpus v1.43.0
+
+**Phase 4's detail authored, in five checkpoints, and the README corrected.** No
+code. Phase 3 signed off at v1.42.0 and its own detail said this becomes due then.
+
+**4.1 settles three grains before a table exists**, on the ordering every phase so
+far has used. Three of the five obligations this phase carries name a grain, and a
+grain settled after the table exists is a migration rather than a decision: the
+feasible set's, so one set per name and date is referenced three times rather than
+written three times; the gate reasons', where a delimited list makes a reason
+unqueryable and a row per reason changes the table's grain; and which simulated
+date a trial's bounds resolve as of. 4.2 is the record itself, 4.3 the three
+makers on one set, 4.4 what a maker does with an open trial, and 4.5 the
+composition root that drives the run.
+
+**Rolling has no rule anywhere in this corpus, and 4.4 is where one gets written.**
+The state machine applies a roll a caller has already chosen [D-W14] and the bound
+terminates a rolled chain, but which contracts a roll offers has never been
+stated. That is the one place Phase 4's detail specifies something no earlier
+document constrains, as opposed to composing pieces that already exist.
+
+**Five obligation rows moved without anything being closed or raised.** The Owed
+at column names a checkpoint once the owning phase's detail exists and a phase
+otherwise, so authoring the detail moved every Phase 4 row: three to 4.1, one to
+4.4 and one to 4.5. The table still stands at eleven rows and now splits five at
+checkpoint granularity and six at phase. A reading that counted phase names alone
+would have reported five obligations vanishing, which is the failure that column's
+rule was written for and the first time it has fired.
+
+**The detail names no fixture.** [CLAUDE.md §5] bars enumerating them in checkpoint
+detail, because a detail that lists some reads as the complete list and goes
+silently incomplete the moment one is registered elsewhere, which has happened
+twice. Each definition of done states a property instead. The two fixtures already
+registered against this phase stand unchanged in `FIXTURES.md`.
+
+**Three corrections to the README, one of them substantive.** Its `BUILD_PLAN.md`
+line said the file carries detail for the phase in progress, which stopped being
+true the moment Phase 4's detail landed with no phase in progress; it now states
+the practice, that detail reaches one phase past what is built. The version moved
+to v1.43.0. And **the conventions paragraph asserted native OpenAPI and Scalar as
+though present**, when `Microsoft.AspNetCore.OpenApi` was dropped at 0.1 rather
+than suppressing a vulnerability advisory and re-adding it is the oldest carried
+obligation in the table. The paragraph now says it states what the repository is
+built to and not, in that one respect, what it currently has. Found by checking
+the file against disk rather than by reading it.
+
+**The corpus gains a nineteenth build-state marker**, Phase 4's, reading **not
+built**. Eighteen have been read at each of the last two sign-offs.
+
+**Authored content drafted by the build, at the corpus author's direction.**
+[CLAUDE.md §10] makes checkpoint scope authored and not the build's to write. This
+detail was drafted here on an explicit instruction to draft it, after the
+obligation was twice reported as the author's. It is recorded as drafted rather
+than as authored so that a later reader knows which it is.
