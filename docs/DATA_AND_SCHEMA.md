@@ -333,6 +333,7 @@ candidates
   candidate_id INTEGER PK, feasible_set_id INTEGER, contract_id INTEGER,
   contracts_qty INTEGER, committed_capital TEXT, credit TEXT,
   feature_json TEXT
+  UNIQUE (candidate_id, feasible_set_id)
 
 candidate_gate_reasons
   candidate_id INTEGER, reason TEXT
@@ -342,11 +343,21 @@ decisions
   decision_id INTEGER PK, maker_id TEXT, decision_date TEXT, symbol TEXT,
   feasible_set_id INTEGER, kind TEXT, chosen_candidate_id INTEGER NULL,
   trial_id INTEGER NULL, policy_version INTEGER, recorded_at TEXT
+  UNIQUE (decision_id, feasible_set_id)
 
 decision_gate_reasons
-  decision_id INTEGER, candidate_id INTEGER, reason TEXT
+  decision_id INTEGER, candidate_id INTEGER, feasible_set_id INTEGER,
+  reason TEXT
   PRIMARY KEY (decision_id, candidate_id, reason)
+  FOREIGN KEY (decision_id, feasible_set_id)
+    REFERENCES decisions (decision_id, feasible_set_id)
+  FOREIGN KEY (candidate_id, feasible_set_id)
+    REFERENCES candidates (candidate_id, feasible_set_id)
 ```
+
+The `UNIQUE` on `candidates` and on `decisions` is what the composite references
+bind against, and it is stated here rather than left for 4.2 to discover, being
+the difference between a constraint the schema holds and one a test checks.
 
 **The set is keyed on symbol, session and right, and every decision made against
 it references it** [D-W52]. The key comes from what the generator reads: position
@@ -361,6 +372,20 @@ and gross basis, which two makers do not share once their books diverge.
 
 A reason is a row rather than a delimited list, which keeps a single reason
 queryable, and carries no ordinal, the declared order being the domain type's own.
+
+These five are records and reference each other. `candidates` and `decisions` each
+reference `feasible_sets`; `candidate_gate_reasons` references `candidates`;
+`decision_gate_reasons` references a decision and a candidate. The absence of an
+arrow into `trials` or `positions` is the deliberate one stated above [D-W35];
+these are not absences.
+
+`decision_gate_reasons` reaches a feasible set by two paths, through its decision
+and through its candidate, and they must be the same set. A verdict attaching a
+decision made against one set to a candidate from another would record portfolio
+reasons about candidates that decision never saw, which is precisely what a record
+re-scorable from itself cannot admit [D-W3]. The constraint is structural rather
+than checked: the row carries the set, and its two references are composite, so
+the pair cannot disagree.
 
 There is no `gate_status`. A candidate is feasible exactly when no reason refused
 it, so a status column could disagree with the rows beside it. Rejected candidates
