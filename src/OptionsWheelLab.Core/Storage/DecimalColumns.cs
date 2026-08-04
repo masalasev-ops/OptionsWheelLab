@@ -102,5 +102,17 @@ public static class DecimalColumns
         "committed_capital",
         "gross_basis",
         "net_basis",
+
+        // candidates [4.2]. bid and ask are columns rather than fields inside
+        // feature_json because money is decimal in TEXT and this list is what
+        // governs it: money stored inside a blob is money the canonical form does
+        // not reach and the no-ordering rule cannot see. That is the line a future
+        // feature falls on too, denominated in money being a column and anything
+        // else being JSON, and it does work rather than describing what is already
+        // true: spread width is one of the six features SYSTEM_DESIGN §3.11 names,
+        // it is money, and it is ask less bid rather than a column of its own.
+        "credit",
+        "bid",
+        "ask",
     };
 }

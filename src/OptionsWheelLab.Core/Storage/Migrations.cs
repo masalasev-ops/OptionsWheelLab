@@ -467,6 +467,204 @@ public static class Migrations
             CREATE INDEX positions_by_trial
                 ON positions (trial_id, effective_from);
             """),
+
+        new Migration(
+            9,
+            "decision_record",
+            """
+            -- §4.3's decision record, five tables where that section carried two
+            -- until 4.1 [D-W52]. A new migration rather than an amendment to 8:
+            -- that course is only open while nothing has run the migration, and
+            -- 8 has been on main since 3.3.
+            --
+            -- All five are records and all five carry both triggers. The
+            -- authority is [D-W3], which states the property directly rather than
+            -- by implication: a recorded decision is never rewritten, because the
+            -- record exists so a decision can be re-scored from what stood at the
+            -- time and that holds only if what stood at the time is still there.
+            -- An update in place would leave the record present and the decision
+            -- unrecoverable, which is a different loss from the record being
+            -- absent and a harder one to notice.
+            --
+            -- feasible_sets is keyed on symbol, session and right rather than on
+            -- symbol and date [D-W52]. The key comes from what the generator
+            -- reads: position state reaches enumeration only through the right it
+            -- makes sellable, so at most two non-empty sets exist per name and
+            -- session however many makers there are. Three makers sharing one row
+            -- is what makes [D-W4]'s byte-identical property true by construction
+            -- rather than by three writes agreeing, and it holds for exactly the
+            -- makers whose states coincide, which is what that decision reaches.
+            --
+            -- The gate reasons are two tables because their inputs differ.
+            -- ContractConstraints raises six from the candidate, the bounds and
+            -- the report dates, identically for every maker sharing the set.
+            -- PortfolioConstraints raises four against a book, and a verdict
+            -- computed from a book belongs to the maker whose book it is.
+            --
+            -- A reason is a row rather than a delimited list, which keeps a single
+            -- reason queryable, and carries no ordinal: the declared order is
+            -- GateReason's own, so a stored position would state one fact twice.
+            --
+            -- There is no gate_status. A candidate is feasible exactly when no
+            -- reason refused it, so a status column could disagree with the rows
+            -- beside it, and a schema admitting a rejected candidate with no
+            -- reason admits a state [D-W22] forbids.
+            --
+            -- bid and ask are columns and not feature_json, because money is
+            -- decimal in TEXT and DecimalColumns is what governs it. Money stored
+            -- inside a blob is money the canonical form does not reach and the
+            -- no-ordering rule does not govern. The line for a future feature is
+            -- the same one: denominated in money is a column, anything else is
+            -- JSON.
+            --
+            -- decision_gate_reasons carries feasible_set_id so both its references
+            -- are composite. It reaches a set by two paths, through its decision
+            -- and through its candidate, and they must be the same set: a verdict
+            -- attaching a decision made against one set to a candidate from
+            -- another would record portfolio reasons about candidates that
+            -- decision never saw. The constraint is structural rather than
+            -- checked, and it enforces rather than documents, which 4.1 measured
+            -- through the real connection factory rather than through a probe
+            -- that set the pragma it then read.
+            CREATE TABLE feasible_sets (
+                feasible_set_id INTEGER PRIMARY KEY,
+                symbol          TEXT    NOT NULL,
+                session_date    TEXT    NOT NULL,
+                right           TEXT    NOT NULL CHECK (right IN ('put', 'call')),
+                generated_at    TEXT    NOT NULL,
+                UNIQUE (symbol, session_date, right)
+            );
+
+            CREATE TRIGGER feasible_sets_no_update
+            BEFORE UPDATE ON feasible_sets
+            BEGIN
+                SELECT RAISE(ABORT, 'feasible_sets is append-only: a decision is re-scored against the set this row records [D-W3]');
+            END;
+
+            CREATE TRIGGER feasible_sets_no_delete
+            BEFORE DELETE ON feasible_sets
+            BEGIN
+                SELECT RAISE(ABORT, 'feasible_sets is append-only: rows are never deleted');
+            END;
+
+            CREATE TABLE candidates (
+                candidate_id      INTEGER PRIMARY KEY,
+                feasible_set_id   INTEGER NOT NULL REFERENCES feasible_sets (feasible_set_id),
+                contract_id       INTEGER NOT NULL REFERENCES contracts (contract_id),
+                contracts_qty     INTEGER NOT NULL,
+                committed_capital TEXT    NOT NULL,
+                credit            TEXT    NOT NULL,
+                bid               TEXT    NOT NULL,
+                ask               TEXT    NOT NULL,
+                feature_json      TEXT    NOT NULL,
+                UNIQUE (feasible_set_id, contract_id),
+                UNIQUE (candidate_id, feasible_set_id)
+            );
+
+            CREATE TRIGGER candidates_no_update
+            BEFORE UPDATE ON candidates
+            BEGIN
+                SELECT RAISE(ABORT, 'candidates is append-only: a decision is re-scored against the candidates this row records [D-W3]');
+            END;
+
+            CREATE TRIGGER candidates_no_delete
+            BEFORE DELETE ON candidates
+            BEGIN
+                SELECT RAISE(ABORT, 'candidates is append-only: rows are never deleted');
+            END;
+
+            CREATE TABLE candidate_gate_reasons (
+                candidate_id INTEGER NOT NULL REFERENCES candidates (candidate_id),
+                reason       TEXT    NOT NULL CHECK (reason IN (
+                                'spread_cap',
+                                'premium_floor',
+                                'crossed_market',
+                                'delta_ceiling',
+                                'expiry_window',
+                                'earnings_clearance')),
+                PRIMARY KEY (candidate_id, reason)
+            );
+
+            CREATE TRIGGER candidate_gate_reasons_no_update
+            BEFORE UPDATE ON candidate_gate_reasons
+            BEGIN
+                SELECT RAISE(ABORT, 'candidate_gate_reasons is append-only: the gate''s effect stays auditable only if what it refused is unchanged [D-W3]');
+            END;
+
+            CREATE TRIGGER candidate_gate_reasons_no_delete
+            BEFORE DELETE ON candidate_gate_reasons
+            BEGIN
+                SELECT RAISE(ABORT, 'candidate_gate_reasons is append-only: rows are never deleted');
+            END;
+
+            CREATE TABLE decisions (
+                decision_id         INTEGER PRIMARY KEY,
+                maker_id            TEXT    NOT NULL,
+                decision_date       TEXT    NOT NULL,
+                symbol              TEXT    NOT NULL,
+                feasible_set_id     INTEGER NOT NULL REFERENCES feasible_sets (feasible_set_id),
+                kind                TEXT    NOT NULL CHECK (kind IN (
+                                        'open_put',
+                                        'open_call',
+                                        'roll',
+                                        'close',
+                                        'none')),
+                chosen_candidate_id INTEGER NULL REFERENCES candidates (candidate_id),
+                trial_id            INTEGER NULL,
+                policy_version      INTEGER NOT NULL,
+                recorded_at         TEXT    NOT NULL,
+                UNIQUE (decision_id, feasible_set_id)
+            );
+
+            CREATE TRIGGER decisions_no_update
+            BEFORE UPDATE ON decisions
+            BEGIN
+                SELECT RAISE(ABORT, 'decisions is append-only: a recorded decision is never rewritten [D-W3]');
+            END;
+
+            CREATE TRIGGER decisions_no_delete
+            BEFORE DELETE ON decisions
+            BEGIN
+                SELECT RAISE(ABORT, 'decisions is append-only: rows are never deleted');
+            END;
+
+            CREATE TABLE decision_gate_reasons (
+                decision_id     INTEGER NOT NULL,
+                candidate_id    INTEGER NOT NULL,
+                feasible_set_id INTEGER NOT NULL,
+                reason          TEXT    NOT NULL CHECK (reason IN (
+                                    'per_name_cap',
+                                    'total_cap',
+                                    'assignment_stress',
+                                    'gross_basis')),
+                PRIMARY KEY (decision_id, candidate_id, reason),
+                FOREIGN KEY (decision_id, feasible_set_id)
+                    REFERENCES decisions (decision_id, feasible_set_id),
+                FOREIGN KEY (candidate_id, feasible_set_id)
+                    REFERENCES candidates (candidate_id, feasible_set_id)
+            );
+
+            CREATE TRIGGER decision_gate_reasons_no_update
+            BEFORE UPDATE ON decision_gate_reasons
+            BEGIN
+                SELECT RAISE(ABORT, 'decision_gate_reasons is append-only: a decision is re-scored against the verdicts this row records [D-W3]');
+            END;
+
+            CREATE TRIGGER decision_gate_reasons_no_delete
+            BEFORE DELETE ON decision_gate_reasons
+            BEGIN
+                SELECT RAISE(ABORT, 'decision_gate_reasons is append-only: rows are never deleted');
+            END;
+
+            -- The re-scoring read walks a decision to its set and the set to its
+            -- candidates, which is the only query these tables have until a
+            -- scorer exists.
+            CREATE INDEX candidates_by_set
+                ON candidates (feasible_set_id, candidate_id);
+
+            CREATE INDEX decisions_by_set
+                ON decisions (feasible_set_id, decision_id);
+            """),
     ];
 
     /// <summary>
