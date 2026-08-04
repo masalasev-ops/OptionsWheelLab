@@ -1,5 +1,53 @@
 # CHANGELOG
 
+## [1.42.0] — 2026-08-03
+
+**Checkpoint 3.5 signed off, and Phase 3 closes with it.** The run is composed,
+determinism is asserted end to end, and both of 3.5's obligations are closed.
+
+### Added
+- **D-W51: a run's randomness comes from a seeded generator, never the store.**
+  Narrower than barring randomness, which this lab requires, since one of the three
+  makers is a random-within-band control. What is barred is randomness whose source
+  is the store, because a seeded run must reproduce and `random()` cannot be
+  seeded. Three classes are named as not covered: row order without `ORDER BY`,
+  connection-state functions, and version functions.
+- **`TrialRun` and `TrialChoice`.** A run takes a chain, a session range and the
+  choices each session needs, supplied rather than chosen, steps every session and
+  produces a ledger. Order within a session is choice then advance. Five refusals,
+  each naming the session and the state.
+- **FX-RunIsByteIdentical**, comparing the ledger and both projections read back
+  out of two independently migrated stores, never the database file [D-W28].
+- **FX-RunRefusesAChoiceTheStateCannotHonour**, covering the five refusals.
+- **FX-NoNondeterministicSql**, scanning `src/` for the barred calls, checking the
+  barred list against the bundled binary, and naming the three uncovered classes in
+  the check as well as in the register.
+
+### Changed
+- **FX-TrialCompleteIncludesAssignment calls the run** rather than hand-inlining
+  the walk. Lifting that loop is what composed the run: a run written fresh beside
+  a test walking the same trial would be two producers of one sequence.
+- The registry moves from fifty-nine entries to sixty-two, being fifty-nine
+  fixtures and three guards. The suite moves from 650 to 672.
+- The obligations table falls from thirteen rows to eleven, and for the first time
+  every remaining row is owed at a phase rather than at a checkpoint.
+- **README joins the marker sweep's scope.** Its corpus version read 1.32.0 against
+  a corpus at 1.41.1 because the sign-off touches eight files and README was never
+  among them.
+
+### Fixed
+- **A citation caught before it landed rather than after.** D-W51's first draft
+  cited [D-W4] for a uniform draw that decision does not state. Dropped rather than
+  re-attributed: the uniform draw is in the narrative documents, and citing
+  narrative in a decision's rationale would put a second kind of authority in the
+  register. Fifth instance of this pattern and the first prevented.
+- **`CONFIG_REFERENCE.md` and the obligations table both said the component that
+  would resolve `Trial:MaxRolls` and `Trial:MaxTrialDays` is the run loop, which
+  is Phase 4's.** The run loop is 3.5's and it landed without closing them, because
+  `TrialRun` takes a machine already constructed. Both reasons corrected; the
+  obligation keeps its Phase 4 granularity, since what is missing is a composition
+  root that resolves bounds and builds the machine.
+
 ## [1.41.1] — 2026-08-03
 
 **A correction.** Two rules this corpus established were not being followed.

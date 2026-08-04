@@ -185,13 +185,14 @@ entirely by that one choice.
 
 ### 3.8 Wheel state machine and ledger
 
-Build state: **built across 3.3 and 3.4**, on synthetic scenarios: the four
+Build state: **built across 3.3 to 3.5**, on synthetic scenarios: the four
 states, the transitions, `ledger_entries` and the two projections rebuilt from it
-at 3.3, and at 3.4 the fill model that prices a quote into the cash those
-transitions carry. What is not built is anything that drives it. No maker chooses
-to roll and no loop steps a session, so what advances the machine today is a
-test, and the roll's own decision row is Phase 4's alongside every other
-decision.
+at 3.3; at 3.4 the fill model that prices a quote into the cash those transitions
+carry; and at 3.5 the run that steps a session range and produces the ledger,
+byte-identical across two invocations. What is not built is anything that
+chooses. A loop steps the sessions now, but the choices it applies are supplied,
+so no maker decides to roll, and the roll's own decision row is Phase 4's
+alongside every other decision.
 
 Four states modelled as a discriminated union: cash, short put, holding shares,
 short call. Daily events drive transitions, and they lie on two axes rather than

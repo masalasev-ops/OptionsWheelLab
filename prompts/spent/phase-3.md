@@ -18,27 +18,28 @@ sign-off leaves nothing describing the present in between.
 
 # Current state
 
-Corpus v1.41.0.
+Corpus v1.42.0.
 
 | | |
 |---|---|
 | Phase 0 | complete and reviewed, 0.1 to 0.8 built and signed off |
 | Phase 1 | complete, 1.1 to 1.5 built and signed off |
 | Phase 2 | complete, 2.1 to 2.5 built and signed off |
-| Phase 3 | 3.1 to 3.4 built and signed off, 3.5 not started |
-| CI | green, 650 tests, guards then restore then build then test, on push to `main` and every pull request |
+| Phase 3 | complete, 3.1 to 3.5 built and signed off |
+| CI | green, 672 tests, guards then restore then build then test, on push to `main` and every pull request |
 
 **This block was stale for two checkpoints and is the reason to distrust the
 rest.** It read v1.39.0 through 3.3's and 3.4's sign-offs, saying 3.3 to 3.5 were
 not started while both were built and merged. The file's own opening calls it the
 only description of the present, so nothing else was describing one. Every section
 below is re-measured against `main` at this version rather than edited where it
-looked wrong.
+looked wrong, which is now one of the three acts a sign-off performs.
 
-3.1 and 3.2 changed no code. 3.3 and 3.4 changed a great deal: four tables across
+3.1 and 3.2 changed no code. 3.3 to 3.5 changed a great deal: four tables across
 three migrations, the wheel state machine, the ledger and its two projections, the
-fill model, six new stored vocabularies and a third named guard. The suite went
-from 503 to 650 and the guards from 149 files by two checks to 186 by three.
+fill model, the run that steps a session range, six new stored vocabularies and a
+third named guard. The suite went from 503 to 672 and the guards from 149 files by
+two checks to 191 by three.
 
 Which branch the work sits on and which pull requests have merged are not recorded
 here. Git holds both exactly, and a fact kept in two places drifts.
@@ -378,10 +379,20 @@ writes the rule.
 
 ## Trials, the ledger and the fill
 
-**Built at 3.3 and 3.4, and nothing drives it.** The machine is a function from a
-state and a session's facts to a state and its entries; the bounds, the calendar
-and the costs arrive resolved, so it reads no configuration, no clock and no
-table.
+**Built across 3.3 to 3.5, and a loop drives it but nothing chooses.** The machine
+is a function from a state and a session's facts to a state and its entries; the
+bounds, the calendar and the costs arrive resolved, so it reads no configuration,
+no clock and no table.
+
+`TrialRun` steps a session range and applies the choices each session needs,
+supplied rather than chosen, producing a ledger. Order within a session is choice
+then advance. It refuses rather than skips: a choice outside the range, a bar the
+calendar does not carry, and a choice the state cannot honour each stop the walk
+naming the session and the state, on [D-W48]'s argument one level up, since a
+mis-described run that produced a plausible ledger would be worse than one that
+stopped. Two invocations produce byte-identical output, compared as the ledger and
+both projections read back out of two independently migrated stores rather than as
+a database file [D-W28].
 
 Four states as a discriminated union, and the events that move between them lie
 on two axes rather than in one list [D-W47]. Contract events are expiry and
@@ -527,7 +538,7 @@ bands the list names.
 
 ## Tests
 
-650: 395 across fifty-six fixtures, and 255 across thirty-seven unregistered
+672: 417 across fifty-nine fixtures, and 255 across thirty-seven unregistered
 suites. The three guards are checks rather than tests and are counted in neither.
 2.1 registered none and changed none, which is what a document-only checkpoint
 pinned by existing fixtures looks like; 2.2 registered two, 2.3 seven, 2.4
@@ -549,6 +560,7 @@ number is visible from a green run.
 | FX-MoneyRoundTrip | 17 |
 | FX-NoSqlAliases | 17 |
 | FX-ConfigWriteRefusesInvariantBreach | 16 |
+| FX-NoNondeterministicSql | 13 |
 | FX-ConfigStoreClassHonoured | 12 |
 | FX-TickerDashForm | 12 |
 | FX-UnmodelledActionStopsTheTrial | 12 |
@@ -557,6 +569,7 @@ number is visible from a green run.
 | FX-ConfigResolvesAsOf | 6 |
 | FX-EveryConfigSectionBinds | 6 |
 | FX-MigrateFromEmpty | 6 |
+| FX-RunRefusesAChoiceTheStateCannotHonour | 6 |
 | FX-AssignmentStressRejects | 5 |
 | FX-BoundClosePaysTheAsk | 5 |
 | FX-EarlyAssignmentOnDividend | 5 |
@@ -592,6 +605,7 @@ number is visible from a green run.
 | FX-EveryAppKeyBinds | 3 |
 | FX-NoCurrentConfigReadOnSimulatedPath | 3 |
 | FX-PitMembershipExcludesLaterJoiner | 3 |
+| FX-RunIsByteIdentical | 3 |
 | FX-SnapshotRestoresIdentically | 3 |
 | FX-WorkedExampleChainPersists | 3 |
 | FX-DteWindowRejects | 2 |
@@ -608,11 +622,11 @@ append-only triggers make the tables impossible to clean between cases.
 
 ## Not built
 
-**Nothing drives anything.** No maker chooses, and no loop steps a calendar. The
-state machine is a function a caller applies one session at a time and the fill
-model prices a quote a caller hands it, so what advances a trial today is a test.
-That is the largest single gap in the repository and it is what 3.5's own detail
-assumes away.
+**Nothing chooses.** A loop steps a calendar from 3.5, but the choices it applies
+are supplied, so no maker decides. That is the largest single gap in the
+repository and it is Phase 4's whole subject. `TrialRun` is also handed a machine
+already constructed, so no composition root resolves bounds and builds one, which
+is why two `Trial:` configuration rows are still unverified.
 
 `decisions` and `candidates` are Phase 4's, so nothing persists a candidate or its
 reasons and a roll's decision row has nowhere to go. The trial's `maker_id` is the
@@ -639,11 +653,11 @@ actions on a session as a parameter rather than reading them, so nothing yet ask
 what was in force at a date.
 
 No operator entry point ingests a chain, and none runs a trial. `ChainWriter`,
-`TrialStore` and `FillModel` have tests as their only callers.
+`TrialStore`, `FillModel` and `TrialRun` have tests as their only callers.
 
-**Nothing produces output, so determinism is still asserted over stored rows.**
-0.5 restated the byte-identical definition of done that way because no run
-existed; after 3.4 there is still no run, only the pieces one would compose.
+**Determinism is asserted over a run's output from 3.5**, which is the form 0.5
+stated and restated as stored rows for want of a run to make. What is still not
+asserted is determinism over a run a maker drove, since the choices are supplied.
 
 ## Owed
 
@@ -652,14 +666,15 @@ obligations, which is where planning for the phase that owns it will look. It is
 copied here: two registers of one list is how an obligation comes to exist in the one
 nobody reads.
 
-Entries stand against checkpoint 3.5 and against Phases 4, 5, 8, 9 and 11. The
+Entries stand against Phases 4, 5, 8, 9 and 11 and against no checkpoint. The
 count is not restated here. **The column names a checkpoint once the owning
 phase's detail exists and a phase otherwise**, stated at the table because two
 readings of it disagreed: a count over phase names alone misses the rows that have
-moved on. **3.1 to 3.4 owe nothing, and both remaining checkpoint rows are
-3.5's**, which is the whole of what Phase 3 has left. 3.1 closed four rows while
-raising three; 3.2 closed its own and raised three; 3.3 closed four and raised
-five; 3.4 closed three and raised one. **Phase 2 owes nothing.** 2.1 discharged the reconciliation row raised at
+moved on. **3.1 to 3.5 owe nothing, and for the first time every outstanding row
+is owed at a phase**, which is what closing a phase with nothing carried inside it
+looks like. 3.1 closed four rows while raising three; 3.2 closed its own and
+raised three; 3.3 closed four and raised five; 3.4 closed three and raised one;
+3.5 closed two and raised none. **Phase 2 owes nothing.** 2.1 discharged the reconciliation row raised at
 v1.6.0, the table's oldest and open for twenty-three corpus versions, 2.3
 discharged the crossed-quote row while opening two of its own, and 2.4
 discharged the risk row while opening one of its own. All three discharged rows
@@ -1083,3 +1098,63 @@ can be wrong about.**
 - **A vocabulary with no second enforcer is named where each audience stands**:
   at the type, at the fixture that holds the stored forms together, and in the
   registry row a reader meets first. Written in one place reaches one reader.
+
+## 3.5 Determinism, end to end
+
+Branch `phase-3/checkpoint-3.5` off `main`. The checkpoint that composes a run:
+0.5 restated its byte-identical definition of done as identical stored rows
+because no run existed to make, and this is where one exists. A run takes a chain,
+a session range and the choices each session needs, supplied rather than chosen,
+steps every session and produces a ledger. No maker is needed, because determinism
+is a property of the loop rather than of the choice.
+
+### The loop was extracted, not written
+
+`FX-TrialCompleteIncludesAssignment` hand-inlined the walk over the worked
+example's six sessions. A run written fresh beside a test that walks the same
+trial would be **two producers of one sequence**, so the run is that loop lifted
+and the fixture became an assertion about its output, which is what it was always
+asserting.
+
+### A supplied choice the state cannot honour is refused, not skipped
+
+Skipping would give a run that walked, wrote entries and described a trial nobody
+asked for. **That is worse than stopping**, because the output would be readable,
+internally consistent and wrong. Every refusal names the session and the state,
+since a choice sequence is written by hand and the two facts a reader needs are
+which line is wrong and what the trial was holding when it got there.
+
+### What bars nondeterminism in SQL that is not a clock
+
+The second obligation, and the definition of done asks for two halves: the check
+covers every source it names **and names every source it does not cover**. The
+second half is where the decision goes, because a check that silently omitted a
+class would read as complete.
+
+### Constraints
+
+- **A plan precedes the build, and clauses describing scope are not
+  authorisation.** This checkpoint was built straight from its clauses while
+  `PROGRESS.md` still said it had not started. The branch was discarded and
+  re-laid rather than committed forward, and the code was restored byte-identical
+  because it was correct: what was wrong was the order, and the order exists so a
+  decision is reviewed before code rests on it.
+- **A fixture registration is authored.** Two rows were written unasked on the
+  discarded branch, with a Source column reading `authored` where that was false.
+  A registry wrong about provenance is wrong about the one thing it is the sole
+  source of.
+- **Check a supplied citation before landing it, not after.** The decision's first
+  draft cited a decision for a property that decision does not state. Four earlier
+  instances were found by building the thing that rested on them; this one was
+  found by reading the source the bracket named. Drop the unsupported half rather
+  than re-attributing it to a narrative document, which would put a second kind of
+  authority in the register.
+- **A flag that looks like the test usually is not.** `SQLITE_DETERMINISTIC` is
+  absent from 48 of 168 functions and only two of those matter; barring on it would
+  reject `count`, `sum`, `max` and `min`. Measure the set before writing the rule
+  over it, and assert the counts so an upgrade returns to the decision.
+- **Write the test expecting the answer you predict, and read the one you get.**
+  Two stores seeded at different instants were expected to compare equal. They do
+  not: the run stops, which is a better property than the equality that was
+  predicted, and a resolution rule that defaulted would have made the test pass
+  and the property false.

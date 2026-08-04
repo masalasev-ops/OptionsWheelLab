@@ -630,17 +630,16 @@ to differ. A count of this table is a count of rows. Rows sharing an Owed at
 value are separate obligations, and a count of distinct values is not a count of
 this table.
 
-**Thirteen rows stand, two at checkpoint granularity and eleven at phase**, read
-off the table below at 3.4's sign-off. It stood at fifteen, five and ten, at
-3.3's, and at fourteen, seven and seven, at 3.2's. 3.4 closed its own three and
-raised one, and the two rows left at checkpoint granularity are both 3.5's, which
-is the whole of what Phase 3 has left to do.
+**Eleven rows stand, none at checkpoint granularity and eleven at phase**, read
+off the table below at 3.5's sign-off. It stood at thirteen, two and eleven, at
+3.4's; at fifteen, five and ten, at 3.3's; and at fourteen, seven and seven, at
+3.2's. 3.5 closed its own two and raised none, so for the first time every
+outstanding obligation is owed at a phase rather than at a checkpoint, which is
+what closing a phase with nothing carried inside it looks like.
 
 | Owed at | Obligation | Raised |
 |---|---|---|
 | Phase 11 | Re-add `Microsoft.AspNetCore.OpenApi` against a version whose `Microsoft.OpenApi` dependency clears the audit. Removed at 0.1 rather than suppressing the advisory; the reason is in the Api project file. | PR #1 |
-| 3.5 | Establish output-level determinism: a simulated run with a fixed clock produces byte-identical output across two invocations. 0.5 restated it as identical stored rows because no run existed to make. Compared as produced artefacts, never as a database file [D-W28]. | PR #4 |
-| 3.5 | Decide what bars nondeterminism in SQL that is not a clock. Enumerating the bundled SQLite showed `random()` and `randomblob()` alongside the seven clock functions; they are outside FX-ClockIsNotADateSource by name but would break a byte-identical run just as surely. | PR #4 |
 | Phase 4 | Store one feasible set per name and date rather than one per decision. `candidates` is keyed on `decision_id`, so three makers acting on one set write it three times, while [D-W4] requires the three to be byte-identical and `FX-ThreeMakersSameFeasibleSet` asserts it. Storing once and referencing thrice makes it true by construction and divides the largest uncertain table by three. Raised while estimating store size over a ten-year lifetime, before the table exists. The grain is (symbol, date) and nothing carries it as a type; 2.5 declined to ship one because no maker exists to consume it, so Phase 4 models the set with `candidates` in front of it rather than inheriting a shape guessed three checkpoints early. `FX-ThreeMakersSameFeasibleSet` is also where the byte-level property is asserted, restated from 2.5's definition of done for want of a subject. **The reason-storage row raised at v1.32.0 is answered by whatever grain this settles.** | v1.17.0 |
 | Phase 8 | Extract the market rules out of `SyntheticChainReader`, so one definition serves the synthetic reader and the vendor ingest. Refusing a negative bid, a negative ask and a crossed market are statements about what a market can be, not JSON concerns, and they sit as private statics on the reader, so a second producer of quotes can only duplicate them. Phase 8 is where that second producer arrives. **The crossed-quote coupling is discharged at 2.3**: the gate handles a crossed quote [D-W22, as amended], so that rule moved to the gate and left the loader, and what remains to extract is the two negative-price refusals. Not extracted at 0.8 because there is one caller and the second does not exist. | PR #9 |
 | Phase 4 | Decide how a candidate's gate reasons are stored. `candidates.gate_reason` is a single nullable TEXT column and the domain type is a set in declared order [2.3], which FX-GateRecordsAllReasons at 2.5 asserts by requiring two reasons on one candidate. The options include a delimited list, which makes a reason unqueryable, and a row per reason, which changes the table's grain. Raised at 2.3 when the vocabulary was declared. **The grain this assumes is the one the v1.17.0 row decides.** | v1.32.0 |
@@ -648,7 +647,7 @@ is the whole of what Phase 3 has left to do.
 | Phase 8 | Decide how a deliverable that is shares plus cash is recorded. The adjustment method in force gives a 4-for-3 split of an $80 option a deliverable "adjusted to 133 shares plus the cash value of the eliminated fractional share", strike unchanged; `contracts.deliverable_shares` is an integer and one of the five components of contract identity [1.5], and nothing in this corpus or its sources names cash in lieu. Owed at Phase 8 rather than 3.3 because no synthetic chain can express a corporate action at all, so the first deliverable of this shape arrives with vendor data, and the change is to a built structure with a migration cost that is no cheaper now. 3.3 must not assume a deliverable is wholly shares. Raised at 3.2. | v1.38.0 |
 | Phase 5 | Decide whether cash earns, and at what rate. Nothing in this corpus names interest as a financial concept. The absence biases two of the three comparisons in opposite directions: the wheel holds cash securing its puts and the hold-cash floor holds cash outright, so both are understated by roughly the same amount and their comparison survives, while buy-and-hold holds no cash and is not understated at all, so the comparison the lab exists to make is biased against the wheel by whatever the rate is. A rate is an external source and choosing one is a modelling choice with its own argument. Owed at Phase 5, where the outcome metric and the controls' returns are computed. A control gap of the same kind as the dividend gap and in the same decision [D-W13]. Raised at 3.2. | v1.38.0 |
 | Phase 4 | Resolve configuration in the projection rebuild as of the simulated date the run used, never as-now [D-W26]. Telling `closed_at_bound` from `closed_by_choice` means asking whether a bound had been reached, which reads `Trial:MaxRolls` and `Trial:MaxTrialDays`, and a rebuild reading current bounds would disagree with the run it is rebuilding while presenting the disagreement as a ledger defect. Not live at 3.3, where nothing writes `closed_by_choice` because no maker exists. Raised at 3.3 by building the rebuild. | v1.40.0 |
-| Phase 4 | Verify the consumers of `Trial:MaxRolls` and `Trial:MaxTrialDays`, which 3.3 could not. `TrialBounds` reads both as of the simulated date and nothing in `src/` constructs it: the state machine is handed resolved bounds, and the component that would resolve them is the run loop. `CONFIG_REFERENCE.md` calls a consumer that cannot be verified once its checkpoint has landed a defect rather than a documentation gap, and 3.3 was that checkpoint, so both rows stay **Unverified** with the reason recorded rather than the column loosened to admit a type with no component behind it. Raised at 3.3. | v1.40.0 |
+| Phase 4 | Verify the consumers of `Trial:MaxRolls` and `Trial:MaxTrialDays`, which 3.3 could not. `TrialBounds` reads both as of the simulated date and nothing in `src/` constructs it: the state machine is handed resolved bounds. **The reason this row gave was that the component resolving them is the run loop, which it called Phase 4's, and 3.5 landed the run loop without closing it.** `TrialRun` is handed a machine already constructed, so what is missing is not the loop but a composition root that resolves bounds and builds the machine from them, which arrives with the maker that drives a run. `CONFIG_REFERENCE.md` calls a consumer that cannot be verified once its checkpoint has landed a defect rather than a documentation gap, and 3.3 was that checkpoint, so both rows stay **Unverified** with the reason recorded rather than the column loosened to admit a type with no component behind it. Raised at 3.3, and its reason corrected at 3.5 by the run loop arriving early. | v1.40.0 |
 | Phase 4 | Decide which simulated date the trial bounds resolve as of. A trial spans many sessions and [D-W26] resolves configuration as of the simulated date, so nothing states whether an open trial is bound by the values in force at its open or by each session's, and `Trial:MaxRolls` changing mid-trial would move the bound under a position already taken. 3.3 built the machine taking bounds at construction, on `GateBounds`' resolve-once-per-evaluation shape, and invented no answer. **The rebuild row above asks the same as-of question from the other side.** Raised at 3.3. | v1.40.0 |
 | Phase 5 | Decide what `ResolvedBound`'s refusal calls the thing it could not resolve. It reads "a gate bound", which has covered `Risk:` caps since 2.4 and covers a trial bound and a cost from 3.4, so it is wrong for three of the four records that use it. That type's own remarks anticipated this and call changing what the message carries a decision rather than an edit, because what [D-W37]'s refusal says is the reason the type exists. Owed at Phase 5 rather than sooner: the fourth record makes the wording wrong and the fifth is where a reader stops being able to infer the family from the key, since scores are the first values that are neither a bound nor a cost. Raised at 3.4. | v1.41.0 |
 
@@ -1292,11 +1291,13 @@ obligation rows now point at each other.
 
 ## Phase 3 — Thin slice: one full wheel turn
 
-Build state: **partly built**. 3.1 to 3.4 built and signed off: the mechanics
+Build state: **complete**. 3.1 to 3.5 built and signed off: the mechanics
 settled as decisions, the completeness pass run, the state machine and ledger
-built against four tables, and the fill model pricing a quote into cash. 3.5 not
-started, so no run is byte-identical yet, and nothing drives the machine: no maker
-chooses and no loop steps a calendar. Delivers
+built against four tables, the fill model pricing a quote into cash, and the run
+stepping a session range from choices supplied rather than chosen, byte-identical
+across two invocations. A loop steps the calendar from 3.5; no maker chooses,
+which is Phase 4's and is the only thing between this and a driven machine.
+Delivers
 one trial from cash to cash: a put sold, assignment or expiry, shares held, calls
 written, called away or closed at the roll bound, with every cash movement in the
 ledger and the trial and position rebuildable from it. On synthetic chains; no
@@ -1551,5 +1552,57 @@ sequence is that with the choosing already done.
   enumeration of the bundled SQLite raised.
 - **DoD**: the guard covers every source of nondeterminism it names, and
   names every source it does not cover.
+
+Reconciled at sign-off against what shipped. One decision, the run, and three
+registered checks. Both obligations closed and none raised. The suite went from
+650 to 672.
+
+**This checkpoint was built before it was planned, and the branch was discarded
+and re-laid to correct that.** The code was written straight from the clauses that
+described its scope, which read as authorisation and were not, and `PROGRESS.md`
+still said 3.5 was not started while its fixtures passed. What was kept is the
+code, restored byte-identical, because it was correct and rewriting it would have
+produced the same files with a worse provenance. What was discarded is the branch
+shape, two registry rows written unasked, and a README paragraph. The order the
+last two checkpoints used exists so a decision is reviewed before code rests on
+it, and nothing here had to be rebuilt to get it back.
+
+**The decision's citation was corrected before it landed rather than after.** Its
+first draft cited [D-W4] for a uniform draw that decision does not state, which a
+direct read caught. That is the fifth time a citation in this corpus has named a
+decision for a property the decision does not carry, and the first time one was
+stopped on the way in. The other four were found by building the thing that rested
+on them.
+
+**`SQLITE_DETERMINISTIC` is not the discriminator, which had to be measured to
+know.** Of the 168 functions the bundled SQLite registers, 48 lack the flag and
+only two vary between two runs over the same data; the rest are aggregates, window
+functions, the clock functions another fixture already holds, the two classes the
+decision names as uncovered, and full-text internals. A check barring on the flag
+would reject `count`, `sum`, `max` and `min`, and `MAX(version)` is how current
+configuration is read. Both counts are asserted rather than recorded in prose, so
+an upgrade adding a forty-ninth returns to the decision.
+
+**The run reads no clock and the store it reads is not clock-free.** A store seeded
+after the run's own dates has no commission in force on the run's sessions, so the
+run stops [D-W37] rather than producing a different artefact. That reaches the
+Phase 9 configuration-resolution obligation from determinism instead of from a
+walk-forward, and the stop is a better answer than equality would have been: a
+resolution rule that defaulted would have made the test pass and the property
+false.
+
+**The narrower reading of the test was declined and is recorded as declined.**
+Asserting determinism over a trial that opens and expires would have proved it of
+the case with the fewest transitions and therefore the fewest chances to be
+nondeterministic. §6.3's trial was walked instead, through assignment, two covered
+calls and a call-away.
+
+**The run loop arrived here and not at Phase 4, and it did not close what was
+waiting on it.** Two `Trial:` configuration rows have been carried unverified since
+3.3 on the stated reason that the component resolving them is the run loop. The
+run loop is this checkpoint's. It takes a state machine already constructed, so
+the thing still missing is a composition root that resolves bounds and builds the
+machine, and that arrives with the maker. The obligation keeps its granularity and
+its reason is corrected.
 
 Detail for Phase 4 is authored when Phase 3 signs off.
