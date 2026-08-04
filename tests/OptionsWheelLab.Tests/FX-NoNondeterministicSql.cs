@@ -237,7 +237,7 @@ public sealed class FX_NoNondeterministicSql
     private static IReadOnlyList<string> BarredCallsIn(string sql) =>
         [.. BarredCalls
             .Where(call => Regex.IsMatch(
-                DecimalOrderingInSql.WithoutComments(sql),
+                DecimalOrderingInSql.WithoutCommentsOrLiterals(sql),
                 call.Pattern,
                 RegexOptions.IgnoreCase))
             .Select(call => call.Form)];

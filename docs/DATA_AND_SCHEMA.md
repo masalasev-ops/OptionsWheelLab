@@ -426,6 +426,14 @@ three arrows in §4.1 run between records, where nothing is ever discarded, whic
 is why the absence of arrows here is a statement rather than an omission. Written
 the other way first at 3.3 and found by the test that discards a projection.
 
+The same absence appears a second time, and `decisions` carries no foreign key
+into `trials` for the same reason: `trial_id` names a projection, and a reference
+from the record would let the store refuse the discard a rebuild requires [D-W35].
+Both absences are the same rule, and both now bind rather than document, since
+foreign keys are enforced on a connection this store opens.
+`decisions.chosen_candidate_id` referencing `candidates` is the contrast worth
+leaving visible: a record may reference a record.
+
 Whether `contract_id` should reference `contracts` the way
 `contract_quotes.contract_id` does is a separate question and open: that target is
 a record and outlives every rebuild, so it carries none of the same risk.

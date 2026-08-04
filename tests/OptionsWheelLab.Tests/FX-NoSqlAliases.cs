@@ -311,7 +311,7 @@ public sealed class FX_NoSqlAliases
     /// holiday from a name that did not trade" reads as <c>FROM a name</c> and
     /// "rebuilt from this table" as <c>FROM this table</c>, so the detector
     /// reported two offences in documentation. The fix is in
-    /// <see cref="DecimalOrderingInSql.WithoutComments"/>, shared by both
+    /// <see cref="DecimalOrderingInSql.WithoutCommentsOrLiterals"/>, shared by both
     /// detectors, rather than a keyword added here: <c>a</c> and <c>this</c> are
     /// not SQL keywords and adding them would blind the rule to a real alias
     /// named <c>a</c>.
@@ -327,7 +327,7 @@ public sealed class FX_NoSqlAliases
             SELECT session_date FROM market_sessions;
             """;
 
-        Assert.Empty(SqlAliases.Offences(DecimalOrderingInSql.WithoutComments(Sql)));
+        Assert.Empty(SqlAliases.Offences(DecimalOrderingInSql.WithoutCommentsOrLiterals(Sql)));
     }
 
     /// <summary>
@@ -343,7 +343,7 @@ public sealed class FX_NoSqlAliases
             SELECT c.strike FROM contracts c ORDER BY c.strike;
             """;
 
-        Assert.Single(SqlAliases.Offences(DecimalOrderingInSql.WithoutComments(Sql)));
+        Assert.Single(SqlAliases.Offences(DecimalOrderingInSql.WithoutCommentsOrLiterals(Sql)));
     }
 
     private static IReadOnlyList<string> SourceFiles() =>

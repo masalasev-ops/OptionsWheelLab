@@ -564,7 +564,7 @@ public static class Migrations
             CREATE TRIGGER candidates_no_update
             BEFORE UPDATE ON candidates
             BEGIN
-                SELECT RAISE(ABORT, 'candidates is append-only: a decision is re-scored against the candidates this row records [D-W3]');
+                SELECT RAISE(ABORT, 'candidates is append-only: a decision is re-scored from the candidates this row records, using the set as it stood [D-W3]');
             END;
 
             CREATE TRIGGER candidates_no_delete
