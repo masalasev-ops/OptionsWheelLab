@@ -16,8 +16,8 @@ predates this file and cannot be relied on.
 
 **Purpose and measurement**: D-W2, D-W3, D-W5, D-W17, D-W18, D-W20, D-W21, D-W49
 **Isolation and controls**: D-W1, D-W4, D-W6, D-W13, D-W41, D-W45, D-W52
-**Data and identity**: D-W7, D-W8, D-W9, D-W15, D-W26, D-W27, D-W28, D-W29, D-W30, D-W31, D-W32, D-W34, D-W35, D-W36, D-W39, D-W44, D-W46, D-W47, D-W48, D-W52
-**Risk**: D-W10, D-W11, D-W14, D-W19, D-W23, D-W25, D-W37, D-W43
+**Data and identity**: D-W7, D-W8, D-W9, D-W15, D-W26, D-W27, D-W28, D-W29, D-W30, D-W31, D-W32, D-W34, D-W35, D-W36, D-W39, D-W44, D-W46, D-W47, D-W48, D-W52, D-W53
+**Risk**: D-W10, D-W11, D-W14, D-W19, D-W23, D-W25, D-W37, D-W43, D-W53
 **Gate constraints**: D-W10, D-W22, D-W23, D-W24, D-W25
 **Settlement mechanics**: D-W38, D-W39, D-W40, D-W41, D-W42, D-W43, D-W44, D-W46
 **Costs and fills**: D-W12, D-W49, D-W50
@@ -1625,3 +1625,46 @@ checkpoint that computes them answers it rather than inheriting the assumption.
 Test FX-DecisionsShareOneFeasibleSet: two decisions made against the same symbol,
 session and right reference one stored set rather than two copies, and their
 portfolio verdicts differ where their books do.
+
+---
+
+### D-W53 A trial's bounds are fixed at its open
+`active` · 2026-08-04
+
+`Trial:MaxRolls` and `Trial:MaxTrialDays` are resolved once, as of the session a
+trial opens, and hold for that trial's life. A later version of either binds the
+trials opened after it and no trial already running.
+
+Rationale. Configuration resolves as of the simulated date [D-W26], and a trial
+spans many sessions, so the rule leaves open which of those dates is meant.
+Resolving per session would let a bound move under a position already taken: a
+trial opened when three rolls were permitted could find itself over its cap
+without having rolled again, and the roll that breached it would be a roll that
+was permitted when it happened. A bound is a constraint on a decision, and a
+decision is made once.
+
+This ratifies a shape already built rather than requiring a change. 3.3 gave the
+state machine its bounds at construction, on the resolve-once-per-evaluation shape
+`GateBounds` uses, and settled nothing about which date that construction reads.
+The machine needs no change; what needed stating is which date the component
+constructing it resolves as of.
+
+**What this does not answer, stated so it is not answered twice.** It fixes the
+date within a run, not the configuration a run reads. Whether a run over history
+resolves configuration as of each simulated date or as of the instant its
+pre-registration was committed [D-W15] is a separate question, owed at Phase 9,
+and reached there by a seed stamped from the wall clock rather than by anything
+here. This decision holds under either answer: if Phase 9 pins a run's
+configuration, every trial in that run opens under the pinned values and the rule
+below is satisfied trivially; if it does not, the rule is what keeps a mid-run
+revision off the trials already open.
+
+Consequence for the rebuild. A projection asking whether a bound had been reached
+must read the values that trial opened under, not current ones and not the ones in
+force on the session being rebuilt. A rebuild reading anything else disagrees with
+the run it is rebuilding and presents the disagreement as a ledger defect, which
+is the wrong place to look.
+
+Test FX-TrialBoundsFixedAtOpen: a trial spanning a configuration change is bound
+by the values in force when it opened, and a trial opened after the change is
+bound by the new ones.

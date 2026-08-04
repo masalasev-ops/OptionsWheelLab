@@ -17,6 +17,12 @@ is not duplicated here.
 phases ahead is what made the equivalent AlphaLab document go stale, because a
 checkpoint's acceptance criteria depend on decisions that have not landed yet.
 
+Writing a phase's detail promotes rows in two registers, not one. The obligations
+table's Owed at column and `FIXTURES.md`'s Checkpoint column both name a phase
+until its detail exists and a checkpoint once it does, and moving one without the
+other leaves every checkpoint's entry-to-artefact definition of done resolving to
+nothing. Both are moved in the commit that authors the detail.
+
 A checkpoint's detail passes through three states, and the middle one is a single
 event rather than a period.
 
