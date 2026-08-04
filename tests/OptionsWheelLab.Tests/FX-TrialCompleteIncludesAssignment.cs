@@ -172,13 +172,19 @@ public sealed class FX_TrialCompleteIncludesAssignment
     }
 
     /// <summary>
-    /// §6.3's trial, walked session by session.
+    /// §6.3's trial, walked by the run.
     /// </summary>
     /// <remarks>
-    /// §5 supplies the closes and §2 the bids. The two covered calls are written
+    /// <b>This fixture hand-inlined the walk until 3.5, and lifting it is what
+    /// composed the run.</b> A run written fresh beside a test that walked the
+    /// same trial would be two producers of one sequence, so the fixture calls
+    /// the run and asserts its output, which is what it was always asserting.
+    /// <para>
+    /// §5 supplies the closes and §2 the bids. The two covered calls are chosen
     /// on the sessions the document writes them, which are the Mondays after each
     /// Friday expiry, and that is what next-session notification produces rather
     /// than a convenience [D-W39].
+    /// </para>
     /// </remarks>
     private static (TrialState State, IReadOnlyList<LedgerEntry> Entries) WorkedExample()
     {
@@ -186,42 +192,45 @@ public sealed class FX_TrialCompleteIncludesAssignment
 
         using (store)
         {
-            var machine = Machine();
-            var entries = new List<LedgerEntry>();
+            var run = new TrialRun(Machine(), model, Calendar);
 
-            var opened = machine.OpenTrial(
-                Put(50.00m, FirstExpiry), model.Sell(0.95m, Opened), Opened);
-            entries.AddRange(opened.Entries);
+            var result = run.Walk(
+                WorkedExampleChain(),
+                Opened,
+                ThirdMonday,
+                [
+                    new OpenPut(Opened, Put(50.00m, FirstExpiry), Bid: 0.95m),
+                    new WriteCoveredCall(MondayAfter, Call(52.50m, SecondExpiry), Bid: 0.70m),
+                    new WriteCoveredCall(SecondMonday, Call(52.50m, ThirdExpiry), Bid: 0.85m),
+                ]);
 
-            var assigned = machine.Advance(
-                opened.State, TrialScenario.Session(FirstExpiry, close: 48.90m));
-            entries.AddRange(assigned.Entries);
-
-            var firstCall = machine.WriteCall(
-                assigned.State,
-                MondayAfter,
-                Call(52.50m, SecondExpiry),
-                model.Sell(0.70m, MondayAfter));
-            entries.AddRange(firstCall.Entries);
-
-            var expired = machine.Advance(
-                firstCall.State, TrialScenario.Session(SecondExpiry, close: 51.20m));
-            entries.AddRange(expired.Entries);
-
-            var secondCall = machine.WriteCall(
-                expired.State,
-                SecondMonday,
-                Call(52.50m, ThirdExpiry),
-                model.Sell(0.85m, SecondMonday));
-            entries.AddRange(secondCall.Entries);
-
-            var away = machine.Advance(
-                secondCall.State, TrialScenario.Session(ThirdExpiry, close: 53.40m));
-            entries.AddRange(away.Entries);
-
-            return (away.State, entries);
+            return (result.State, result.Entries);
         }
     }
+
+    /// <summary>
+    /// §5's closes and the quotes the trial's own contracts carried.
+    /// </summary>
+    /// <remarks>
+    /// Only the sessions §5 states, so the run steps six. The quotes are the ones
+    /// the short is looked up by, and none is needed here: no session in this
+    /// trial reaches a rule that reads a price, since nothing rolls, nothing hits
+    /// a bound and no ex-dividend date falls inside it.
+    /// </remarks>
+    private static Core.Synthetic.SyntheticChain WorkedExampleChain() =>
+        new(
+            Symbol,
+            [
+                new Core.Synthetic.UnderlyingBar(Symbol, Opened, Close: 52.40m),
+                new Core.Synthetic.UnderlyingBar(Symbol, FirstExpiry, Close: 48.90m),
+                new Core.Synthetic.UnderlyingBar(Symbol, MondayAfter, Close: 48.95m),
+                new Core.Synthetic.UnderlyingBar(Symbol, SecondExpiry, Close: 51.20m),
+                new Core.Synthetic.UnderlyingBar(Symbol, SecondMonday, Close: 51.30m),
+                new Core.Synthetic.UnderlyingBar(Symbol, ThirdExpiry, Close: 53.40m),
+            ],
+            [],
+            [],
+            []);
 
     /// <summary>A fill model over a seeded store, so the commission is configuration.</summary>
     private static FillModel Model(out TempStore store)
