@@ -1977,3 +1977,20 @@ was the last, and Phase 4's detail is authored now that Phase 3 has closed, so
 there is no unspent prompt for D-W51 to have changed. The gap this question found
 at 3.4, that 3.5's detail was about determinism and said nothing about composing a
 run, was closed by its author before this checkpoint began.
+
+### 2026-08-04 — the merge sweep for 3.5, which found nothing
+
+**Recorded because a sweep whose result is not written is indistinguishable from
+one that did not run.** 3.3 established the second pass when it found four stale
+figures the first could not have seen, since a sign-off commit changes counts the
+sign-off itself was measuring.
+
+Nothing was stale this time. Eighteen markers re-read against merged `main` at
+`85b19e5`: `DATA_AND_SCHEMA`'s stays partly built, 3.5 having added no table;
+`SYSTEM_DESIGN`'s configuration marker stays closed completely from 3.4, 3.5
+having added no key; and the registry's sixty-two entries, the suite's 672 and the
+guards' 191 files all re-measured to the figures the sign-off recorded.
+
+**It ran after the merge rather than before it**, which is the one difference from
+3.4 and is recorded rather than smoothed over. The finding is the same either way,
+but a sweep run after a merge cannot block one.
