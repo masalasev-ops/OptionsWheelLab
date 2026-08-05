@@ -1,5 +1,52 @@
 # CHANGELOG
 
+## [1.45.0] — 2026-08-04
+
+**Checkpoint 4.2 signed off.** The decision record is built: five append-only
+tables, a writer, and a reader that rebuilds a decision from the record alone.
+
+### Added
+- **Migration 9**, five tables with ten append-only triggers, three `CHECK`
+  vocabularies and two indexes. All five rest on [D-W3], which states the property
+  directly: a recorded decision is never rewritten.
+- **`DecisionStore`**, which finds or creates the feasible set rather than writing
+  one per maker, so [D-W4]'s byte-identical property holds by construction. A
+  maker arriving with a different set for the same symbol, session and right is
+  refused rather than merged.
+- **`DecisionRecordReader`**, its own type so the definition of done is checkable.
+  Six tables permitted, four barred by name with the reason for each.
+- **`DecisionKind` and `StoreDecisionKind`**, enforced from the migration that
+  introduces them, which is what `StoreGateReason` was not for four checkpoints.
+- **`GateReasonFamily`**, declaring which evaluator raises each reason and
+  therefore which table a verdict is written to.
+- **`CandidateFeatures`**, writing `feature_json` by hand so the decimal form is
+  `StoreDecimal`'s rather than a serialiser's, and carrying nothing denominated in
+  money.
+- Two registered fixtures at 4.2.
+
+### Changed
+- **`DecimalColumns` gains `credit`, `bid` and `ask`.** Money in a blob is money
+  the canonical form does not reach, so `bid` and `ask` are columns and
+  `feature_json` carries only non-monetary features.
+- **`AppendOnlyTables` gains the three tables [D-W52] added**, each entry naming
+  the decision that states the property.
+- **`WithoutComments` becomes `WithoutCommentsOrLiterals`** and drops a literal's
+  body, because both SQL detectors read a `RAISE` message as SQL. Third instance
+  of one shape, after the `--` scanner at 0.4 and the comment stripping at 3.3.
+- **`FX-StoredVocabulariesMatchTheirChecks` asserts its own coverage**, enumerating
+  the declarations by reflection so a vocabulary in neither list fails. Its
+  registry cell and its type remark stop carrying a count.
+- `DATA_AND_SCHEMA.md` §4.3 records `bid` and `ask` and states which side of the
+  money line a future feature falls on.
+- `SYSTEM_DESIGN.md` §3.6 gains a build-state marker, the first added rather than
+  changed since that document's per-section rule was written.
+- The obligations table rises from eight rows to ten.
+
+### Fixed
+- **A figure asserted rather than measured.** The per-name headroom is 25,000.00
+  from the seeded equity, not the 5,100.00 `WORKED_EXAMPLE.md` §1 derives for its
+  own account, and a fixture reaching for the document's number broke.
+
 ## [1.44.0] — 2026-08-04
 
 **Checkpoint 4.1 signed off.** The grains settled before the tables exist. Two

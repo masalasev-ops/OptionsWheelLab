@@ -18,7 +18,7 @@ sign-off leaves nothing describing the present in between.
 
 # Current state
 
-Corpus v1.44.0.
+Corpus v1.45.0.
 
 | | |
 |---|---|
@@ -26,8 +26,8 @@ Corpus v1.44.0.
 | Phase 1 | complete, 1.1 to 1.5 built and signed off |
 | Phase 2 | complete, 2.1 to 2.5 built and signed off |
 | Phase 3 | complete, 3.1 to 3.5 built and signed off |
-| Phase 4 | 4.1 built and signed off, 4.2 to 4.5 not started |
-| CI | green, 673 tests, guards then restore then build then test, on push to `main` and every pull request |
+| Phase 4 | 4.1 and 4.2 built and signed off, 4.3 to 4.5 not started |
+| CI | green, 691 tests, guards then restore then build then test, on push to `main` and every pull request |
 
 **The block this one inherits was stale for two checkpoints, which is why
 re-measuring it is an act rather than a habit.** In `phase-3.md` it read v1.39.0
@@ -36,10 +36,10 @@ and merged, and that file's own opening calls the block the only description of
 the present. Every section below is re-measured against `main` at this version
 rather than edited where it looked wrong.
 
-4.1 changed one `.cs` file, a test pinning a pragma, so almost everything below is
-Phase 3's state carried forward unchanged. What 4.1 changed is documentation: two
-decisions, one amendment, five tables specified where two were, and a fixture
-registered against a checkpoint that has not landed.
+4.1 changed one `.cs` file, a test pinning a pragma. 4.2 built the decision
+record: migration 9's five tables, a writer, a reader, two registered fixtures and
+a third whose coverage it repaired. The suite went from 672 to 691 and the guards
+from 191 files to 201.
 
 Which branch the work sits on and which pull requests have merged are not recorded
 here. Git holds both exactly, and a fact kept in two places drifts.
@@ -538,7 +538,7 @@ bands the list names.
 
 ## Tests
 
-673: 417 across fifty-nine fixtures, and 256 across thirty-seven unregistered
+691: 435 across sixty-one fixtures, and 256 across thirty-eight unregistered
 suites. The one 4.1 added pins that foreign keys are enforced on a connection this
 store opens, read through the real factory, because a probe written for the same
 question set the pragma before reading it and reported the value it had written. The three guards are checks rather than tests and are counted in neither.
@@ -626,8 +626,9 @@ append-only triggers make the tables impossible to clean between cases.
 
 **Nothing chooses.** A loop steps a calendar from 3.5, but the choices it applies
 are supplied, so no maker decides. That is the largest single gap in the
-repository and it is Phase 4's whole subject. The decision record is five tables
-of specification after 4.1 and none of them exists. `TrialRun` is also handed a machine
+repository and it is Phase 4's whole subject. The decision record exists from 4.2
+and nothing fills it: what writes a decision today is a test, and the scorer that
+would re-score one is Phase 5's. `TrialRun` is also handed a machine
 already constructed, so no composition root resolves bounds and builds one, which
 is why two `Trial:` configuration rows are still unverified.
 
@@ -678,9 +679,11 @@ and `FIXTURES.md`'s Checkpoint column, and v1.43.0 moved one and not the other,
 which leaves every checkpoint's entry-to-artefact definition of done resolving to
 nothing. Corrected at 4.1 and the practice recorded where the trigger is.
 
-**3.1 to 3.5 and 4.1 owe nothing.** 3.1 closed four rows while raising three; 3.2
-closed its own and raised three; 3.3 closed four and raised five; 3.4 closed three
-and raised one; 3.5 closed two and raised none; 4.1 closed three and raised none. **Phase 2 owes nothing.** 2.1 discharged the reconciliation row raised at
+**3.1 to 3.5, 4.1 and 4.2 owe nothing.** 3.1 closed four rows while raising three;
+3.2 closed its own and raised three; 3.3 closed four and raised five; 3.4 closed
+three and raised one; 3.5 closed two and raised none; 4.1 closed three and raised
+none; 4.2 closed none and raised two, having carried nothing to close because 4.1
+took all three of the grains this phase owed. **Phase 2 owes nothing.** 2.1 discharged the reconciliation row raised at
 v1.6.0, the table's oldest and open for twenty-three corpus versions, 2.3
 discharged the crossed-quote row while opening two of its own, and 2.4
 discharged the risk row while opening one of its own. All three discharged rows
@@ -895,3 +898,53 @@ side. Read the rows before deciding how many decisions a checkpoint owes.
 - **A constraint the schema holds and one a test checks are different things**,
   and the keys the first binds against are stated where the schema is stated
   rather than left for the checkpoint that builds it to discover.
+
+## 4.2 The decision record
+
+Branch `phase-4/checkpoint-4.2` off `main`. The primary artefact of the system,
+and the tables Phase 3 left unbuilt. Five of them after 4.1 settled the grains,
+with a writer, a reader, and the definition of done resting on what the reader
+does not touch.
+
+### The definition of done is about the barred set
+
+A record rebuilding is nearly vacuous on its own: a reader free to consult live
+quotes and current configuration would rebuild something on any schema at all.
+**So the read path is its own type in its own file**, because a scan over one
+holding the writer too would see the inserts and prove nothing, and the check
+names what is barred with the reason for each rather than only listing what is
+permitted.
+
+### An append-only reference is inside a record and a projection is not
+
+`contracts` is read by the re-scoring path and `trials` is not, and the
+distinction is rewritability rather than convenience. A corporate action mints a
+new identity rather than editing a row [D-W36], so that table returns what stood
+then; a projection returns whatever it was last rebuilt to [D-W35].
+
+### Constraints
+
+- **A detector reads whatever it is handed as the language it scans, and this
+  store hands it English.** Third instance: a regex would truncate a statement
+  whose message holds a dash pair, 3.3 found migration comments parsing as table
+  aliases, and 4.2 found trigger messages doing it from inside string literals.
+  Strip what is data before scanning, and restore the case that motivated the fix
+  to show it passes, because a fix that cannot be demonstrated is a rewording
+  with extra steps.
+- **A count in a rule is a defect waiting for unrelated work.** The vocabularies
+  registry cell said "the one with no CHECK" and there were three. The fix is not
+  a better number: the rule says which and why, and a case enumerating the
+  declarations says how many.
+- **A hand-maintained list needs a case that holds its own coverage.** Adding the
+  missing entry repairs today and leaves the mechanism, so the sweep enumerates by
+  reflection and a vocabulary in neither list fails. Measure the class before
+  writing it: keying on the two method names alone would have reported three gaps
+  that are not gaps.
+- **A figure borrowed from a document is not a figure this store holds.** The
+  per-name headroom is 25,000.00 from the seeded equity, not the 5,100.00
+  `WORKED_EXAMPLE.md` §1 derives for its own account, and a fixture reaching for
+  the document's number broke on a book that breached nothing.
+- **Split a vocabulary's `CHECK` where its column splits.** Each of the two reason
+  tables carries its family rather than the whole list, so the schema refuses a
+  portfolio verdict written to the shared table instead of leaving the split to
+  the writer.

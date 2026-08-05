@@ -259,7 +259,7 @@ public sealed class FX_NoDecimalOrderingInSql
 
         Assert.Empty(
             DecimalOrderingInSql.Offences(
-                DecimalOrderingInSql.WithoutComments(Sql), Vocabulary("strike")));
+                DecimalOrderingInSql.WithoutCommentsOrLiterals(Sql), Vocabulary("strike")));
     }
 
     /// <summary>
@@ -284,19 +284,58 @@ public sealed class FX_NoDecimalOrderingInSql
             SELECT contract_id FROM contracts ORDER BY strike;
             """;
 
-        var stripped = DecimalOrderingInSql.WithoutComments(Sql);
+        var stripped = DecimalOrderingInSql.WithoutCommentsOrLiterals(Sql);
 
-        Assert.Contains("never rewritten", stripped, StringComparison.Ordinal);
+        // The statement after the message survives, which is the property. The
+        // message itself is gone because a literal's body is dropped, and that is
+        // a different reason from the one this case guards against.
+        Assert.DoesNotContain("never rewritten", stripped, StringComparison.Ordinal);
         Assert.Single(DecimalOrderingInSql.Offences(stripped, Vocabulary("strike")));
     }
 
     /// <summary>An escaped quote does not end the string it is inside.</summary>
+    /// <remarks>
+    /// Read through what survives rather than through what is stripped. A scanner
+    /// treating the doubled quote as a close would leave <c>-- fine') FROM</c>
+    /// outside the string, delete it to end of line as a comment, and lose the
+    /// table the statement reads.
+    /// </remarks>
     [Fact]
     public void A_doubled_quote_does_not_close_the_string()
     {
         const string Sql = "SELECT RAISE(ABORT, 'it''s -- fine') FROM contracts;";
 
-        Assert.Contains("-- fine", DecimalOrderingInSql.WithoutComments(Sql), StringComparison.Ordinal);
+        var stripped = DecimalOrderingInSql.WithoutCommentsOrLiterals(Sql);
+
+        Assert.Contains("FROM contracts", stripped, StringComparison.Ordinal);
+        Assert.DoesNotContain("fine", stripped, StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    /// A message that parses as a table and an alias is not an offence, which is
+    /// the case 4.2 was written for.
+    /// </summary>
+    /// <remarks>
+    /// Restored to the wording that fired FX-NoSqlAliases before this helper
+    /// dropped literal bodies, because a fix that cannot be shown against the case
+    /// that motivated it is a rewording with extra steps.
+    /// </remarks>
+    [Fact]
+    public void A_trigger_message_that_reads_as_sql_is_not_an_offence()
+    {
+        const string Sql =
+            """
+            CREATE TRIGGER candidates_no_update BEFORE UPDATE ON candidates
+            BEGIN
+                SELECT RAISE(ABORT, 'candidates is append-only: a decision is re-scored from the candidates this row records, using the set as it stood');
+            END;
+            """;
+
+        Assert.Empty(SqlAliases.Offences(DecimalOrderingInSql.WithoutCommentsOrLiterals(Sql)));
+
+        // And the raw statement does fire, so the case is exercised rather than
+        // asserted about a detector that had stopped working.
+        Assert.NotEmpty(SqlAliases.Offences(Sql));
     }
 
     /// <summary>
@@ -511,29 +550,39 @@ internal static class DecimalOrderingInSql
         return
         [
             .. literals
-                .Select(WithoutComments)
+                .Select(WithoutCommentsOrLiterals)
                 .Where(literal => Statement.IsMatch(literal)),
         ];
     }
 
     /// <summary>
-    /// The SQL with its <c>--</c> comments removed.
+    /// The SQL with its <c>--</c> comments removed and its single-quoted literals
+    /// emptied.
     /// </summary>
     /// <remarks>
-    /// <b>A scanner rather than a regex, because of the one case a regex gets
-    /// wrong.</b> A <c>--</c> inside a single-quoted string is text, not a
-    /// comment, and this store's triggers put prose inside
-    /// <c>RAISE(ABORT, '...')</c> where a dash pair is entirely plausible. A
-    /// pattern deleting from <c>--</c> to end of line would truncate such a
-    /// statement mid-string and could hide the rest of it, which is the
-    /// false-negative direction.
+    /// <b>The class is that a detector reads whatever it is handed as the
+    /// language it scans, and this store hands it English.</b> Three instances of
+    /// the same shape. A regex deleting from <c>--</c> to end of line truncates a
+    /// statement whose <c>RAISE(ABORT, '...')</c> message contains a dash pair,
+    /// which is why this is a scanner. 3.3 found two English sentences in
+    /// migration comments parsing as table aliases. And 4.2 found four trigger
+    /// messages doing it from inside string literals, where
+    /// <c>'re-scored from the candidates this row records'</c> parses as a table
+    /// and an alias, and <c>'the set as it stood'</c> as a column and one.
     /// <para>
-    /// The line itself is kept, replaced by nothing rather than removed, so
-    /// nothing on either side of a stripped comment joins up into a token pair
-    /// that was never written.
+    /// <b>So a literal's body is dropped and its quotes are kept.</b> A quoted
+    /// string in SQL is data and never a table or column reference, so removing it
+    /// cannot hide a real alias or a real ordering, which is the false-negative
+    /// direction this project has twice found worse. The quotes stay so the
+    /// statement's shape is unchanged and nothing on either side joins up.
+    /// </para>
+    /// <para>
+    /// <see cref="FX_ClockIsNotADateSource"/> deliberately does not use this. Its
+    /// catch-list includes <c>'now'</c> and <c>'subsec'</c>, which are literals
+    /// and are the leak it exists to find, so it reads the raw statement.
     /// </para>
     /// </remarks>
-    internal static string WithoutComments(string sql)
+    internal static string WithoutCommentsOrLiterals(string sql)
     {
         ArgumentNullException.ThrowIfNull(sql);
 
@@ -546,23 +595,23 @@ internal static class DecimalOrderingInSql
 
             if (inString)
             {
-                kept.Append(character);
-
                 if (character == '\'')
                 {
                     // A doubled quote is an escaped quote and does not close the
                     // string, so consume its partner here rather than letting the
-                    // next iteration read it as an opener.
+                    // next iteration read it as an opener. Neither is kept.
                     if (index + 1 < sql.Length && sql[index + 1] == '\'')
                     {
-                        kept.Append(sql[++index]);
+                        index++;
                     }
                     else
                     {
                         inString = false;
+                        kept.Append(character);
                     }
                 }
 
+                // The body is dropped: it is data, never a reference.
                 continue;
             }
 

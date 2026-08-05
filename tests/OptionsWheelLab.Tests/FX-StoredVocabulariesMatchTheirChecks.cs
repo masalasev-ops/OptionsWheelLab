@@ -1,5 +1,8 @@
+using System.Reflection;
 using System.Text.RegularExpressions;
 using Microsoft.Data.Sqlite;
+using OptionsWheelLab.Core.Decisions;
+using OptionsWheelLab.Core.Generation;
 using OptionsWheelLab.Core.Identity;
 using OptionsWheelLab.Core.MarketData;
 using OptionsWheelLab.Core.Membership;
@@ -23,9 +26,15 @@ namespace OptionsWheelLab.Tests;
 /// <b>Each vocabulary is written twice and nothing has held them together.</b>
 /// The <c>Store*</c> class declares the permitted values, deliberately rather
 /// than deriving them from a member's spelling, and the migration repeats them in
-/// a <c>CHECK</c>. Until 3.3 there were two such pairs and both were one or two
-/// values long; there are now six, one of them eleven values long, which is where
-/// a pair silently disagreeing stops being unlikely.
+/// a <c>CHECK</c>. Until 3.3 both pairs were one or two values long, and a pair
+/// silently disagreeing stops being unlikely once they are many and long.
+/// </para>
+/// <para>
+/// <b>No count appears in this remark, and that is deliberate.</b> It carried one
+/// until 4.2, and the number moved every time unrelated work landed, which is the
+/// tell this corpus has removed five other counts on.
+/// <see cref="Every_declared_vocabulary_is_enforced_or_named_as_unenforced"/> is
+/// what counts them, by enumerating the declarations rather than trusting a list.
 /// </para>
 /// <para>
 /// <b>Both directions, and they fail differently.</b> A value the code produces
@@ -36,14 +45,15 @@ namespace OptionsWheelLab.Tests;
 /// only inserting.
 /// </para>
 /// <para>
-/// <b>One declaration has no <c>CHECK</c> to compare against, and it is named
-/// here rather than left out quietly.</b> A green run covers every stored form
-/// but <see cref="StoreFillPoint"/>. That vocabulary lives in
-/// <c>config_rows.value</c>, which is polymorphic by design and carries decimals
-/// for four sections, integers for <c>Trial:</c>, and this one word, so a
-/// <c>CHECK</c> there would have to know which key a row belongs to: a constraint
-/// on a pair rather than on a value. The code is therefore its only enforcer
-/// where every other vocabulary has two.
+/// <b>The declarations with no <c>CHECK</c> to compare against are named in
+/// <see cref="Unenforced"/> rather than left out quietly</b>, each with the reason
+/// it has none. <see cref="StoreFillPoint"/> lives in <c>config_rows.value</c>,
+/// which is polymorphic by design and carries decimals for four sections,
+/// integers for <c>Trial:</c>, and this one word, so a <c>CHECK</c> there would
+/// have to know which key a row belongs to: a constraint on a pair rather than on
+/// a value. <see cref="StoreEarningsSession"/> has a column that could carry one
+/// and does not, since migration 3 wrote it before this fixture existed. The code
+/// is the only enforcer for both where every other vocabulary has two.
 /// </para>
 /// <para>
 /// <b>The exclusion is checked rather than asserted</b>, which is what this
@@ -108,7 +118,44 @@ public sealed class FX_StoredVocabulariesMatchTheirChecks
                 "trials", "close_kind",
                 Stored<TrialCloseKind>(StoreTrialCloseKind.ToStored)
             },
+            {
+                "decisions", "kind",
+                Stored<DecisionKind>(StoreDecisionKind.ToStored)
+            },
+
+            // GateReason is one vocabulary across two columns, and each CHECK
+            // carries its family rather than the whole list [D-W52]. That is
+            // stronger than repeating all ten in both: the schema itself refuses a
+            // portfolio verdict written to the shared table, where a permissive
+            // CHECK would leave the split to the writer alone.
+            {
+                "candidate_gate_reasons", "reason",
+                [.. GateReasonFamily.ContractLevel.Select(StoreGateReason.ToStored)]
+            },
+            {
+                "decision_gate_reasons", "reason",
+                [.. GateReasonFamily.PortfolioLevel.Select(StoreGateReason.ToStored)]
+            },
         };
+
+    /// <summary>
+    /// Every declared vocabulary with no <c>CHECK</c> to compare against, and why.
+    /// </summary>
+    /// <remarks>
+    /// Named rather than absent, which is the whole of what the coverage case
+    /// below enforces. <see cref="StoreGateReason"/> sat in neither list for four
+    /// checkpoints, from 2.3 until 4.2 gave it a schema, and nothing failed.
+    /// </remarks>
+    public static readonly (Type Vocabulary, string Why)[] Unenforced =
+    [
+        (typeof(StoreFillPoint),
+            "config_rows.value is polymorphic, so a CHECK there would constrain a pair of key "
+            + "and value rather than a value"),
+        (typeof(StoreEarningsSession),
+            "earnings_calendar.session has carried no CHECK since migration 3, and adding one "
+            + "means rebuilding a live table, which belongs to a checkpoint with a reason to "
+            + "touch it"),
+    ];
 
     [Theory]
     [MemberData(nameof(EnforcedVocabularies))]
@@ -125,6 +172,139 @@ public sealed class FX_StoredVocabulariesMatchTheirChecks
         Assert.Equal(
             produced.OrderBy(value => value, StringComparer.Ordinal),
             enforced.OrderBy(value => value, StringComparer.Ordinal));
+    }
+
+    /// <summary>
+    /// Every declared vocabulary is either enforced or named as unenforced.
+    /// </summary>
+    /// <remarks>
+    /// <b>The case that holds this fixture's own coverage, rather than its
+    /// comparisons.</b> Both lists above are hand-maintained, so a vocabulary
+    /// added without a <c>CHECK</c> falls into neither and nothing fails.
+    /// <see cref="StoreGateReason"/> did exactly that from 2.3 to 4.2, and two
+    /// readings of "the one with no CHECK" were both wrong because the number was
+    /// in the rule instead of being measured.
+    /// <para>
+    /// <b>The class is a <c>Store*</c> type whose <c>ToStored</c> takes an
+    /// enum</b>, and the enum is what does the work: a closed set is exactly what
+    /// a <c>CHECK</c> can enumerate. Keying on <c>ToStored</c> and
+    /// <c>ParseStored</c> alone would catch <see cref="StoreDate"/>,
+    /// <see cref="StoreDecimal"/> and <see cref="StoreTimestamp"/>, which convert
+    /// open domains and have no <c>CHECK</c> to agree with by nature, so the
+    /// case would report three gaps that are not gaps.
+    /// </para>
+    /// <para>
+    /// No count appears here or in the registry row. The number moved when
+    /// unrelated work landed, every time, which is the tell this corpus has
+    /// removed five other counts on.
+    /// </para>
+    /// </remarks>
+    [Fact]
+    public void Every_declared_vocabulary_is_enforced_or_named_as_unenforced()
+    {
+        var declared = DeclaredVocabularies();
+
+        // A reflection sweep that found nothing would agree with any pair of
+        // lists, including two empty ones.
+        Assert.NotEmpty(declared);
+        Assert.Contains(typeof(StoreGateReason), declared);
+
+        var enforced = EnforcedVocabularies()
+            .Select(row => (string)row[0]!)
+            .ToHashSet(StringComparer.Ordinal);
+
+        var named = Unenforced.Select(entry => entry.Vocabulary).ToHashSet();
+
+        var uncovered = declared
+            .Where(vocabulary => !named.Contains(vocabulary) && !IsEnforced(vocabulary, enforced))
+            .Select(vocabulary => vocabulary.Name)
+            .Order(StringComparer.Ordinal)
+            .ToList();
+
+        Assert.True(
+            uncovered.Count == 0,
+            $"These stored vocabularies are in neither list: {string.Join(", ", uncovered)}. A "
+            + "vocabulary with a CHECK belongs in the enforced set and one without belongs in "
+            + $"{nameof(Unenforced)} with the reason, because a declaration in neither is a "
+            + "stored form nothing holds against a schema and nothing says why.");
+
+        // And nothing is in both, which would make one of the two statements
+        // false without either failing.
+        Assert.DoesNotContain(named, vocabulary => IsEnforced(vocabulary, enforced));
+    }
+
+    /// <summary>
+    /// The sweep finds a vocabulary added without a schema, shown rather than
+    /// asserted.
+    /// </summary>
+    /// <remarks>
+    /// An assertion nobody has seen fail is an assertion nobody has read, and this
+    /// one exists because its subject went unnoticed for four checkpoints.
+    /// </remarks>
+    [Fact]
+    public void A_vocabulary_in_neither_list_would_be_reported()
+    {
+        var declared = DeclaredVocabularies();
+
+        // Every real declaration, minus the coverage of one of them.
+        var enforced = EnforcedVocabularies()
+            .Select(row => (string)row[0]!)
+            .Where(table => table != "decisions")
+            .ToHashSet(StringComparer.Ordinal);
+
+        var named = Unenforced.Select(entry => entry.Vocabulary).ToHashSet();
+
+        var uncovered = declared
+            .Where(vocabulary => !named.Contains(vocabulary) && !IsEnforced(vocabulary, enforced))
+            .ToList();
+
+        Assert.Contains(typeof(StoreDecisionKind), uncovered);
+    }
+
+    /// <summary>
+    /// A vocabulary is enforced when a table whose <c>CHECK</c> carries its values
+    /// appears in the enforced set.
+    /// </summary>
+    /// <remarks>
+    /// Matched through the values rather than through the type's name, because
+    /// <see cref="StoreGateReason"/> is one vocabulary across two tables and
+    /// neither table is named for it.
+    /// </remarks>
+    private static bool IsEnforced(Type vocabulary, IReadOnlySet<string> tables) =>
+        EnforcedVocabularies()
+            .Where(row => tables.Contains((string)row[0]!))
+            .SelectMany(row => (string[])row[2]!)
+            .Intersect(StoredFormsOf(vocabulary))
+            .Any();
+
+    /// <summary>
+    /// Every <c>Store*</c> type whose <c>ToStored</c> takes an enum.
+    /// </summary>
+    private static IReadOnlyList<Type> DeclaredVocabularies() =>
+        [.. typeof(StoreOptionRight).Assembly
+            .GetTypes()
+            .Where(type => type.IsClass && type.Name.StartsWith("Store", StringComparison.Ordinal))
+            .Where(type => EnumToStoredOn(type) is not null)
+            .OrderBy(type => type.Name, StringComparer.Ordinal)];
+
+    private static MethodInfo? EnumToStoredOn(Type type) =>
+        type.GetMethods(BindingFlags.Public | BindingFlags.Static)
+            .FirstOrDefault(method =>
+                method.Name == "ToStored"
+                && method.GetParameters() is [{ ParameterType.IsEnum: true }]);
+
+    /// <summary>Every value the vocabulary can produce.</summary>
+    private static IReadOnlyList<string> StoredFormsOf(Type vocabulary)
+    {
+        var toStored = EnumToStoredOn(vocabulary)!;
+        var enumType = toStored.GetParameters()[0].ParameterType;
+
+        return
+        [
+            .. Enum.GetValues(enumType)
+                .Cast<object>()
+                .Select(value => (string)toStored.Invoke(null, [value])!)
+        ];
     }
 
     /// <summary>
@@ -150,9 +330,15 @@ public sealed class FX_StoredVocabulariesMatchTheirChecks
         AssertRoundTrip<TrialCloseKind>(
             StoreTrialCloseKind.ToStored, StoreTrialCloseKind.ParseStored);
 
-        // The one with no CHECK behind it. It cannot be compared against a
+        AssertRoundTrip<DecisionKind>(
+            StoreDecisionKind.ToStored, StoreDecisionKind.ParseStored);
+        AssertRoundTrip<GateReason>(StoreGateReason.ToStored, StoreGateReason.ParseStored);
+
+        // The ones with no CHECK behind them. They cannot be compared against a
         // schema, and the two directions that need no schema still apply.
         AssertRoundTrip<FillPoint>(StoreFillPoint.ToStored, StoreFillPoint.ParseStored);
+        AssertRoundTrip<EarningsSession>(
+            StoreEarningsSession.ToStored, StoreEarningsSession.ParseStored);
     }
 
     /// <summary>

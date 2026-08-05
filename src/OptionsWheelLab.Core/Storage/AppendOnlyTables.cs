@@ -94,9 +94,21 @@ public static class AppendOnlyTables
         // other half.
         "ledger_entries",
 
-        // The decision record [D-W3]. Phase 4 adds them.
+        // The decision record [D-W3], built by migration 9 at 4.2. That decision
+        // states the property directly and for all five: a recorded decision is
+        // never rewritten, because it exists so a decision can be re-scored from
+        // what stood at the time and that holds only if what stood at the time is
+        // still there. The set and the reasons are inside the record rather than
+        // beside it, since [D-W3] names the feasible set as it stood and the
+        // features of every candidate in it as part of what is recorded.
+        //
+        // Five names where §4.3 carried two until 4.1 [D-W52], which split the
+        // reasons by whether they are computed against a book.
         "decisions",
         "candidates",
+        "feasible_sets",
+        "candidate_gate_reasons",
+        "decision_gate_reasons",
 
         // Live today.
         "config_rows",      // [D-W26]

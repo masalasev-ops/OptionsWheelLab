@@ -173,6 +173,14 @@ row. Configuration rows are append-only and versioned, with current defined as
 
 ### 3.6 Decision record
 
+Build state: **built at 4.2**, on synthetic chains: five append-only tables, a
+writer, and a reader that rebuilds a decision from the record alone. The set is
+stored once per symbol, session and right and referenced by every maker acting
+against it [D-W52], and the gate reasons are split by whether they were computed
+against a book. What is not built is anything that fills it. No maker decides, so
+what writes a decision today is a test, and the scorer that re-scores one is
+Phase 5's.
+
 The primary artefact of the system, and more important than the position ledger.
 Every decision is journaled with the feasible set exactly as it stood, the
 features of every candidate in it, the choice, and which maker made it [D-W3].
