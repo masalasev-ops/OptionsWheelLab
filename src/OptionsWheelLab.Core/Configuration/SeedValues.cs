@@ -135,6 +135,28 @@ public static class SeedValues
         new(ConfigKeys.RandomDeltaMax, "0.35",
             "WORKED_EXAMPLE section 1, and equal to Gate:MaxDelta by choice rather than "
             + "coincidence. See that key's note [D-W23]."),
+        // The learner's four, and they are a third provenance beside transcribed
+        // and judged: WORKED_EXAMPLE section 1 states no learner band, and
+        // section 4 constrains one without fixing it. Chosen within a constraint
+        // the document sets, and each note says what it fixes and what it leaves.
+        new("Policy:Learner:DeltaMin", "0.10",
+            "Section 4 leaves this entirely open: any value at or below 0.16 reproduces it, "
+            + "because the 45.00 loses on credit whether the band holds it or not. A band "
+            + "admits its own bounds, so this one does hold it at exactly 0.10, and it changes "
+            + "nothing. The floor inherits Policy:Random:DeltaMin's disclosure rather than an "
+            + "argument of its own."),
+        new(ConfigKeys.LearnerDeltaMax, "0.20",
+            "The bound section 4 constrains: at least 0.16 so the 47.50 is in the band, below "
+            + "0.24 so the 50.00 is out, or the higher credit wins. 0.20 makes the band the "
+            + "baseline's own width shifted down by one width, so favouring lower delta is a "
+            + "band moved rather than a rule changed, which is what lets one algorithm serve "
+            + "the baseline and the learner both [D-W6]."),
+        new("Policy:Learner:DteMin", "30",
+            "The baseline's. Section 4's expiry is 46 days out and sits inside it, so the "
+            + "document constrains this no further."),
+        new("Policy:Learner:DteMax", "60",
+            "The baseline's, on the same reasoning."),
+
         new("Policy:Random:Seed", "20260729",
             "Chosen, not stated. The value is arbitrary; that it is fixed is not, since the "
             + "random control has to draw the same way on a re-run."),

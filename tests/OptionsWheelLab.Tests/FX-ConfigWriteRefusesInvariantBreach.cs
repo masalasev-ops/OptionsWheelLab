@@ -36,6 +36,13 @@ public sealed class FX_ConfigWriteRefusesInvariantBreach
     [
         new(ConfigKeys.BaselineDeltaMax, "0.30"),
         new(ConfigKeys.RandomDeltaMax, "0.35"),
+
+        // The learner's, from 4.3. It sits below every ceiling these cases use,
+        // so it never becomes the violating band and the cases still turn on the
+        // one value they change. Adding a band to the invariant is what obliges
+        // it here: a set short of one operand refuses for want of the operand
+        // rather than for the breach under test [D-W34].
+        new(ConfigKeys.LearnerDeltaMax, "0.20"),
     ];
 
     // D-W23: the ceiling is no tighter than any policy band.
@@ -90,7 +97,9 @@ public sealed class FX_ConfigWriteRefusesInvariantBreach
             [new ConfigEntry(ConfigKeys.GateMaxDelta, "0.35"), .. Bands],
             SetAt);
 
-        Assert.Equal(3, RowsIn(connection).Count);
+        // Counted from the set rather than written out, because a band added to
+        // the invariant would otherwise make this case fail for arithmetic.
+        Assert.Equal(Bands.Length + 1, RowsIn(connection).Count);
     }
 
     /// <summary>

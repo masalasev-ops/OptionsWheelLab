@@ -99,6 +99,20 @@ public sealed class FX_EveryPolicyBandIsChecked
     /// Permanent cover for the comparison, so the check does not rest on a live
     /// tree that happens to be complete today.
     /// </summary>
+    /// <remarks>
+    /// <b>The absent band must name a maker that will never exist.</b> This case
+    /// used <c>Policy:Learner:</c> until 4.3, when that maker arrived and joined
+    /// the vocabulary, and the synthetic gap closed itself: the case still passed
+    /// its own construction and asserted nothing. A negative example naming a
+    /// thing the roadmap intends to build is a negative example with an expiry
+    /// date on it.
+    /// <para>
+    /// <c>Policy:Chartist:</c> is not a maker in this design. [D-W4] fixes the
+    /// arms at three, a frozen baseline, a random control and the learner, so a
+    /// fourth is a decision rather than an addition and would arrive with its own
+    /// number.
+    /// </para>
+    /// </remarks>
     [Fact]
     public void A_documented_band_absent_from_the_vocabulary_is_reported()
     {
@@ -107,7 +121,7 @@ public sealed class FX_EveryPolicyBandIsChecked
             | Key | Store | Meaning | Consumer | Notes |
             |---|---|---|---|---|
             | `Policy:Baseline:DeltaMax` | rows | in the vocabulary | Baseline maker | |
-            | `Policy:Learner:DeltaMax` | rows | in no vocabulary | Learner | |
+            | `Policy:Chartist:DeltaMax` | rows | in no vocabulary | Chartist | |
             | `Policy:Baseline:DeltaMin` | rows | a floor, not a ceiling | Baseline maker | |
             | `Gate:MaxDelta` | rows | the ceiling itself, not a band | Risk gate | |
             """;
@@ -118,7 +132,7 @@ public sealed class FX_EveryPolicyBandIsChecked
             .ToHashSet(StringComparer.Ordinal);
 
         Assert.Equal(
-            ["Policy:Learner:DeltaMax"],
+            ["Policy:Chartist:DeltaMax"],
             documented.Where(key => !checkedAgainst.Contains(key)).ToList());
     }
 

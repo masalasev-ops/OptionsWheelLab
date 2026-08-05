@@ -67,6 +67,8 @@ public static class ConfigKeys
     public const string BaselineDeltaMax = "Policy:Baseline:DeltaMax";
     public const string RandomDeltaMax = "Policy:Random:DeltaMax";
 
+    public const string LearnerDeltaMax = "Policy:Learner:DeltaMax";
+
     /// <summary>
     /// The bands the delta ceiling is checked against [D-W23], as key and name.
     /// </summary>
@@ -98,6 +100,12 @@ public static class ConfigKeys
     [
         (BaselineDeltaMax, "Baseline"),
         (RandomDeltaMax, "Random"),
+
+        // The maker this remark anticipated. Its band arrived at 4.3 and
+        // FX-EveryPolicyBandIsChecked failed on the reference row before this
+        // entry existed, which is the check standing in the direction it was
+        // written to stand in.
+        (LearnerDeltaMax, "Learner"),
     ];
 
     /// <summary>

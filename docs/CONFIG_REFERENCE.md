@@ -154,10 +154,27 @@ third at 3.4, which is the checkpoint that first computes with it.
 
 ## Policy bands
 
-Every band value is transcribed from `WORKED_EXAMPLE.md` section 1 and set at
-version 1 in Phase 0.8. The random maker reads the baseline's expiry window,
-which is why `Policy:Random:` carries no DTE keys: their absence is the coupling,
-not an omission.
+The baseline's and the random maker's values are transcribed from
+`WORKED_EXAMPLE.md` section 1 and set at version 1 in Phase 0.8. That section
+states the baseline's rule as well as its band, preferring the highest credit
+inside it, so the rule is transcribed rather than inferred from section 4's
+choices. The random maker reads the baseline's expiry window, which is why
+`Policy:Random:` carries no DTE keys: their absence is the coupling, not an
+omission.
+
+**The learner's four are a third provenance, neither transcribed nor judged.**
+Section 1 states no learner band at all, and section 4 constrains one without
+fixing it: any band admitting the 47.50 at delta 0.16 and excluding the 50.00 at
+0.24 reproduces that section's choice under the same rule. So these values are
+**chosen within a constraint the document sets**, and each note says what section 4
+fixes and what it leaves open [2.4].
+
+**A band admits its own bounds**, so a candidate at exactly `DeltaMin` or
+`DeltaMax` is inside it. Stated because each decision states its own boundary
+rather than one convention governing, which 2.3 settled after four gate
+constraints turned out to differ, and a policy band is the fifth and the first
+outside the gate. It matches `Gate:MinDte` to `Gate:MaxDte`, which [D-W24] makes
+an inclusive range in as many words.
 
 | Key | Store | Meaning | Consumer | Notes |
 |---|---|---|---|---|
@@ -168,6 +185,10 @@ not an omission.
 | `Policy:Random:DeltaMin` | rows | random control band, lower bound | Random maker **Unverified** | 0.10, inherited rather than argued: there is no `Gate:MinDelta`, so this floor sits strictly inside what the gate admits and D-W4's argument does not reach it [D-W4] |
 | `Policy:Random:DeltaMax` | rows | random control band, upper bound | Random maker **Unverified** | 0.35, sitting exactly at the gate's delta ceiling by choice: a control drawing from a smaller opportunity set than the gate admits would make a difference between makers partly permission rather than judgement [D-W4, D-W23] |
 | `Policy:Random:Seed` | rows | seed for the random maker | Random maker **Unverified** | 20260729, chosen rather than stated. The value is arbitrary; that it is fixed is not, since the control has to draw the same way on a re-run |
+| `Policy:Learner:DeltaMin` | rows | learner delta band, lower bound | Learner maker **Unverified** | 0.10, and section 4 leaves it entirely open: any value at or below 0.16 reproduces that section, because the 45.00 loses on credit whether the band holds it or not. Since a band admits its own bounds this one does hold it, at exactly 0.10, and it changes nothing. The floor inherits `Policy:Random:DeltaMin`'s disclosure rather than an argument of its own: there is no `Gate:MinDelta`, so it sits strictly inside what the gate admits, and the premium floor removes everything below it first [D-W4] |
+| `Policy:Learner:DeltaMax` | rows | learner delta band, upper bound | Learner maker **Unverified** | 0.20, and this is the bound section 4 constrains: it must be at least 0.16 so the 47.50 is in the band, and below 0.24 so the 50.00 is out, or the higher credit wins. Any value in that range reproduces the document; 0.20 makes the band the baseline's own width shifted down by one width, so favouring lower delta is a band moved rather than a rule changed, which is what lets one algorithm serve both makers [D-W4] |
+| `Policy:Learner:DteMin` | rows | learner expiry window, lower bound | Learner maker **Unverified** | 30, the baseline's. Section 4's expiry is 46 days out and sits inside it, so the document constrains this no further than that |
+| `Policy:Learner:DteMax` | rows | learner expiry window, upper bound | Learner maker **Unverified** | 60, the baseline's, on the same reasoning |
 
 ## Storage
 
