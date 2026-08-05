@@ -2249,3 +2249,18 @@ decision record is now built.
 **[CLAUDE.md §11] asked, and the answer is none.** 4.3 to 4.5 are unspent, and
 nothing landed here changes what they ask. The two obligations raised are owed at
 Phase 6 and Phase 8, neither of which has detail yet.
+
+### 2026-08-04 — the merge sweep for 4.2, which found nothing
+
+**Recorded because a sweep whose result is not written is indistinguishable from
+one that did not run.** 3.3 established the second pass when it found four stale
+figures the first could not have seen.
+
+Nothing was stale. Re-read against merged `main` at `a445bca`: the corpus now
+carries **twenty** build-state markers, being the nineteen 4.2's sweep read plus
+the one it added to `SYSTEM_DESIGN` §3.6, and the obligations table, the suite at
+691, the guards at 201 files and the corpus version in its four places all
+re-measured to the figures the sign-off recorded.
+
+It ran after the merge rather than before, as 3.5's and 4.1's did and for the same
+reason: a sweep run after a merge cannot block one.
