@@ -636,11 +636,18 @@ to differ. A count of this table is a count of rows. Rows sharing an Owed at
 value are separate obligations, and a count of distinct values is not a count of
 this table.
 
-**Eight rows stand, two at checkpoint granularity and six at phase**, read off
-the table below at 4.1's sign-off. It stood at eleven, five and six, when Phase
-4's detail was authored; at eleven, none and eleven, at 3.5's sign-off; at
-thirteen, two and eleven, at 3.4's; at fifteen, five and ten, at 3.3's; and at
-fourteen, seven and seven, at 3.2's. 4.1 closed its own three and raised none.
+**Ten rows stand, two at checkpoint granularity and eight at phase**, read off
+the table below at 4.2's sign-off. It stood at eight, two and six, at 4.1's; at
+eleven, five and six, when Phase 4's detail was authored; at eleven, none and
+eleven, at 3.5's sign-off; at thirteen, two and eleven, at 3.4's; at fifteen,
+five and ten, at 3.3's; and at fourteen, seven and seven, at 3.2's. 4.1 closed
+its own three and raised none; 4.2 closed none and raised two.
+
+**4.2 is the first checkpoint since 3.2 to close nothing**, and it carried
+nothing to close: 4.1 took all three of the grains this phase owed, and what 4.2
+builds rests on them rather than settling anything further. Both rows it raises
+were found by building rather than by planning, one by a coverage case and one by
+computing the features a candidate carries.
 
 **Between the last two readings nothing was closed or raised and five rows still
 moved**, which is this column's rule doing what it is for: it names a checkpoint
@@ -657,6 +664,8 @@ three that went to 4.1 are the three it has now closed.
 | Phase 9 | Decide how configuration resolves for a simulated date that precedes the value being written. `SeedCommand` stamps `set_at` from the wall clock, so every gate bound resolves null for any simulated date before the seed ran, which is every date in a walk-forward over real history. [D-W26] requires resolution as of the simulated date and [D-W37] stops the evaluation rather than guessing, so the collision surfaces loudly at the first walk-forward rather than silently. The options include backdating the seed, which costs the audit trail its truthfulness, and resolving a registered run's configuration as of its pre-registration instant [D-W15], which keeps both rules intact. Raised at 2.3 while answering what an unresolvable bound does. | v1.32.0 |
 | Phase 8 | Decide how a deliverable that is shares plus cash is recorded. The adjustment method in force gives a 4-for-3 split of an $80 option a deliverable "adjusted to 133 shares plus the cash value of the eliminated fractional share", strike unchanged; `contracts.deliverable_shares` is an integer and one of the five components of contract identity [1.5], and nothing in this corpus or its sources names cash in lieu. Owed at Phase 8 rather than 3.3 because no synthetic chain can express a corporate action at all, so the first deliverable of this shape arrives with vendor data, and the change is to a built structure with a migration cost that is no cheaper now. 3.3 must not assume a deliverable is wholly shares. Raised at 3.2. | v1.38.0 |
 | Phase 5 | Decide whether cash earns, and at what rate. Nothing in this corpus names interest as a financial concept. The absence biases two of the three comparisons in opposite directions: the wheel holds cash securing its puts and the hold-cash floor holds cash outright, so both are understated by roughly the same amount and their comparison survives, while buy-and-hold holds no cash and is not understated at all, so the comparison the lab exists to make is biased against the wheel by whatever the rate is. A rate is an external source and choosing one is a modelling choice with its own argument. Owed at Phase 5, where the outcome metric and the controls' returns are computed. A control gap of the same kind as the dividend gap and in the same decision [D-W13]. Raised at 3.2. | v1.38.0 |
+| Phase 8 | Constrain `earnings_calendar.session`, which has carried a stored vocabulary and no `CHECK` since migration 3. `StoreEarningsSession` declares three values and `ChainWriter` has written the column since Phase 1, so the code is its only enforcer where every other enforced vocabulary has two. FX-StoredVocabulariesMatchTheirChecks names it as unenforced from 4.2 rather than skipping it, which makes the gap visible without closing it. Adding the constraint means rebuilding a live table, and Phase 8 is where a second producer of earnings data arrives and that table is touched for its own reasons. Raised at 4.2 by the coverage case that found it. | v1.45.0 |
+| Phase 6 | Record distance to earnings as a candidate feature. It is one of the six `SYSTEM_DESIGN.md` §3.11 names and the only one of them a candidate could carry and does not: it needs the report dates the gate read, which `CandidateGenerator` holds for the whole chain and a `GatedCandidate` does not carry out. The other two absentees are absent for a different reason, implied volatility rank needing a history window and term structure slope needing the rest of the chain, so neither is a candidate feature at all. Owed at Phase 6, which is where the feature grader arrives and the first consumer of any of them. Raised at 4.2 by computing the features. | v1.45.0 |
 | 4.4 | Resolve configuration in the projection rebuild as of the simulated date the run used, never as-now [D-W26]. Telling `closed_at_bound` from `closed_by_choice` means asking whether a bound had been reached, which reads `Trial:MaxRolls` and `Trial:MaxTrialDays`, and a rebuild reading current bounds would disagree with the run it is rebuilding while presenting the disagreement as a ledger defect. Not live at 3.3, where nothing writes `closed_by_choice` because no maker exists. Raised at 3.3 by building the rebuild. | v1.40.0 |
 | 4.5 | Verify the consumers of `Trial:MaxRolls` and `Trial:MaxTrialDays`, which 3.3 could not. `TrialBounds` reads both as of the simulated date and nothing in `src/` constructs it: the state machine is handed resolved bounds. **The reason this row gave was that the component resolving them is the run loop, which it called Phase 4's, and 3.5 landed the run loop without closing it.** `TrialRun` is handed a machine already constructed, so what is missing is not the loop but a composition root that resolves bounds and builds the machine from them, which arrives with the maker that drives a run. `CONFIG_REFERENCE.md` calls a consumer that cannot be verified once its checkpoint has landed a defect rather than a documentation gap, and 3.3 was that checkpoint, so both rows stay **Unverified** with the reason recorded rather than the column loosened to admit a type with no component behind it. Raised at 3.3, and its reason corrected at 3.5 by the run loop arriving early. | v1.40.0 |
 | Phase 5 | Decide what `ResolvedBound`'s refusal calls the thing it could not resolve. It reads "a gate bound", which has covered `Risk:` caps since 2.4 and covers a trial bound and a cost from 3.4, so it is wrong for three of the four records that use it. That type's own remarks anticipated this and call changing what the message carries a decision rather than an edit, because what [D-W37]'s refusal says is the reason the type exists. Owed at Phase 5 rather than sooner: the fourth record makes the wording wrong and the fifth is where a reader stops being able to infer the family from the key, since scores are the first values that are neither a bound nor a cost. Raised at 3.4. | v1.41.0 |
@@ -1619,11 +1628,12 @@ its reason is corrected.
 
 ## Phase 4 — Decision record and three makers in parallel
 
-Build state: **partly built**. 4.1 built and signed off, which settled the grains
-and wrote no code: the feasible set is keyed on symbol, session and right, its
-gate reasons split by whether they are computed against a book, and a trial's
-bounds are fixed at its open. 4.2 to 4.5 not started, so the decision record is
-five tables of specification and none of them exists. Nothing chooses. A loop
+Build state: **partly built**. 4.1 and 4.2 built and signed off: the grains
+settled with no code, the feasible set keyed on symbol, session and right, its
+gate reasons split by whether they are computed against a book, a trial's bounds
+fixed at its open, and then the record itself, five tables with a writer and a
+reader that rebuilds a decision from them alone. 4.3 to 4.5 not started. Nothing
+chooses. A loop
 steps a calendar from 3.5 and the choices it applies are supplied, so the rest of
 this phase is the thing that supplies them and the record of what it supplied.
 Delivers three makers acting
@@ -1733,6 +1743,51 @@ by every maker that acted on it.
   access to live state.
 - **DoD**: the re-scoring path reads no table the record does not name, which is
   what makes the claim about unrecoverable loss testable rather than asserted.
+
+Reconciled at sign-off against what shipped. Migration 9's five tables, a writer,
+a reader, and three fixtures counting the one whose coverage this checkpoint
+repaired. No obligation closed and two raised. The suite went from 673 to 691.
+
+**The definition of done is about what the read does not touch, and saying so
+changed what got built.** A record rebuilding is nearly vacuous on its own: a
+reader free to consult live quotes and current configuration would rebuild
+something on any schema at all. So the reader is its own type in its own file,
+because a scan over a file holding the writer too would see the inserts and prove
+nothing, and the check names four barred tables with the reason each is barred
+rather than only listing the six permitted.
+
+**`contracts` is inside the record and the two projections are not, and the
+distinction is rewritability.** A corporate action mints a new identity rather
+than editing a row [D-W36], so reading that table later returns what stood then,
+where a projection returns whatever it was last rebuilt to [D-W35].
+
+**The reasons split into two tables and the `CHECK`s split with them.** Each
+carries its family rather than the whole vocabulary, which is stronger than
+repeating all ten in both: the schema itself refuses a portfolio verdict written
+to the shared table, where a permissive constraint would leave the split to the
+writer alone. That made one vocabulary span two columns, which the coverage case
+had to match through values rather than through a type's name.
+
+**`feature_json`'s open question is answered by computing the features.** Every
+one a candidate carries is derived from its contract and its quote, so all are
+shareable and none moves to the per-decision side. The money line settled at 4.1
+did work rather than describing what was already true: of §3.11's six features,
+spread width is money and is not stored because it is the ask less the bid and
+both are columns, two cannot be computed from a candidate's own quote at all, and
+distance to earnings is absent for a third reason and is now owed.
+
+**A detector read a trigger message as SQL, which is the third instance of one
+shape.** A regex would truncate a statement whose message contains a dash pair,
+3.3 found English in migration comments parsing as table aliases, and this found
+it inside string literals. The helper now drops a literal's body, since a quoted
+string is data and never a reference, and one message is restored to the wording
+that fired it so the fix is shown against the case that motivated it.
+
+**One figure was asserted and had to be measured.** The per-name headroom is
+25,000.00 from the seeded equity of 100,000.00 at a fraction of 0.25, not the
+5,100.00 `WORKED_EXAMPLE.md` §1 derives for its own account. A fixture reaching
+for the document's number was reading an equity this store does not hold, and the
+test it broke is what said so.
 
 ### 4.3 The three makers, on one set
 The frozen baseline, the random-within-band control, and the learner acting from

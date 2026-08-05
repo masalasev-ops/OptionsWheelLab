@@ -5,8 +5,8 @@ Appended to, never rewritten. The repository is the authority on build state.
 ## Current state
 
 **Phase 0 complete and reviewed. Phases 1, 2 and 3 complete. Phase 4 started.**
-Checkpoints 0.1 to 0.8, 1.1 to 1.5, 2.1 to 2.5, 3.1 to 3.5 and 4.1 built and
-signed off. 4.2 to 4.5 are not started. The documentation corpus is at v1.44.0.
+Checkpoints 0.1 to 0.8, 1.1 to 1.5, 2.1 to 2.5, 3.1 to 3.5, 4.1 and 4.2 built and
+signed off. 4.3 to 4.5 are not started. The documentation corpus is at v1.45.0.
 
 ## Log
 
@@ -2152,3 +2152,100 @@ it should read one checkpoint into a phase.
 
 It ran after the merge rather than before, the same way 3.5's did and for the
 same reason: a sweep run after a merge cannot block one.
+
+### 2026-08-04 — corpus v1.45.0
+
+**Checkpoint 4.2 signed off.** Migration 9's five tables, a writer, a reader, and
+three fixtures counting the one whose coverage this checkpoint repaired. No
+obligation closed and two raised, so the table rises from eight rows to ten. The
+suite went from 673 to 691 and the guards from 193 files to 201.
+
+**The definition of done is about what the read does not touch, and saying so
+changed what got built.** A record rebuilding is nearly vacuous on its own: a
+reader free to consult live quotes and current configuration would rebuild
+something on any schema at all. So `DecisionRecordReader` is its own type in its
+own file, because a scan over a file holding the writer too would see the inserts
+and prove nothing, and the check names four barred tables with the reason each is
+barred rather than only listing the six permitted. The scan is itself shown to
+read the file rather than return its own list, by asking it about the writer.
+
+**`contracts` is inside the record and the two projections are not, and the
+distinction is rewritability.** A corporate action mints a new identity rather
+than editing a row [D-W36], so reading that table later returns what stood then,
+where a projection returns whatever it was last rebuilt to [D-W35]. That is why an
+append-only reference can sit inside a record and a projection reference cannot.
+
+**The reason vocabulary splits across two columns and the `CHECK`s split with
+it.** Each carries its family rather than the whole list, which is stronger than
+repeating all ten in both: the schema itself refuses a portfolio verdict written
+to the shared table, where a permissive constraint would leave the split to the
+writer alone. One vocabulary now spans two enforced entries, which the coverage
+case matches through values rather than through a type's name.
+
+**`feature_json`'s open question is answered by computing the features** [D-W52].
+Every feature a candidate carries is derived from its contract and its quote, so
+all are shareable and none moves to the per-decision side.
+
+**The money line did work rather than describing what was already true.** Of the
+six features `SYSTEM_DESIGN.md` §3.11 names, spread width is money and is a column
+by the rule, except that it is the ask less the bid and both are columns, so it is
+not stored at all. Implied volatility rank and term structure slope are on neither
+side, one needing a history window and the other the rest of the chain. Distance
+to earnings is absent for a third reason, needing the report dates the generator
+holds and a candidate does not carry, and is now owed at Phase 6.
+
+**A detector read a trigger message as SQL, which is the third instance of one
+shape.** A regex deleting to end of line would truncate a statement whose message
+holds a dash pair, which is why the helper is a scanner; 3.3 found two English
+sentences in migration comments parsing as table aliases; and this found four
+trigger messages doing it from inside string literals, where "re-scored from the
+candidates this row records" parses as a table and an alias. The helper now drops
+a literal's body and keeps its quotes, since a quoted string is data and never a
+reference, so removing it cannot hide a real alias. One message is restored to the
+wording that fired the detector and a case shows it passes stripped and still
+fires raw, because a fix that cannot be demonstrated against the case that
+motivated it is a rewording with extra steps.
+
+**`FX-ClockIsNotADateSource` deliberately does not use that helper**, and the
+reason is now stated at it. Its catch-list includes `'now'` and `'subsec'`, which
+are literals and are the leak it exists to find, so it reads the raw statement. A
+later reader adding the call would blind it silently.
+
+**The vocabularies fixture asserts its own coverage** [EE1]. Adding
+`StoreGateReason` to the enforced list repairs today and leaves the mechanism, so
+the case enumerates the declarations by reflection and a vocabulary in neither
+list fails. The enumeration found nothing neither of us had named: nine
+declarations, seven covered, the two gaps `StoreGateReason` and
+`StoreEarningsSession`, with `StoreDecisionKind` making it ten and enforced from
+its own migration.
+
+**The class had to be measured before it was written.** A `Store*` type with
+`ToStored` and `ParseStored` also catches `StoreDate`, `StoreDecimal` and
+`StoreTimestamp`, which convert open domains and have no `CHECK` to agree with by
+nature, so the case would have reported three gaps that are not gaps. The class
+that holds is a `Store*` type whose `ToStored` takes an enum, a closed set being
+exactly what a `CHECK` can enumerate.
+
+**A sixth count comes out of a rule.** The registry cell and the type remark both
+carried one and both were wrong; they now say which vocabularies have no `CHECK`
+and why, and the fixture says how many. The tell was the same as the previous
+five: the number moved when unrelated work landed.
+
+**One figure was asserted and measuring it fixed a failing test.** The per-name
+headroom is 25,000.00, from a seeded equity of 100,000.00 at a fraction of 0.25,
+not the 5,100.00 `WORKED_EXAMPLE.md` §1 derives for its own account. A fixture
+reaching for the document's figure was reading an equity this store does not
+hold, and the book it built breached nothing.
+
+**The sweep ran as an act. Nineteen markers read, three changed and one added.**
+Phase 4's names two built checkpoints; the registry's goes from sixty-two
+implemented entries to sixty-four; and `DATA_AND_SCHEMA`'s records that migration
+9 built the five tables 4.1 specified, leaving scores and pre-registration as
+§4.3's remaining specification. **`SYSTEM_DESIGN` §3.6 gains a marker**, which is
+the first added rather than changed since that document's per-section rule was
+written: a section carries one once part of what it describes is built, and the
+decision record is now built.
+
+**[CLAUDE.md §11] asked, and the answer is none.** 4.3 to 4.5 are unspent, and
+nothing landed here changes what they ask. The two obligations raised are owed at
+Phase 6 and Phase 8, neither of which has detail yet.

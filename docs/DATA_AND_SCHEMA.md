@@ -17,10 +17,12 @@ built. §4.1 grew at 3.3, which added `market_sessions` and rebuilt
 `ledger_entries` are implemented there too.
 
 **The decision record went from two tables to five at 4.1, before any of them
-existed.** [D-W52] keyed the feasible set on what the generator reads and split
-the gate reasons by whether they are computed against a book, so `decisions` and
-`candidates` became `feasible_sets`, `candidates`, `candidate_gate_reasons`,
-`decisions` and `decision_gate_reasons`. All five remain the section's specification.
+existed, and migration 9 built all five at 4.2.** [D-W52] keyed the feasible set
+on what the generator reads and split the gate reasons by whether they are
+computed against a book, so `decisions` and `candidates` became `feasible_sets`,
+`candidates`, `candidate_gate_reasons`, `decisions` and `decision_gate_reasons`.
+What remains of §4.3 as specification is the scores of Phase 5 and the
+pre-registration of Phase 9.
 
 ## 1. Sources
 
@@ -332,7 +334,8 @@ feasible_sets
 candidates
   candidate_id INTEGER PK, feasible_set_id INTEGER, contract_id INTEGER,
   contracts_qty INTEGER, committed_capital TEXT, credit TEXT,
-  feature_json TEXT
+  bid TEXT, ask TEXT, feature_json TEXT
+  UNIQUE (feasible_set_id, contract_id)
   UNIQUE (candidate_id, feasible_set_id)
 
 candidate_gate_reasons
@@ -395,10 +398,32 @@ are still recorded, which is what [D-W10] asks.
 `chosen_candidate_id` null means the maker chose to do nothing, which is a
 decision and is scored.
 
-**Whether `feature_json` belongs on the shared side is not settled.** Nothing
-computes a feature yet, and a feature that is portfolio-relative belongs with the
-per-decision verdicts rather than with the shared candidate. The checkpoint that
-computes them answers it [D-W52].
+**`feature_json` is shared, answered at 4.2 by computing them** [D-W52]. Every
+feature a candidate carries is derived from its contract and its quote, so none is
+portfolio-relative and none moves to the per-decision side. A feature that were
+would belong with the verdicts, and the question stays live for whatever Phase 6's
+grader adds.
+
+**Which side of the line a future feature falls on: denominated in money is a
+column, anything else is JSON.** Money is decimal in TEXT and `DecimalColumns` is
+what governs it, so a monetary value inside a blob is one the canonical form does
+not reach and the no-ordering rule cannot see. That is why `bid` and `ask` are
+columns.
+
+The line does work rather than describing what is already true. Of the six
+features `SYSTEM_DESIGN.md` §3.11 names, **spread width is money** and is a column
+by this rule, except that it is the ask less the bid and both are columns already,
+so it is not stored at all. **Implied volatility rank and term structure slope are
+on neither side**: rank needs a history window and slope needs the rest of the
+chain, so neither can be computed from a candidate's own quote whatever the line
+says. **Distance to earnings is absent and owed**: it needs the report dates the
+gate read, which the generator holds and a candidate does not carry. What
+`feature_json` holds today is delta, days to expiry, implied volatility, volume
+and open interest.
+
+A feature absent from the quote is absent from the JSON rather than zero, on the
+convention §4.1 already carries: a gamma of zero is a false observation and not a
+missing one.
 
 ```
 trials
