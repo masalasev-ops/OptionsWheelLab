@@ -636,18 +636,18 @@ to differ. A count of this table is a count of rows. Rows sharing an Owed at
 value are separate obligations, and a count of distinct values is not a count of
 this table.
 
-**Ten rows stand, two at checkpoint granularity and eight at phase**, read off
-the table below at 4.2's sign-off. It stood at eight, two and six, at 4.1's; at
+**Eleven rows stand, two at checkpoint granularity and nine at phase**, read off
+the table below at 4.3's sign-off. It stood at ten, two and eight, at 4.2's; at
+eight, two and six, at 4.1's; at
 eleven, five and six, when Phase 4's detail was authored; at eleven, none and
 eleven, at 3.5's sign-off; at thirteen, two and eleven, at 3.4's; at fifteen,
 five and ten, at 3.3's; and at fourteen, seven and seven, at 3.2's. 4.1 closed
 its own three and raised none; 4.2 closed none and raised two.
 
-**4.2 is the first checkpoint since 3.2 to close nothing**, and it carried
-nothing to close: 4.1 took all three of the grains this phase owed, and what 4.2
-builds rests on them rather than settling anything further. Both rows it raises
-were found by building rather than by planning, one by a coverage case and one by
-computing the features a candidate carries.
+**Neither 4.2 nor 4.3 closed anything**, and neither carried anything to close:
+4.1 took all three of the grains this phase owed, and what the two after it build
+rests on them. 4.2 raised two rows and 4.3 raised one, all three found by building
+rather than by planning.
 
 **Between the last two readings nothing was closed or raised and five rows still
 moved**, which is this column's rule doing what it is for: it names a checkpoint
@@ -1629,12 +1629,13 @@ its reason is corrected.
 
 ## Phase 4 — Decision record and three makers in parallel
 
-Build state: **partly built**. 4.1 and 4.2 built and signed off: the grains
+Build state: **partly built**. 4.1 to 4.3 built and signed off: the grains
 settled with no code, the feasible set keyed on symbol, session and right, its
 gate reasons split by whether they are computed against a book, a trial's bounds
-fixed at its open, and then the record itself, five tables with a writer and a
-reader that rebuilds a decision from them alone. 4.3 to 4.5 not started. Nothing
-chooses. A loop
+fixed at its open, then the record itself, five tables with a writer and a reader
+that rebuilds a decision from them alone, and then the three makers. 4.4 and 4.5
+not started, so nothing drives a maker across sessions and no maker rolls or
+closes: what asks for a decision today is a test. A loop
 steps a calendar from 3.5 and the choices it applies are supplied, so the rest of
 this phase is the thing that supplies them and the record of what it supplied.
 Delivers three makers acting
@@ -1810,6 +1811,54 @@ compiled code, so a variant is a new row.
 - **DoD**: the byte-identical property holds by construction from 4.1's grain
   rather than by three writes agreeing, and breaking the generator makes the
   test fail rather than making three copies wrong in the same way.
+
+Reconciled at sign-off against what shipped. Four new configuration rows, a policy
+record, a seed derivation, three makers, two registered fixtures and two
+unregistered suites. No obligation closed and one raised. The suite went from 691
+to 727.
+
+**An adversarial sweep ran before any maker was written, and it found two defects
+in what this branch had already committed.** Neither was failing anything. Step 1
+added the learner's band to the list deciding which bands the ceiling is checked
+against and not to the list deciding whether the check runs, so a write touching
+only that band skipped it, which is exactly the write Phase 7's channel makes.
+And a remark claimed the band's inclusive bound decided nothing in the worked
+example, reasoning only about the learner.
+
+**The inclusive bound is load-bearing for that document, through the random
+maker.** `Policy:Random:DeltaMin` is also exactly 0.10, so under an exclusive
+floor the draw set loses the 45.00, index zero takes the 47.50, and §4's random
+row becomes false. Measured rather than argued.
+
+**What §4 cannot discriminate, measured.** Its baseline band admits one of three
+feasible candidates, so the maximum never compares two values and the tie-break
+is never reached. The seeded draw is 6.4 percent of range, so the index is zero
+for every set size up to fifteen and that document enumerates seven strikes: no
+set it could hold would tell a uniform draw from a maker taking the first
+candidate. Three cases outside the document cover what it cannot.
+
+**§4's learner reason stated a rule that contradicted its own choice.** It read
+that current policy rows favour lower delta, which applied as a selection rule
+takes the 45.00 and fails the row's own 47.50. It states its band now, in the
+shape the baseline's cell already used, and the fixture asserts the column rather
+than reading past it. That catches a policy change which does not change the
+choice, which the strike assertion is blind to.
+
+**One algorithm and two policies, because a learner with a rule in code cannot
+learn.** The channel writes rows and nothing else, so a compiled rule is one no
+channel can change and the learner would be a second frozen arm.
+
+**`policy_version` is derived rather than stored**, as the maximum over the keys
+each factory read. The random maker's policy is six rows across two prefixes
+because it borrows the baseline's window, so a prefix-scoped maximum would miss
+two and its version would not move when the window it uses did.
+
+**The tie-break has no authored source.** Nothing states what happens when two
+in-band candidates carry the same bid. The maker takes the first in the order it
+was given, which is contract identity order, the order the generator emits and
+the order the record stores, so it takes the order it was handed rather than
+imposing one. Recorded here because a build-time convention with no source
+belongs where planning will look.
 
 ### 4.4 What a maker does with an open trial
 The decisions Phase 3 took as a caller's parameter. A maker's session produces one

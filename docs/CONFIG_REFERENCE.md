@@ -32,9 +32,16 @@ since 2.4. Measured across the four bound records, `GateBounds` and
 `FillModel.cs`, while `TrialBounds.ResolveFor` appears in no `src/` file at all.
 That is the whole of the difference, and it is the difference between a defect and
 a gap: the two `Trial:` rows are the only unverified rows whose checkpoint has
-landed. The nine `Scoring:` and `Policy:` rows beneath them are specified-only,
-their checkpoints being Phase 4's and Phase 5's, which is the ordinary state this
-column describes rather than anything owed.
+landed. The `Scoring:` rows beneath them are specified-only, their checkpoint
+being Phase 5's, which is the ordinary state this column describes rather than
+anything owed.
+
+**The eleven `Policy:` rows were in that company until 4.3 and are verified now.**
+`Policy` resolves each of them as of the simulated date and the three makers call
+it, which is the same standard the four bound records meet. The count that used to
+stand here is gone rather than corrected, on the rule this corpus has applied to
+counts in rules: it moved when the learner's four rows landed and would move again
+at Phase 5.
 
 The Consumer column names the component that READS the value, and once verified
 also names the type it binds through, as `component via TypeName`. Both are
@@ -178,17 +185,17 @@ an inclusive range in as many words.
 
 | Key | Store | Meaning | Consumer | Notes |
 |---|---|---|---|---|
-| `Policy:Baseline:DeltaMin` | rows | frozen baseline delta band, lower bound | Frozen baseline maker **Unverified** | 0.20. Never changes for the life of the experiment [D-W4] |
-| `Policy:Baseline:DeltaMax` | rows | frozen baseline delta band, upper bound | Frozen baseline maker **Unverified** | 0.30. Never changes [D-W4]. The gate's delta ceiling must be no tighter than this [D-W23] |
-| `Policy:Baseline:DteMin` | rows | frozen baseline expiry window, lower bound | Frozen baseline maker **Unverified** | 30. Never changes [D-W4] |
-| `Policy:Baseline:DteMax` | rows | frozen baseline expiry window, upper bound | Frozen baseline maker **Unverified** | 60. Never changes [D-W4]. The random maker draws inside this window too |
-| `Policy:Random:DeltaMin` | rows | random control band, lower bound | Random maker **Unverified** | 0.10, inherited rather than argued: there is no `Gate:MinDelta`, so this floor sits strictly inside what the gate admits and D-W4's argument does not reach it [D-W4] |
-| `Policy:Random:DeltaMax` | rows | random control band, upper bound | Random maker **Unverified** | 0.35, sitting exactly at the gate's delta ceiling by choice: a control drawing from a smaller opportunity set than the gate admits would make a difference between makers partly permission rather than judgement [D-W4, D-W23] |
-| `Policy:Random:Seed` | rows | seed for the random maker | Random maker **Unverified** | 20260729, chosen rather than stated. The value is arbitrary; that it is fixed is not, since the control has to draw the same way on a re-run |
-| `Policy:Learner:DeltaMin` | rows | learner delta band, lower bound | Learner maker **Unverified** | 0.10, and section 4 leaves it entirely open: any value at or below 0.16 reproduces that section, because the 45.00 loses on credit whether the band holds it or not. Since a band admits its own bounds this one does hold it, at exactly 0.10, and it changes nothing. The floor inherits `Policy:Random:DeltaMin`'s disclosure rather than an argument of its own: there is no `Gate:MinDelta`, so it sits strictly inside what the gate admits, and the premium floor removes everything below it first [D-W4] |
-| `Policy:Learner:DeltaMax` | rows | learner delta band, upper bound | Learner maker **Unverified** | 0.20, and this is the bound section 4 constrains: it must be at least 0.16 so the 47.50 is in the band, and below 0.24 so the 50.00 is out, or the higher credit wins. Any value in that range reproduces the document; 0.20 makes the band the baseline's own width shifted down by one width, so favouring lower delta is a band moved rather than a rule changed, which is what lets one algorithm serve both makers [D-W4] |
-| `Policy:Learner:DteMin` | rows | learner expiry window, lower bound | Learner maker **Unverified** | 30, the baseline's. Section 4's expiry is 46 days out and sits inside it, so the document constrains this no further than that |
-| `Policy:Learner:DteMax` | rows | learner expiry window, upper bound | Learner maker **Unverified** | 60, the baseline's, on the same reasoning |
+| `Policy:Baseline:DeltaMin` | rows | frozen baseline delta band, lower bound | `HighestCreditMaker` via `Policy.ForBaseline` | 0.20. Never changes for the life of the experiment [D-W4] |
+| `Policy:Baseline:DeltaMax` | rows | frozen baseline delta band, upper bound | `HighestCreditMaker` via `Policy.ForBaseline` | 0.30. Never changes [D-W4]. The gate's delta ceiling must be no tighter than this [D-W23] |
+| `Policy:Baseline:DteMin` | rows | frozen baseline expiry window, lower bound | `HighestCreditMaker` via `Policy.ForBaseline`, and the random maker through `Policy.ForRandom` | 30. Never changes [D-W4] |
+| `Policy:Baseline:DteMax` | rows | frozen baseline expiry window, upper bound | `HighestCreditMaker` via `Policy.ForBaseline`, and the random maker through `Policy.ForRandom` | 60. Never changes [D-W4]. The random maker draws inside this window too |
+| `Policy:Random:DeltaMin` | rows | random control band, lower bound | `RandomWithinBandMaker` via `Policy.ForRandom` | 0.10, inherited rather than argued: there is no `Gate:MinDelta`, so this floor sits strictly inside what the gate admits and D-W4's argument does not reach it [D-W4] |
+| `Policy:Random:DeltaMax` | rows | random control band, upper bound | `RandomWithinBandMaker` via `Policy.ForRandom` | 0.35, sitting exactly at the gate's delta ceiling by choice: a control drawing from a smaller opportunity set than the gate admits would make a difference between makers partly permission rather than judgement [D-W4, D-W23] |
+| `Policy:Random:Seed` | rows | seed for the random maker | `RandomWithinBandMaker` via `MakerSeed` | 20260729, chosen rather than stated. The value is arbitrary; that it is fixed is not, since the control has to draw the same way on a re-run |
+| `Policy:Learner:DeltaMin` | rows | learner delta band, lower bound | `HighestCreditMaker` via `Policy.ForLearner` | 0.10, and section 4 leaves it entirely open: any value at or below 0.16 reproduces that section, because the 45.00 loses on credit whether the band holds it or not. Since a band admits its own bounds this one does hold it, at exactly 0.10, and it changes nothing. The floor inherits `Policy:Random:DeltaMin`'s disclosure rather than an argument of its own: there is no `Gate:MinDelta`, so it sits strictly inside what the gate admits, and the premium floor removes everything below it first [D-W4] |
+| `Policy:Learner:DeltaMax` | rows | learner delta band, upper bound | `HighestCreditMaker` via `Policy.ForLearner` | 0.20, and this is the bound section 4 constrains: it must be at least 0.16 so the 47.50 is in the band, and below 0.24 so the 50.00 is out, or the higher credit wins. Any value in that range reproduces the document; 0.20 makes the band the baseline's own width shifted down by one width, so favouring lower delta is a band moved rather than a rule changed, which is what lets one algorithm serve both makers [D-W4] |
+| `Policy:Learner:DteMin` | rows | learner expiry window, lower bound | `HighestCreditMaker` via `Policy.ForLearner` | 30, the baseline's. Section 4's expiry is 46 days out and sits inside it, so the document constrains this no further than that |
+| `Policy:Learner:DteMax` | rows | learner expiry window, upper bound | `HighestCreditMaker` via `Policy.ForLearner` | 60, the baseline's, on the same reasoning |
 
 ## Storage
 

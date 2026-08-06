@@ -1,5 +1,51 @@
 # CHANGELOG
 
+## [1.46.0] — 2026-08-06
+
+**Checkpoint 4.3 signed off.** Three makers choose. The worked example's §4 is
+reproduced, and what that document cannot discriminate is measured and stated.
+
+### Added
+- **Four `Policy:Learner:` rows**, a third provenance beside transcribed and
+  judged: §1 states no learner band and §4 constrains one without fixing it, so
+  they are chosen within a constraint the document sets.
+- **`Policy`**, a delta band and expiry window resolved as of the simulated date,
+  with three named factories. The random maker's reads its own band and the
+  baseline's window, which is the coupling `Policy:Random:` carrying no DTE keys
+  expresses.
+- **`MakerSeed`**, FNV-1a over the canonical stored forms, per session and name.
+  Not `HashCode` or `string.GetHashCode`, which are randomised per process and
+  would pass a same-process byte-identical test while the property was false.
+- **Three makers**: the baseline and learner one algorithm on two policies, the
+  random control a uniform draw over its own band.
+- **`FX-WorkedExampleDecisions`**, the first fixture to read §4, which has been
+  this corpus's statement of what a decision-maker does since v1.0.0.
+- **`FX-ThreeMakersSameFeasibleSet`**, registered since v1.0.0 and implemented now
+  that three makers exist to hold it for.
+- `policy_version`, derived as the maximum over the keys each factory read.
+
+### Changed
+- **`WORKED_EXAMPLE.md` §4's learner reason states its band** where it stated a
+  preference. Read as a rule the old wording took the 45.00 and contradicted the
+  row's own 47.50. The fixture asserts the column now, which catches a policy
+  change that does not change the choice.
+- **The eleven `Policy:` rows carry verified consumers.**
+- `Policy.Admits` refuses a candidate with no delta.
+- `SYSTEM_DESIGN.md` §3.5 gains a build-state marker.
+- Two more counts removed from rules, in `ResolvedBound` and in
+  `CONFIG_REFERENCE.md`.
+
+### Fixed
+- **A write touching only the learner's band skipped the delta-ceiling check.**
+  Step 1 added the key to the list deciding which bands are checked and not to
+  the list deciding whether the check runs, and that is the write Phase 7's
+  channel makes.
+- **A claim that the band's inclusive bound decided nothing in the worked
+  example.** It reasoned about the learner and generalised; the bound decides the
+  random maker's drawn strike, so it is load-bearing for the document.
+- A citation carrying one source for a sentence making two claims, the seventh
+  instance of that pattern here.
+
 ## [1.45.0] — 2026-08-04
 
 **Checkpoint 4.2 signed off.** The decision record is built: five append-only
