@@ -16,10 +16,19 @@ namespace OptionsWheelLab.Core.Decisions;
 /// band. The baseline and the learner therefore share this record and their
 /// selection rule, and differ only in the rows they read.
 /// <para>
-/// <b>The random maker differs in rule rather than in policy.</b> It draws
-/// uniformly where the other two prefer the highest credit in band, because it is
-/// a control separating selection skill from the return to being short volatility
-/// [SYSTEM_DESIGN §3.5]. Its band is still a band and it is still resolved here.
+/// <b>The random maker differs in rule rather than in policy.</b> It is a control
+/// separating selection skill from the return to being short volatility
+/// [SYSTEM_DESIGN §3.5], and it draws uniformly where the other two prefer the
+/// highest credit in band [WORKED_EXAMPLE §1]. Its band is still a band and it is
+/// still resolved here.
+/// </para>
+/// <para>
+/// <b>Two brackets, because one source states one of those claims.</b> This
+/// sentence carried a single §3.5 reference until the two were separated, and
+/// that section does not contain the phrase "highest credit" at all: the rule for
+/// the baseline and the learner is stated in the worked example's setup and
+/// nowhere in the narrative. Seventh instance in this corpus of a citation naming
+/// a source for a property the source does not carry.
 /// </para>
 /// <para>
 /// <b>Three named factories rather than one taking a maker's name</b>, because
@@ -88,12 +97,22 @@ public sealed record Policy(decimal DeltaMin, decimal DeltaMax, int DteMin, int 
     /// <c>Gate:MinDte</c> to <c>Gate:MaxDte</c>, which [D-W24] makes an inclusive
     /// range in as many words.
     /// <para>
-    /// It is not academic. The worked example's 45.00 put carries a delta of
-    /// exactly 0.10 and the learner's <c>DeltaMin</c> is exactly 0.10, so the
-    /// convention decides whether that candidate is in the learner's set. It loses
-    /// on credit either way, which is why a fixture reproducing that document
-    /// would pass under either reading and a reader could not tell which was in
-    /// force.
+    /// <b>It decides what the worked example's random maker draws, and an earlier
+    /// version of this remark said it decided nothing.</b> That version reasoned
+    /// only about the learner: the 45.00 put carries a delta of exactly 0.10 and
+    /// the learner's <c>DeltaMin</c> is exactly 0.10, and the 45.00 loses on
+    /// credit either way, so the learner's row reproduces under either reading.
+    /// True, and it generalised to the whole document, which is false.
+    /// </para>
+    /// <para>
+    /// <c>Policy:Random:DeltaMin</c> is <i>also</i> exactly 0.10, and there the
+    /// convention decides the drawn strike rather than only set membership. Under
+    /// an exclusive floor the random maker's set is the 47.50 and the 50.00, its
+    /// index-zero draw takes the 47.50, and §4's 45.00 becomes false. Measured
+    /// rather than argued: for the worked example's seed the draw is index zero
+    /// at every set size from two to fifteen. So the inclusive convention is
+    /// load-bearing for the document, through the maker the earlier remark did not
+    /// consider.
     /// </para>
     /// <para>
     /// The delta compared is the absolute value, as the gate's ceiling is
