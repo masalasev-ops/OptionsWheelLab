@@ -18,7 +18,7 @@ sign-off leaves nothing describing the present in between.
 
 # Current state
 
-Corpus v1.46.0.
+Corpus v1.46.1.
 
 | | |
 |---|---|
@@ -428,6 +428,42 @@ exercise price alone, so cash multiplies by the multiplier and the deliverable
 says how many shares change hands. `ContractTerms` is the one site, and
 FX-NoShareCountInOptionCash is what keeps it one.
 
+## The decision record and the makers
+
+**Built at 4.2 and 4.3, and nothing drives it.** Five append-only tables, a
+writer, a reader that rebuilds a decision from the record alone, and three makers
+that choose from a set they are handed. What asks a maker for a decision today is
+a test.
+
+The feasible set is stored once per symbol, session and right and referenced by
+every decision made against it [D-W52]. The key comes from what the generator
+reads: position state reaches enumeration only through the right it makes
+sellable, so at most two non-empty sets exist per name and session however many
+makers there are. That is what makes [D-W4]'s byte-identical property true by
+construction rather than by three writes agreeing, and a maker arriving with a
+different set is refused rather than merged.
+
+The gate reasons are two tables because their inputs differ. Six are raised from
+the candidate, the bounds and the report dates and are the same for every maker
+sharing the set; four are raised against a book and belong to the maker whose
+book produced them. Each `CHECK` carries its own family rather than the whole
+vocabulary, so the schema refuses a portfolio verdict written to the shared table.
+
+A reason is a row with no ordinal, and there is no `gate_status`: a candidate is
+feasible exactly when nothing refused it. `bid` and `ask` are columns rather than
+fields inside `feature_json`, because money is decimal in TEXT and a value inside
+a blob is one the canonical form does not reach.
+
+`policy_version` is derived as the maximum over the keys each policy factory read,
+not over the keys under one prefix, because the random maker borrows the
+baseline's expiry window and a prefix-scoped maximum would miss it.
+
+Three arms behind one interface. The baseline and the learner are one algorithm on
+two policies, since the channel writes rows and nothing else, so a rule in code is
+one no channel could change. The random control differs in rule rather than in
+rows and builds its generator inside the call from a seed derived per session and
+name. A band admits its own bounds and admits no candidate whose delta is absent.
+
 ## Configuration
 
 Two sections bound, `Eodhd` and `Storage`, both verified. Six sections deliberately
@@ -538,7 +574,7 @@ bands the list names.
 
 ## Tests
 
-727: 456 across sixty-three fixtures, and 271 across forty-one unregistered
+727: 444 across sixty-three fixtures, and 283 across forty unregistered
 suites. The one 4.1 added pins that foreign keys are enforced on a connection this
 store opens, read through the real factory, because a probe written for the same
 question set the pragma before reading it and reported the value it had written. The three guards are checks rather than tests and are counted in neither.
@@ -557,16 +593,17 @@ number is visible from a green run.
 | FX-ClockIsNotADateSource | 34 |
 | FX-SnapshotNeverRewritten | 27 |
 | FX-NoRewriteOfAppendOnlyTables | 20 |
+| FX-NoDecimalOrderingInSql | 19 |
 | FX-MalformedChainFailsWhole | 18 |
-| FX-NoDecimalOrderingInSql | 18 |
+| FX-ConfigWriteRefusesInvariantBreach | 17 |
 | FX-MoneyRoundTrip | 17 |
 | FX-NoSqlAliases | 17 |
-| FX-ConfigWriteRefusesInvariantBreach | 16 |
+| FX-StoredVocabulariesMatchTheirChecks | 15 |
 | FX-NoNondeterministicSql | 13 |
 | FX-ConfigStoreClassHonoured | 12 |
 | FX-TickerDashForm | 12 |
 | FX-UnmodelledActionStopsTheTrial | 12 |
-| FX-StoredVocabulariesMatchTheirChecks | 10 |
+| FX-RecordCarriesFeasibleSet | 8 |
 | FX-CeilingNotInsidePolicyBand | 7 |
 | FX-ConfigResolvesAsOf | 6 |
 | FX-EveryConfigSectionBinds | 6 |
@@ -583,9 +620,11 @@ number is visible from a green run.
 | FX-StoppedTrialIsValuedAtTheClose | 5 |
 | FX-TotalCapRejectsAboveHeadroom | 5 |
 | FX-TrialCompleteIncludesAssignment | 5 |
+| FX-WorkedExampleDecisions | 5 |
 | FX-AssignmentKnownNextSession | 4 |
 | FX-ChainLoadsInIdentityOrder | 4 |
 | FX-CrossedQuoteRejected | 4 |
+| FX-DecisionsShareOneFeasibleSet | 4 |
 | FX-DeltaCeilingRejects | 4 |
 | FX-DividendReachesLedger | 4 |
 | FX-ExpiryResolvesAtOneCent | 4 |
@@ -609,6 +648,7 @@ number is visible from a green run.
 | FX-PitMembershipExcludesLaterJoiner | 3 |
 | FX-RunIsByteIdentical | 3 |
 | FX-SnapshotRestoresIdentically | 3 |
+| FX-ThreeMakersSameFeasibleSet | 3 |
 | FX-WorkedExampleChainPersists | 3 |
 | FX-DteWindowRejects | 2 |
 | FX-PremiumFloorRejects | 2 |
