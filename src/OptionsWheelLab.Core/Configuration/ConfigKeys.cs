@@ -67,6 +67,13 @@ public static class ConfigKeys
     public const string BaselineDeltaMax = "Policy:Baseline:DeltaMax";
     public const string RandomDeltaMax = "Policy:Random:DeltaMax";
 
+    public const string LearnerDeltaMax = "Policy:Learner:DeltaMax";
+
+    // Named on the second ground this file states: code reads it. The random
+    // maker resolves it as of the session, so a re-seeded experiment is a new
+    // config version rather than a rebuild [D-W51].
+    public const string RandomSeed = "Policy:Random:Seed";
+
     /// <summary>
     /// The bands the delta ceiling is checked against [D-W23], as key and name.
     /// </summary>
@@ -98,17 +105,38 @@ public static class ConfigKeys
     [
         (BaselineDeltaMax, "Baseline"),
         (RandomDeltaMax, "Random"),
+
+        // The maker this remark anticipated. Its band arrived at 4.3 and
+        // FX-EveryPolicyBandIsChecked failed on the reference row before this
+        // entry existed, which is the check standing in the direction it was
+        // written to stand in.
+        (LearnerDeltaMax, "Learner"),
     ];
 
     /// <summary>
     /// Every key D-W23's invariant needs before it can be evaluated.
     /// </summary>
+    /// <remarks>
+    /// <b>This set and <see cref="PolicyBandCeilings"/> move together, and 4.3
+    /// moved one without the other.</b> That list decides which bands the ceiling
+    /// is checked against; this one decides whether the check runs at all, since
+    /// <c>ConfigWriter</c> gates it on the write touching a key here. The learner
+    /// joined the first at step 1 and not the second, so a write touching only
+    /// <c>Policy:Learner:DeltaMax</c> skipped the check entirely.
+    /// <para>
+    /// <b>That is the write Phase 7's channel makes</b>, and it is the only write
+    /// that revises a band without touching anything else, so the gap was
+    /// precisely over the case the invariant exists for. Nothing failed because
+    /// the seed writes every key at once and therefore always overlaps.
+    /// </para>
+    /// </remarks>
     public static IReadOnlySet<string> DeltaCeilingKeys { get; } =
         new HashSet<string>(StringComparer.Ordinal)
         {
             GateMaxDelta,
             BaselineDeltaMax,
             RandomDeltaMax,
+            LearnerDeltaMax,
         };
 
     /// <summary>

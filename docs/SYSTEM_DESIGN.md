@@ -148,6 +148,13 @@ Cap values are structural and outside what the learner may propose [D-W11].
 
 ### 3.5 Decision-makers
 
+Build state: **built at 4.3**, on synthetic chains: three arms behind one
+interface, each handed the set one gate evaluation produced. What is not built is
+anything that drives them across sessions, so what asks a maker for a decision
+today is a test, and the roll and close decisions are 4.4's. The learning channel
+that revises the learner's rows is Phase 7's, so the learner is a second policy
+rather than a learning one until then.
+
 Three, running in parallel on identical data with identical fill rules and
 separate ledgers [D-W4].
 

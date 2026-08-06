@@ -67,5 +67,23 @@ internal static class WorkedExampleOracle
         MarkdownTable.Rows(
             Document(), "Strike", "Spread, % of mid", "Bid", "Delta", "Committed", "Gate");
 
+    /// <summary>§4's three decisions: maker, choice, reason.</summary>
+    /// <remarks>
+    /// <b>The reason column is read and not asserted against.</b> It carries
+    /// prose, and one of the three points the wrong way when read as a rule:
+    /// "current policy rows favour lower delta" applied to the learner's in-band
+    /// set would take the 45.00 at delta 0.10 and fail §4's own 47.50. It
+    /// reproduces only read as describing where the band sits, which is what the
+    /// learner's rows encode. So the column is parsed to keep the table's shape
+    /// honest and the choice is what a fixture compares.
+    /// <para>
+    /// Added at 4.3, which is the first checkpoint with makers to run against it.
+    /// This table has been the corpus's statement of what a decision-maker does
+    /// since v1.0.0 with nothing reading it.
+    /// </para>
+    /// </remarks>
+    public static IReadOnlyList<IReadOnlyList<string>> MakerTable() =>
+        MarkdownTable.Rows(Document(), "Maker", "Choice", "Reason");
+
     private static string Document() => File.ReadAllText(RepoRoot.WorkedExamplePath);
 }

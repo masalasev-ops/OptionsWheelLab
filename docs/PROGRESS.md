@@ -5,8 +5,9 @@ Appended to, never rewritten. The repository is the authority on build state.
 ## Current state
 
 **Phase 0 complete and reviewed. Phases 1, 2 and 3 complete. Phase 4 started.**
-Checkpoints 0.1 to 0.8, 1.1 to 1.5, 2.1 to 2.5, 3.1 to 3.5, 4.1 and 4.2 built and
-signed off. 4.3 to 4.5 are not started. The documentation corpus is at v1.45.0.
+Checkpoints 0.1 to 0.8, 1.1 to 1.5, 2.1 to 2.5, 3.1 to 3.5 and 4.1 to 4.3 built
+and signed off. 4.4 and 4.5 are not started. The documentation corpus is at
+v1.46.0.
 
 ## Log
 
@@ -2264,3 +2265,105 @@ re-measured to the figures the sign-off recorded.
 
 It ran after the merge rather than before, as 3.5's and 4.1's did and for the same
 reason: a sweep run after a merge cannot block one.
+
+### 2026-08-06 — corpus v1.46.0
+
+**Checkpoint 4.3 signed off.** Four configuration rows, a policy record, a seed
+derivation, three makers, two registered fixtures and two unregistered suites. No
+obligation closed and one raised, so the table rises from ten rows to eleven. The
+suite went from 691 to 727 and the guards from 201 files to 212.
+
+**An adversarial sweep ran before any maker was written and found two defects in
+code this branch had already committed.** Seven agents read the corpus and
+recomputed the worked example independently. Neither defect was failing anything.
+A checkpoint whose subject is reproducing an authored document is exactly where a
+green suite is least informative, because the document is the thing being checked.
+
+**The first defect: two lists that must move together, and one moved.** Step 1
+added `Policy:Learner:DeltaMax` to the list deciding which bands the delta ceiling
+is checked against, and not to the list deciding whether the check runs at all. So
+a write touching only the learner's band skipped the check, and that is the one
+write Phase 7's learning channel makes: the only write that revises a band without
+touching anything else was the only case the invariant did not cover. Nothing
+failed because the seed writes every key at once and always overlaps. A case now
+covers it and was watched failing before the fix went back.
+
+**The second: a claim about the band's inclusive bound that reasoned about one
+maker and generalised to the document.** It said the convention decided nothing,
+which is true of the learner, where the 45.00 loses on credit either way.
+`Policy:Random:DeltaMin` is also exactly 0.10, and there it decides the drawn
+strike: under an exclusive floor the draw set loses the 45.00, index zero takes
+the 47.50, and §4's random row becomes false. **The inclusive convention is
+load-bearing for the document, through the maker the remark did not consider.**
+
+**What §4 cannot discriminate, measured rather than assumed.** Its baseline band
+admits one of three feasible candidates, so the maximum never compares two values
+and the tie-break is never reached: any selection rule reproduces that row. Its
+seeded draw is 136,963,533 of 2,147,483,647, which is 6.4 percent of range, so the
+index is zero for every set size up to fifteen, and the document enumerates seven
+strikes. **No set that document could hold would tell a uniform draw from a maker
+taking the first candidate**, which is a property of the document rather than of
+its feasible set. Three cases outside it cover what it cannot: two candidates in
+the baseline's band, a tie on credit, and the draw pinned on two further sessions
+where the index is two and one.
+
+**§4's learner reason stated a rule contradicting its own choice, and was
+corrected.** It read that current policy rows favour lower delta, which applied as
+a selection rule takes the 45.00 at delta 0.10 and fails the row's own 47.50. It
+states its band now, in the shape the baseline's cell already used, and the
+fixture asserts the reason column rather than reading past it. **What that catches
+is a policy change which does not change the choice**: moving the learner's floor
+from 0.10 to 0.15 leaves only the 47.50 in band, so the strike assertion passes
+and only the reason fails. Measured by running it.
+
+**One algorithm and two policies, because a learner with a rule in code cannot
+learn.** The channel writes to the learner and nothing else, and what a channel
+can write is a row, so a compiled rule is one no channel can change and the
+learner would be a second frozen arm with a different band. That argument is
+stronger than tidiness and it decided the shape.
+
+**`policy_version` is derived rather than stored**, as the maximum over the keys
+each factory read. A `Policy:{Maker}:Version` row would be a number somebody must
+remember to bump beside rows already carrying versions, so it could disagree with
+the policy it names. Over the keys read rather than the keys under one prefix,
+because the random maker's policy is six rows across two prefixes: a
+prefix-scoped maximum would miss the borrowed window and its version would not
+move when that window did. A case asserts exactly that asymmetry.
+
+**A candidate with no delta is admitted by no band**, since a band is a claim
+about delta and an absent one cannot satisfy it. The residue is raised at Phase 8:
+the candidate stays feasible with no reason, and the scorer computes an outcome
+for every candidate in the set [D-W5], so regret's opportunity set would gain a
+member no maker could take. **No chain omits a delta today** and the row says so,
+because the only deltaless quote in the tree is the case asserting the gate lets
+one through, so a green suite is not evidence against the gap.
+
+**The tie-break has no authored source and is reported rather than settled.**
+Nothing states what happens when two in-band candidates carry the same bid. The
+maker takes the first in contract identity order, which is the order the generator
+emits and the order the record stores, so it takes the order it was handed rather
+than imposing one.
+
+**Two more counts came out of rules**, the seventh and eighth. `ResolvedBound`'s
+remark counted records and keys and was wrong within one checkpoint of each
+reading; `CONFIG_REFERENCE`'s paragraph counted specified-only rows and moved when
+the learner's four landed. Both now state the property and let a reader count.
+
+**The sweep ran as an act. Twenty markers read, three changed and one added.**
+Phase 4's names three built checkpoints; the registry's goes from sixty-four
+implemented entries to sixty-six; `WORKED_EXAMPLE`'s moves from seven of eleven
+fixtures to nine of twelve and records that §4 is reproduced from 4.3.
+**`SYSTEM_DESIGN` §3.5 gains a marker**, the second added rather than changed
+since that document's per-section rule was written, because the makers are now
+built.
+
+**The eleven `Policy:` rows carry verified consumers.** `Policy` resolves each as
+of the simulated date and the three makers call it, which is the standard the four
+bound records already meet. Four rows remain unverified: the two `Trial:` rows,
+which are the standing defect owed at Phase 4, and the two `Scoring:` rows, whose
+checkpoint is Phase 5's.
+
+**[CLAUDE.md §11] asked, and the answer is one.** 4.4's detail requires a maker to
+produce roll and close, and `DecisionKind` carries both with nothing writing
+them, which is what that checkpoint builds rather than a gap this one leaves. 4.5
+is unaffected. The obligation raised is owed at Phase 8, which has no detail yet.

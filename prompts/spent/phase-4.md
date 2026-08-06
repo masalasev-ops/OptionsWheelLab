@@ -18,7 +18,7 @@ sign-off leaves nothing describing the present in between.
 
 # Current state
 
-Corpus v1.45.0.
+Corpus v1.46.0.
 
 | | |
 |---|---|
@@ -26,8 +26,8 @@ Corpus v1.45.0.
 | Phase 1 | complete, 1.1 to 1.5 built and signed off |
 | Phase 2 | complete, 2.1 to 2.5 built and signed off |
 | Phase 3 | complete, 3.1 to 3.5 built and signed off |
-| Phase 4 | 4.1 and 4.2 built and signed off, 4.3 to 4.5 not started |
-| CI | green, 691 tests, guards then restore then build then test, on push to `main` and every pull request |
+| Phase 4 | 4.1 to 4.3 built and signed off, 4.4 and 4.5 not started |
+| CI | green, 727 tests, guards then restore then build then test, on push to `main` and every pull request |
 
 **The block this one inherits was stale for two checkpoints, which is why
 re-measuring it is an act rather than a habit.** In `phase-3.md` it read v1.39.0
@@ -538,7 +538,7 @@ bands the list names.
 
 ## Tests
 
-691: 435 across sixty-one fixtures, and 256 across thirty-eight unregistered
+727: 456 across sixty-three fixtures, and 271 across forty-one unregistered
 suites. The one 4.1 added pins that foreign keys are enforced on a connection this
 store opens, read through the real factory, because a probe written for the same
 question set the pragma before reading it and reported the value it had written. The three guards are checks rather than tests and are counted in neither.
@@ -624,11 +624,11 @@ append-only triggers make the tables impossible to clean between cases.
 
 ## Not built
 
-**Nothing chooses.** A loop steps a calendar from 3.5, but the choices it applies
-are supplied, so no maker decides. That is the largest single gap in the
-repository and it is Phase 4's whole subject. The decision record exists from 4.2
-and nothing fills it: what writes a decision today is a test, and the scorer that
-would re-score one is Phase 5's. `TrialRun` is also handed a machine
+**Nothing drives a maker.** Three makers choose from 4.3 and a loop steps a
+calendar from 3.5, and the two are not joined: `TrialRun` still takes a supplied
+sequence, so what asks a maker for a decision today is a test. No maker rolls or
+closes, which is 4.4's, and the scorer that would re-score a decision is Phase
+5's. `TrialRun` is also handed a machine
 already constructed, so no composition root resolves bounds and builds one, which
 is why two `Trial:` configuration rows are still unverified.
 
@@ -679,11 +679,12 @@ and `FIXTURES.md`'s Checkpoint column, and v1.43.0 moved one and not the other,
 which leaves every checkpoint's entry-to-artefact definition of done resolving to
 nothing. Corrected at 4.1 and the practice recorded where the trigger is.
 
-**3.1 to 3.5, 4.1 and 4.2 owe nothing.** 3.1 closed four rows while raising three;
+**3.1 to 3.5 and 4.1 to 4.3 owe nothing.** 3.1 closed four rows while raising three;
 3.2 closed its own and raised three; 3.3 closed four and raised five; 3.4 closed
 three and raised one; 3.5 closed two and raised none; 4.1 closed three and raised
-none; 4.2 closed none and raised two, having carried nothing to close because 4.1
-took all three of the grains this phase owed. **Phase 2 owes nothing.** 2.1 discharged the reconciliation row raised at
+none; 4.2 closed none and raised two and 4.3 closed none and raised one, both having
+carried nothing to close because 4.1 took all three of the grains this phase
+owed. **Phase 2 owes nothing.** 2.1 discharged the reconciliation row raised at
 v1.6.0, the table's oldest and open for twenty-three corpus versions, 2.3
 discharged the crossed-quote row while opening two of its own, and 2.4
 discharged the risk row while opening one of its own. All three discharged rows
@@ -948,3 +949,53 @@ then; a projection returns whatever it was last rebuilt to [D-W35].
   tables carries its family rather than the whole list, so the schema refuses a
   portfolio verdict written to the shared table instead of leaving the split to
   the writer.
+
+## 4.3 The three makers, on one set
+
+Branch `phase-4/checkpoint-4.3` off `main`. The checkpoint where something
+finally chooses. Every checkpoint since 3.5 built a thing a test drives; this
+builds the thing that decides, and the worked example specifies all three arms.
+
+### A learner with a rule in code cannot learn
+
+The channel writes to the learner and nothing else, and what a channel can write
+is a row. **So a policy living in code is one no channel can change**, and the
+learner becomes a second frozen arm with a different band. That is why the
+baseline and the learner are one algorithm on two policies rather than two
+algorithms, and it is a stronger argument than tidiness.
+
+### An adversarial sweep before the build, not a review after it
+
+Seven agents read the corpus and recomputed the document independently before any
+maker was written. **They found two defects in code this branch had already
+committed and neither was failing anything.** A checkpoint that reproduces an
+authored document is exactly where a green suite is least informative, because
+the document is the thing being checked.
+
+### What a document cannot discriminate is a property of the document
+
+§4's baseline band admits one candidate, so its rule never compares two values.
+Its seeded draw is index zero for every set size up to fifteen and it enumerates
+seven strikes, so **no set it could hold** distinguishes a uniform draw from
+taking the first candidate. That is a stronger claim than "this data does not
+discriminate" and it is the one worth measuring.
+
+### Constraints
+
+- **A count in a rule is a defect waiting for unrelated work**, and this
+  checkpoint removed the seventh and eighth. The tell was the same as the six
+  before: the number moved when something unrelated landed.
+- **A pin that agrees with an unmeasured placeholder proves nothing.** A draw
+  pinned across three outcomes passed its placeholder on the first run, which is
+  a one-in-three coincidence. Pin across a range wide enough that agreement is
+  evidence.
+- **Two lists that must move together will not**, unless something says so where
+  the second one is. One decided which bands a ceiling is checked against and the
+  other whether the check runs; moving one silently covered nothing.
+- **Assert the reason column, not only the answer.** A choice can be right while
+  the policy that produced it is wrong, and the strike alone cannot tell. What
+  made that possible was correcting a document cell that stated a preference
+  where the others state a band.
+- **A negative example naming something the roadmap intends to build has an
+  expiry date on it.** A case used the learner's key as its example of a band in
+  no vocabulary, and closed itself when the learner arrived.

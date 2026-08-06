@@ -23,14 +23,14 @@ namespace OptionsWheelLab.Core.Generation;
 /// this assembly.
 /// </para>
 /// <para>
-/// <b>The message does not name which record could not resolve, and today the
-/// key implies it.</b> Read at 2.4 over two records and again at 3.4 over four:
-/// <see cref="GateBounds"/> resolves six keys all prefixed <c>Gate:</c>,
-/// <see cref="PortfolioBounds"/> four all prefixed <c>Risk:</c>,
-/// <see cref="Positions.TrialBounds"/> two all prefixed <c>Trial:</c>, and
-/// <see cref="Positions.CostBounds"/> three all prefixed <c>Costs:</c>. The
-/// fifteen still partition cleanly and a reader can tell the family from the
-/// message. <b>That holds by convention rather than by construction.</b> Nothing
+/// <b>The message does not name which record could not resolve, and the key
+/// implies it.</b> <see cref="GateBounds"/> resolves keys all prefixed
+/// <c>Gate:</c>, <see cref="PortfolioBounds"/> all prefixed <c>Risk:</c>,
+/// <see cref="Positions.TrialBounds"/> all prefixed <c>Trial:</c>,
+/// <see cref="Positions.CostBounds"/> all prefixed <c>Costs:</c>, and
+/// <see cref="Decisions.Policy"/> all prefixed <c>Policy:</c>. They partition
+/// cleanly and a reader can tell the family from the message.
+/// <b>That holds by convention rather than by construction.</b> Nothing
 /// states that a bound record's keys share a section, and nothing checks it, so a
 /// record reading across sections would make the message ambiguous without
 /// anything failing. <c>Gate:MaxDte</c> is the near case: it already appears in a
@@ -38,14 +38,28 @@ namespace OptionsWheelLab.Core.Generation;
 /// path rather than here. A record that broke the partition would want the family
 /// in the message, which is a change to what D-W37 says a message carries and so
 /// a decision rather than an edit.
+/// <para>
+/// <b>No count of records or keys is stated here, and it used to be.</b> The
+/// number moved every time unrelated work landed, and it was wrong within one
+/// checkpoint of each reading. What matters is that the partition holds, which is
+/// a property, and a reader can check it by looking at the records rather than by
+/// trusting an arithmetic someone maintained by hand.
 /// </para>
 /// <para>
-/// <b>What the message calls the thing is now wrong for three families out of
-/// four, and 3.4 raises it rather than fixing it.</b> It reads "a gate bound",
-/// which has covered <c>Risk:</c> caps since 2.4 and now covers a trial bound and
-/// a cost. Generalising the wording is the same change the paragraph above calls
-/// a decision, since what D-W37's refusal says is the reason this type exists at
-/// all.
+/// <b><see cref="Decisions.Policy"/> reads two sub-prefixes and does not break
+/// the partition.</b> Its random factory resolves the random maker's band beside
+/// the baseline's expiry window, so a refusal can name <c>Policy:Baseline:DteMin</c>
+/// while the random maker was asking. The key named is still the key that failed,
+/// and that key failing breaks the baseline and the random maker both, so naming
+/// the maker that happened to ask would point at one of the two.
+/// </para>
+/// <para>
+/// <b>What the message calls the thing is wrong for every record but the first,
+/// and 3.4 raised it rather than fixing it.</b> It reads "a gate bound", which has
+/// covered <c>Risk:</c> caps since 2.4 and now covers a trial bound, a cost and a
+/// policy band. Generalising the wording is the same change the paragraph above
+/// calls a decision, since what D-W37's refusal says is the reason this type
+/// exists at all.
 /// </para>
 /// </remarks>
 internal static class ResolvedBound

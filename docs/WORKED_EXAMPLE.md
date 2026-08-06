@@ -22,10 +22,14 @@ its three choices and its six sessions, where the figures were previously reache
 by a test stepping the machine itself, so the document is reproduced end to end by
 the thing the lab will run rather than by the thing that tests it.
 
-Not built: §4's three decisions, which need makers; §6.1 and §6.2, which are the
-totals of the two trials no maker has opened; and §7 and §8's scores and regret.
-Seven of the eleven fixtures naming this document are implemented and the other
-four belong to Phases 4 and 5, which is where the makers and the scores arrive.
+Not built: §6.1 and §6.2, which are the totals of the two trials no maker has
+opened, and §7 and §8's scores and regret. **§4's three decisions are reproduced
+from 4.3**, which is the first checkpoint with makers and the first to read that
+section at all: it has been this corpus's statement of what a decision-maker does
+since v1.0.0 with nothing checking it. Nine of the twelve fixtures naming this
+document are implemented and the other three belong to Phase 5, which is where
+the scores arrive.
+
 3.3 added none of its own: its fifteen rows are all `authored`, taking their
 expectations from the decisions rather than from here, and what they borrow is the
 shape of §5's sessions.
@@ -149,7 +153,7 @@ All three makers now receive this identical set [D-W4].
 |---|---|---|
 | Frozen baseline | 50.00 put | delta 0.24 is inside 0.20-0.30; highest credit in band |
 | Random within band | 45.00 put | uniform draw among {45.00, 47.50, 50.00} |
-| Learner | 47.50 put | current policy rows favour lower delta |
+| Learner | 47.50 put | delta 0.16 is inside 0.10-0.20; highest credit in band |
 
 Fills, at the bid less commission:
 

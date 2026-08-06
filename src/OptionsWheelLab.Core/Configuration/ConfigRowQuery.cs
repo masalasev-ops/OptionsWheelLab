@@ -50,6 +50,50 @@ internal static class ConfigRowQuery
         return command.ExecuteScalar() as string;
     }
 
+    /// <summary>
+    /// The version in force on the same boundary, or null when the key had no
+    /// value by then.
+    /// </summary>
+    /// <remarks>
+    /// <b>A widening, and stated as one rather than left to read as a
+    /// relaxation.</b> This type returns <c>value</c> and never <c>version</c>
+    /// because a consumer reading a bound has no use for which version supplied
+    /// it: the number it needs is the number, and handing it a version invites
+    /// arithmetic on a column that exists to order rows.
+    /// <para>
+    /// <b>A decision record does have a use for it</b> [4.3].
+    /// <c>decisions.policy_version</c> records which generation of a maker's
+    /// policy produced a decision, so a re-score can tell a decision made under
+    /// one band from one made under the next. That is a fact about the rows
+    /// rather than about their values, and it is the first consumer of this
+    /// column outside ordering.
+    /// </para>
+    /// <para>
+    /// It resolves on the same boundary as <see cref="ResolveAtOrBefore"/> and
+    /// through the same ordering, so a value and its version cannot come from
+    /// different rows.
+    /// </para>
+    /// </remarks>
+    internal static int? VersionAtOrBefore(
+        SqliteConnection connection,
+        string key,
+        string upperBound)
+    {
+        using var command = connection.CreateCommand();
+        command.CommandText =
+            """
+            SELECT version
+            FROM config_rows
+            WHERE key = $key AND set_at <= $upperBound
+            ORDER BY version DESC
+            LIMIT 1;
+            """;
+        command.Parameters.AddWithValue("$key", key);
+        command.Parameters.AddWithValue("$upperBound", upperBound);
+
+        return command.ExecuteScalar() is long version ? (int)version : null;
+    }
+
     /// <summary>The value of the highest version, with no bound.</summary>
     /// <remarks>
     /// <paramref name="transaction"/> is supplied when the read happens inside a

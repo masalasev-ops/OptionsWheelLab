@@ -636,18 +636,18 @@ to differ. A count of this table is a count of rows. Rows sharing an Owed at
 value are separate obligations, and a count of distinct values is not a count of
 this table.
 
-**Ten rows stand, two at checkpoint granularity and eight at phase**, read off
-the table below at 4.2's sign-off. It stood at eight, two and six, at 4.1's; at
+**Eleven rows stand, two at checkpoint granularity and nine at phase**, read off
+the table below at 4.3's sign-off. It stood at ten, two and eight, at 4.2's; at
+eight, two and six, at 4.1's; at
 eleven, five and six, when Phase 4's detail was authored; at eleven, none and
 eleven, at 3.5's sign-off; at thirteen, two and eleven, at 3.4's; at fifteen,
 five and ten, at 3.3's; and at fourteen, seven and seven, at 3.2's. 4.1 closed
 its own three and raised none; 4.2 closed none and raised two.
 
-**4.2 is the first checkpoint since 3.2 to close nothing**, and it carried
-nothing to close: 4.1 took all three of the grains this phase owed, and what 4.2
-builds rests on them rather than settling anything further. Both rows it raises
-were found by building rather than by planning, one by a coverage case and one by
-computing the features a candidate carries.
+**Neither 4.2 nor 4.3 closed anything**, and neither carried anything to close:
+4.1 took all three of the grains this phase owed, and what the two after it build
+rests on them. 4.2 raised two rows and 4.3 raised one, all three found by building
+rather than by planning.
 
 **Between the last two readings nothing was closed or raised and five rows still
 moved**, which is this column's rule doing what it is for: it names a checkpoint
@@ -665,10 +665,11 @@ three that went to 4.1 are the three it has now closed.
 | Phase 8 | Decide how a deliverable that is shares plus cash is recorded. The adjustment method in force gives a 4-for-3 split of an $80 option a deliverable "adjusted to 133 shares plus the cash value of the eliminated fractional share", strike unchanged; `contracts.deliverable_shares` is an integer and one of the five components of contract identity [1.5], and nothing in this corpus or its sources names cash in lieu. Owed at Phase 8 rather than 3.3 because no synthetic chain can express a corporate action at all, so the first deliverable of this shape arrives with vendor data, and the change is to a built structure with a migration cost that is no cheaper now. 3.3 must not assume a deliverable is wholly shares. Raised at 3.2. | v1.38.0 |
 | Phase 5 | Decide whether cash earns, and at what rate. Nothing in this corpus names interest as a financial concept. The absence biases two of the three comparisons in opposite directions: the wheel holds cash securing its puts and the hold-cash floor holds cash outright, so both are understated by roughly the same amount and their comparison survives, while buy-and-hold holds no cash and is not understated at all, so the comparison the lab exists to make is biased against the wheel by whatever the rate is. A rate is an external source and choosing one is a modelling choice with its own argument. Owed at Phase 5, where the outcome metric and the controls' returns are computed. A control gap of the same kind as the dividend gap and in the same decision [D-W13]. Raised at 3.2. | v1.38.0 |
 | Phase 8 | Constrain `earnings_calendar.session`, which has carried a stored vocabulary and no `CHECK` since migration 3. `StoreEarningsSession` declares three values and `ChainWriter` has written the column since Phase 1, so the code is its only enforcer where every other enforced vocabulary has two. FX-StoredVocabulariesMatchTheirChecks names it as unenforced from 4.2 rather than skipping it, which makes the gap visible without closing it. Adding the constraint means rebuilding a live table, and Phase 8 is where a second producer of earnings data arrives and that table is touched for its own reasons. Raised at 4.2 by the coverage case that found it. | v1.45.0 |
+| Phase 8 | Refuse a candidate whose delta is absent, at the gate rather than at each band. `ContractQuote.Delta` is nullable and the delta ceiling only fires when a value is present, so a quote with no delta passes the gate and reaches every maker as feasible. A band cannot admit it, because a band is a claim about delta and an absent one cannot satisfy it, so all three makers refuse it identically from 4.3 and the candidate stays in the feasible set recorded feasible with no reason. **The consequence is Phase 5's and is why this is worth doing.** The scorer computes an outcome for every candidate in that day's feasible set [D-W5], so it scores one no maker could have taken, and the opportunity set regret is measured against gains a member that was never an opportunity. Refusing it at the gate removes it from the set once rather than from each maker separately, and gives the audit trail a reason where today there is none. That means a new gate reason, its `CHECK` and the decision authorising both, which is why it is not 4.3's. Owed at Phase 8, where vendor data arrives and a quote with missing greeks stops being hypothetical. **No synthetic chain omits a delta today**: every quote in the only chain carries one, and the sole deltaless quote in the tree is the unit case asserting the gate does not treat one as a breach, so a green suite is not evidence against this. Raised at 4.3. | v1.46.0 |
 | Phase 6 | Record distance to earnings as a candidate feature. It is one of the six `SYSTEM_DESIGN.md` §3.11 names and the only one of them a candidate could carry and does not: it needs the report dates the gate read, which `CandidateGenerator` holds for the whole chain and a `GatedCandidate` does not carry out. The other two absentees are absent for a different reason, implied volatility rank needing a history window and term structure slope needing the rest of the chain, so neither is a candidate feature at all. Owed at Phase 6, which is where the feature grader arrives and the first consumer of any of them. Raised at 4.2 by computing the features. | v1.45.0 |
 | 4.4 | Resolve configuration in the projection rebuild as of the simulated date the run used, never as-now [D-W26]. Telling `closed_at_bound` from `closed_by_choice` means asking whether a bound had been reached, which reads `Trial:MaxRolls` and `Trial:MaxTrialDays`, and a rebuild reading current bounds would disagree with the run it is rebuilding while presenting the disagreement as a ledger defect. Not live at 3.3, where nothing writes `closed_by_choice` because no maker exists. Raised at 3.3 by building the rebuild. | v1.40.0 |
 | 4.5 | Verify the consumers of `Trial:MaxRolls` and `Trial:MaxTrialDays`, which 3.3 could not. `TrialBounds` reads both as of the simulated date and nothing in `src/` constructs it: the state machine is handed resolved bounds. **The reason this row gave was that the component resolving them is the run loop, which it called Phase 4's, and 3.5 landed the run loop without closing it.** `TrialRun` is handed a machine already constructed, so what is missing is not the loop but a composition root that resolves bounds and builds the machine from them, which arrives with the maker that drives a run. `CONFIG_REFERENCE.md` calls a consumer that cannot be verified once its checkpoint has landed a defect rather than a documentation gap, and 3.3 was that checkpoint, so both rows stay **Unverified** with the reason recorded rather than the column loosened to admit a type with no component behind it. Raised at 3.3, and its reason corrected at 3.5 by the run loop arriving early. | v1.40.0 |
-| Phase 5 | Decide what `ResolvedBound`'s refusal calls the thing it could not resolve. It reads "a gate bound", which has covered `Risk:` caps since 2.4 and covers a trial bound and a cost from 3.4, so it is wrong for three of the four records that use it. That type's own remarks anticipated this and call changing what the message carries a decision rather than an edit, because what [D-W37]'s refusal says is the reason the type exists. Owed at Phase 5 rather than sooner: the fourth record makes the wording wrong and the fifth is where a reader stops being able to infer the family from the key, since scores are the first values that are neither a bound nor a cost. Raised at 3.4. | v1.41.0 |
+| Phase 5 | Decide what `ResolvedBound`'s refusal calls the thing it could not resolve. It reads "a gate bound", which has covered `Risk:` caps since 2.4 and covers a trial bound and a cost from 3.4. That type's own remarks anticipated this and call changing what the message carries a decision rather than an edit, because what [D-W37]'s refusal says is the reason the type exists. Owed at Phase 5 rather than sooner, because that is where scores arrive as values that are neither a bound nor a cost. The prediction that the fifth record would be the one a reader could not place turned out wrong: `Policy` is the fifth, it arrived at 4.3, and its keys sit under one prefix so the family still reads from the key. The wording is wrong for every record but the first and gets more wrong as records are added, which is why the count is not stated here. Raised at 3.4. | v1.41.0 |
 
 ---
 
@@ -1628,12 +1629,13 @@ its reason is corrected.
 
 ## Phase 4 — Decision record and three makers in parallel
 
-Build state: **partly built**. 4.1 and 4.2 built and signed off: the grains
+Build state: **partly built**. 4.1 to 4.3 built and signed off: the grains
 settled with no code, the feasible set keyed on symbol, session and right, its
 gate reasons split by whether they are computed against a book, a trial's bounds
-fixed at its open, and then the record itself, five tables with a writer and a
-reader that rebuilds a decision from them alone. 4.3 to 4.5 not started. Nothing
-chooses. A loop
+fixed at its open, then the record itself, five tables with a writer and a reader
+that rebuilds a decision from them alone, and then the three makers. 4.4 and 4.5
+not started, so nothing drives a maker across sessions and no maker rolls or
+closes: what asks for a decision today is a test. A loop
 steps a calendar from 3.5 and the choices it applies are supplied, so the rest of
 this phase is the thing that supplies them and the record of what it supplied.
 Delivers three makers acting
@@ -1809,6 +1811,54 @@ compiled code, so a variant is a new row.
 - **DoD**: the byte-identical property holds by construction from 4.1's grain
   rather than by three writes agreeing, and breaking the generator makes the
   test fail rather than making three copies wrong in the same way.
+
+Reconciled at sign-off against what shipped. Four new configuration rows, a policy
+record, a seed derivation, three makers, two registered fixtures and two
+unregistered suites. No obligation closed and one raised. The suite went from 691
+to 727.
+
+**An adversarial sweep ran before any maker was written, and it found two defects
+in what this branch had already committed.** Neither was failing anything. Step 1
+added the learner's band to the list deciding which bands the ceiling is checked
+against and not to the list deciding whether the check runs, so a write touching
+only that band skipped it, which is exactly the write Phase 7's channel makes.
+And a remark claimed the band's inclusive bound decided nothing in the worked
+example, reasoning only about the learner.
+
+**The inclusive bound is load-bearing for that document, through the random
+maker.** `Policy:Random:DeltaMin` is also exactly 0.10, so under an exclusive
+floor the draw set loses the 45.00, index zero takes the 47.50, and §4's random
+row becomes false. Measured rather than argued.
+
+**What §4 cannot discriminate, measured.** Its baseline band admits one of three
+feasible candidates, so the maximum never compares two values and the tie-break
+is never reached. The seeded draw is 6.4 percent of range, so the index is zero
+for every set size up to fifteen and that document enumerates seven strikes: no
+set it could hold would tell a uniform draw from a maker taking the first
+candidate. Three cases outside the document cover what it cannot.
+
+**§4's learner reason stated a rule that contradicted its own choice.** It read
+that current policy rows favour lower delta, which applied as a selection rule
+takes the 45.00 and fails the row's own 47.50. It states its band now, in the
+shape the baseline's cell already used, and the fixture asserts the column rather
+than reading past it. That catches a policy change which does not change the
+choice, which the strike assertion is blind to.
+
+**One algorithm and two policies, because a learner with a rule in code cannot
+learn.** The channel writes rows and nothing else, so a compiled rule is one no
+channel can change and the learner would be a second frozen arm.
+
+**`policy_version` is derived rather than stored**, as the maximum over the keys
+each factory read. The random maker's policy is six rows across two prefixes
+because it borrows the baseline's window, so a prefix-scoped maximum would miss
+two and its version would not move when the window it uses did.
+
+**The tie-break has no authored source.** Nothing states what happens when two
+in-band candidates carry the same bid. The maker takes the first in the order it
+was given, which is contract identity order, the order the generator emits and
+the order the record stores, so it takes the order it was handed rather than
+imposing one. Recorded here because a build-time convention with no source
+belongs where planning will look.
 
 ### 4.4 What a maker does with an open trial
 The decisions Phase 3 took as a caller's parameter. A maker's session produces one

@@ -36,6 +36,13 @@ public sealed class FX_ConfigWriteRefusesInvariantBreach
     [
         new(ConfigKeys.BaselineDeltaMax, "0.30"),
         new(ConfigKeys.RandomDeltaMax, "0.35"),
+
+        // The learner's, from 4.3. It sits below every ceiling these cases use,
+        // so it never becomes the violating band and the cases still turn on the
+        // one value they change. Adding a band to the invariant is what obliges
+        // it here: a set short of one operand refuses for want of the operand
+        // rather than for the breach under test [D-W34].
+        new(ConfigKeys.LearnerDeltaMax, "0.20"),
     ];
 
     // D-W23: the ceiling is no tighter than any policy band.
@@ -90,7 +97,48 @@ public sealed class FX_ConfigWriteRefusesInvariantBreach
             [new ConfigEntry(ConfigKeys.GateMaxDelta, "0.35"), .. Bands],
             SetAt);
 
-        Assert.Equal(3, RowsIn(connection).Count);
+        // Counted from the set rather than written out, because a band added to
+        // the invariant would otherwise make this case fail for arithmetic.
+        Assert.Equal(Bands.Length + 1, RowsIn(connection).Count);
+    }
+
+    /// <summary>
+    /// A band revised above the ceiling on its own is refused, and the learner's
+    /// is the band that arrives that way.
+    /// </summary>
+    /// <remarks>
+    /// <b>The write that no other case makes: one key, touching nothing else.</b>
+    /// Every other case here writes a ceiling beside its bands, so the check runs
+    /// because the ceiling is in <see cref="ConfigKeys.DeltaCeilingKeys"/>. A
+    /// lone band write runs the check only if that band's key is in the set too,
+    /// and the learner's was not until this case existed: it joined
+    /// <see cref="ConfigKeys.PolicyBandCeilings"/> at 4.3 step 1 and the gating
+    /// set at step 3, so for two commits a learner band could be revised past the
+    /// ceiling and nothing would refuse it.
+    /// <para>
+    /// <b>It is the write Phase 7's learning channel makes.</b> That channel
+    /// revises the learner's policy and touches nothing else, so the one case the
+    /// invariant most exists for was the one case it did not cover. D-W23's
+    /// enforcement sits at config-write time precisely because rows are
+    /// insertable while a process runs.
+    /// </para>
+    /// </remarks>
+    [Fact]
+    public void A_lone_band_revised_above_the_ceiling_is_refused()
+    {
+        using var store = MigratedStore();
+        using var connection = store.Connections.Open(StoreAccess.Write);
+
+        var writer = new ConfigWriter(connection);
+        writer.AppendAll([new ConfigEntry(ConfigKeys.GateMaxDelta, "0.35"), .. Bands], SetAt);
+
+        var before = RowsIn(connection);
+
+        var thrown = Assert.Throws<InvalidOperationException>(
+            () => writer.Append(ConfigKeys.LearnerDeltaMax, "0.40", SetAt.AddDays(1)));
+
+        Assert.Contains("Learner", thrown.Message, StringComparison.Ordinal);
+        Assert.Equal(before, RowsIn(connection));
     }
 
     /// <summary>
