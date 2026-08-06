@@ -76,13 +76,13 @@ public sealed class FX_WorkedExampleDecisions
     /// document reaches this fixture rather than leaving it asserting what the
     /// document used to say.
     /// </remarks>
-    public static TheoryData<string, string> Decisions()
+    public static TheoryData<string, string, string> Decisions()
     {
-        var data = new TheoryData<string, string>();
+        var data = new TheoryData<string, string, string>();
 
         foreach (var row in MakerTable())
         {
-            data.Add(row[0], row[1]);
+            data.Add(row[0], row[1], row[2]);
         }
 
         return data;
@@ -90,7 +90,10 @@ public sealed class FX_WorkedExampleDecisions
 
     [Theory]
     [MemberData(nameof(Decisions))]
-    public void Each_maker_takes_the_strike_the_document_states(string maker, string choice)
+    public void Each_maker_takes_the_strike_the_document_states(
+        string maker,
+        string choice,
+        string reason)
     {
         using var store = Chain();
         using var connection = store.Connections.Open(StoreAccess.ReadOnly);
@@ -104,7 +107,80 @@ public sealed class FX_WorkedExampleDecisions
 
         Assert.Equal(DecisionKind.OpenPut, decision.Kind);
         Assert.Equal(StrikeIn(choice), decision.Chosen!.Strike);
+
+        // The reason is asserted rather than read past, which is what the
+        // learner's cell restating its band made possible.
+        Assert.Equal(reason, ReasonFor(maker, decision, connection));
     }
+
+    /// <summary>
+    /// The reason this maker would give, in the document's own shape.
+    /// </summary>
+    /// <remarks>
+    /// <b>What asserting the column adds is a policy change that does not change
+    /// the choice.</b> The strike alone is blind to one: moving the learner's
+    /// floor from 0.10 to 0.15 leaves only the 47.50 in band, so it still takes
+    /// the 47.50 and every earlier assertion here passes. The reason names the
+    /// band, so it does not.
+    /// <para>
+    /// It also holds the two credit makers to one algorithm. Both cells end
+    /// "highest credit in band" and this composes that phrase from the maker's
+    /// type rather than from its name, so a learner given a rule of its own
+    /// stops matching the document that says it has the baseline's.
+    /// </para>
+    /// <para>
+    /// The random maker's cell states its draw set rather than a rule, which is
+    /// the shape that maker has: it is a control and there is no preference to
+    /// state. So this composes the admitted set, and a band that admitted a
+    /// different three would fail even where the draw happened to land on the
+    /// same strike.
+    /// </para>
+    /// </remarks>
+    private static string ReasonFor(
+        string maker,
+        MakerDecision decision,
+        Microsoft.Data.Sqlite.SqliteConnection connection)
+    {
+        var configuration = new AsOfConfiguration(connection);
+        var offered = Offered(connection);
+
+        if (maker == "Random within band")
+        {
+            var drawnFrom = Admitted(Policy.ForRandom(configuration, SnapshotDate), offered)
+                .Select(quote => $"{quote.Contract.Strike:0.00}");
+
+            return $"uniform draw among {{{string.Join(", ", drawnFrom)}}}";
+        }
+
+        var policy = maker == "Frozen baseline"
+            ? Policy.ForBaseline(configuration, SnapshotDate)
+            : Policy.ForLearner(configuration, SnapshotDate);
+
+        var delta = Math.Abs(offered
+            .Single(candidate => candidate.Candidate.Quote.Contract == decision.Chosen)
+            .Candidate.Quote.Delta!.Value);
+
+        return $"delta {delta:0.00} is inside {policy.DeltaMin:0.00}-{policy.DeltaMax:0.00}; "
+            + "highest credit in band";
+    }
+
+    /// <summary>
+    /// The feasible candidates a policy's band admits, through the public surface.
+    /// </summary>
+    /// <remarks>
+    /// The makers' own filter is internal, and this composes the same thing from
+    /// <see cref="Policy.Admits"/>, which is public. Testing through the public
+    /// surface rather than widening an internal one is the rule [CLAUDE.md §4b],
+    /// and the cost here is one expression.
+    /// </remarks>
+    private static IEnumerable<Core.Synthetic.ContractQuote> Admitted(
+        Policy policy,
+        IReadOnlyList<GatedCandidate> offered) =>
+        offered
+            .Where(candidate => candidate.IsFeasible)
+            .Select(candidate => candidate.Candidate.Quote)
+            .Where(quote => policy.Admits(
+                quote.Delta, quote.Contract.Expiry.DayNumber - SnapshotDate.DayNumber));
 
     /// <summary>
     /// The random maker's draw comes back the same from the seed alone.

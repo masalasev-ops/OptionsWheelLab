@@ -149,7 +149,7 @@ All three makers now receive this identical set [D-W4].
 |---|---|---|
 | Frozen baseline | 50.00 put | delta 0.24 is inside 0.20-0.30; highest credit in band |
 | Random within band | 45.00 put | uniform draw among {45.00, 47.50, 50.00} |
-| Learner | 47.50 put | current policy rows favour lower delta |
+| Learner | 47.50 put | delta 0.16 is inside 0.10-0.20; highest credit in band |
 
 Fills, at the bid less commission:
 
