@@ -69,6 +69,11 @@ public static class ConfigKeys
 
     public const string LearnerDeltaMax = "Policy:Learner:DeltaMax";
 
+    // Named on the second ground this file states: code reads it. The random
+    // maker resolves it as of the session, so a re-seeded experiment is a new
+    // config version rather than a rebuild [D-W51].
+    public const string RandomSeed = "Policy:Random:Seed";
+
     /// <summary>
     /// The bands the delta ceiling is checked against [D-W23], as key and name.
     /// </summary>
