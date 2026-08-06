@@ -7,7 +7,7 @@ Appended to, never rewritten. The repository is the authority on build state.
 **Phase 0 complete and reviewed. Phases 1, 2 and 3 complete. Phase 4 started.**
 Checkpoints 0.1 to 0.8, 1.1 to 1.5, 2.1 to 2.5, 3.1 to 3.5 and 4.1 to 4.3 built
 and signed off. 4.4 and 4.5 are not started. The documentation corpus is at
-v1.46.0.
+v1.46.1.
 
 ## Log
 
@@ -2389,3 +2389,37 @@ The recovery is the one 3.3 recorded: check the pull request's state rather than
 the local exit code, then fetch again. Noted because the failure looks like a
 merge that did not happen and is not one, and acting on that reading would mean
 merging twice.
+
+### 2026-08-06 — corpus v1.46.1
+
+**A correction to 4.3's sign-off, found by its author rather than by me.** The
+archive's `Current state` block was reported as re-measured and was not. Three
+things were wrong and they are the same mistake in three forms.
+
+**The per-fixture table was four rows short.** It carried 3.5's fixtures and none
+of 4.2's or 4.3's, so `FX-RecordCarriesFeasibleSet`,
+`FX-DecisionsShareOneFeasibleSet`, `FX-WorkedExampleDecisions` and
+`FX-ThreeMakersSameFeasibleSet` were absent from a table that lists every
+implemented fixture. Fifty-nine rows against sixty-three.
+
+**The counts beside it were arithmetic rather than measurement.** The block read
+456 tests across sixty-three fixtures and 271 across forty-one unregistered
+suites. Measured from a run, it is **444 across sixty-three and 283 across
+forty**, which is what sums to 727. I derived the figures from the previous
+entry's numbers instead of counting, which is precisely what this corpus's own
+rule against deltas says not to do, and it is the second time: 3.4's sign-off
+recorded the same correction about a different figure.
+
+**A section was missing entirely.** The block described the state machine, the
+ledger and the fill model, and described nothing 4.2 or 4.3 built: not the five
+tables, the writer, the reader, or the three makers. **That is exactly the defect
+this block records having had for Phase 3** and being fixed at v1.41.1, in the
+same words: "A section was missing entirely, since nothing in that block described
+the state machine, the ledger, the projections or the fill model, and one now
+does." One now describes the decision record and the makers.
+
+**What the three share is that re-measuring was performed on the numbers that were
+already there and not on what the block should contain.** Re-reading a figure is
+not the act; the act is reading the repository and asking what the block now fails
+to describe. The table is regenerated from a run rather than patched, on v1.41.1's
+own precedent.

@@ -1,5 +1,22 @@
 # CHANGELOG
 
+## [1.46.1] — 2026-08-06
+
+**A correction.** 4.3's sign-off reported the archive's `Current state` block as
+re-measured and it was not.
+
+### Fixed
+- **The per-fixture table was four rows short**, missing every fixture 4.2 and
+  4.3 added. Regenerated from a run rather than patched.
+- **Its counts were arithmetic rather than measurement**: 456 and 271 where a run
+  gives **444 across sixty-three fixtures and 283 across forty unregistered
+  suites**. Deriving from the previous entry is what the rule against deltas
+  forbids, and it is the second such correction in this corpus.
+- **A section was missing entirely.** The block described Phase 3's machine and
+  nothing 4.2 or 4.3 built. That is the same defect it records having had for
+  Phase 3 and being fixed at v1.41.1. One now describes the decision record and
+  the makers.
+
 ## [1.46.0] — 2026-08-06
 
 **Checkpoint 4.3 signed off.** Three makers choose. The worked example's §4 is
