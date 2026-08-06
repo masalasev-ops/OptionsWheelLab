@@ -2367,3 +2367,25 @@ checkpoint is Phase 5's.
 produce roll and close, and `DecisionKind` carries both with nothing writing
 them, which is what that checkpoint builds rather than a gap this one leaves. 4.5
 is unaffected. The obligation raised is owed at Phase 8, which has no detail yet.
+
+### 2026-08-06 — the merge sweep for 4.3, which found nothing
+
+**Recorded because a sweep whose result is not written is indistinguishable from
+one that did not run.** 3.3 established the second pass when it found four stale
+figures the first could not have seen.
+
+Nothing was stale. Re-read against merged `main` at `1d2b892`: twenty-one
+build-state markers, being the twenty 4.3's sweep read plus the one it added to
+`SYSTEM_DESIGN` §3.5; eleven obligation rows splitting two at checkpoint
+granularity and nine at phase; the suite at 727; the guards at 212 files; and the
+corpus version in its four places.
+
+It ran after the merge rather than before, as 3.5's, 4.1's and 4.2's did and for
+the same reason: a sweep run after a merge cannot block one.
+
+**The merge itself failed locally and succeeded on the server**, the third time
+this session that a `.git/objects` write hit a permission error on this machine.
+The recovery is the one 3.3 recorded: check the pull request's state rather than
+the local exit code, then fetch again. Noted because the failure looks like a
+merge that did not happen and is not one, and acting on that reading would mean
+merging twice.
