@@ -1,5 +1,6 @@
 using OptionsWheelLab.Core.Configuration;
 using OptionsWheelLab.Core.Generation;
+using OptionsWheelLab.Core.Storage;
 
 namespace OptionsWheelLab.Core.Decisions;
 
@@ -46,7 +47,7 @@ namespace OptionsWheelLab.Core.Decisions;
 /// the maker that happened to ask would point at one of the two.
 /// </para>
 /// </remarks>
-public sealed record Policy(decimal DeltaMin, decimal DeltaMax, int DteMin, int DteMax)
+public sealed record Policy(decimal DeltaMin, decimal DeltaMax, int DteMin, int DteMax, int Version)
 {
     private const string Baseline = "Policy:Baseline:";
     private const string RandomBand = "Policy:Random:";
@@ -119,10 +120,33 @@ public sealed record Policy(decimal DeltaMin, decimal DeltaMax, int DteMin, int 
     /// [D-W23]: the chain states a put's delta as negative and a band written
     /// 0.20 to 0.30 means magnitudes.
     /// </para>
+    /// <para>
+    /// <b>A candidate with no delta is admitted by no band.</b> A band is a claim
+    /// about delta and an absent one cannot satisfy it, which is this store's
+    /// convention that an absent observation is absent rather than zero. The
+    /// alternatives are both worse: supplying a value the quote does not have is
+    /// the absent-as-zero failure, and skipping the band for that candidate is a
+    /// policy with a hole in it.
+    /// </para>
+    /// <para>
+    /// <b>This is selection and not permission, and it leaves a residue that is
+    /// Phase 5's.</b> All three makers refuse identically, so nothing diverges
+    /// between them. But the candidate stays in the feasible set, recorded
+    /// feasible with no reason, and the scorer computes an outcome for every
+    /// candidate in that set [D-W5], so the opportunity set regret is measured
+    /// against gains a member no maker could have taken. Removing it belongs at
+    /// the gate rather than at each band, and that is a carried obligation rather
+    /// than this checkpoint's work.
+    /// </para>
     /// </remarks>
-    public bool Admits(decimal delta, int daysToExpiry)
+    public bool Admits(decimal? delta, int daysToExpiry)
     {
-        var magnitude = Math.Abs(delta);
+        if (delta is not { } present)
+        {
+            return false;
+        }
+
+        var magnitude = Math.Abs(present);
 
         return magnitude >= DeltaMin
             && magnitude <= DeltaMax
@@ -138,10 +162,53 @@ public sealed record Policy(decimal DeltaMin, decimal DeltaMax, int DteMin, int 
     {
         ArgumentNullException.ThrowIfNull(configuration);
 
+        string[] keys =
+        [
+            band + "DeltaMin",
+            band + "DeltaMax",
+            window + "DteMin",
+            window + "DteMax",
+        ];
+
         return new Policy(
-            ResolvedBound.RequiredDecimal(configuration, band + "DeltaMin", simulatedDate),
-            ResolvedBound.RequiredDecimal(configuration, band + "DeltaMax", simulatedDate),
-            ResolvedBound.RequiredInt(configuration, window + "DteMin", simulatedDate),
-            ResolvedBound.RequiredInt(configuration, window + "DteMax", simulatedDate));
+            ResolvedBound.RequiredDecimal(configuration, keys[0], simulatedDate),
+            ResolvedBound.RequiredDecimal(configuration, keys[1], simulatedDate),
+            ResolvedBound.RequiredInt(configuration, keys[2], simulatedDate),
+            ResolvedBound.RequiredInt(configuration, keys[3], simulatedDate),
+            VersionOf(configuration, keys, simulatedDate));
     }
+
+    /// <summary>
+    /// The newest version among the rows this policy actually read.
+    /// </summary>
+    /// <remarks>
+    /// <b>Derived rather than stored, on the rule against a second statement of
+    /// one fact.</b> A <c>Policy:{Maker}:Version</c> row would be a number
+    /// somebody must remember to bump, sitting beside rows that already carry
+    /// versions moving when they are written, so it could disagree with the
+    /// policy it names. A maximum cannot. This corpus has removed that shape from
+    /// counts, ordinals, markers and a duplicated deliverable.
+    /// <para>
+    /// <b>Over the keys the factory read, not the keys under one prefix.</b> The
+    /// random maker's policy is six rows across two prefixes because it borrows
+    /// the baseline's expiry window, so a prefix-scoped maximum would miss two of
+    /// them and its recorded version would not move when the window it uses
+    /// moved. Each factory enumerates its own keys and this reads exactly those.
+    /// </para>
+    /// <para>
+    /// A key resolved above cannot be unresolvable here, since the same boundary
+    /// and ordering answer both, so a null version would mean a row disappeared
+    /// between two reads of one connection.
+    /// </para>
+    /// </remarks>
+    private static int VersionOf(
+        AsOfConfiguration configuration,
+        IReadOnlyList<string> keys,
+        DateOnly simulatedDate) =>
+        keys.Max(key =>
+            configuration.ResolveVersion(key, simulatedDate)
+            ?? throw new InvalidOperationException(
+                $"'{key}' resolved a value and no version on "
+                + $"{StoreDate.ToStored(simulatedDate)}, which cannot happen: both read the same "
+                + "row through the same ordering."));
 }

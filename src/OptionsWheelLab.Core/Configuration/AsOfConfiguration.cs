@@ -62,4 +62,26 @@ public sealed class AsOfConfiguration
     /// </summary>
     public int? ResolveInt(string key, DateOnly asOf) =>
         ConfigValue.AsInt(Resolve(key, asOf), key);
+
+    /// <summary>
+    /// The version in force on <paramref name="asOf"/>, or null when the key had
+    /// no value by then.
+    /// </summary>
+    /// <remarks>
+    /// <b>Which row supplied a value, rather than the value.</b> Every other
+    /// method here answers what a component should use; this one answers which
+    /// generation of configuration it used, which only a record has a use for.
+    /// <c>decisions.policy_version</c> is that record and is the first consumer
+    /// [4.3].
+    /// <para>
+    /// It resolves on the same boundary and ordering as the others, so a value
+    /// and its version cannot be read from different rows.
+    /// </para>
+    /// </remarks>
+    public int? ResolveVersion(string key, DateOnly asOf)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(key);
+
+        return ConfigRowQuery.VersionAtOrBefore(_connection, key, AsOfBoundary.LastInstantOf(asOf));
+    }
 }
