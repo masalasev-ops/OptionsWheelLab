@@ -14,7 +14,7 @@ predates this file and cannot be relied on.
 
 ## Topical index
 
-**Purpose and measurement**: D-W2, D-W3, D-W5, D-W17, D-W18, D-W20, D-W21, D-W49
+**Purpose and measurement**: D-W2, D-W3, D-W5, D-W17, D-W18, D-W20, D-W21, D-W49, D-W54
 **Isolation and controls**: D-W1, D-W4, D-W6, D-W13, D-W41, D-W45, D-W52
 **Data and identity**: D-W7, D-W8, D-W9, D-W15, D-W26, D-W27, D-W28, D-W29, D-W30, D-W31, D-W32, D-W34, D-W35, D-W36, D-W39, D-W44, D-W46, D-W47, D-W48, D-W52, D-W53
 **Risk**: D-W10, D-W11, D-W14, D-W19, D-W23, D-W25, D-W37, D-W43, D-W53
@@ -1668,3 +1668,41 @@ is the wrong place to look.
 Test FX-TrialBoundsFixedAtOpen: a trial spanning a configuration change is bound
 by the values in force when it opened, and a trial opened after the change is
 bound by the new ones.
+
+---
+
+### D-W54 When a maker rolls, and when it closes
+`active` · 2026-08-06
+
+A maker with an open short position acts on it only when the position is at or
+inside seven days to expiry. It then closes the trial if a bound has been reached
+[D-W14], and otherwise rolls to the candidate its own policy selects from the
+feasible set enumerated for that session [D-W52], by the same
+highest-credit-in-band rule it uses to open. If its band admits nothing, it
+closes.
+
+**Chosen, not transcribed.** No authority states any of this. The glossary's
+sentence about rolling is standard terminology and that file says so; the corpus
+states what a roll costs [D-W48], what bounds it [D-W14] and what it commits
+[D-W43], and nothing states what triggers one. D-W43 is the precedent for a
+decision with no external source, and this is the second.
+
+Why a threshold rather than every session. A maker that reconsidered daily would
+roll on the first session a higher credit appeared, making the trial a sequence of
+one-day positions and the roll bound meaningless. Seven days is chosen inside
+`Gate:MinDte`'s own floor: the gate will not open a position closer than seven
+days out, so a position inside that window has passed beyond what this lab would
+newly enter.
+
+Why one algorithm. The three makers differ in their bands and not their rules
+[D-W4, §4], and a roll that selected differently from an open would make the
+learner's channel unable to change how it rolls, since the channel writes rows and
+not code [D-W6].
+
+What this does not settle. Whether a maker should close a profitable position
+early rather than roll it is a strategy question this lab does not answer, and it
+is deliberately outside the rule: the makers differ in selection, and adding an
+early-close condition would make them differ in kind.
+
+Test FX-RollAtTheThreshold: a maker acts at seven days and not at eight, rolls
+when a bound has not been reached, and closes when one has.

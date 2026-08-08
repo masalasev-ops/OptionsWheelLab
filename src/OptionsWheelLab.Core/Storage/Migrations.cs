@@ -378,8 +378,23 @@ public static class Migrations
             -- of them fired, so two values would state one fact twice.
             --
             -- closed_by_choice is in the CHECK before anything writes it. No
-            -- maker exists until Phase 4, and it is recoverable from the day one
-            -- does, being a bought_to_close with no premium_received following.
+            -- maker exists until Phase 4. It is recovered by asking whether a
+            -- bound had been reached when the close was written: a
+            -- bought_to_close that ends a trial is closed_at_bound if the roll
+            -- count or the elapsed days had reached their bounds and
+            -- closed_by_choice otherwise. The entry's own shape cannot say which,
+            -- because a forced close writes the same bought_to_close with nothing
+            -- following that a chosen one does. That is why a rebuild resolves
+            -- the trial's bounds [D-W53] rather than reading the ledger alone.
+            --
+            -- This comment was corrected in place at 4.4, which an applied
+            -- migration normally forbids [0.3]. Measured rather than assumed: it
+            -- is a SQL comment, so the schema this migration produces is
+            -- byte-identical before and after; schema_migrations records an id, a
+            -- name and an instant and nothing hashes the text; and migration 8
+            -- never re-runs against a store that has it. The rule exists so an
+            -- amendment cannot make a migrated store differ from a fresh one, and
+            -- here it cannot.
             -- That is why the ledger has both kinds: a roll pays a premium and
             -- opens a position, a close pays a premium and ends one, and a trial
             -- closed at its last permitted roll and one closed by choice look

@@ -502,8 +502,16 @@ trial rather than to roll it; or an action the lab does not model ended it
 [D-W47]. `closed_at_bound` is one value because D-W14 names one mechanism with two
 triggers, and `rolls_used` beside `opened_on` and `closed_on` says which fired, so
 two values would state one fact twice. Nothing writes `closed_by_choice` before
-Phase 4 has a maker, and it is recoverable from the day one does, being a
-`bought_to_close` with no `premium_received` following.
+Phase 4 has a maker. `closed_by_choice` is recovered by asking whether a bound had
+been reached when the close was written: a `bought_to_close` that ends a trial is
+`closed_at_bound` if the roll count or the elapsed days had reached their bounds
+and `closed_by_choice` otherwise. The entry's own shape cannot say which, because
+a forced close writes the same `bought_to_close` with nothing following that a
+chosen one does.
+
+That is why a rebuild resolves the trial's bounds [D-W53] rather than reading the
+ledger alone, and it is the one place a projection needs a value from outside its
+source.
 
 `entry_date` is the session an entry occurred in and `known_on` the session the
 account could act on it. They differ because assignment is determined after the
