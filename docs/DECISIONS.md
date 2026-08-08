@@ -1672,14 +1672,21 @@ bound by the new ones.
 ---
 
 ### D-W54 When a maker rolls, and when it closes
-`active` · 2026-08-06
+`active` · 2026-08-06, amended 2026-08-06 (moneyness, and the debit condition)
 
-A maker with an open short position acts on it only when the position is at or
-inside seven days to expiry. It then closes the trial if a bound has been reached
-[D-W14], and otherwise rolls to the candidate its own policy selects from the
-feasible set enumerated for that session [D-W52], by the same
-highest-credit-in-band rule it uses to open. If its band admits nothing, it
-closes.
+A maker with an open short at or inside seven days to expiry acts on it only if
+the position is in the money by the exercise-by-exception threshold [D-W38]. A
+position that would expire worthless is left to expire, because the wheel's
+ordinary outcome is a short expiring and a maker that bought back every position
+would never be assigned and never hold shares.
+
+Acting, the maker closes the trial if a bound has been reached [D-W14], and
+otherwise rolls to the candidate its own policy selects from that session's
+feasible set [D-W52], by the same highest-credit-in-band rule it uses to open. It
+closes rather than rolls if its band admits nothing, or if the roll would pay a
+net debit: a roll exists to defer assignment while collecting premium, and one
+that costs more than it collects has stopped doing that, so the position is closed
+and the trial ends.
 
 **Chosen, not transcribed.** No authority states any of this. The glossary's
 sentence about rolling is standard terminology and that file says so; the corpus
@@ -1703,6 +1710,13 @@ What this does not settle. Whether a maker should close a profitable position
 early rather than roll it is a strategy question this lab does not answer, and it
 is deliberately outside the rule: the makers differ in selection, and adding an
 early-close condition would make them differ in kind.
+
+The threshold alone would break the wheel. A maker acting on every position at
+seven days would never hold one to expiry, so it would never be assigned, never
+write a covered call, and never reach the states this lab exists to measure.
+`WORKED_EXAMPLE` §6.3's trial is the case: its last recorded close before expiry
+is 45.80 against a 50.00 strike, and a rule without the moneyness condition buys
+that position back rather than taking the assignment the document records.
 
 Test FX-RollAtTheThreshold: a maker acts at seven days and not at eight, rolls
 when a bound has not been reached, and closes when one has.
