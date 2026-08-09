@@ -90,6 +90,46 @@ internal static class GateScenario
         return ByStrike(scenario.Generator.SharedFor(Symbol, Simulated, right));
     }
 
+    /// <summary>
+    /// One shared evaluation, held open so more than one book can be applied over
+    /// it [D-W52].
+    /// </summary>
+    /// <remarks>
+    /// <see cref="Gate"/> and <see cref="Shared"/> each answer one question and
+    /// dispose the store. The property that one evaluation serves several books
+    /// cannot be asserted that way: it needs the shared result kept and the
+    /// per-maker pass run over it more than once, which is what the composition
+    /// root does.
+    /// </remarks>
+    internal static SharedScenario SharedAndBooks(
+        IReadOnlyList<ContractQuote> quotes,
+        BookState book,
+        IReadOnlyList<EarningsReport>? earnings = null,
+        OptionRight right = OptionRight.Put,
+        IReadOnlyList<ConfigEntry>? overrides = null) =>
+        new(Store(quotes, earnings, overrides), right);
+
+    /// <summary>A store whose shared evaluation is run once and kept.</summary>
+    internal sealed class SharedScenario : IDisposable
+    {
+        private readonly GateStore _store;
+
+        internal SharedScenario(GateStore store, OptionRight right)
+        {
+            _store = store;
+            Shared = store.Generator.SharedFor(Symbol, Simulated, right);
+        }
+
+        /// <summary>The contract-level verdicts, computed once.</summary>
+        internal IReadOnlyList<GatedCandidate> Shared { get; }
+
+        /// <summary>One book's caps applied over that one evaluation.</summary>
+        internal IReadOnlyList<GatedCandidate> Against(BookState book) =>
+            _store.Generator.Against(Shared, Simulated, book);
+
+        public void Dispose() => _store.Dispose();
+    }
+
     private static IReadOnlyDictionary<decimal, IReadOnlyList<GateReason>> ByStrike(
         IReadOnlyList<GatedCandidate> gated) =>
         gated.ToDictionary(
@@ -161,7 +201,7 @@ internal static class GateScenario
     }
 
     /// <summary>A store and its generator, disposed together.</summary>
-    private sealed class GateStore : IDisposable
+    internal sealed class GateStore : IDisposable
     {
         private readonly TempStore _store;
         private readonly SqliteConnection _connection;
