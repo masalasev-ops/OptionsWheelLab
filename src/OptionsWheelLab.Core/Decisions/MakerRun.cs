@@ -56,7 +56,6 @@ public sealed class MakerRun
 {
     private readonly CandidateGenerator _generator;
     private readonly AsOfConfiguration _configuration;
-    private readonly FillModel _fills;
     private readonly SessionCalendar _calendar;
     private readonly DecisionStore _decisions;
     private readonly TrialStore _trials;
@@ -79,7 +78,6 @@ public sealed class MakerRun
 
         _generator = generator;
         _configuration = configuration;
-        _fills = fills;
         _calendar = calendar;
         _decisions = decisions;
         _trials = trials;
@@ -96,9 +94,17 @@ public sealed class MakerRun
     /// session's events resolve against its close.
     /// <para>
     /// Every session a maker is asked produces a decision row, including the one
-    /// where it takes nothing, because taking nothing is a choice and is scored
-    /// [D-W5].
+    /// where it takes nothing. A decision is recorded with the set exactly as it
+    /// stood [D-W3], and a maker that was offered a set and took none of it made a
+    /// decision; a run that wrote nothing on those sessions would leave a reader
+    /// unable to tell a maker that declined from one never asked.
     /// </para>
+    /// </remarks>
+    /// <remarks>
+    /// The fill model is taken and handed straight to <see cref="TrialRun"/> rather
+    /// than kept: this type never prices anything, because the prices a choice
+    /// carries are read off the session and the walk applies them. It was held as a
+    /// field until a sweep found the field assigned and never read.
     /// </remarks>
     /// <param name="recordedAt">
     /// The observation stamp every decision this run writes carries. Supplied

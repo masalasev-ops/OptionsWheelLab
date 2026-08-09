@@ -99,7 +99,7 @@ flowchart TD
     STORE["Chain Store<br/>append-only, point-in-time"]
     WATCH["Watchlist<br/>membership as of that date"]
     GEN["Candidate Generator<br/>enumerate, then apply the risk gate"]
-    FEAS["The feasible set<br/>identical for all three makers"]
+    FEAS["The feasible set<br/>identical for makers in the same state"]
     BASE["Frozen Baseline"]
     RAND["Random Within Band"]
     LEARN["Learner"]
@@ -143,8 +143,11 @@ delta and expiry bands, which separates "the selection rule adds something" from
 The risk gate sits inside the candidate generator rather than after the choice.
 That matters more than it looks. If the gate filtered afterwards, the three
 makers would face different effective opportunity sets and any difference between
-them would partly be permission rather than judgement. Gating first means all
-three choose from the same feasible set, so a difference is selection.
+them would partly be permission rather than judgement. Gating first means three
+makers holding the same position in a name choose from the same feasible set, so
+a difference is selection. The property is conditional on their states coinciding
+[D-W4, as amended]: their positions diverge by design and the divergence is the
+experiment.
 
 ## How a decision gets judged
 

@@ -8,8 +8,10 @@ public sealed record Migration(int Id, string Name, string Sql);
 /// </summary>
 /// <remarks>
 /// Configuration at 0.3, the market-data tables at 1.1, membership at 1.3,
-/// the bars nullability rebuild at 1.4, and at 3.3 the corporate-action CHECK,
-/// the session calendar, and §4.3's three.
+/// the bars nullability rebuild at 1.4, at 3.3 the corporate-action CHECK,
+/// the session calendar, and §4.3's three, and at 4.2 the decision record's
+/// five. This enumeration stopped at migration 8 for three checkpoints, which a
+/// list documenting a list is the easiest place to leave.
 /// </remarks>
 public static class Migrations
 {
