@@ -86,17 +86,27 @@ internal static class MakerSelection
     /// only then does a bound decide between closing and rolling.
     /// </para>
     /// </remarks>
-    internal static MakerDecision ForOpenTrial(
+    internal static MakerDecision ForOpenShort(
         Policy policy,
-        OpenTrialContext trial,
+        OpenShort held,
         DateOnly session,
         IReadOnlyList<GatedCandidate> offered,
         Func<IReadOnlyList<EnumeratedCandidate>, EnumeratedCandidate> select)
     {
         // Not yet at the threshold, or it would expire worthless: leave it.
-        if (trial.DaysToExpiry(session) > ActAtDaysToExpiry || !trial.IsInTheMoney(session))
+        if (held.DaysToExpiry(session) > ActAtDaysToExpiry || !held.IsInTheMoney(session))
         {
-            return Nothing(trial, policy);
+            return Nothing(held, policy);
+        }
+
+        // A session quoting no ask for the short cannot price either arm of
+        // acting: a close pays the ask and a roll compares against it [D-W12,
+        // D-W49]. A price this lab cannot observe is not one it invents, so the
+        // position is left as it stands, which is what a session with no feasible
+        // set already does one step down.
+        if (held.ShortAsk is not { } ask)
+        {
+            return Nothing(held, policy);
         }
 
         var admitted = Admitted(policy, session, offered);
@@ -105,25 +115,23 @@ internal static class MakerSelection
         // [D-W52]. The position is left as it stands rather than closed.
         if (offered.Count == 0)
         {
-            return Nothing(trial, policy);
+            return Nothing(held, policy);
         }
 
         // A bound reached makes acting a close [D-W14], and so does a band with
         // nothing in it or a roll that would cost more than it collects.
         var into = admitted.Count == 0 ? null : select(admitted);
 
-        if (trial.BoundReached(session)
-            || into is null
-            || into.Quote.Bid < trial.ShortAsk)
+        if (held.BoundReached(session) || into is null || into.Quote.Bid < ask)
         {
-            return new MakerDecision(DecisionKind.Close, trial.Short, trial.TrialId, policy.Version);
+            return new MakerDecision(DecisionKind.Close, held.Short, held.TrialId, policy.Version);
         }
 
-        return new MakerDecision(DecisionKind.Roll, into.Quote.Contract, trial.TrialId, policy.Version);
+        return new MakerDecision(DecisionKind.Roll, into.Quote.Contract, held.TrialId, policy.Version);
     }
 
-    private static MakerDecision Nothing(OpenTrialContext trial, Policy policy) =>
-        new(DecisionKind.None, null, trial.TrialId, policy.Version);
+    private static MakerDecision Nothing(OpenShort held, Policy policy) =>
+        new(DecisionKind.None, null, held.TrialId, policy.Version);
 
     /// <summary>
     /// The decision that takes this candidate, its kind following the right.

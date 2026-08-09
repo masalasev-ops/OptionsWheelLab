@@ -1768,7 +1768,7 @@ when a bound has not been reached, and closes when one has.
 ---
 
 ### D-W55 A run holds a sequence of trials, one open at a time
-`active` · 2026-08-09
+`active` · 2026-08-09, amended 2026-08-09 (what counts as opening one)
 
 A maker driving a run opens a trial, carries it to cash, and opens another. A run
 is therefore a sequence of trials per maker and per symbol, and a second open
@@ -1787,6 +1787,19 @@ is open per maker per symbol at a time, so an open arriving while one is open is
 still a run described wrongly and still stops the walk naming the session and the
 state [D-W48's argument, one level up]. What changes is which condition is the
 error: it was any second open and it is now a second concurrent one.
+
+**What counts as opening a trial, since the refusal keys on trials and never on
+decision kinds.** A maker holding shares writes a covered call, which is an
+opening decision by its kind and a leg inside a trial already open. Refusing it as
+a second open would stop the wheel at its own middle. A trial opens when a maker
+in cash sells a put [D-W16] and at no other time, so what the refusal asks is
+whether this maker already holds an open trial in this name, not what kind of
+decision arrived.
+
+That distinction is why a maker is told about the short it holds rather than about
+the trial it holds [`OpenShort`]. A maker holding shares holds a trial and has no
+short, and a maker in cash has neither, and both open; passing the trial would
+have made the parameter's absence mean two things and its presence mean two more.
 
 Consequence for what a run returns. A run's result is a sequence of trials, each
 with its own entries, and not a state beside one list. The ledger is written per

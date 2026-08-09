@@ -74,15 +74,15 @@ public sealed class HighestCreditMaker : IDecisionMaker
         PositionState state,
         BookState book,
         IReadOnlyList<GatedCandidate> offered,
-        OpenTrialContext? openTrial = null)
+        OpenShort? openShort = null)
     {
         ArgumentNullException.ThrowIfNull(offered);
 
         var policy = _policy(_configuration, session);
 
-        if (openTrial is { } trial)
+        if (openShort is { } held)
         {
-            return MakerSelection.ForOpenTrial(policy, trial, session, offered, HighestCredit);
+            return MakerSelection.ForOpenShort(policy, held, session, offered, HighestCredit);
         }
 
         var admitted = MakerSelection.Admitted(policy, session, offered);
