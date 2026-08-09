@@ -856,15 +856,28 @@ skipped.
   block does not: it was stale through 4.4's sign-off and through the merge sweep
   after it, and neither missed it, because neither could see it. The sweep reads
   that block by name.
-- **Both state blocks are re-measured, not carried.** There are two by design,
-  this file's and `PROGRESS.md`'s, and this act named one of them until 4.4, which
-  is the whole reason the other went stale. Between them they are the only
-  description of the present, so every count in either comes from a measurement
-  taken at sign-off rather than from the previous one adjusted. It produces the
-  description. **A checkpoint that changed no code still changes what is built**,
-  which is the sentence that made this fail: "neither changed any code, so every
-  section below stands" was true at 3.2 and false from the next commit, and
-  nothing re-read it for two checkpoints.
+- **Both state blocks are read against the repository and corrected, asking what
+  each now fails to describe rather than what this checkpoint changed.** A block
+  goes stale where nothing touched it: at 4.5 eleven figures were wrong and none of
+  them was in a section that checkpoint edited, and `ORIENTATION`'s marker carried
+  four false clauses across seven checkpoints that never opened that file. Every
+  figure a block states is measured from the repository at each sign-off, not
+  confirmed where the diff went. It produces the description.
+
+  There are two blocks by design, this file's and `PROGRESS.md`'s, and this act
+  named one of them until 4.4, which is the whole reason the other went stale.
+  **A checkpoint that changed no code still changes what is built**, which is the
+  sentence that made this fail the first time: "neither changed any code, so every
+  section below stands" was true at 3.2 and false from the next commit, and nothing
+  re-read it for two checkpoints.
+
+  **This is the third act whose definition was too narrow to reach what it was
+  for**, after the marker sweep, which grepped for a string one of its two subjects
+  does not carry, and its own naming of one block where there are two. Each time
+  the act was performed and each time it was performed as written. **Widening the
+  definition is the fix; performing it harder is not**, and the next act to fail
+  will fail this way, so read each of these asking what it cannot reach rather than
+  whether it was done.
 - **[`CLAUDE.md` §11]'s question is asked against every unspent prompt** whenever
   a decision was added, amended or superseded, **and the answer is recorded even
   when it is none.** It produces the answer. Recording a "none" is what
