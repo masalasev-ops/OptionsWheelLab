@@ -1039,3 +1039,78 @@ discriminate" and it is the one worth measuring.
 - **A negative example naming something the roadmap intends to build has an
   expiry date on it.** A case used the learner's key as its example of a band in
   no vocabulary, and closed itself when the learner arrived.
+
+## 4.4 What a maker does with an open trial
+
+Branch `phase-4/checkpoint-4.4` off `main`. Step 1 and step 2 built, not signed
+off, so the `Current state` block above still describes the repository as it stood
+at v1.46.1 and is re-measured when this checkpoint signs off. The decisions Phase
+3 took as a caller's parameter: a maker's session produces one of open, roll,
+close or nothing, and only the first of those had ever been specified.
+
+### A rule with no authority is written down before it is built, and amended there
+
+Nothing in the corpus states what triggers a roll. The glossary's sentence is
+standard terminology and that file says so; what a roll costs [D-W48], what bounds
+it [D-W14] and what it commits [D-W43] are all stated and none of them selects.
+D-W54 is the second decision in this corpus to say of itself that no authority
+states it, after D-W43. **It was amended before any code rested on it**, gaining
+the moneyness condition and the debit condition, which is the order that makes a
+rule an authority rather than a description of what got built. A maker acting on
+every position at the threshold would never hold one to expiry, so it would never
+be assigned and never write a covered call, and the amendment is what keeps the
+wheel turning.
+
+### One algorithm, and the sentence that reads two ways at the random control
+
+D-W54 says a maker rolls to what its own policy selects "by the same
+highest-credit-in-band rule it uses to open". The two halves agree for the
+baseline and the learner and part company at the random control, which opens by
+uniform draw and has no highest-credit rule to reuse. **The selection function is
+injected**, so each arm rolls by the rule it opens with, and the site says this is
+a reading of the decision rather than a quotation of it. Taken the other way the
+random control would roll by highest credit while opening by draw, and its rolls
+would stop being a control. Recorded because 4.5 composes the makers and would
+otherwise inherit the choice without knowing one was made.
+
+### The branch a rebuild exists for had never executed
+
+`CloseKindFor` is the one place a projection needs a value from outside its source,
+and telling a bound close from a chosen one is the only reason `TrialBounds`
+reaches the rebuild at all. Measured at the parent commit, the three test files
+writing a `bought_to_close` or `shares_sold` entry and the three calling `Rebuild`
+or `Replay` were disjoint sets. **A green suite was evidence of nothing about the
+path**, and the fixture that finally runs it is the one that also severs the
+literal every other caller shares with the run.
+
+### Constraints
+
+- **A fixture whose sessions are its subject observes each snapshot on its own
+  session.** One ingest stamped after the last session puts every quote beyond the
+  as-of cutoff of every earlier one, and a case asserting a maker declined to act
+  then passes because its session saw no chain. Assert the feasible set before
+  reading a verdict whose expected value is "nothing", because those two are the
+  same answer for opposite reasons.
+- **Three configuration versions, not two.** Reading current configuration and
+  reading what was in force on the session being rebuilt are both excluded by
+  name [D-W53], and with one change either wrong answer can coincide with the
+  other. One in force at the open, one landing between the open and the close, one
+  landing after both.
+- **Vary the key that sits in no cross-key invariant.** `Trial:MaxRolls` moves
+  alone; `Trial:MaxTrialDays` drags `Gate:MaxDte` into the same write and changes
+  what the gate admits alongside what the bound does.
+- **A rebuild resolves from the ledger, never from the projection it is about to
+  rewrite.** The open date comes from the first entry rather than
+  `trials.opened_on`, or the rebuild depends on its own previous output.
+- **A caller supplying the constant the run was built from proves nothing.** Six
+  call sites still pass the seeded literal to both the machine and the rebuild and
+  agree with themselves whatever the resolution does. Severing that is what makes
+  agreement evidence.
+- **A number a decision states is a constant, not a config key.** Seven days is in
+  D-W54 rather than named by it, and a `Policy:` row would hand the learner the
+  trigger for trial duration. `WheelStateMachine.ExerciseByExceptionThreshold` is
+  the precedent: a value that moved would be a rule change, recorded by amending
+  the decision.
+- **Two closes of one position must cost the same.** They do not: a forced close
+  writes no commission entry and a chosen one does. Raised rather than fixed,
+  because the amounts are recorded and changing them is a decision.

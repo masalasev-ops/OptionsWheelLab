@@ -717,6 +717,11 @@ public sealed class WheelStateMachine
                     + "is not one it invents.");
             }
 
+            // No commission, where CloseByChoice writes one. Two closes of this
+            // position differ by Costs:CommissionPerContract and the difference is
+            // which trigger fired, which is carried as an obligation at Phase 5
+            // [BUILD_PLAN.md] rather than corrected here: the amounts are recorded
+            // and changing them is a decision.
             var debit = ContractTerms.CashFor(ask);
             banked -= debit;
 
