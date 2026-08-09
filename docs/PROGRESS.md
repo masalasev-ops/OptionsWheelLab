@@ -2518,3 +2518,23 @@ carried `4.4 - ` where the rule is `Phase 4 / 4.4 - `. The rule is the first lin
 of the archive's own working rules and I stopped reading it after step 1. Subjects
 only: the trees are identical before and after and the bodies are untouched.
 
+### 2026-08-09 — the merge sweep for 4.4, which found two claims and corrected them
+
+Run against `main` at `b4d977b` after the merge, on 3.3's practice: the sweep runs
+again if the branch moved, and it moved after the first pass.
+
+**Two sentences in `BUILD_PLAN.md` a build had made false, both in the present
+tense inside prose that was dated when written.** Phase 4's own introduction said
+rolling has no rule at all and that which contracts a roll offers has never been
+written down anywhere in this corpus; 3.4's narrative said
+`TrialBounds.ResolveFor` appears in no `src/` file at all. Both were true of the
+checkpoint that wrote them and neither says so, which is the shape this sweep
+exists to catch. Corrected by appending the later reading rather than by
+rewriting, so what was measured when stays readable beside what is measured now.
+
+**Everything else the sweep read was already current.** The five `Build state:`
+markers that could have moved, the two `Scoring:` rows still carrying
+**Unverified** against a Phase 5 checkpoint, and the copies of the
+`closed_by_choice` sentence, which the checkpoint itself had corrected at three
+sites. The archives for Phases 2 and 3 carry the old rolling sentence and are left
+alone: a closed phase file records the state as it stood when the next one opened.
