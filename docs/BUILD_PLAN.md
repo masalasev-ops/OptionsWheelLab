@@ -1565,7 +1565,8 @@ verifying takes was measured rather than assumed: a type in `src/` resolves the
 key and a component in `src/` calls that type. `CandidateGenerator` is built only
 by tests and its ten keys have been verified since 2.4, so the test is not who
 constructs the component. `TrialBounds.ResolveFor` appears in no `src/` file at
-all, which is the whole difference.
+all, which is the whole difference. It appears in one from 4.4, which is where
+3.3's two rows were verified.
 
 **Two claims of mine were corrected by probing rather than by reading.** Netting
 the commission and re-running the registered fixture leaves three of its five
@@ -1675,9 +1676,10 @@ the table exists is a migration rather than a decision.
 
 **Phase 3 left one figure and one rule to this phase, and they are not
 symmetrical.** `candidates.committed_capital` is a column Phase 3 computed and did
-not persist, so writing it is bookkeeping. Rolling has no rule at all: the state
+not persist, so writing it is bookkeeping. Rolling had no rule at all: the state
 machine applies a roll a caller has already chosen [D-W14], and which contracts a
-roll offers has never been written down anywhere in this corpus.
+roll offers had never been written down anywhere in this corpus. 4.4 wrote it
+[D-W54], as the second decision here with no external source.
 
 ### 4.1 The record's grain, settled before the tables
 Not code. Each answer becomes a decision citing its source, and each source is
