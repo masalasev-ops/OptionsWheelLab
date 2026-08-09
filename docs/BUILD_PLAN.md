@@ -1900,9 +1900,16 @@ specified.
   being read.
 
 ### 4.5 The maker drives the run
-The composition root, which is the piece 3.5 turned out not to be. `TrialRun`
-takes a maker rather than a supplied sequence, and a maker produces one decision
-per session, which is the supplied sequence with the choosing already done.
+The composition root, which is the piece 3.5 turned out not to be. A maker
+produces one decision per session, which is the supplied sequence with the
+choosing already done.
+
+The composition root asks a maker each session and applies what it chooses. It
+does not reimplement the walk: it holds a `TrialRun` and drives its session
+enumeration, its facts and its application, so one type advances a trial and one
+loop steps a calendar. `TrialRun` keeps its supplied-sequence entry point, which
+is what a determinism walk and a refusal case need, and the machine is constructed
+per walk so neither caller can hold one [D-W53].
 - Splits the gate where the verdicts already split [D-W52, as amended]. The
   contract-level evaluation runs once per symbol, session and right and every
   maker acting against that key is handed it; each maker's caps are applied over
