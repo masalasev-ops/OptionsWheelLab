@@ -228,6 +228,68 @@ public sealed class WheelStateMachine
     }
 
     /// <summary>
+    /// Ending the trial by buying its short back [D-W54].
+    /// </summary>
+    /// <remarks>
+    /// <b>The same close as <see cref="Bound"/>, reached deliberately.</b> A
+    /// maker that closes and a bound that binds put the account in the same
+    /// place, so the arithmetic is one path: the short is bought back and shares
+    /// the trial holds are sold at the close. Only <see cref="TrialCloseKind"/>
+    /// differs, and it differs because the trigger did.
+    /// <para>
+    /// The price arrives as a <see cref="Fill"/> rather than being read from the
+    /// session, which is what every choice-driven transition does and what
+    /// <see cref="Bound"/> cannot do: a bound fires without anyone choosing, so it
+    /// has no choice to carry a price. The purchase pays the ask either way
+    /// [D-W12, D-W49].
+    /// </para>
+    /// </remarks>
+    public Transition CloseByChoice(TrialState state, SessionFacts facts, Fill bought)
+    {
+        ArgumentNullException.ThrowIfNull(state);
+        ArgumentNullException.ThrowIfNull(facts);
+        ArgumentNullException.ThrowIfNull(bought);
+
+        if (state.IsClosed)
+        {
+            throw new InvalidOperationException(
+                $"The trial closed on {state.ClosedOn:yyyy-MM-dd} and cannot be closed again. "
+                + "A closed trial has returned to cash [D-W14], so there is no short to buy "
+                + "back.");
+        }
+
+        if (state.Contract is not { } contract)
+        {
+            throw new InvalidOperationException(
+                "A close buys back a short and this trial holds none. Only a short put or a "
+                + $"short call can be closed by choice, and this state is '{state.State}'.");
+        }
+
+        var settles = _calendar.NextSessionAfter(facts.Session);
+
+        var entries = new List<LedgerEntry>(
+            PremiumEntries(
+                facts.Session, settles, LedgerEntryKind.BoughtToClose, bought, contract));
+
+        if (state.Shares > 0)
+        {
+            entries.Add(new LedgerEntry(
+                facts.Session,
+                settles,
+                LedgerEntryKind.SharesSold,
+                facts.UnderlyingClose * state.Shares));
+        }
+
+        return new Transition(
+            state.ClosedTo(
+                settles,
+                facts.Session,
+                TrialCloseKind.ClosedByChoice,
+                state.PremiumBanked + bought.Net),
+            entries);
+    }
+
+    /// <summary>
     /// Selling a covered call against shares the trial already holds.
     /// </summary>
     /// <remarks>
