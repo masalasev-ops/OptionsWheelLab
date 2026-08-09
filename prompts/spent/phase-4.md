@@ -18,7 +18,7 @@ sign-off leaves nothing describing the present in between.
 
 # Current state
 
-Corpus v1.46.1.
+Corpus v1.47.0.
 
 | | |
 |---|---|
@@ -26,8 +26,8 @@ Corpus v1.46.1.
 | Phase 1 | complete, 1.1 to 1.5 built and signed off |
 | Phase 2 | complete, 2.1 to 2.5 built and signed off |
 | Phase 3 | complete, 3.1 to 3.5 built and signed off |
-| Phase 4 | 4.1 to 4.3 built and signed off, 4.4 and 4.5 not started |
-| CI | green, 727 tests, guards then restore then build then test, on push to `main` and every pull request |
+| Phase 4 | 4.1 to 4.4 built and signed off, 4.5 not started |
+| CI | green, 745 tests, guards then restore then build then test, on push to `main` and every pull request |
 
 **The block this one inherits was stale for two checkpoints, which is why
 re-measuring it is an act rather than a habit.** In `phase-3.md` it read v1.39.0
@@ -39,7 +39,11 @@ rather than edited where it looked wrong.
 4.1 changed one `.cs` file, a test pinning a pragma. 4.2 built the decision
 record: migration 9's five tables, a writer, a reader, two registered fixtures and
 a third whose coverage it repaired. The suite went from 672 to 691 and the guards
-from 191 files to 201.
+from 191 files to 201. 4.3 built the three makers and took the suite to 727 and
+the guards to 212. 4.4 gave a maker something to do with a trial it already holds:
+the roll and close rule, a fourth choice the state machine honours, and the first
+call site `TrialBounds.ResolveFor` has ever had. 727 to 745, and 212 files to
+215.
 
 Which branch the work sits on and which pull requests have merged are not recorded
 here. Git holds both exactly, and a fact kept in two places drifts.
@@ -386,7 +390,11 @@ no clock and no table.
 
 `TrialRun` steps a session range and applies the choices each session needs,
 supplied rather than chosen, producing a ledger. Order within a session is choice
-then advance. It refuses rather than skips: a choice outside the range, a bar the
+then advance. Four choices from 4.4: open, write a covered call, roll, and close
+the trial by buying its short back. The fourth is `Bound`'s arithmetic under a
+different close kind, because a maker that closes and a bound that binds put the
+account in the same place and only the trigger differs; its price arrives as a
+fill, which is what a bound cannot do, having no choice to carry one. It refuses rather than skips: a choice outside the range, a bar the
 calendar does not carry, and a choice the state cannot honour each stop the walk
 naming the session and the state, on [D-W48]'s argument one level up, since a
 mis-described run that produced a plausible ledger would be worse than one that
@@ -417,6 +425,14 @@ and `positions` are projections of it, rewritable only because a test discards a
 rebuilds them, which is also the only thing proving the vocabulary carries enough
 to rebuild from.
 
+The rebuild resolves the trial's bounds itself from 4.4, as of the session the
+trial opened [D-W53], taking that session from the ledger's first entry rather than
+from `trials.opened_on`, which is a column it is about to discard. That is what
+separates `closed_at_bound` from `closed_by_choice`, since both write the same
+`bought_to_close` with nothing following. **The branch doing the separating had
+never executed before 4.4**: the files writing such an entry and the files calling
+the rebuild were disjoint sets.
+
 `FillModel` prices a quote: the price times the multiplier [D-W17], at the bid for
 a sale and the ask for a purchase [D-W12, D-W49]. A leg writes two entries, the
 premium and the commission, per contract and per leg [D-W50], and the projection
@@ -430,10 +446,10 @@ FX-NoShareCountInOptionCash is what keeps it one.
 
 ## The decision record and the makers
 
-**Built at 4.2 and 4.3, and nothing drives it.** Five append-only tables, a
+**Built across 4.2 to 4.4, and nothing drives it.** Five append-only tables, a
 writer, a reader that rebuilds a decision from the record alone, and three makers
-that choose from a set they are handed. What asks a maker for a decision today is
-a test.
+that choose from a set they are handed and act on a trial they already hold. What
+asks a maker for a decision today is a test.
 
 The feasible set is stored once per symbol, session and right and referenced by
 every decision made against it [D-W52]. The key comes from what the generator
@@ -463,6 +479,20 @@ two policies, since the channel writes rows and nothing else, so a rule in code 
 one no channel could change. The random control differs in rule rather than in
 rows and builds its generator inside the call from a seed derived per session and
 name. A band admits its own bounds and admits no candidate whose delta is absent.
+
+A maker acts on an open trial at or inside seven days to expiry and only if the
+short is in the money [D-W54]. It closes if a bound has been reached, if its band
+admits nothing, or if the roll would pay a net debit, and otherwise rolls. A
+session with no chain has no feasible set, so a maker can neither roll nor close
+and the position runs to expiry, which is why `WORKED_EXAMPLE` §6.3 still reaches
+its assignment under a rule that would otherwise have acted on it.
+
+The trial arrives as a parameter and carries no `PremiumBanked`, `GrossBasis` or
+`NetBasis`, so a rule that rolled to defer realising a loss cannot be written
+rather than being discouraged. The selection function is injected, so each arm
+rolls by the rule it opens with; D-W54's sentence naming the highest-credit rule
+reads two ways at the random control, and taking it literally would make that
+control roll by a rule it does not open with.
 
 ## Configuration
 
@@ -574,7 +604,7 @@ bands the list names.
 
 ## Tests
 
-727: 444 across sixty-three fixtures, and 283 across forty unregistered
+745: 461 across sixty-five fixtures, and 284 across forty unregistered
 suites. The one 4.1 added pins that foreign keys are enforced on a connection this
 store opens, read through the real factory, because a probe written for the same
 question set the pragma before reading it and reported the value it had written. The three guards are checks rather than tests and are counted in neither.
@@ -595,64 +625,66 @@ number is visible from a green run.
 | FX-NoRewriteOfAppendOnlyTables | 20 |
 | FX-NoDecimalOrderingInSql | 19 |
 | FX-MalformedChainFailsWhole | 18 |
-| FX-ConfigWriteRefusesInvariantBreach | 17 |
-| FX-MoneyRoundTrip | 17 |
 | FX-NoSqlAliases | 17 |
+| FX-MoneyRoundTrip | 17 |
+| FX-ConfigWriteRefusesInvariantBreach | 17 |
 | FX-StoredVocabulariesMatchTheirChecks | 15 |
 | FX-NoNondeterministicSql | 13 |
-| FX-ConfigStoreClassHonoured | 12 |
-| FX-TickerDashForm | 12 |
 | FX-UnmodelledActionStopsTheTrial | 12 |
+| FX-TickerDashForm | 12 |
+| FX-ConfigStoreClassHonoured | 12 |
+| FX-RollAtTheThreshold | 11 |
 | FX-RecordCarriesFeasibleSet | 8 |
 | FX-CeilingNotInsidePolicyBand | 7 |
-| FX-ConfigResolvesAsOf | 6 |
-| FX-EveryConfigSectionBinds | 6 |
-| FX-MigrateFromEmpty | 6 |
+| FX-TrialBoundsFixedAtOpen | 6 |
 | FX-RunRefusesAChoiceTheStateCannotHonour | 6 |
-| FX-AssignmentStressRejects | 5 |
-| FX-BoundClosePaysTheAsk | 5 |
-| FX-EarlyAssignmentOnDividend | 5 |
-| FX-EarningsClearanceRejects | 5 |
-| FX-EveryBoundKeyIsDocumented | 5 |
-| FX-EveryPolicyBandIsChecked | 5 |
-| FX-OrdinaryDividendLeavesContractUnchanged | 5 |
-| FX-RegistryMatchesDisk | 5 |
-| FX-StoppedTrialIsValuedAtTheClose | 5 |
-| FX-TotalCapRejectsAboveHeadroom | 5 |
-| FX-TrialCompleteIncludesAssignment | 5 |
+| FX-MigrateFromEmpty | 6 |
+| FX-EveryConfigSectionBinds | 6 |
+| FX-ConfigResolvesAsOf | 6 |
 | FX-WorkedExampleDecisions | 5 |
-| FX-AssignmentKnownNextSession | 4 |
-| FX-ChainLoadsInIdentityOrder | 4 |
-| FX-CrossedQuoteRejected | 4 |
-| FX-DecisionsShareOneFeasibleSet | 4 |
-| FX-DeltaCeilingRejects | 4 |
-| FX-DividendReachesLedger | 4 |
-| FX-ExpiryResolvesAtOneCent | 4 |
-| FX-GateRecordsAllReasons | 4 |
-| FX-GateRejectsAboveHeadroom | 4 |
-| FX-GrossBasisBindsCallStrike | 4 |
-| FX-MaxDteBelowTrialBound | 4 |
-| FX-NextSessionSkipsAClosedDate | 4 |
-| FX-OffWatchlistRejected | 4 |
-| FX-ProceedsUsableOnSettlement | 4 |
-| FX-ProjectionRebuildsFromLedger | 4 |
-| FX-RollCapCloses | 4 |
-| FX-WorkedExampleChainLoads | 4 |
-| FX-WorkedExampleEnumerates | 4 |
+| FX-TrialCompleteIncludesAssignment | 5 |
+| FX-TotalCapRejectsAboveHeadroom | 5 |
+| FX-StoppedTrialIsValuedAtTheClose | 5 |
+| FX-RegistryMatchesDisk | 5 |
+| FX-OrdinaryDividendLeavesContractUnchanged | 5 |
+| FX-EveryPolicyBandIsChecked | 5 |
+| FX-EveryBoundKeyIsDocumented | 5 |
+| FX-EarningsClearanceRejects | 5 |
+| FX-EarlyAssignmentOnDividend | 5 |
+| FX-BoundClosePaysTheAsk | 5 |
+| FX-AssignmentStressRejects | 5 |
 | FX-WorkedExampleGateVerdicts | 4 |
-| FX-ApiCannotWrite | 3 |
-| FX-CorporateActionMintsSuccessor | 3 |
-| FX-CoveredCallCommitsNothingFurther | 3 |
-| FX-EveryAppKeyBinds | 3 |
-| FX-NoCurrentConfigReadOnSimulatedPath | 3 |
-| FX-PitMembershipExcludesLaterJoiner | 3 |
-| FX-RunIsByteIdentical | 3 |
-| FX-SnapshotRestoresIdentically | 3 |
-| FX-ThreeMakersSameFeasibleSet | 3 |
+| FX-WorkedExampleEnumerates | 4 |
+| FX-WorkedExampleChainLoads | 4 |
+| FX-RollCapCloses | 4 |
+| FX-ProjectionRebuildsFromLedger | 4 |
+| FX-ProceedsUsableOnSettlement | 4 |
+| FX-OffWatchlistRejected | 4 |
+| FX-NextSessionSkipsAClosedDate | 4 |
+| FX-MaxDteBelowTrialBound | 4 |
+| FX-GrossBasisBindsCallStrike | 4 |
+| FX-GateRejectsAboveHeadroom | 4 |
+| FX-GateRecordsAllReasons | 4 |
+| FX-ExpiryResolvesAtOneCent | 4 |
+| FX-DividendReachesLedger | 4 |
+| FX-DeltaCeilingRejects | 4 |
+| FX-DecisionsShareOneFeasibleSet | 4 |
+| FX-CrossedQuoteRejected | 4 |
+| FX-ChainLoadsInIdentityOrder | 4 |
+| FX-AssignmentKnownNextSession | 4 |
 | FX-WorkedExampleChainPersists | 3 |
-| FX-DteWindowRejects | 2 |
-| FX-PremiumFloorRejects | 2 |
+| FX-ThreeMakersSameFeasibleSet | 3 |
+| FX-SnapshotRestoresIdentically | 3 |
+| FX-RunIsByteIdentical | 3 |
+| FX-PitMembershipExcludesLaterJoiner | 3 |
+| FX-NoCurrentConfigReadOnSimulatedPath | 3 |
+| FX-EveryAppKeyBinds | 3 |
+| FX-CoveredCallCommitsNothingFurther | 3 |
+| FX-CorporateActionMintsSuccessor | 3 |
+| FX-ApiCannotWrite | 3 |
 | FX-SpreadCapRejects | 2 |
+| FX-PremiumFloorRejects | 2 |
+| FX-DteWindowRejects | 2 |
 
 The suite parses `CONFIG_REFERENCE.md`, `FIXTURES.md`, `DATA_AND_SCHEMA.md`,
 `WORKED_EXAMPLE.md` and `guards.ps1`, so all five are load-bearing rather than
@@ -664,13 +696,15 @@ append-only triggers make the tables impossible to clean between cases.
 
 ## Not built
 
-**Nothing drives a maker.** Three makers choose from 4.3 and a loop steps a
-calendar from 3.5, and the two are not joined: `TrialRun` still takes a supplied
-sequence, so what asks a maker for a decision today is a test. No maker rolls or
-closes, which is 4.4's, and the scorer that would re-score a decision is Phase
+**Nothing drives a maker.** Three makers choose from 4.3, they roll and close
+from 4.4, and a loop steps a calendar from 3.5, and the two are not joined:
+`TrialRun` still takes a supplied sequence, so what asks a maker for a decision
+today is a test and nothing turns a maker's roll into the choice the machine
+applies. The scorer that would re-score a decision is Phase
 5's. `TrialRun` is also handed a machine
-already constructed, so no composition root resolves bounds and builds one, which
-is why two `Trial:` configuration rows are still unverified.
+already constructed, so no composition root resolves bounds and builds one. The
+two `Trial:` configuration rows are verified regardless, by the rebuild rather
+than by a run.
 
 `decisions` and `candidates` are Phase 4's, so nothing persists a candidate or its
 reasons and a roll's decision row has nowhere to go. The trial's `maker_id` is the
@@ -687,9 +721,10 @@ date) and Phase 4's obligation carries it.
 3.3, so the backward edge SYSTEM_DESIGN §3.3 names as the only one in the daily
 path could now be a read, and is not: no caller assembles a book from the table.
 
-Rolling has no rule. `WheelStateMachine.Roll` applies a roll a caller has already
-chosen and the bound terminates a rolled chain [D-W14], but which contracts a roll
-offers is a maker's question and unwritten.
+Rolling has a rule from 4.4 [D-W54] and no run exercises it. A maker decides to
+roll and the machine applies one, and nothing between them turns the first into
+the second, so every case that rolls is a test handing the machine a choice a
+maker was not asked for.
 
 `corporate_actions` has a writer and no as-of read. 1.5 reaches a predecessor
 through `ContractLineage`, which is timeless, and the state machine takes the
@@ -710,7 +745,8 @@ obligations, which is where planning for the phase that owns it will look. It is
 copied here: two registers of one list is how an obligation comes to exist in the one
 nobody reads.
 
-Entries stand against checkpoints 4.4 and 4.5 and against Phases 5, 8, 9 and 11.
+Entries stand against Phases 5, 6, 8, 9 and 11, and against no checkpoint, 4.4
+having closed both of the rows that named one.
 The count is not restated here. **The column names a checkpoint once the owning
 phase's detail exists and a phase otherwise**, stated at the table because two
 readings of it disagreed: a count over phase names alone misses the rows that have
@@ -719,12 +755,15 @@ and `FIXTURES.md`'s Checkpoint column, and v1.43.0 moved one and not the other,
 which leaves every checkpoint's entry-to-artefact definition of done resolving to
 nothing. Corrected at 4.1 and the practice recorded where the trigger is.
 
-**3.1 to 3.5 and 4.1 to 4.3 owe nothing.** 3.1 closed four rows while raising three;
+**3.1 to 3.5 and 4.1 to 4.4 owe nothing.** 3.1 closed four rows while raising three;
 3.2 closed its own and raised three; 3.3 closed four and raised five; 3.4 closed
 three and raised one; 3.5 closed two and raised none; 4.1 closed three and raised
 none; 4.2 closed none and raised two and 4.3 closed none and raised one, both having
 carried nothing to close because 4.1 took all three of the grains this phase
-owed. **Phase 2 owes nothing.** 2.1 discharged the reconciliation row raised at
+owed. 4.4 closed two and raised one, and one of the two it closed was 4.5's: both
+rows named one missing call, which is a shape to watch for, since a reading that
+checks only the rows naming the checkpoint in hand would have left it standing
+against work already done. **Phase 2 owes nothing.** 2.1 discharged the reconciliation row raised at
 v1.6.0, the table's oldest and open for twenty-three corpus versions, 2.3
 discharged the crossed-quote row while opening two of its own, and 2.4
 discharged the risk row while opening one of its own. All three discharged rows

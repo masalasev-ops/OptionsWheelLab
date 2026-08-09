@@ -377,8 +377,8 @@ public static class Migrations
             -- two triggers: rolls_used beside opened_on and closed_on says which
             -- of them fired, so two values would state one fact twice.
             --
-            -- closed_by_choice is in the CHECK before anything writes it. No
-            -- maker exists until Phase 4. It is recovered by asking whether a
+            -- closed_by_choice was in this CHECK before anything wrote it. A
+            -- maker writes it from 4.4 [D-W54]. It is recovered by asking whether a
             -- bound had been reached when the close was written: a
             -- bought_to_close that ends a trial is closed_at_bound if the roll
             -- count or the elapsed days had reached their bounds and

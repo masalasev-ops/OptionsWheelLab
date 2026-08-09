@@ -1,5 +1,61 @@
 # CHANGELOG
 
+## [1.47.0] — 2026-08-08
+
+**Checkpoint 4.4 signed off.** A maker acts on a trial it already holds. The
+second decision in this corpus with no external source, and the first execution of
+a rebuild branch that has existed since 3.3.
+
+### Added
+- **D-W54**, when a maker rolls and when it closes. Amended before anything was
+  built on it, gaining the moneyness condition and the debit condition. Nothing in
+  the corpus states what triggers a roll, so the trigger is chosen: seven days to
+  expiry, and only on a short in the money.
+- **`OpenTrialContext`**, what a maker is told about a trial it has open. It
+  carries no `PremiumBanked`, `GrossBasis` or `NetBasis`, so a rule that rolled to
+  defer realising a loss cannot be written rather than being discouraged.
+- **`MakerSelection.ForOpenTrial`**, one algorithm for all three arms with the
+  selection function injected, so each rolls by the rule it opens with.
+- **`CloseTrial`**, the fourth choice, with `WheelStateMachine.CloseByChoice` and
+  the run's arm. `Bound`'s arithmetic under a different close kind, because only
+  the trigger differs.
+- **`TrialStore.Rebuild(long, AsOfConfiguration)`**, the first call site
+  `TrialBounds.ResolveFor` has had anywhere in the tree. It takes the trial's open
+  from the ledger's first entry, never from `trials.opened_on`, which is a column
+  it is about to discard.
+- **`FX-RollAtTheThreshold`**, four snapshots inline, each session named for the
+  case it serves.
+- **`FX-TrialBoundsFixedAtOpen`**, three versions of `Trial:MaxRolls` and two
+  trials differing only in when they opened.
+
+### Changed
+- **`Trial:MaxRolls` and `Trial:MaxTrialDays` carry verified consumers**, one
+  checkpoint earlier than the corpus expected, by the rebuild rather than by a
+  run. Both had been a defect rather than a gap since 3.3.
+- **`CandidateGenerator.SellableRight` is total**: a short leg enumerates the
+  right it is short, where it enumerated nothing.
+- **Two obligations closed and one raised.** One of the two closed was 4.5's: both
+  rows named the same missing call.
+- `SYSTEM_DESIGN.md` §3.5 and §3.8, `DATA_AND_SCHEMA.md` §4.3 and
+  `LedgerEntryKind` stop saying nothing writes `closed_by_choice`.
+- 4.5's detail no longer claims it is what verifies the two `Trial:` rows.
+
+### Fixed
+- **A fixture that passed because its session saw no chain.** One ingest stamped
+  after every session put the whole chain beyond each session's as-of cutoff, so
+  the eight-days-out case declined for want of data. Each snapshot is observed on
+  its own session now and the feasible set is asserted before the verdict.
+- **Three commit subjects rewritten** to the `Phase 4 / 4.4 - ` form the archive's
+  working rules state. Subjects only; the trees are identical.
+
+### Raised
+- **A forced close writes no commission entry and a chosen one does**, so two
+  closes of the same position differ by 0.65 at the seeded rate. Owed at Phase 5,
+  because changing recorded amounts needs a decision.
+- **D-W54 changes 4.5's unspent prompt**, which names neither the trial context
+  its composition root must assemble nor the mapping from a maker's roll onto the
+  choice the run applies. Reported rather than closed.
+
 ## [1.46.1] — 2026-08-06
 
 **A correction.** 4.3's sign-off reported the archive's `Current state` block as

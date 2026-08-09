@@ -71,7 +71,9 @@ public enum LedgerEntryKind
 /// second value would state one fact twice.
 /// </para>
 /// <para>
-/// <b>Nothing writes <see cref="ClosedByChoice"/> before Phase 4 has a maker.</b>
+/// <b><see cref="ClosedByChoice"/> is written from 4.4 by
+/// <see cref="WheelStateMachine.CloseByChoice"/>, and was in this vocabulary from
+/// 3.3 before anything wrote it.</b>
 /// It is recovered by asking whether a bound had been reached when the close was
 /// written: a <see cref="LedgerEntryKind.BoughtToClose"/> that ends a trial is
 /// <see cref="ClosedAtBound"/> if the roll count or the elapsed days had reached

@@ -2423,3 +2423,98 @@ already there and not on what the block should contain.** Re-reading a figure is
 not the act; the act is reading the repository and asking what the block now fails
 to describe. The table is regenerated from a run rather than patched, on v1.41.1's
 own precedent.
+
+### 2026-08-08 — corpus v1.47.0
+
+**Checkpoint 4.4 signed off.** One decision and one amendment to it, a roll and
+close rule, a trial context, a fourth choice with its state-machine entry point,
+the rebuild resolving its own bounds, and two registered fixtures. Two obligations
+closed and one raised, so the table falls from eleven rows to ten. The suite went
+from 727 to 745 and the guards from 212 files to 215.
+
+**D-W54 is the second decision in this corpus to say of itself that no authority
+states it**, after D-W43. Nothing states what triggers a roll: the corpus states
+what a roll costs [D-W48], what bounds it [D-W14] and what it commits [D-W43], and
+the glossary's sentence about rolling is standard terminology in a file that says
+so. It was amended before any code rested on it, gaining the moneyness condition
+and the debit condition. **The first of those is what keeps the wheel turning**: a
+maker acting on every position at seven days would never hold one to expiry, so it
+would never be assigned, never write a covered call, and never reach the states
+this lab exists to measure.
+
+**The branch a rebuild exists for had never executed.** `CloseKindFor` is the one
+place a projection reads a value from outside its source, and telling a bound
+close from a chosen one is the whole reason `TrialBounds` reaches the rebuild.
+Measured at the parent commit rather than inferred: the three test files writing a
+`bought_to_close` or `shares_sold` entry and the three calling `Rebuild` or
+`Replay` were disjoint sets, and every rebuild ledger in the tree carried
+`premium_received`, `assignment`, `expired_worthless` and `call_away` only. A
+green suite was evidence of nothing about that path. On its first real execution
+it separated two ledgers that differ in no byte, and rebuilding one of them
+against current configuration returns the other's answer.
+
+**`TrialBounds.ResolveFor` had no call site anywhere in the tree and now has
+one.** Every caller passed a literal, so the rebuild agreed with the run because
+both were built from the same constant. The new fixture severs that: both machines
+and the rebuild resolve from the store independently, across three versions of
+`Trial:MaxRolls`, one in force at the open, one landing between the open and the
+close, and one landing after both. Two are needed to exclude reading current
+configuration; the third is what excludes reading what was in force on the session
+being rebuilt, which D-W53 forbids by name.
+
+**Two obligations closed and one of them was not 4.4's.** Its own row asked the
+rebuild to resolve as of the date the run used. 4.5's asked for the two `Trial:`
+configuration rows to be verified, from a composition root. Both rows named one
+missing call, and the checkpoint that needed it discharged both. `Trial:MaxRolls`
+and `Trial:MaxTrialDays` are verified consumers from 4.4, one checkpoint earlier
+than the corpus expected, by the rebuild rather than by a run. **A reading that
+checks only the rows naming the checkpoint in hand would have left 4.5's standing
+against work already done.**
+
+**The row raised in exchange is a cost asymmetry, found by building one close
+beside the other.** A forced close writes its `bought_to_close` as the debit alone
+and a chosen close writes the commission entry beside it, so two closes of the
+same position differ by 0.65 at the seeded rate and the difference is which
+trigger fired. Owed at Phase 5, because changing recorded amounts needs a decision
+and Phase 5 is where a trial's cash first becomes a score.
+
+**D-W54's selection clause reads two ways and the build took one.** It says a
+maker rolls "by the same highest-credit-in-band rule it uses to open", which
+agrees with itself for the baseline and the learner and parts company at the
+random control, which opens by uniform draw. The selection function is injected,
+so each arm rolls by the rule it opens with, and the site records this as a
+reading of the decision rather than a quotation of it. Taken literally the random
+control would roll by a rule it does not open with, and its rolls would stop being
+a control.
+
+**A fixture passed for the wrong reason before it passed for the right one.**
+FX-RollAtTheThreshold's four snapshots were first written in one ingest stamped
+after the last session, which put every quote beyond the as-of cutoff of every
+earlier one. The eight-days-out case passed because its session saw no chain, not
+because the maker declined to act, and those two are the same answer for opposite
+reasons. Each snapshot is now observed on its own session and the feasible set is
+asserted before the verdict is read. **This is the failure mode D-W54's own
+no-chain clause makes reachable**, which is why it is recorded rather than fixed
+quietly.
+
+**[`CLAUDE.md` §11]'s question, asked against every unspent prompt.** D-W54 was
+added and amended, so it was asked. **The answer is not none.** 4.5 is the only
+unspent prompt with detail, and D-W54 changes what its composition root has to
+build: a maker now takes an open trial as a parameter and can return a roll or a
+close, so the root must assemble an `OpenTrialContext` each session and map a
+maker's `Roll` and `Close` onto the choices `TrialRun` applies. 4.5's detail says a
+maker produces one decision per session, which is the supplied sequence with the
+choosing already done, and that covers opening. It names neither the context nor
+the mapping. **Reported rather than closed**, because checkpoint scope is authored
+[`CLAUDE.md` §10].
+
+**A second correction to 4.5's detail is landed rather than reported**, on the
+same rule's other half. Its first bullet said resolving `TrialBounds` there is
+what verifies the two configuration rows. A build has made that false rather than
+debatable, so the clause is struck and the correction stated beside it.
+
+**Commit subjects drifted mid-checkpoint and were rewritten.** Three of the seven
+carried `4.4 - ` where the rule is `Phase 4 / 4.4 - `. The rule is the first line
+of the archive's own working rules and I stopped reading it after step 1. Subjects
+only: the trees are identical before and after and the bodies are untouched.
+
