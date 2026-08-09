@@ -1688,6 +1688,19 @@ net debit: a roll exists to defer assignment while collecting premium, and one
 that costs more than it collects has stopped doing that, so the position is closed
 and the trial ends.
 
+Acting requires a feasible set for that session [D-W52]. A session with no chain
+has none, so a maker cannot roll and does not close: the position is left as it
+stands and runs to expiry if nothing intervenes. That is why `WORKED_EXAMPLE`
+§6.3 reproduces under this rule despite its short being deep in the money at the
+threshold. Its chain is a single snapshot at 2026-03-02, so no session between
+opening and expiry offers anything to roll into, and the trial reaches the
+assignment the document records.
+
+This is a property of the rule and not of that fixture. A forward run with a chain
+every session would act at the threshold on the same position, so §6.3
+demonstrates the rule's conditionality rather than its trigger, and a reader
+taking it as evidence the trigger fires would have it backwards.
+
 **Chosen, not transcribed.** No authority states any of this. The glossary's
 sentence about rolling is standard terminology and that file says so; the corpus
 states what a roll costs [D-W48], what bounds it [D-W14] and what it commits
