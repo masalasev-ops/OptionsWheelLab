@@ -815,10 +815,16 @@ skipped.
   off disk and checked against what shipped. It produces the markers. 3.1
   recorded the practice two commits before signing off and did not perform it;
   3.3's second run at merge found four figures the first could not have seen,
-  which is why it runs again if the branch moved.
-- **The archive's state block is re-measured, not carried.** It is the only
-  description of the present, so every count in it comes from a measurement taken
-  at sign-off rather than from the previous one adjusted. It produces the
+  which is why it runs again if the branch moved. **A sweep that greps for the
+  marker string reaches only what carries one**, and `PROGRESS.md`'s Current state
+  block does not: it was stale through 4.4's sign-off and through the merge sweep
+  after it, and neither missed it, because neither could see it. The sweep reads
+  that block by name.
+- **Both state blocks are re-measured, not carried.** There are two by design,
+  this file's and `PROGRESS.md`'s, and this act named one of them until 4.4, which
+  is the whole reason the other went stale. Between them they are the only
+  description of the present, so every count in either comes from a measurement
+  taken at sign-off rather than from the previous one adjusted. It produces the
   description. **A checkpoint that changed no code still changes what is built**,
   which is the sentence that made this fail: "neither changed any code, so every
   section below stands" was true at 3.2 and false from the next commit, and
