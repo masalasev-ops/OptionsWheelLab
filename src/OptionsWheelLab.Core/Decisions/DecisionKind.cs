@@ -21,8 +21,13 @@ namespace OptionsWheelLab.Core.Decisions;
 /// carrying a right. The right is already on the feasible set a decision
 /// references [D-W52], so a decision naming it again would state one fact twice;
 /// what these two distinguish is which leg of the wheel the maker was on, which
-/// the set's right does not say on its own because a call set is reachable only by
-/// holding shares.
+/// the set's right does not say on its own.
+/// <para>
+/// That justification once read "because a call set is reachable only by holding
+/// shares", which stopped being true at 4.4: a short call enumerates calls too, so
+/// a call set is reachable from two states. The distinction the two kinds draw
+/// survives; the reason given for it did not.
+/// </para>
 /// </para>
 /// </remarks>
 public enum DecisionKind
