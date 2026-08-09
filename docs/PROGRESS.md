@@ -5,9 +5,13 @@ Appended to, never rewritten. The repository is the authority on build state.
 ## Current state
 
 **Phase 0 complete and reviewed. Phases 1, 2 and 3 complete. Phase 4 started.**
-Checkpoints 0.1 to 0.8, 1.1 to 1.5, 2.1 to 2.5, 3.1 to 3.5 and 4.1 to 4.3 built
-and signed off. 4.4 and 4.5 are not started. The documentation corpus is at
-v1.46.1.
+Checkpoints 0.1 to 0.8, 1.1 to 1.5, 2.1 to 2.5, 3.1 to 3.5 and 4.1 to 4.4 built
+and signed off. 4.5 is not started. The documentation corpus is at v1.47.0.
+
+**This block carries no `Build state:` marker and the sweep keys on that string**,
+so it was outside the sweep's scope rather than passed by it. Read at every
+sign-off alongside the archive's, which the sign-off act names and this one it
+does not.
 
 ## Log
 
@@ -2538,3 +2542,40 @@ markers that could have moved, the two `Scoring:` rows still carrying
 `closed_by_choice` sentence, which the checkpoint itself had corrected at three
 sites. The archives for Phases 2 and 3 carry the old rolling sentence and are left
 alone: a closed phase file records the state as it stood when the next one opened.
+
+### 2026-08-09 — two measurements after 4.4, both of which I had reported wrong
+
+**This log's own Current state block was stale and neither sweep could see it.**
+It read v1.46.1 with 4.4 and 4.5 not started, on `main` with 4.4 merged.
+Re-measured and corrected. **The sweep did not miss it: the sweep cannot reach
+it.** The marker sweep is defined as reading every `Build state:` line off disk
+and this block carries no such line, so it was outside the sweep's scope rather
+than passed by it, and the same is true of the merge sweep, which greps for that
+string and for the specific claims a checkpoint could falsify. Reporting it as
+missed would say the act needs performing more carefully, and what it needs is a
+wider definition.
+
+**The act's own definition is the defect, and it is corrected where it is
+stated.** v1.29.0 recorded that the present state is written twice by design, in
+this log's Current state and the archive's. The sign-off act named one of them and
+has since 3.2. It names both now, and the marker sweep reads this block by name
+rather than by grepping for a marker it does not carry.
+
+**The obligation table holds ten rows, and the twelve is a correct count of a
+different commit.** At `57bc636`, the build report, it held twelve: the eleven
+standing at 4.3's sign-off plus the commission row raised that day, with neither
+discharged row yet removed. The sign-off commit `d6fa9c8` closed the 4.4 and 4.5
+rows and took it to ten, where it stands at `2c72fbb`.
+
+**The two rows a grouping drops are the two that were not owed at a phase.**
+Their Owed at cells read `4.4` and `4.5` where the other ten read `Phase N`, so a
+reading keyed on the cell's shape sees ten and silently omits them. That is the
+failure this table's own convention already names: a count of this table is a
+count of rows, and a count of distinct values is not a count of this table. **The
+rule was written against exactly this and the shape still slipped a reading**,
+which is worth more than the number: the rows most likely to be dropped by a
+grouping are the ones nearest to being discharged, because a cell names a
+checkpoint only when its detail exists and its work is next.
+
+My own ten was right about `main` and agreed with a wrong reading for a different
+reason, which is the least useful way for two figures to match.
