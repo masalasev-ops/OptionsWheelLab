@@ -1909,8 +1909,10 @@ per session, which is the supplied sequence with the choosing already done.
   it against its own book. The entry point taking both stays as their composition,
   so nothing calling it changes.
 - Assembles what a maker is told: the book from that maker's own state, and the
-  open trial it already holds, which is the parameter D-W54 gave a maker and
-  nothing yet supplies. Writes the adapter from a decision to a choice, which
+  ~~open trial it already holds~~ **short it holds** [D-W55, as amended], which is
+  the parameter D-W54 gave a maker and nothing yet supplies. A maker holding
+  shares holds a trial and has no short, so the trial framing would have made the
+  parameter's absence mean two things. Writes the adapter from a decision to a choice, which
   `MakerDecision` has named as this checkpoint's since 4.2.
 - Builds the state machine where each trial opens rather than where the run starts
   [D-W53, as amended], from bounds resolved as of that trial's open. ~~This is what

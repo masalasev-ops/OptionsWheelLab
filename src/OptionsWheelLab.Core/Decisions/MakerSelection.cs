@@ -39,7 +39,7 @@ internal static class MakerSelection
 
     /// <summary>
     /// Seven days to expiry, the session at or inside which a maker acts on an
-    /// open trial [D-W54].
+    /// open short [D-W54].
     /// </summary>
     /// <remarks>
     /// <b>A named constant rather than a configuration row, and that is worth
@@ -60,7 +60,7 @@ internal static class MakerSelection
     internal const int ActAtDaysToExpiry = 7;
 
     /// <summary>
-    /// What a maker does with a trial it already has open [D-W54].
+    /// What a maker does with a short it already holds [D-W54].
     /// </summary>
     /// <remarks>
     /// One rule for all three arms. They differ in the band each selects from and

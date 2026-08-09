@@ -52,10 +52,15 @@ namespace OptionsWheelLab.Tests;
 /// <para>
 /// <b>Nothing in the run reads a clock, which is the finding rather than the
 /// precaution.</b> Every date the loop uses is a session date, and the ledger's
-/// two dates are both sessions [D-W39]. The clock reaches the store only through
-/// the migration and seed stamps, so those are given a fixed instant here to keep
-/// the setup identical, and the run itself would be unaffected by any instant at
-/// all. That is asserted below rather than left as a claim.
+/// two dates are both sessions [D-W39]. That is asserted below rather than left
+/// as a claim.
+/// <para>
+/// <b>An instant reaches the store in three places and is supplied at every
+/// one.</b> The migration and seed stamps, and from 4.5 the observation stamp
+/// every decision carries, which `MakerRun` takes as a parameter for this reason:
+/// a run that stamped its own record would read a clock and the record would
+/// differ between two invocations. One instant is given to all three here, so the
+/// comparison is about the run rather than about when it was made.
 /// </para>
 /// </remarks>
 public sealed class FX_RunIsByteIdentical
@@ -210,8 +215,15 @@ public sealed class FX_RunIsByteIdentical
     }
 
     /// <summary>
-    /// The ledger and both projections as text, read back out of the store.
+    /// The ledger, the decision record and both projections as text, read back out
+    /// of the store.
     /// </summary>
+    /// <remarks>
+    /// The decision record joined out to its chosen contract, so a run that chose
+    /// differently renders differently. Reading the candidate id alone would
+    /// compare two numbers a different insertion order could change without any
+    /// decision having changed.
+    /// </remarks>
     private static string Render(
         SqliteConnection connection,
         TrialStore trials,

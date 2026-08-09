@@ -88,9 +88,14 @@ public sealed class CandidateGenerator
     /// <summary>
     /// The contracts sellable on <paramref name="symbol"/> at
     /// <paramref name="simulatedDate"/> given <paramref name="state"/>, in
-    /// contract identity order, empty when the name was not a member or the
-    /// state makes nothing sellable.
+    /// contract identity order, empty when the name was not a member or the chain
+    /// quotes none of that right.
     /// </summary>
+    /// <remarks>
+    /// It said "or the state makes nothing sellable" until 4.5, which was true
+    /// while two states enumerated nothing. Every state makes one right sellable
+    /// from 4.4 [D-W54], so that branch was unreachable and is gone.
+    /// </remarks>
     /// <remarks>
     /// A pure function of its three arguments over a fixed store: nothing else
     /// varies the answer, and a later observation is excluded by the as-of axis
@@ -194,9 +199,10 @@ public sealed class CandidateGenerator
     /// book, so two makers whose states share a right receive the same contracts
     /// carrying the same verdicts. Computing this three times while storing it
     /// once would make [D-W4]'s property a thing three evaluations agree about
-    /// rather than a thing there is one of, and the refusal guarding the stored
-    /// set compares contract identities rather than verdicts, so it could not
-    /// see the difference.
+    /// rather than a thing there is one of [D-W52]. The one-ness is that
+    /// decision's; what [D-W4] asks for is agreement, and it is the refusal
+    /// guarding the stored set that would have to catch a failure of it, which it
+    /// cannot: it compares contract identities rather than verdicts.
     /// <para>
     /// <b>Rejected candidates are returned, not removed.</b> The gate's effect
     /// is auditable only if what it refused travels with its reasons [D-W5,
@@ -327,7 +333,7 @@ public sealed class CandidateGenerator
     }
 
     /// <summary>
-    /// Which right a state makes sellable, or null when it makes none.
+    /// Which right a state makes sellable.
     /// </summary>
     /// <remarks>
     /// Cash sells puts and shares sell calls: that is the wheel, and the

@@ -230,9 +230,13 @@ public sealed class FX_TrialBoundsFixedAtOpen
     /// Both trials, walked by a machine bound as of each one's open.
     /// </summary>
     /// <remarks>
-    /// The composition D-W53 requires, done here because no composition root
-    /// exists to do it: the bounds are resolved once, as of the session the trial
-    /// opened, and the machine carries them for the trial's life.
+    /// The composition D-W53 requires, done here rather than through the
+    /// composition root because this fixture's subject is the rebuild and the root
+    /// would put a maker's choices between the two: the bounds are resolved once,
+    /// as of the session the trial opened, and the machine carries them for the
+    /// trial's life. `MakerRun` does the same thing at 4.5, and the case below
+    /// asserting two trials reach different close kinds is that property read from
+    /// the run's side.
     /// </remarks>
     private (TrialStore Trials, long Spanning, long Later) TwoTrials(SqliteConnection connection)
     {

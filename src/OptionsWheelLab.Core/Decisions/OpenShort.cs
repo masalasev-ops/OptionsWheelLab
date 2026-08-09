@@ -17,11 +17,13 @@ namespace OptionsWheelLab.Core.Decisions;
 /// absence read as "no trial" and turned a statement into a convention; a maker
 /// holding shares does hold a trial and has no short to act on.
 /// <para>
-/// <b>A maker is not told which state it is in, because the offered set already
-/// says.</b> Enumeration keys on the right the state makes sellable [D-W52], so a
-/// maker holding shares is offered calls and a maker in cash is offered puts, and
-/// its rule is the same either way. That is why passing nothing here withholds
-/// nothing.
+/// <b>A maker need not read the state it is handed, because the offered set
+/// already says.</b> Enumeration keys on the right the state makes sellable
+/// [D-W52], so a maker holding shares is offered calls and a maker in cash is
+/// offered puts, and its rule is the same either way. That is why passing nothing
+/// here withholds nothing. This said a maker is not told which state it is in,
+/// which is false of an interface whose third parameter is one; what survives is
+/// that neither maker reads it.
 /// </para>
 /// <b>What this withholds is the design.</b> It carries no
 /// <c>PremiumBanked</c>, no <c>GrossBasis</c> and no <c>NetBasis</c>, so a rule

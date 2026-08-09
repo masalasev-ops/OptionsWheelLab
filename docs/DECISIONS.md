@@ -1598,10 +1598,13 @@ symbol, session and right and every maker acting against that key is handed the
 same evaluation; the portfolio-level verdicts are computed per maker, against that
 maker's own book. Storing them apart while computing them together would make the
 shared half a thing three evaluations agree about rather than a thing there is one
-of, which is what [D-W4] asks for and what a comparison cannot deliver: the
-refusal that guards a shared set compares contract identities and not verdicts, so
-three separate evaluations pass it while the property fails. **A property enforced
-by a comparison that cannot see the difference is not enforced.**
+of. **The one-ness is this decision's and not [D-W4]'s**, which asks for agreement
+and tests it by comparison; the paragraph below says so and this one contradicted
+it for a day. What computing once buys is that the agreement cannot fail
+undetected: the refusal guarding a stored set compares contract identities and not
+verdicts, so three separate evaluations pass it while the property fails. **A
+property enforced by a comparison that cannot see the difference is not
+enforced**, and a thing there is one of needs no comparison at all.
 
 This was stated for storage alone until 4.5, where the composition root needed the
 other half and found the surface contradicting it: one entry point took a book
@@ -1802,10 +1805,12 @@ short, and a maker in cash has neither, and both open; passing the trial would
 have made the parameter's absence mean two things and its presence mean two more.
 
 Consequence for what a run returns. A run's result is a sequence of trials, each
-with its own entries, and not a state beside one list. The ledger is written per
-trial [D-W35], so a flat list would have to be partitioned by inferring where one
-trial ended, which is reconstructing what the loop already knew and is the shape
-that decision exists to prevent.
+with its own entries, and not a state beside one list. The ledger records what
+moved each trial [D-W48] and the store writes it per trial, so a flat list would
+have to be partitioned by inferring where one trial ended, and a loop that returned
+what it had to reconstruct would be discarding what it knew. That is not [D-W35]'s
+subject: rebuilding a projection from an append-only source is what that decision
+exists to permit, and this is about not throwing away a grain the run already has.
 
 Test FX-MakersDriveTheRun: three makers driving one chain produce three trials,
 three ledgers and one decision record, with no contract supplied by the test.
@@ -1822,9 +1827,13 @@ Rationale. `decisions` is append-only and its trigger refuses an update [D-W3], 
 a null written at the moment of the open is permanent in the strong sense: there
 is no later write that could fill it. A record unable to answer which trial a
 decision opened is a record missing the link between the two things this lab
-measures, and D-W3 names that loss as the one unrecoverable one in the design.
-The ordering is the whole fix and it costs nothing: the strike and the session an
-open needs are both in the decision before it is recorded.
+measures. **That is not the loss [D-W3] names**, and this said it was: that
+decision's loss is a decision that cannot be re-scored from the record, and a row
+with a null trial identifier is still re-scorable, since the trial is not among
+the things it lists a decision as recorded with. What [D-W3] supplies here is the
+append-only rule that makes the null permanent, which is enough. The ordering is
+the whole fix and it costs nothing: the strike and the session an open needs are
+both in the decision before it is recorded.
 
 **A decision that names no trial is not a decision missing one.** A maker taking
 nothing has no trial to name, and the column stays nullable for that case rather

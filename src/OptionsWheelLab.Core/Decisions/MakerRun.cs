@@ -145,9 +145,12 @@ public sealed class MakerRun
     /// One evaluation per right the arms are in, keyed on the right [D-W52].
     /// </summary>
     /// <remarks>
-    /// Ordered by the right's stored value rather than by the order arms happen to
-    /// be in, so the evaluations run in one order whatever order the makers were
-    /// supplied in.
+    /// Ordered by the right rather than by the order the arms happen to be in, so
+    /// the evaluations run in one order whatever order the makers were supplied
+    /// in. The order is <see cref="OptionRight"/>'s own and not its stored form's,
+    /// which is what <c>Order</c> on an enum gives; either would do here, and
+    /// naming the wrong one would send a reader looking for a comparer that is not
+    /// there.
     /// </remarks>
     private Dictionary<OptionRight, IReadOnlyList<GatedCandidate>> SharedByRight(
         Ticker symbol,

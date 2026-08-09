@@ -35,8 +35,8 @@ namespace OptionsWheelLab.Core.Generation;
 /// did not.
 ///
 /// <b>A null <see cref="GrossBasis"/> means no shares are held in this name</b>,
-/// which is <see cref="Positions.PositionState.Cash"/> and enumerates puts. Only
-/// <see cref="Positions.PositionState.HoldingShares"/> enumerates calls, and
+/// which is <see cref="Positions.PositionState.Cash"/> or
+/// <see cref="Positions.PositionState.ShortPut"/>, and both enumerate puts.
 /// D-W19's constraint binds a call against basis, so a call candidate reaching
 /// the gate with no basis is a caller error rather than a candidate to judge.
 /// </para>

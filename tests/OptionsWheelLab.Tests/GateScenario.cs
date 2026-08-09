@@ -44,19 +44,22 @@ internal static class GateScenario
     /// The gate's verdict on every quote, keyed by strike.
     /// </summary>
     /// <param name="book">
-    /// What the account already carries, defaulting to nothing.
+    /// What the account already carries. Required from 4.5, since a fixture whose
+    /// subject is not a cap calls <see cref="Shared"/> and has no book at all.
     /// </param>
     /// <param name="overrides">
     /// Config versions appended after the seed, for a fixture whose subject the
     /// seeded values cannot express.
     /// </param>
     /// <remarks>
-    /// <b>The default book is empty and the caps are therefore silent by
-    /// default.</b> That is right for the contract-constraint fixtures, which is
-    /// what this helper was built for: a book they did not ask about should not
-    /// put a reason on their quotes. It is wrong for a cap fixture, and a cap
-    /// tested against an empty book passes whether or not it works, so every
-    /// registered cap fixture states a book rather than taking this default.
+    /// <b>The book is stated rather than defaulted, and the fixtures that did not
+    /// want one call <see cref="Shared"/> instead.</b> This defaulted to
+    /// <see cref="BookState.Empty"/> until 4.5, which made the caps silent unless
+    /// a fixture asked for them, and its own remark said that was right for a
+    /// contract fixture and wrong for a cap fixture. The gate splitting at the
+    /// same seam turned the distinction into a signature: what remains here are
+    /// the cap fixtures and the one asserting that the two families compose, and
+    /// every one of them states the book it is about.
     /// </remarks>
     internal static IReadOnlyDictionary<decimal, IReadOnlyList<GateReason>> Gate(
         IReadOnlyList<ContractQuote> quotes,
