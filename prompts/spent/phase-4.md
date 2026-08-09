@@ -55,8 +55,9 @@ here. Git holds both exactly, and a fact kept in two places drifts.
 nullable is on, `InvariantGlobalization` is on, code style is enforced in the build.
 Central package management with transitive pinning.
 
-`Core` has nine folders: `Configuration`, `Storage`, `Identity`, `Time`,
-`Synthetic`, `MarketData`, `Membership`, `Positions` and `Generation`.
+`Core` has ten folders: `Configuration`, `Storage`, `Identity`, `Time`,
+`Synthetic`, `MarketData`, `Membership`, `Positions`, `Generation` and
+`Decisions`, the last holding everything Phase 4 produced.
 
 Repository root holds `README.md`, `CLAUDE.md`, `migrate.ps1`, `seed.ps1` and
 `guards.ps1`. Every document is in `docs/`, spent prompts in `prompts/spent/`,
@@ -78,14 +79,16 @@ Snapshot-first migrations. The runner takes a `VACUUM INTO` snapshot before appl
 Schema version comes from `schema_migrations` rather than `PRAGMA user_version`
 [D-W32].
 
-**Schema 8.** Migration 1 is `config_rows`, 2 its monotonic `set_at` trigger, 3 the
+**Schema 9.** Migration 1 is `config_rows`, 2 its monotonic `set_at` trigger, 3 the
 six market-data tables of §4.1 [1.1], 4 the membership record [1.3], 5 the bars
 nullability rebuild [1.4], 6 the `corporate_actions` rebuild for its `kind` CHECK,
 7 `market_sessions`, and 8 `trials`, `positions` and `ledger_entries` [3.3].
 
-Thirteen tables, and they fall in two vocabularies rather than one. Eleven are
-append-only, being the seven snapshot tables, membership, `ledger_entries`,
-`config_rows` and `schema_migrations`. Two are projections of the ledger and may
+Eighteen tables, and they fall in two vocabularies rather than one. Sixteen are
+append-only, being the six snapshot tables, membership, `market_sessions`,
+`ledger_entries`, `config_rows`, `schema_migrations` and migration 9's five:
+`feasible_sets`, `candidates`, `candidate_gate_reasons`, `decisions` and
+`decision_gate_reasons`. Two are projections of the ledger and may
 be rewritten, conditional on the test that discards and rebuilds them [D-W35].
 `ProjectionTables` names the second set, and the two lists are asserted disjoint
 over the declarations rather than over the tables that happen to exist.
@@ -376,11 +379,13 @@ computing site than by one field.
 `PositionState` is the concept without its table, four tags rendered through a
 declared `StorePositionState`. It starts at one, because a `default` reading
 as `cash` would enumerate puts against an account holding shares. Cash sells
-puts and shares sell calls [D-W16, D-W19]; both short legs enumerate nothing,
-because no document states what a roll enumerates, the bounds are Phase 3's
-[D-W14], and enumerating a guess would put an unrecorded rule into the
-decision path. The test asserting that is written to fail the day Phase 3
-writes the rule.
+puts and shares sell calls [D-W16, D-W19], and from 4.4 each short leg enumerates
+the right it is short [D-W54]. Both enumerated nothing until then, because no
+document stated what a roll enumerates and enumerating a guess would have put an
+unrecorded rule into the decision path; the test asserting that was written to
+fail the day the rule landed, and was replaced deliberately rather than discovered
+red. Four states map to two rights, which is what lets one evaluation serve every
+maker sharing one [D-W52].
 
 ## Trials, the ledger and the fill
 
@@ -519,7 +524,9 @@ Two sections bound, `Eodhd` and `Storage`, both verified. Six sections deliberat
 unbound because `CONFIG_REFERENCE.md` classes them `rows` and a registered options
 type is itself a current-value accessor.
 
-All 24 `rows`-classed keys hold a value at version 1, written by the `seed` verb.
+All 28 `rows`-classed keys hold a value at version 1, written by the `seed` verb.
+Eleven of them are the `Policy:` bands and windows the three makers read, added at
+4.3.
 `Costs:AssignmentFee` was the last one owed and was set at 3.4, transcribed from a
 named broker's published schedule with a retrieval date [D-W50], which is a kind
 of provenance the seeder did not previously have: every other entry is transcribed
@@ -550,13 +557,14 @@ the other two. Two names at the full per-name cap commit 50,000.00, so the total
 binds part-way through a third rather than at a whole number of them.
 
 The three `Costs:` keys were seeded at 0.8 and 3.4 and are read as of the
-simulated date by `CostBounds`, which `FillModel` resolves. Seventeen rows carry a
-verified consumer and eleven do not, of which nine are specified-only because
-their checkpoints are Phase 4's and Phase 5's. **The two `Trial:` rows are the
-only unverified rows whose checkpoint has landed, which is a defect rather than a
-gap.** `TrialBounds` exists and resolves both as of the simulated date, and no
-file under `src/` calls it: the machine is handed resolved bounds and the
-component that would resolve them is the run loop.
+simulated date by `CostBounds`, which `FillModel` resolves. Thirty of the
+thirty-two rows carry a verified consumer and two do not, both `Scoring:` and both
+specified-only because their checkpoint is Phase 5's. **No row whose checkpoint has
+landed is unverified.** This said the two `Trial:` rows were, and that no file
+under `src/` called `TrialBounds`, which held from 3.3 until 4.4 put the first call
+site in `TrialStore.Rebuild`; `MakerRun` is the second, resolving a trial's bounds
+where it opens [D-W53, as amended]. The eleven `Policy:` rows were verified at
+4.3.
 
 What verifying takes was measured at 3.4 rather than assumed. A type in `src/`
 resolves the key and a component in `src/` calls that type; it is not about who
@@ -580,7 +588,8 @@ Dates are `yyyy-MM-dd`, timestamps `yyyy-MM-ddTHH:mm:ss.fffZ`, filenames
 entry point and a rounding one, lenient on padding and strict on precision.
 
 The form is not order-preserving, so no SQL orders, ranges over or aggregates a
-decimal column. `DecimalColumns` holds twenty-one names as of 3.3.
+decimal column. `DecimalColumns` holds twenty-two names as of 4.2, the twenty-one of 3.3 plus
+`credit`.
 
 Decimals reach `TEXT` columns through `AddStored`, rendering through the refusing
 entry point. `AddStoredRounded` is the rounding path, added at 3.4 and named
@@ -589,10 +598,11 @@ are divisions: a premium carrying the eight places the scale admits gives a basi
 needing ten. `ConfigWriter` still takes strings, `config_rows.value` being
 polymorphic by design.
 
-Six vocabularies have a declared stored form and a `CHECK` that must agree with
+Eight vocabularies have a declared stored form and a `CHECK` that must agree with
 it, asserted in both directions and including that no `CHECK` admits a value the
-code cannot produce. A seventh, `StoreFillPoint`, has no `CHECK` to compare
-against, because `config_rows.value` carries every section's values and a
+code cannot produce; it was six until 4.2 added `DecisionKind` and `GateReason`,
+the latter checked against both reason tables. `StoreFillPoint` has no `CHECK` to
+compare against, because `config_rows.value` carries every section's values and a
 constraint there would have to know which key a row belongs to. That exclusion is
 stated at the type, at the fixture and in the registry row, and a case fails if
 that column ever gains one.
@@ -607,8 +617,9 @@ been made in a comment, was true when written, was false three commits later, an
 was unchecked throughout. A check may now state which tree its rule governs, and a
 scope matching no files throws.
 
-Three SQL detectors, all reading `src/` only: no decimal ordering, no rewrite of an
-append-only table, and no alias of a table or a column. The third is the convention
+Four SQL detectors, all reading `src/` only: no decimal ordering, no rewrite of an
+append-only table, no alias of a table or a column, and from 3.5 no call to a
+function whose value varies between runs. The alias one is the convention
 that discharges the alias obligation, and it is what makes the other two sound
 without either resolving aliases. Its source arm admits a parenthesised expression
 as of 1.2, so an aggregate acquiring a name is reported; a CTE header stays clean
@@ -752,9 +763,10 @@ through `ContractLineage`, which is timeless, and the state machine takes the
 actions on a session as a parameter rather than reading them, so nothing yet asks
 what was in force at a date.
 
-No operator entry point ingests a chain, and none runs a trial. `ChainWriter`,
-`TrialStore`, `FillModel`, `TrialRun` and `MakerRun` have tests as their only
-callers, and `MakerRun` is the one that would need a verb first.
+No operator entry point ingests a chain, and none runs a trial. `ChainWriter` and
+`MakerRun` have tests as their only callers, and `MakerRun` is the one that would
+need a verb first; `TrialRun`, `TrialStore` and `FillModel` gained a `src/` caller
+at 4.5, which is `MakerRun` itself.
 
 **Determinism is asserted over a run a maker drove, from 4.5**, which is the form
 0.5 stated and 3.5 could only assert over supplied choices. The comparison covers

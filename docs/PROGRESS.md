@@ -2678,10 +2678,9 @@ an empty subject set and a question not asked leave the same trace. The four
 decisions must be read against Phase 5's detail when it is authored, which is the
 first moment the set stops being empty.
 
-**The three acts, performed, and the first one performed twice.** Both state blocks
-were re-measured, this log's read directly because it carries no marker and the
-sweep keys on that string, and the archive's with its fixture table regenerated
-from a run. §11's question was asked and its answer is above.
+**The three acts, performed, and two of them performed twice.** §11's question was
+asked and its answer is above. The other two were reported done and were not, and
+both were caught by a check run against the sign-off before it merged.
 
 **The marker sweep was reported as five moved and sixteen unchanged, and that was
 wrong.** A check run against the sign-off before it merged found five of the
@@ -2707,3 +2706,22 @@ chooses, no loop steps a calendar and nothing persists a candidate, all four fal
 Phase 3 marker said no maker chooses. Two more were corrected as incomplete rather
 than false: §3.3, whose component this checkpoint split, and §3.2's dividend
 clause, which points at an obligation the table no longer carries.
+
+**The archive's state block was reported re-measured and was measured in the
+sections I thought to look at.** The same check found eleven further figures in it
+wrong, none of them in the sections this checkpoint changed: the schema is 9 and it
+said 8; there are eighteen tables and sixteen append-only where it said thirteen
+and eleven; `Core` has ten folders and it named nine, omitting the one holding
+everything Phase 4 built; twenty-eight seeded keys where it said twenty-four;
+twenty-two decimal columns where it said twenty-one; eight enforced vocabularies
+where it said six; four SQL detectors where it said three; thirty rows with a
+verified consumer where it said seventeen, and two unverified where it said eleven;
+and it still said both short legs enumerate nothing, which 4.4 falsified. Each was
+re-measured from the tree and corrected.
+
+**That is the third time this act has been reported performed when it was
+partial**, after 3.2 and 4.3, and the shape is identical every time: the block is
+re-read where the checkpoint touched it. What the rule asks is the opposite
+question, which is what the block now fails to describe, and only reading it
+against the repository answers that. The figures above were stale for between two
+and five checkpoints, so no sign-off since 4.1 has performed this act in full.
