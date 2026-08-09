@@ -188,6 +188,41 @@ public sealed class FX_TrialBoundsFixedAtOpen
             CloseKindOf(connection, spanning));
     }
 
+    /// <summary>
+    /// A run building one machine would bind both trials by one trial's values
+    /// [D-W53, as amended].
+    /// </summary>
+    /// <remarks>
+    /// <b>The run-level half of this decision, which the rebuild cases cannot
+    /// reach.</b> Those compare a projection against a run; a run holding one
+    /// machine across the trials it drives makes both halves wrong together, so
+    /// they would agree and the property would be false. What is asserted here is
+    /// that two trials opened either side of a configuration change reach
+    /// different close kinds, which is only possible if each carries the bounds
+    /// its own open resolved.
+    /// <para>
+    /// This is the same arrangement the cases above use, read from the other side:
+    /// there the rebuild is asked which bounds a trial ran under, and here the run
+    /// is.
+    /// </para>
+    /// </remarks>
+    [Fact]
+    public void Two_trials_opened_either_side_of_a_change_run_under_their_own_bounds()
+    {
+        using var store = Written();
+        using var connection = store.Connections.Open(StoreAccess.Write);
+
+        var (_, spanning, later) = TwoTrials(connection);
+
+        // One roll each and nothing else different. The first opened under one
+        // permitted roll and closed at that bound; the second opened under three
+        // and was still open for a maker to close.
+        Assert.Equal(TrialCloseKind.ClosedAtBound, RunKinds[spanning]);
+        Assert.Equal(TrialCloseKind.ClosedByChoice, RunKinds[later]);
+
+        Assert.NotEqual(RunKinds[spanning], RunKinds[later]);
+    }
+
     /// <summary>What the run said, per trial, for the rebuild to be compared with.</summary>
     private Dictionary<long, TrialCloseKind> RunKinds { get; } = [];
 
@@ -195,9 +230,13 @@ public sealed class FX_TrialBoundsFixedAtOpen
     /// Both trials, walked by a machine bound as of each one's open.
     /// </summary>
     /// <remarks>
-    /// The composition D-W53 requires, done here because no composition root
-    /// exists to do it: the bounds are resolved once, as of the session the trial
-    /// opened, and the machine carries them for the trial's life.
+    /// The composition D-W53 requires, done here rather than through the
+    /// composition root because this fixture's subject is the rebuild and the root
+    /// would put a maker's choices between the two: the bounds are resolved once,
+    /// as of the session the trial opened, and the machine carries them for the
+    /// trial's life. `MakerRun` does the same thing at 4.5, and the case below
+    /// asserting two trials reach different close kinds is that property read from
+    /// the run's side.
     /// </remarks>
     private (TrialStore Trials, long Spanning, long Later) TwoTrials(SqliteConnection connection)
     {

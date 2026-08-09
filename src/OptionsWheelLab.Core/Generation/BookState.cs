@@ -26,9 +26,17 @@ namespace OptionsWheelLab.Core.Generation;
 /// trusting it to notice a field that has quietly been a copy.
 /// </para>
 /// <para>
+/// <b>Two states enumerate calls and both carry a basis, which is what makes a
+/// missing one a caller error.</b> Holding shares and being short a call both
+/// enumerate calls from 4.4 [D-W54], and a short call is reachable only from held
+/// shares, so the basis is carried forward with it. This once named holding shares
+/// as the only call-bearing state, which was true when it was written and which
+/// 4.4 made false; the conclusion it supports survives and the reason given for it
+/// did not.
+///
 /// <b>A null <see cref="GrossBasis"/> means no shares are held in this name</b>,
-/// which is <see cref="Positions.PositionState.Cash"/> and enumerates puts. Only
-/// <see cref="Positions.PositionState.HoldingShares"/> enumerates calls, and
+/// which is <see cref="Positions.PositionState.Cash"/> or
+/// <see cref="Positions.PositionState.ShortPut"/>, and both enumerate puts.
 /// D-W19's constraint binds a call against basis, so a call candidate reaching
 /// the gate with no basis is a caller error rather than a candidate to judge.
 /// </para>

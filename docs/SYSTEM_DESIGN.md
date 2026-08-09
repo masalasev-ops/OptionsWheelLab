@@ -77,8 +77,10 @@ Build state: **built across 1.1 to 1.5**, on synthetic chains: the schema,
 point-in-time reads, chain ingest, and corporate actions as stated successors
 with resolvable lineage. The earnings calendar gained its format, its writer and
 its as-of read at 2.3, when the clearance constraint became its first consumer.
-Dividends have no writer: `corporate_actions` lists the kind and how a dividend
-is recorded is a Phase 3 obligation.
+Dividends have no writer: `corporate_actions` lists the kind and
+`CorporateActionWriter` mints stated successors only, so nothing writes a
+dividend-only row. How one is recorded was answered at 3.3 [D-W41, D-W44] and this
+called it an open Phase 3 obligation until 4.5; what remains is the writer.
 
 A daily end-of-day snapshot of the option chains for watchlist names, plus
 underlying bars, dividends, and the earnings calendar. Snapshots are append-only
@@ -88,10 +90,14 @@ the same guard AlphaLab uses for bar history.
 
 ### 3.3 Candidate generator
 
-Build state: **built across 2.2 to 2.5**, on synthetic chains: enumeration
-filtered on membership and position state, the gate inside it, and every
-candidate returned with the reasons it failed. The backward edge below is a
-parameter rather than a read, because the ledger it comes from is Phase 3's.
+Build state: **built across 2.2 to 2.5, and split at 4.5**, on synthetic chains:
+enumeration filtered on membership and the right its position state makes
+sellable, the gate inside it, and every candidate returned with the reasons it
+failed. The gate is two calls from 4.5, the contract-level half computed once per
+symbol, session and right and each maker's caps applied over it, with the combined
+entry point kept as their composition [D-W52, as amended]. The backward edge below
+is a parameter rather than a read, and the composition root supplies it from the
+arm's own trial rather than from `positions`.
 
 Two stages in one component. First it enumerates every contract that could be
 sold today given the current position state, with the features that describe it.
@@ -114,11 +120,14 @@ daily path.
 
 ### 3.4 Risk gate
 
-Build state: **built across 2.3 to 2.5**. The contract family landed at 2.3
-and the portfolio family at 2.4, each reading its bounds as of the simulated
-date and each recording every failing reason. What is not built is the
-persistence: a candidate and its reasons are returned and dropped, and the
-columns that would hold them are Phase 4's.
+Build state: **built across 2.3 to 2.5, persisted from 4.2 and split from
+4.5**. The contract family landed at 2.3 and the portfolio family at 2.4, each
+reading its bounds as of the simulated date and each recording every failing
+reason. 4.2 gave both families their columns, the contract one on the shared set
+and the portfolio one per decision, and 4.5 made that split the shape of the
+evaluation as well as of the storage [D-W52, as amended]. This said the
+persistence was not built and the columns were Phase 4's, which was true from 2.3
+until 4.2 landed them.
 
 Two families of constraint, and they answer different questions.
 
@@ -148,12 +157,12 @@ Cap values are structural and outside what the learner may propose [D-W11].
 
 ### 3.5 Decision-makers
 
-Build state: **built across 4.3 and 4.4**, on synthetic chains: three arms behind
-one interface, each handed the set one gate evaluation produced, and from 4.4 a
-maker acts on a trial it already holds, rolling or closing at seven days to expiry
-when the short is in the money [D-W54]. What is not built is anything that drives
-them across sessions, so what asks a maker for a decision today is a test. The
-learning channel
+Build state: **built across 4.3 to 4.5**, on synthetic chains: three arms behind
+one interface, each handed the contract-level evaluation one call produced with
+its own caps applied over it [D-W52]; from 4.4 a maker acts on a short it already
+holds, rolling or closing at seven days to expiry when it is in the money [D-W54];
+and from 4.5 a composition root asks all three every session of a run and records
+what each decided. The learning channel
 that revises the learner's rows is Phase 7's, so the learner is a second policy
 rather than a learning one until then.
 
@@ -186,9 +195,10 @@ Build state: **built at 4.2**, on synthetic chains: five append-only tables, a
 writer, and a reader that rebuilds a decision from the record alone. The set is
 stored once per symbol, session and right and referenced by every maker acting
 against it [D-W52], and the gate reasons are split by whether they were computed
-against a book. What is not built is anything that fills it. No maker decides, so
-what writes a decision today is a test, and the scorer that re-scores one is
-Phase 5's.
+against a book. From 4.5 a composition root fills it: every session every maker is
+asked writes a row, including the sessions a maker takes nothing, because taking
+nothing is a choice and is scored [D-W5]. What is not built is the scorer that
+re-scores one, which is Phase 5's, and any caller outside a test.
 
 The primary artefact of the system, and more important than the position ledger.
 Every decision is journaled with the feasible set exactly as it stood, the
@@ -208,15 +218,15 @@ entirely by that one choice.
 
 ### 3.8 Wheel state machine and ledger
 
-Build state: **built across 3.3 to 3.5, with a fourth choice at 4.4**, on
-synthetic scenarios: the four states, the transitions, `ledger_entries` and the
-two projections rebuilt from it at 3.3; at 3.4 the fill model that prices a quote
-into the cash those transitions carry; at 3.5 the run that steps a session range
-and produces the ledger, byte-identical across two invocations; and at 4.4 the
-close a maker chooses, beside the close a bound forces. What is not built is
-anything that joins the two: a loop steps the sessions and the choices it applies
-are still supplied, so a maker's roll reaches the machine only when a test carries
-it there, and the decision row recording that roll is 4.5's.
+Build state: **built across 3.3 to 3.5, with a fourth choice at 4.4 and a maker
+driving it from 4.5**, on synthetic scenarios: the four states, the transitions,
+`ledger_entries` and the two projections rebuilt from it at 3.3; at 3.4 the fill
+model that prices a quote into the cash those transitions carry; at 3.5 the run
+that steps a session range and produces the ledger, byte-identical across two
+invocations; at 4.4 the close a maker chooses, beside the close a bound forces;
+and at 4.5 the root that turns a maker's decision into the choice this machine
+applies, over a sequence of trials rather than one [D-W55]. The supplied-sequence
+entry point stays, which is what a determinism walk and a refusal case need.
 
 Four states modelled as a discriminated union: cash, short put, holding shares,
 short call. Daily events drive transitions, and they lie on two axes rather than

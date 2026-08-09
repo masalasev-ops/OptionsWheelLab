@@ -33,17 +33,25 @@ public sealed record RunResult(TrialState State, IReadOnlyList<LedgerEntry> Entr
 /// </remarks>
 public sealed class TrialRun
 {
-    private readonly WheelStateMachine _machine;
     private readonly FillModel _fills;
     private readonly SessionCalendar _calendar;
 
-    public TrialRun(WheelStateMachine machine, FillModel fills, SessionCalendar calendar)
+    /// <summary>
+    /// A loop over sessions, holding no machine.
+    /// </summary>
+    /// <remarks>
+    /// <b>The machine arrives per walk rather than per run</b>, because it carries
+    /// the bounds of one trial and a trial's bounds are fixed at its open [D-W53,
+    /// as amended]. A run holding one would apply the bounds of whichever trial
+    /// opened first to every trial after it, and holding it here is what would make
+    /// that possible. The fill model and the calendar are the run's own and do not
+    /// vary by trial.
+    /// </remarks>
+    public TrialRun(FillModel fills, SessionCalendar calendar)
     {
-        ArgumentNullException.ThrowIfNull(machine);
         ArgumentNullException.ThrowIfNull(fills);
         ArgumentNullException.ThrowIfNull(calendar);
 
-        _machine = machine;
         _fills = fills;
         _calendar = calendar;
     }
@@ -63,32 +71,19 @@ public sealed class TrialRun
     /// states no bar for a session it must step.
     /// </exception>
     public RunResult Walk(
+        WheelStateMachine machine,
         SyntheticChain chain,
         DateOnly from,
         DateOnly to,
         IReadOnlyList<TrialChoice> choices)
     {
+        ArgumentNullException.ThrowIfNull(machine);
         ArgumentNullException.ThrowIfNull(chain);
         ArgumentNullException.ThrowIfNull(choices);
 
         RefuseChoicesOutsideTheRun(choices, from, to);
 
-        var sessions = chain.Bars
-            .Select(bar => bar.SessionDate)
-            .Where(session => session >= from && session <= to)
-            .Order()
-            .ToList();
-
-        if (sessions.Count == 0)
-        {
-            throw new InvalidOperationException(
-                $"The chain states no bar between {from:yyyy-MM-dd} and {to:yyyy-MM-dd}, so "
-                + "there is no session to step. A run over no sessions produces an empty "
-                + "ledger, which is indistinguishable from a trial that did nothing.");
-        }
-
-        RefuseBarsTheCalendarDoesNotCarry(sessions);
-
+        var sessions = SessionsIn(chain, from, to);
         var entries = new List<LedgerEntry>();
         TrialState? state = null;
 
@@ -96,7 +91,7 @@ public sealed class TrialRun
         {
             foreach (var choice in choices.Where(c => c.Session == session))
             {
-                var applied = Apply(state, choice, chain);
+                var applied = Apply(machine, state, choice, chain);
                 state = applied.State;
                 entries.AddRange(applied.Entries);
             }
@@ -106,7 +101,7 @@ public sealed class TrialRun
                 continue;
             }
 
-            var advanced = _machine.Advance(state, FactsFor(chain, session, state));
+            var advanced = machine.Advance(state, FactsFor(chain, session, state));
             state = advanced.State;
             entries.AddRange(advanced.Entries);
         }
@@ -131,19 +126,20 @@ public sealed class TrialRun
     /// <see cref="TrialProjection"/> already refuses a closed trial that receives
     /// premium for the same reason.
     /// </remarks>
-    private Transition Apply(TrialState? state, TrialChoice choice, SyntheticChain chain)
+    internal Transition Apply(
+        WheelStateMachine machine, TrialState? state, TrialChoice choice, SyntheticChain chain)
     {
         switch (choice)
         {
             case OpenPut open when state is null:
-                return _machine.OpenTrial(
+                return machine.OpenTrial(
                     open.Put, _fills.Sell(open.Bid, open.Session), open.Session);
 
             case OpenPut open:
                 throw Refuse(open, state, "the trial is already open");
 
             case WriteCoveredCall call when state?.State is PositionState.HoldingShares:
-                return _machine.WriteCall(
+                return machine.WriteCall(
                     state, call.Session, call.Call, _fills.Sell(call.Bid, call.Session));
 
             case WriteCoveredCall call:
@@ -153,7 +149,7 @@ public sealed class TrialRun
                     "a covered call is written against held shares [D-W16, D-W43]");
 
             case RollInto roll when state is { IsClosed: false, Contract: not null }:
-                return _machine.Roll(
+                return machine.Roll(
                     state,
                     roll.Session,
                     _fills.Buy(roll.Ask, roll.Session),
@@ -166,7 +162,7 @@ public sealed class TrialRun
             case CloseTrial close
                 when state is { IsClosed: false, Contract: not null }
                     && state.Contract == close.Short:
-                return _machine.CloseByChoice(
+                return machine.CloseByChoice(
                     state,
                     FactsFor(chain, close.Session, state),
                     _fills.Buy(close.Ask, close.Session));
@@ -225,6 +221,37 @@ public sealed class TrialRun
     /// sequence cannot express and the calendar exists to distinguish.
     /// </para>
     /// </remarks>
+    /// <summary>
+    /// The sessions the chain states in this range, checked against the calendar.
+    /// </summary>
+    /// <remarks>
+    /// Shared with the maker-driven run rather than restated there, because two
+    /// loops taking their sessions from the chain by different code would be two
+    /// statements of which dates a run steps.
+    /// </remarks>
+    internal IReadOnlyList<DateOnly> SessionsIn(SyntheticChain chain, DateOnly from, DateOnly to)
+    {
+        ArgumentNullException.ThrowIfNull(chain);
+
+        var sessions = chain.Bars
+            .Select(bar => bar.SessionDate)
+            .Where(session => session >= from && session <= to)
+            .Order()
+            .ToList();
+
+        if (sessions.Count == 0)
+        {
+            throw new InvalidOperationException(
+                $"The chain states no bar between {from:yyyy-MM-dd} and {to:yyyy-MM-dd}, so "
+                + "there is no session to step. A run over no sessions produces an empty "
+                + "ledger, which is indistinguishable from a trial that did nothing.");
+        }
+
+        RefuseBarsTheCalendarDoesNotCarry(sessions);
+
+        return sessions;
+    }
+
     private void RefuseBarsTheCalendarDoesNotCarry(IReadOnlyList<DateOnly> sessions)
     {
         var unknown = sessions.Where(session => !_calendar.IsSession(session)).ToList();
@@ -271,7 +298,7 @@ public sealed class TrialRun
     /// and every rule that needs one refuses rather than assuming a price
     /// [D-W42, D-W49].
     /// </remarks>
-    private SessionFacts FactsFor(SyntheticChain chain, DateOnly session, TrialState state)
+    internal SessionFacts FactsFor(SyntheticChain chain, DateOnly session, TrialState state)
     {
         var bar = chain.Bars.First(candidate => candidate.SessionDate == session);
 

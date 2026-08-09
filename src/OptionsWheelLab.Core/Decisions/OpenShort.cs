@@ -4,9 +4,27 @@ using OptionsWheelLab.Core.Positions;
 namespace OptionsWheelLab.Core.Decisions;
 
 /// <summary>
-/// What a maker is told about a trial it already has open, and nothing more.
+/// The short a maker already holds, and nothing more.
 /// </summary>
 /// <remarks>
+/// <b>Its absence says there is no short, which is the whole of what a maker
+/// needs.</b> A maker in <see cref="Positions.PositionState.Cash"/> has none
+/// because it holds no trial, and a maker in
+/// <see cref="Positions.PositionState.HoldingShares"/> has none because its trial
+/// is holding shares. Two reasons, one consequence, and a maker needs neither
+/// reason: it opens, and what it opens is a put in the first case and a covered
+/// call in the second. This was called an open trial until 4.5, which made the
+/// absence read as "no trial" and turned a statement into a convention; a maker
+/// holding shares does hold a trial and has no short to act on.
+/// <para>
+/// <b>A maker need not read the state it is handed, because the offered set
+/// already says.</b> Enumeration keys on the right the state makes sellable
+/// [D-W52], so a maker holding shares is offered calls and a maker in cash is
+/// offered puts, and its rule is the same either way. That is why passing nothing
+/// here withholds nothing. This said a maker is not told which state it is in,
+/// which is false of an interface whose third parameter is one; what survives is
+/// that neither maker reads it.
+/// </para>
 /// <b>What this withholds is the design.</b> It carries no
 /// <c>PremiumBanked</c>, no <c>GrossBasis</c> and no <c>NetBasis</c>, so a rule
 /// that rolled to defer realising a loss cannot be written rather than being
@@ -29,7 +47,7 @@ namespace OptionsWheelLab.Core.Decisions;
 /// <param name="Short">The contract the trial is short.</param>
 /// <param name="ShortAsk">
 /// What buying it back costs per share, which is the ask because a purchase pays
-/// it [D-W12, D-W49].
+/// it [D-W12, D-W49], and null on a session that quotes no ask for it.
 /// </param>
 /// <param name="UnderlyingClose">
 /// The session's close, which the moneyness test reads [D-W38].
@@ -41,9 +59,9 @@ namespace OptionsWheelLab.Core.Decisions;
 /// The trial a decision refers to. Populated so a decision can name it, because
 /// a run holds more than one trial over its life.
 /// </param>
-public sealed record OpenTrialContext(
+public sealed record OpenShort(
     ContractIdentity Short,
-    decimal ShortAsk,
+    decimal? ShortAsk,
     decimal UnderlyingClose,
     DateOnly OpenedOn,
     int RollsUsed,

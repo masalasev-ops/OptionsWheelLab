@@ -52,7 +52,7 @@ public sealed class FX_GateRecordsAllReasons
     [Fact]
     public void A_candidate_failing_two_contract_constraints_carries_both()
     {
-        var verdicts = GateScenario.Gate(
+        var verdicts = GateScenario.Shared(
         [
             GateScenario.Quote(45.00m, bid: 0.10m, ask: 0.30m),
             GateScenario.Quote(50.00m),

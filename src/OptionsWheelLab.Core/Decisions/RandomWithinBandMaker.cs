@@ -52,7 +52,7 @@ public sealed class RandomWithinBandMaker : IDecisionMaker
         PositionState state,
         BookState book,
         IReadOnlyList<GatedCandidate> offered,
-        OpenTrialContext? openTrial = null)
+        OpenShort? openShort = null)
     {
         ArgumentNullException.ThrowIfNull(symbol);
         ArgumentNullException.ThrowIfNull(offered);
@@ -69,9 +69,9 @@ public sealed class RandomWithinBandMaker : IDecisionMaker
             return among[new Random(MakerSeed.For(seed, symbol, session)).Next(among.Count)];
         }
 
-        if (openTrial is { } trial)
+        if (openShort is { } held)
         {
-            return MakerSelection.ForOpenTrial(policy, trial, session, offered, Draw);
+            return MakerSelection.ForOpenShort(policy, held, session, offered, Draw);
         }
 
         var admitted = MakerSelection.Admitted(policy, session, offered);

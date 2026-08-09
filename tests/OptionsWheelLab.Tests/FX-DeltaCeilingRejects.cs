@@ -30,7 +30,7 @@ public sealed class FX_DeltaCeilingRejects
     [Fact]
     public void A_put_above_the_ceiling_is_rejected_and_one_inside_it_is_not()
     {
-        var verdicts = GateScenario.Gate(
+        var verdicts = GateScenario.Shared(
         [
             GateScenario.Quote(Above, bid: 2.05m, ask: 2.20m, delta: -0.44m),
             GateScenario.Quote(Inside, bid: 0.95m, ask: 1.01m, delta: -0.24m),
@@ -58,7 +58,7 @@ public sealed class FX_DeltaCeilingRejects
     [Fact]
     public void The_same_magnitude_rejects_whichever_sign_it_carries()
     {
-        var verdicts = GateScenario.Gate(
+        var verdicts = GateScenario.Shared(
         [
             GateScenario.Quote(Above, bid: 2.05m, ask: 2.20m, delta: 0.44m),
         ]);
@@ -73,7 +73,7 @@ public sealed class FX_DeltaCeilingRejects
     [Fact]
     public void A_delta_exactly_on_the_ceiling_passes()
     {
-        var verdicts = GateScenario.Gate(
+        var verdicts = GateScenario.Shared(
         [
             GateScenario.Quote(45.00m, bid: 0.95m, ask: 1.01m, delta: -0.35m),
             GateScenario.Quote(47.50m, bid: 0.95m, ask: 1.01m, delta: -0.36m),

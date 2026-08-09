@@ -27,7 +27,7 @@ namespace OptionsWheelLab.Tests;
 /// <para>
 /// The short expires 2026-03-09 and is not one of the chain's contracts. A maker
 /// is handed what buying it back costs rather than looking it up
-/// [<see cref="OpenTrialContext"/>], so the leg being closed and the legs
+/// [<see cref="OpenShort"/>], so the leg being closed and the legs
 /// available to roll into need not come from one snapshot.
 /// </para>
 /// <para>
@@ -217,6 +217,48 @@ public sealed class FX_RollAtTheThreshold
     }
 
     /// <summary>
+    /// A short the session cannot price is left alone, even where the session
+    /// offers plenty [D-W49].
+    /// </summary>
+    /// <remarks>
+    /// <b>The pair with the roll case is what makes this the price and not the
+    /// set.</b> Both run on 2026-03-02, whose three candidates are in the
+    /// baseline's band and one of which the maker rolls into when it knows what
+    /// buying back costs. Only the ask differs, and without it a close cannot be
+    /// priced and a roll has nothing to be compared against, so a price this lab
+    /// cannot observe is not one it invents.
+    /// <para>
+    /// It is also what stops the fallback. A maker handed no short at all would
+    /// take the opening path and sell a second put against a position it already
+    /// holds, which [D-W55] refuses by name, and this fixture is where that would
+    /// show.
+    /// </para>
+    /// </remarks>
+    [Fact]
+    public void A_short_the_session_cannot_price_is_left_alone()
+    {
+        var session = new DateOnly(2026, 3, 2);
+
+        using var store = Chained();
+        using var connection = store.Connections.Open(StoreAccess.ReadOnly);
+
+        var offered = Offered(connection, session);
+
+        Assert.Contains(offered, candidate => candidate.IsFeasible);
+
+        var decision = HighestCreditMaker.Baseline(new AsOfConfiguration(connection)).Decide(
+            Symbol,
+            session,
+            PositionState.ShortPut,
+            BookState.Empty,
+            offered,
+            InTheMoney(session) with { ShortAsk = null });
+
+        Assert.Equal(DecisionKind.None, decision.Kind);
+        Assert.Null(decision.Chosen);
+    }
+
+    /// <summary>
     /// A session offering nothing leaves the position rather than closing it.
     /// </summary>
     /// <remarks>
@@ -275,7 +317,7 @@ public sealed class FX_RollAtTheThreshold
     }
 
     /// <summary>What the baseline maker decides on this session about this trial.</summary>
-    private static MakerDecision Decide(DateOnly session, OpenTrialContext trial)
+    private static MakerDecision Decide(DateOnly session, OpenShort trial)
     {
         using var store = Chained();
         using var connection = store.Connections.Open(StoreAccess.ReadOnly);
@@ -298,10 +340,10 @@ public sealed class FX_RollAtTheThreshold
             .GateFor(Symbol, session, PositionState.ShortPut, BookState.Empty);
 
     /// <summary>A trial short the 50.00 put, in the money at 45.80.</summary>
-    private static OpenTrialContext InTheMoney(DateOnly session) =>
+    private static OpenShort InTheMoney(DateOnly session) =>
         Trial(session, underlyingClose: 45.80m);
 
-    private static OpenTrialContext Trial(DateOnly session, decimal underlyingClose) =>
+    private static OpenShort Trial(DateOnly session, decimal underlyingClose) =>
         new(
             ContractIdentity.Of(Symbol, ShortExpiry, OptionRight.Put, 50.00m),
             ShortAsk: 1.01m,

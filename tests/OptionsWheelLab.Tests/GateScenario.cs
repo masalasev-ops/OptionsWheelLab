@@ -1,3 +1,4 @@
+using Microsoft.Data.Sqlite;
 using OptionsWheelLab.Core.Configuration;
 using OptionsWheelLab.Core.Generation;
 using OptionsWheelLab.Core.Identity;
@@ -43,31 +44,100 @@ internal static class GateScenario
     /// The gate's verdict on every quote, keyed by strike.
     /// </summary>
     /// <param name="book">
-    /// What the account already carries, defaulting to nothing.
+    /// What the account already carries. Required from 4.5, since a fixture whose
+    /// subject is not a cap calls <see cref="Shared"/> and has no book at all.
     /// </param>
     /// <param name="overrides">
     /// Config versions appended after the seed, for a fixture whose subject the
     /// seeded values cannot express.
     /// </param>
     /// <remarks>
-    /// <b>The default book is empty and the caps are therefore silent by
-    /// default.</b> That is right for the contract-constraint fixtures, which is
-    /// what this helper was built for: a book they did not ask about should not
-    /// put a reason on their quotes. It is wrong for a cap fixture, and a cap
-    /// tested against an empty book passes whether or not it works, so every
-    /// registered cap fixture states a book rather than taking this default.
+    /// <b>The book is stated rather than defaulted, and the fixtures that did not
+    /// want one call <see cref="Shared"/> instead.</b> This defaulted to
+    /// <see cref="BookState.Empty"/> until 4.5, which made the caps silent unless
+    /// a fixture asked for them, and its own remark said that was right for a
+    /// contract fixture and wrong for a cap fixture. The gate splitting at the
+    /// same seam turned the distinction into a signature: what remains here are
+    /// the cap fixtures and the one asserting that the two families compose, and
+    /// every one of them states the book it is about.
     /// </remarks>
     internal static IReadOnlyDictionary<decimal, IReadOnlyList<GateReason>> Gate(
         IReadOnlyList<ContractQuote> quotes,
+        BookState book,
         IReadOnlyList<EarningsReport>? earnings = null,
-        BookState? book = null,
         PositionState state = PositionState.Cash,
         IReadOnlyList<ConfigEntry>? overrides = null) =>
-        EnumeratedAndGated(quotes, earnings, book, state, overrides)
-            .Gated
-            .ToDictionary(
-                candidate => candidate.Candidate.Quote.Contract.Strike,
-                candidate => candidate.Reasons);
+        ByStrike(EnumeratedAndGated(quotes, earnings, book, state, overrides).Gated);
+
+    /// <summary>
+    /// The contract-level verdicts alone, which no book can change [D-W52].
+    /// </summary>
+    /// <remarks>
+    /// <b>There is no book here rather than an empty one.</b> This helper took a
+    /// book defaulting to <see cref="BookState.Empty"/> until 4.5, and its own
+    /// remark said that was right for a contract fixture and wrong for a cap
+    /// fixture. The gate splitting at the same seam makes the distinction a
+    /// signature rather than a convention: a fixture whose subject is a contract
+    /// constraint calls this and cannot be handed a cap verdict it did not ask
+    /// for, and a fixture whose subject is a cap calls <see cref="Gate"/> and
+    /// must state the book it is about.
+    /// </remarks>
+    internal static IReadOnlyDictionary<decimal, IReadOnlyList<GateReason>> Shared(
+        IReadOnlyList<ContractQuote> quotes,
+        IReadOnlyList<EarningsReport>? earnings = null,
+        OptionRight right = OptionRight.Put,
+        IReadOnlyList<ConfigEntry>? overrides = null)
+    {
+        using var scenario = Store(quotes, earnings, overrides);
+
+        return ByStrike(scenario.Generator.SharedFor(Symbol, Simulated, right));
+    }
+
+    /// <summary>
+    /// One shared evaluation, held open so more than one book can be applied over
+    /// it [D-W52].
+    /// </summary>
+    /// <remarks>
+    /// <see cref="Gate"/> and <see cref="Shared"/> each answer one question and
+    /// dispose the store. The property that one evaluation serves several books
+    /// cannot be asserted that way: it needs the shared result kept and the
+    /// per-maker pass run over it more than once, which is what the composition
+    /// root does.
+    /// </remarks>
+    internal static SharedScenario SharedAndBooks(
+        IReadOnlyList<ContractQuote> quotes,
+        BookState book,
+        IReadOnlyList<EarningsReport>? earnings = null,
+        OptionRight right = OptionRight.Put,
+        IReadOnlyList<ConfigEntry>? overrides = null) =>
+        new(Store(quotes, earnings, overrides), right);
+
+    /// <summary>A store whose shared evaluation is run once and kept.</summary>
+    internal sealed class SharedScenario : IDisposable
+    {
+        private readonly GateStore _store;
+
+        internal SharedScenario(GateStore store, OptionRight right)
+        {
+            _store = store;
+            Shared = store.Generator.SharedFor(Symbol, Simulated, right);
+        }
+
+        /// <summary>The contract-level verdicts, computed once.</summary>
+        internal IReadOnlyList<GatedCandidate> Shared { get; }
+
+        /// <summary>One book's caps applied over that one evaluation.</summary>
+        internal IReadOnlyList<GatedCandidate> Against(BookState book) =>
+            _store.Generator.Against(Shared, Simulated, book);
+
+        public void Dispose() => _store.Dispose();
+    }
+
+    private static IReadOnlyDictionary<decimal, IReadOnlyList<GateReason>> ByStrike(
+        IReadOnlyList<GatedCandidate> gated) =>
+        gated.ToDictionary(
+            candidate => candidate.Candidate.Quote.Contract.Strike,
+            candidate => candidate.Reasons);
 
     /// <summary>
     /// What the generator enumerated and what the gate made of it, both in the
@@ -93,7 +163,20 @@ internal static class GateScenario
         PositionState state = PositionState.Cash,
         IReadOnlyList<ConfigEntry>? overrides = null)
     {
-        using var store = TempStore.Empty();
+        using var scenario = Store(quotes, earnings, overrides);
+
+        return (
+            scenario.Generator.EnumerateFor(Symbol, Simulated, state),
+            scenario.Generator.GateFor(Symbol, Simulated, state, book ?? BookState.Empty));
+    }
+
+    /// <summary>A store holding this chain, with a generator over it.</summary>
+    private static GateStore Store(
+        IReadOnlyList<ContractQuote> quotes,
+        IReadOnlyList<EarningsReport>? earnings,
+        IReadOnlyList<ConfigEntry>? overrides)
+    {
+        var store = TempStore.Empty();
         new MigrationRunner(store.Connections).Run(Seeded);
 
         using (var write = store.Connections.Open(StoreAccess.Write))
@@ -117,16 +200,33 @@ internal static class GateScenario
                 new SyntheticChain(Symbol, [], quotes, earnings ?? [], []), Recorded);
         }
 
-        using var connection = store.Connections.Open(StoreAccess.ReadOnly);
+        return new GateStore(store);
+    }
 
-        var generator = new CandidateGenerator(
-            new AsOfMembership(connection),
-            new AsOfMarketData(connection),
-            new AsOfConfiguration(connection));
+    /// <summary>A store and its generator, disposed together.</summary>
+    internal sealed class GateStore : IDisposable
+    {
+        private readonly TempStore _store;
+        private readonly SqliteConnection _connection;
 
-        return (
-            generator.EnumerateFor(Symbol, Simulated, state),
-            generator.GateFor(Symbol, Simulated, state, book ?? BookState.Empty));
+        internal GateStore(TempStore store)
+        {
+            _store = store;
+            _connection = store.Connections.Open(StoreAccess.ReadOnly);
+
+            Generator = new CandidateGenerator(
+                new AsOfMembership(_connection),
+                new AsOfMarketData(_connection),
+                new AsOfConfiguration(_connection));
+        }
+
+        internal CandidateGenerator Generator { get; }
+
+        public void Dispose()
+        {
+            _connection.Dispose();
+            _store.Dispose();
+        }
     }
 
     /// <summary>

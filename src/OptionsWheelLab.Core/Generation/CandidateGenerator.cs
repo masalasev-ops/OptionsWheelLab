@@ -88,9 +88,14 @@ public sealed class CandidateGenerator
     /// <summary>
     /// The contracts sellable on <paramref name="symbol"/> at
     /// <paramref name="simulatedDate"/> given <paramref name="state"/>, in
-    /// contract identity order, empty when the name was not a member or the
-    /// state makes nothing sellable.
+    /// contract identity order, empty when the name was not a member or the chain
+    /// quotes none of that right.
     /// </summary>
+    /// <remarks>
+    /// It said "or the state makes nothing sellable" until 4.5, which was true
+    /// while two states enumerated nothing. Every state makes one right sellable
+    /// from 4.4 [D-W54], so that branch was unreachable and is gone.
+    /// </remarks>
     /// <remarks>
     /// A pure function of its three arguments over a fixed store: nothing else
     /// varies the answer, and a later observation is excluded by the as-of axis
@@ -103,18 +108,29 @@ public sealed class CandidateGenerator
     {
         ArgumentNullException.ThrowIfNull(symbol);
 
+        return EnumerateOf(symbol, simulatedDate, SellableRight(state));
+    }
+
+    /// <summary>
+    /// Every contract of one right this name could sell on this date.
+    /// </summary>
+    /// <remarks>
+    /// The right rather than the state, because enumeration depends on nothing
+    /// else about the state [D-W52]. Four states map to two rights, and a state
+    /// carried this far would be a parameter the filter never reads.
+    /// </remarks>
+    internal IReadOnlyList<EnumeratedCandidate> EnumerateOf(
+        Ticker symbol,
+        DateOnly simulatedDate,
+        OptionRight right)
+    {
+        ArgumentNullException.ThrowIfNull(symbol);
+
         // Membership is state, not a filter [D-W9]. Asked before the chain
         // because a non-member enumerates nothing whatever the chain holds, and
         // asked on both axes: which date is being asked about, and what was
         // known then.
         if (!_membership.WasMemberOn(symbol, date: simulatedDate, asOf: simulatedDate))
-        {
-            return [];
-        }
-
-        var sellable = SellableRight(state);
-
-        if (sellable is null)
         {
             return [];
         }
@@ -125,7 +141,7 @@ public sealed class CandidateGenerator
         return
         [
             .. quotes
-                .Where(quote => quote.Contract.Right == sellable)
+                .Where(quote => quote.Contract.Right == right)
                 .Select(quote => new EnumeratedCandidate(quote))
         ];
     }
@@ -168,23 +184,54 @@ public sealed class CandidateGenerator
         ArgumentNullException.ThrowIfNull(symbol);
         ArgumentNullException.ThrowIfNull(book);
 
-        if (_configuration is null)
-        {
-            throw new InvalidOperationException(
-                "This generator was built without configuration and can enumerate but not gate. "
-                + "Every constraint reads its bound as of the simulated date [D-W26], so the "
-                + "gate cannot run without a configuration surface to read.");
-        }
+        return Against(
+            SharedFor(symbol, simulatedDate, SellableRight(state)), simulatedDate, book);
+    }
 
-        var candidates = EnumerateFor(symbol, simulatedDate, state);
+    /// <summary>
+    /// The half of the gate every maker acting on this key shares [D-W52].
+    /// </summary>
+    /// <remarks>
+    /// <b>Keyed on the right rather than the state, because that is what the
+    /// evaluation depends on.</b> Four position states map to two rights
+    /// [<see cref="SellableRight"/>] and
+    /// <see cref="ContractConstraints.Evaluate"/> takes neither a state nor a
+    /// book, so two makers whose states share a right receive the same contracts
+    /// carrying the same verdicts. Computing this three times while storing it
+    /// once would make [D-W4]'s property a thing three evaluations agree about
+    /// rather than a thing there is one of [D-W52]. The one-ness is that
+    /// decision's; what [D-W4] asks for is agreement, and it is the refusal
+    /// guarding the stored set that would have to catch a failure of it, which it
+    /// cannot: it compares contract identities rather than verdicts.
+    /// <para>
+    /// <b>Rejected candidates are returned, not removed.</b> The gate's effect
+    /// is auditable only if what it refused travels with its reasons [D-W5,
+    /// D-W10].
+    /// </para>
+    /// <para>
+    /// Bounds resolve once here rather than per candidate [D-W37], so an
+    /// unresolvable bound raises once for the evaluation rather than once per
+    /// contract, and every candidate on this date is judged against the same
+    /// numbers. The report dates are read once too, over the widest window any
+    /// candidate on this chain could need, and narrowed per contract in memory.
+    /// </para>
+    /// </remarks>
+    public IReadOnlyList<GatedCandidate> SharedFor(
+        Ticker symbol,
+        DateOnly simulatedDate,
+        OptionRight right)
+    {
+        ArgumentNullException.ThrowIfNull(symbol);
+
+        var configuration = Gating();
+        var candidates = EnumerateOf(symbol, simulatedDate, right);
 
         if (candidates.Count == 0)
         {
             return [];
         }
 
-        var bounds = GateBounds.ResolveFor(_configuration, simulatedDate);
-        var caps = PortfolioBounds.ResolveFor(_configuration, simulatedDate);
+        var bounds = GateBounds.ResolveFor(configuration, simulatedDate);
         var reports = ReportDatesAcross(symbol, simulatedDate, candidates, bounds);
 
         return
@@ -200,19 +247,72 @@ public sealed class CandidateGenerator
                     .Where(date => date >= window.From && date <= window.To)
                     .ToList();
 
-                // Contract reasons then portfolio reasons, which is the enum's
-                // declared order and therefore the order a candidate carries
-                // them in [D-W4].
                 return new GatedCandidate(
                     candidate,
                     [
                         .. ContractConstraints.Evaluate(
                             candidate.Quote, simulatedDate, bounds, inWindow),
-                        .. PortfolioConstraints.Evaluate(candidate, caps, book),
                     ]);
             })
         ];
     }
+
+    /// <summary>
+    /// One maker's caps applied over the shared evaluation [D-W11, D-W52].
+    /// </summary>
+    /// <remarks>
+    /// <b>The reasons append rather than merge.</b> Contract reasons then
+    /// portfolio reasons is the vocabulary's declared order and therefore the
+    /// order a candidate carries them in [D-W4, <see cref="GatedCandidate"/>], so
+    /// appending here produces exactly what one pass produced before the split.
+    /// The record already stores the two halves apart [D-W52]; computing them
+    /// together while storing them apart was the half that made a shared set a
+    /// claim rather than a fact.
+    /// <para>
+    /// <b>The book is a required parameter rather than a defaulted one</b>
+    /// [D-W11]. An omitted book would default to carrying nothing, and a cap
+    /// against an empty book admits everything, so forgetting to pass one would
+    /// drop three structural risk controls while every test still passed. The
+    /// gate needing current portfolio state is the only backward edge in the
+    /// daily path [SYSTEM_DESIGN §3.3], and it arrives here.
+    /// </para>
+    /// </remarks>
+    public IReadOnlyList<GatedCandidate> Against(
+        IReadOnlyList<GatedCandidate> shared,
+        DateOnly simulatedDate,
+        BookState book)
+    {
+        ArgumentNullException.ThrowIfNull(shared);
+        ArgumentNullException.ThrowIfNull(book);
+
+        if (shared.Count == 0)
+        {
+            return [];
+        }
+
+        var caps = PortfolioBounds.ResolveFor(Gating(), simulatedDate);
+
+        return
+        [
+            .. shared.Select(candidate => new GatedCandidate(
+                candidate.Candidate,
+                [
+                    .. candidate.Reasons,
+                    .. PortfolioConstraints.Evaluate(candidate.Candidate, caps, book),
+                ]))
+        ];
+    }
+
+    /// <summary>
+    /// The configuration surface, or the refusal for a generator built without
+    /// one.
+    /// </summary>
+    private AsOfConfiguration Gating() =>
+        _configuration
+        ?? throw new InvalidOperationException(
+            "This generator was built without configuration and can enumerate but not gate. "
+            + "Every constraint reads its bound as of the simulated date [D-W26], so the "
+            + "gate cannot run without a configuration surface to read.");
 
     /// <summary>
     /// The reports falling in the widest clearance window any of these
@@ -233,7 +333,7 @@ public sealed class CandidateGenerator
     }
 
     /// <summary>
-    /// Which right a state makes sellable, or null when it makes none.
+    /// Which right a state makes sellable.
     /// </summary>
     /// <remarks>
     /// Cash sells puts and shares sell calls: that is the wheel, and the
@@ -266,7 +366,7 @@ public sealed class CandidateGenerator
     /// registered against 2.4 and not against this checkpoint.
     /// </para>
     /// </remarks>
-    private static OptionRight? SellableRight(PositionState state) => state switch
+    internal static OptionRight SellableRight(PositionState state) => state switch
     {
         PositionState.Cash => OptionRight.Put,
         PositionState.HoldingShares => OptionRight.Call,

@@ -91,7 +91,7 @@ public sealed class FX_EarningsClearanceRejects
     /// falls. Everything else about the quote passes.
     /// </summary>
     private static IReadOnlyList<GateReason> Verdict(DateOnly report) =>
-        GateScenario.Gate(
+        GateScenario.Shared(
             [GateScenario.Quote(50.00m)],
             [new EarningsReport(report, EarningsSession.AfterClose)])[50.00m];
 }

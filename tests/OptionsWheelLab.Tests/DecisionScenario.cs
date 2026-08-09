@@ -15,10 +15,12 @@ namespace OptionsWheelLab.Tests;
 /// A store holding a chain, kept open so decisions can be written against it.
 /// </summary>
 /// <remarks>
-/// <see cref="GateScenario"/> disposes its store before returning, which is right
-/// for a fixture asserting about verdicts and wrong for one asserting about what
-/// was recorded. This keeps the connection, and borrows that helper's quotes so
-/// the two are describing the same chain.
+/// <see cref="GateScenario.Gate"/> disposes its store before returning, which is
+/// right for a fixture asserting about verdicts and wrong for one asserting about
+/// what was recorded. This keeps the connection, and borrows that helper's quotes
+/// so the two are describing the same chain. From 4.5 that helper also offers
+/// <see cref="GateScenario.SharedAndBooks"/>, which keeps its store for a
+/// different reason: one evaluation applied to more than one book.
 /// </remarks>
 internal sealed class DecisionScenario : IDisposable
 {

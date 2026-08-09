@@ -35,7 +35,7 @@ public sealed class FX_SpreadCapRejects
     [Fact]
     public void A_quote_above_the_cap_is_rejected_and_one_below_it_is_not()
     {
-        var verdicts = GateScenario.Gate(
+        var verdicts = GateScenario.Shared(
         [
             GateScenario.Quote(Wide, bid: 0.30m, ask: 0.44m, delta: -0.07m),
             GateScenario.Quote(Tight, bid: 0.95m, ask: 1.01m, delta: -0.24m),
@@ -57,7 +57,7 @@ public sealed class FX_SpreadCapRejects
     [Fact]
     public void The_cap_brackets_from_both_sides()
     {
-        var verdicts = GateScenario.Gate(
+        var verdicts = GateScenario.Shared(
         [
             GateScenario.Quote(45.00m, bid: 1.00m, ask: 1.13m),
             GateScenario.Quote(47.50m, bid: 1.00m, ask: 1.1276m),

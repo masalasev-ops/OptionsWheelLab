@@ -5,7 +5,10 @@ using OptionsWheelLab.Core.Identity;
 using OptionsWheelLab.Core.Positions;
 using OptionsWheelLab.Core.Storage;
 using OptionsWheelLab.Core.Synthetic;
-using static OptionsWheelLab.Tests.TrialScenario;
+using OptionsWheelLab.Core.Decisions;
+using OptionsWheelLab.Core.Generation;
+using OptionsWheelLab.Core.MarketData;
+using OptionsWheelLab.Core.Membership;
 
 namespace OptionsWheelLab.Tests;
 
@@ -17,6 +20,22 @@ namespace OptionsWheelLab.Tests;
 /// 0.5 restated the byte-identical definition of done as identical stored rows
 /// because no run existed to make; 3.5 composes one, so the obligation is
 /// discharged in its own terms at last.
+/// <para>
+/// <b>Driven by makers from 4.5, and the change is not mechanical.</b> Until then
+/// this walked a supplied sequence naming three contracts and their bids, so what
+/// it asserted was that the machine is deterministic given the same choices. A
+/// seeded maker is the part that was missing, and the random control is the part
+/// that could have made it false. The three inline contracts are gone: a fixture
+/// that hands a maker its answer asserts nothing about choosing, which 4.5's own
+/// definition of done forbids.
+/// </para>
+/// <para>
+/// <b>The decision record is in the comparison now.</b> It did not exist when this
+/// rendering was written, and it is the primary artefact of the system [D-W3], so
+/// a determinism check over the ledger alone would have left the thing that
+/// matters most unchecked. It is also where a non-deterministic run would show
+/// first, since it carries a row for every session every maker was asked.
+/// </para>
 /// <para>
 /// <b>Compared as produced artefacts, never as a database file</b> [D-W28]. Two
 /// SQLite files differ in page layout, free-list order and journal state for
@@ -33,16 +52,23 @@ namespace OptionsWheelLab.Tests;
 /// <para>
 /// <b>Nothing in the run reads a clock, which is the finding rather than the
 /// precaution.</b> Every date the loop uses is a session date, and the ledger's
-/// two dates are both sessions [D-W39]. The clock reaches the store only through
-/// the migration and seed stamps, so those are given a fixed instant here to keep
-/// the setup identical, and the run itself would be unaffected by any instant at
-/// all. That is asserted below rather than left as a claim.
+/// two dates are both sessions [D-W39]. That is asserted below rather than left
+/// as a claim.
+/// <para>
+/// <b>An instant reaches the store in three places and is supplied at every
+/// one.</b> The migration and seed stamps, and from 4.5 the observation stamp
+/// every decision carries, which `MakerRun` takes as a parameter for this reason:
+/// a run that stamped its own record would read a clock and the record would
+/// differ between two invocations. One instant is given to all three here, so the
+/// comparison is about the run rather than about when it was made.
 /// </para>
 /// </remarks>
 public sealed class FX_RunIsByteIdentical
 {
     private static readonly DateTimeOffset Seeded =
         new(2026, 1, 1, 21, 0, 0, TimeSpan.Zero);
+
+    private static readonly Ticker Symbol = Ticker.Normalise("WDGT");
 
     [Fact]
     public void Two_invocations_produce_the_same_artefact()
@@ -67,9 +93,40 @@ public sealed class FX_RunIsByteIdentical
         Assert.Contains("trial:", rendered, StringComparison.Ordinal);
         Assert.Contains("position:", rendered, StringComparison.Ordinal);
 
-        // Nine ledger rows, one trial and four positions, which is §6.3's trial.
+        Assert.Contains("decision:", rendered, StringComparison.Ordinal);
+
+        // Three trials, one per maker, and the twenty-one decisions seven
+        // sessions and three makers produce.
+        Assert.Equal(3, rendered.Split("trial:").Length - 1);
+        Assert.Equal(21, rendered.Split("decision:").Length - 1);
+
+        // Nine: three rows each. The two that expired worthless carry the
+        // premium, its commission and the expiry, because an expiry that pays
+        // nothing is still an entry [D-W48]; the third carries the premium, its
+        // commission and the assignment.
         Assert.Equal(9, rendered.Split("ledger:").Length - 1);
-        Assert.Equal(4, rendered.Split("position:").Length - 1);
+    }
+
+    /// <summary>
+    /// The random control is in the run, so a draw is part of what is compared.
+    /// </summary>
+    /// <remarks>
+    /// <b>The vacuity guard this fixture needed once a maker drove it.</b> Two
+    /// invocations of a run whose every choice was deterministic by construction
+    /// would agree whether or not the seeded generator worked, so the assertion
+    /// that matters is that the arm whose choice comes from a draw took a
+    /// contract and took the same one twice [D-W51].
+    /// </remarks>
+    [Fact]
+    public void The_drawn_choice_is_part_of_what_is_compared()
+    {
+        var rendered = Invoke(Seeded);
+
+        Assert.Contains($"decision:{MakerIds.Random},", rendered, StringComparison.Ordinal);
+
+        // 45.00 is the strike §4's draw takes, and it reaches the ledger only
+        // because the draw put it there.
+        Assert.Contains("WDGT 2026-04-17 put 45.00", rendered, StringComparison.Ordinal);
     }
 
     /// <summary>
@@ -98,12 +155,20 @@ public sealed class FX_RunIsByteIdentical
         var thrown = Assert.Throws<InvalidOperationException>(
             () => Invoke(new DateTimeOffset(2027, 5, 4, 9, 30, 0, TimeSpan.Zero)));
 
-        Assert.Contains("Costs:", thrown.Message, StringComparison.Ordinal);
+        // The key it names moved from Costs: to Policy: when a maker began
+        // driving the run, because the maker resolves its band before anything
+        // prices a fill. Which key is first is not the property; that the run
+        // stops rather than producing a different artefact is.
+        Assert.Contains("Policy:", thrown.Message, StringComparison.Ordinal);
         Assert.Contains("2026-03-02", thrown.Message, StringComparison.Ordinal);
         Assert.Contains("D-W37", thrown.Message, StringComparison.Ordinal);
     }
 
     /// <summary>One whole invocation, rendered.</summary>
+    /// <remarks>
+    /// The chain is the worked example's, so the makers choose out of §2's own
+    /// quotes rather than out of anything this fixture invented.
+    /// </remarks>
     private static string Invoke(DateTimeOffset instant)
     {
         using var store = TempStore.Empty();
@@ -112,45 +177,84 @@ public sealed class FX_RunIsByteIdentical
         using var connection = store.Connections.Open(StoreAccess.Write);
         new ConfigWriter(connection).AppendAll(SeedValues.All, instant);
 
-        var put = Written(connection, FirstExpiry, OptionRight.Put, 50.00m);
-        var firstCall = Written(connection, SecondExpiry, OptionRight.Call, 52.50m);
-        var secondCall = Written(connection, ThirdExpiry, OptionRight.Call, 52.50m);
+        new MembershipWriter(connection).Append(
+            Symbol, MembershipKind.Joined, new DateOnly(2026, 1, 2), instant);
 
-        var run = new TrialRun(Machine(), new FillModel(new AsOfConfiguration(connection)), Calendar);
+        var chain = WorkedExampleOracle.LoadChain();
 
-        var result = run.Walk(
-            Chain(),
-            Opened,
-            ThirdMonday,
-            [
-                new OpenPut(Opened, put, Bid: 0.95m),
-                new WriteCoveredCall(MondayAfter, firstCall, Bid: 0.70m),
-                new WriteCoveredCall(SecondMonday, secondCall, Bid: 0.85m),
-            ]);
+        new ChainWriter(connection).Ingest(chain, instant);
 
+        var configuration = new AsOfConfiguration(connection);
         var trials = new TrialStore(connection);
-        var trialId = trials.OpenTrial("baseline", Symbol, result.State.OpenedOn, 50.00m);
 
-        trials.Append(trialId, result.Entries);
-        trials.Rebuild(trialId, TrialScenario.Seeded);
+        var driven = new MakerRun(
+            new CandidateGenerator(
+                new AsOfMembership(connection), new AsOfMarketData(connection), configuration),
+            configuration,
+            new FillModel(configuration),
+            SessionCalendar.Of(chain.Bars.Select(bar => bar.SessionDate)),
+            new DecisionStore(connection),
+            trials).Walk(
+                chain,
+                Symbol,
+                chain.Bars[0].SessionDate,
+                chain.Bars[^1].SessionDate,
+                [
+                    HighestCreditMaker.Baseline(configuration),
+                    new RandomWithinBandMaker(configuration),
+                    HighestCreditMaker.Learner(configuration),
+                ],
+                instant);
 
-        return Render(connection, trials, trialId);
+        foreach (var trial in driven.SelectMany(result => result.Trials))
+        {
+            trials.Rebuild(trial.TrialId, configuration);
+        }
+
+        return Render(connection, trials, driven);
     }
 
     /// <summary>
-    /// The ledger and both projections as text, read back out of the store.
+    /// The ledger, the decision record and both projections as text, read back out
+    /// of the store.
     /// </summary>
-    private static string Render(SqliteConnection connection, TrialStore trials, long trialId)
+    /// <remarks>
+    /// The decision record joined out to its chosen contract, so a run that chose
+    /// differently renders differently. Reading the candidate id alone would
+    /// compare two numbers a different insertion order could change without any
+    /// decision having changed.
+    /// </remarks>
+    private static string Render(
+        SqliteConnection connection,
+        TrialStore trials,
+        IReadOnlyList<MakerRunResult> driven)
     {
         var rendered = new StringBuilder();
 
-        foreach (var entry in trials.EntriesFor(trialId))
+        foreach (var trial in driven.SelectMany(result => result.Trials).OrderBy(t => t.TrialId))
         {
-            rendered.Append(
-                $"ledger:{entry.EntryDate:yyyy-MM-dd},{entry.KnownOn:yyyy-MM-dd},"
-                + $"{StoreLedgerEntryKind.ToStored(entry.Kind)},"
-                + $"{StoreDecimal.ToStored(entry.Amount)},{entry.Contract},{entry.Note}\n");
+            foreach (var entry in trials.EntriesFor(trial.TrialId))
+            {
+                rendered.Append(
+                    $"ledger:{trial.TrialId},{entry.EntryDate:yyyy-MM-dd},"
+                    + $"{entry.KnownOn:yyyy-MM-dd},"
+                    + $"{StoreLedgerEntryKind.ToStored(entry.Kind)},"
+                    + $"{StoreDecimal.ToStored(entry.Amount)},{entry.Contract},{entry.Note}\n");
+            }
         }
+
+        // The primary artefact [D-W3], ordered by what it is about rather than by
+        // the order it happened to be written in.
+        Read(connection, rendered, "decision",
+            """
+            SELECT decisions.maker_id, decisions.decision_date, decisions.kind,
+                   decisions.trial_id, decisions.policy_version,
+                   contracts.expiry, contracts.right, contracts.strike
+            FROM decisions
+            LEFT JOIN candidates ON candidates.candidate_id = decisions.chosen_candidate_id
+            LEFT JOIN contracts ON contracts.contract_id = candidates.contract_id
+            ORDER BY decisions.decision_date, decisions.maker_id;
+            """);
 
         Read(connection, rendered, "trial",
             """
@@ -190,42 +294,5 @@ public sealed class FX_RunIsByteIdentical
 
             rendered.Append($"{label}:{string.Join(",", values)}\n");
         }
-    }
-
-    /// <summary>§5's closes, over the six sessions the trial touches.</summary>
-    private static SyntheticChain Chain() =>
-        new(
-            Symbol,
-            [
-                new UnderlyingBar(Symbol, Opened, Close: 52.40m),
-                new UnderlyingBar(Symbol, FirstExpiry, Close: 48.90m),
-                new UnderlyingBar(Symbol, MondayAfter, Close: 48.95m),
-                new UnderlyingBar(Symbol, SecondExpiry, Close: 51.20m),
-                new UnderlyingBar(Symbol, SecondMonday, Close: 51.30m),
-                new UnderlyingBar(Symbol, ThirdExpiry, Close: 53.40m),
-            ],
-            [],
-            [],
-            []);
-
-    private static ContractIdentity Written(
-        SqliteConnection connection,
-        DateOnly expiry,
-        OptionRight right,
-        decimal strike)
-    {
-        using var insert = connection.CreateCommand();
-        insert.CommandText =
-            """
-            INSERT INTO contracts (symbol, expiry, right, strike, multiplier, deliverable_shares)
-            VALUES ($symbol, $expiry, $right, $strike, 100, 100);
-            """;
-        insert.Parameters.AddWithValue("$symbol", Symbol.Value);
-        insert.Parameters.AddStored("$expiry", expiry);
-        insert.Parameters.AddStored("$right", right);
-        insert.Parameters.AddStored("$strike", strike);
-        insert.ExecuteNonQuery();
-
-        return ContractIdentity.Of(Symbol, expiry, right, strike);
     }
 }
