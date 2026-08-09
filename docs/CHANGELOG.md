@@ -12,7 +12,7 @@ against one evaluation.
   adapter from a decision to a choice, and a decision recorded for every session a
   maker was asked.
 - **`CandidateGenerator.SharedFor` and `Against`**, with `GateFor` kept as their
-  composition so its four callers are unchanged.
+  composition so its five callers are unchanged.
 - **D-W55**, a run holds a sequence of trials with one open at a time, amended the
   same day so the refusal keys on trials and never on decision kinds.
 - **D-W56**, the trial is minted before the decision naming it is recorded.

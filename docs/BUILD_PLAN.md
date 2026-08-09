@@ -967,7 +967,8 @@ Build state: **complete**. 2.1 to 2.5 built and signed off. Delivers one
 feasible set per name and date, produced by enumeration and filtered by a
 gate that sits inside the generator [D-W10], with every rejection reason
 recorded [D-W5]. On synthetic chains; no vendor data until Phase 8. Nothing
-persists a candidate or its reasons, which is Phase 4's.
+persisted a candidate or its reasons when this was written, which 4.2 built and
+4.5 split into the evaluation as well as the storage.
 
 All three of this phase's carried obligations are preconditions rather than
 work items, and that shapes the order. The worked example must be
@@ -1339,8 +1340,8 @@ Build state: **complete**. 3.1 to 3.5 built and signed off: the mechanics
 settled as decisions, the completeness pass run, the state machine and ledger
 built against four tables, the fill model pricing a quote into cash, and the run
 stepping a session range from choices supplied rather than chosen, byte-identical
-across two invocations. A loop steps the calendar from 3.5; no maker chooses,
-which is Phase 4's and is the only thing between this and a driven machine.
+across two invocations. A loop steps the calendar from 3.5, and no maker chose
+until 4.5, which is what stood between this and a driven machine.
 Delivers
 one trial from cash to cash: a put sold, assignment or expiry, shares held, calls
 written, called away or closed at the roll bound, with every cash movement in the

@@ -2678,9 +2678,32 @@ an empty subject set and a question not asked leave the same trace. The four
 decisions must be read against Phase 5's detail when it is authored, which is the
 first moment the set stops being empty.
 
-**The three acts, performed.** The marker sweep read every `Build state:` line off
-disk: five moved, being Phase 4's in `BUILD_PLAN`, `SYSTEM_DESIGN` §3.5 and §3.8,
-`FIXTURES` and `WORKED_EXAMPLE`; sixteen did not. Both state blocks were
-re-measured, this log's read directly because it carries no marker and the sweep
-keys on that string, and the archive's with its fixture table regenerated from a
-run. §11's question was asked and its answer is above.
+**The three acts, performed, and the first one performed twice.** Both state blocks
+were re-measured, this log's read directly because it carries no marker and the
+sweep keys on that string, and the archive's with its fixture table regenerated
+from a run. §11's question was asked and its answer is above.
+
+**The marker sweep was reported as five moved and sixteen unchanged, and that was
+wrong.** A check run against the sign-off before it merged found five of the
+sixteen false at HEAD, so **ten moved and eleven did not**. What produced the
+error is worth more than the number: the sweep read the marker *lines*, which is
+what a grep returns, and asked of each whether this checkpoint had changed it. The
+act is to read each marker's whole text and ask whether it is true. **The same
+distinction failed at 4.3**, where the archive block's figures were re-read
+instead of the block being read against the repository, and this is that failure
+in the other artefact.
+
+**Two of the five had been false since 4.2, not since 4.5.** `SYSTEM_DESIGN` §3.4
+said a candidate's reasons are returned and dropped and their columns are Phase
+4's; `BUILD_PLAN`'s Phase 2 marker said nothing persists a candidate, which is
+Phase 4's. Migration 9 built those columns three checkpoints ago. So three
+sign-offs ran this act and none of them caught it, which is what a sweep keyed on
+"did this checkpoint change it" cannot catch by construction: a marker falsified
+two checkpoints ago is never the checkpoint in hand.
+
+The other three: `ORIENTATION` said no decision has ever been made, no maker
+chooses, no loop steps a calendar and nothing persists a candidate, all four false;
+`SYSTEM_DESIGN` §3.6 said nothing fills the decision record; and `BUILD_PLAN`'s
+Phase 3 marker said no maker chooses. Two more were corrected as incomplete rather
+than false: §3.3, whose component this checkpoint split, and §3.2's dividend
+clause, which points at an obligation the table no longer carries.

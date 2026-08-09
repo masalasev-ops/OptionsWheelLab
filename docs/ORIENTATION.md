@@ -9,11 +9,12 @@ picks what could be sold, and the machinery that follows a position once
 it is sold: the market-data schema, point-in-time reads, membership as
 state, chain ingest and corporate actions, the candidate generator with
 the risk gate inside it, and then the wheel's four states with the ledger
-they write to, all on synthetic chains. No decision has ever been made and
-no score computed. A trial can be walked through its states one session at
-a time, but nothing walks it: no maker chooses, and no loop steps a
-calendar. Nothing persists a candidate either, so what the gate refused is
-returned and dropped rather than recorded.
+they write to, all on synthetic chains; and from Phase 4 the decision
+record, three makers, and the root that asks them every session of a run.
+Three makers choose now, a loop steps a calendar, and every candidate the
+gate saw is persisted with the reasons it was refused for. No score has
+been computed: the counterfactual scorer, the outcome metric and regret
+are Phase 5's, and nothing outside a test starts a run.
 
 This document assumes you know what a put, a call, a strike, and assignment are,
 and roughly how the wheel behaves. If any of that is unfamiliar, read
