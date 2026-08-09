@@ -1,5 +1,54 @@
 # CHANGELOG
 
+## [1.48.0] — 2026-08-09
+
+**Checkpoint 4.5 signed off, and Phase 4 closes.** A maker drives the run. The
+gate splits where its verdicts already split, and three makers act every session
+against one evaluation.
+
+### Added
+- **`MakerRun`**, the composition root. One shared evaluation per session and
+  right, each maker's caps over it, a machine built where each trial opens, the
+  adapter from a decision to a choice, and a decision recorded for every session a
+  maker was asked.
+- **`CandidateGenerator.SharedFor` and `Against`**, with `GateFor` kept as their
+  composition so its four callers are unchanged.
+- **D-W55**, a run holds a sequence of trials with one open at a time, amended the
+  same day so the refusal keys on trials and never on decision kinds.
+- **D-W56**, the trial is minted before the decision naming it is recorded.
+- **`FX-MakersDriveTheRun`** and **`FX-OneSetThreeBooks`**.
+
+### Changed
+- **D-W52 amended**: the shared and per-maker split governs the evaluation and not
+  only the storage.
+- **D-W53 amended**: the state machine is constructed where a trial opens, so a
+  run cannot hold one. `TrialRun` stopped holding one, which makes it structural.
+- **`OpenTrialContext` is `OpenShort`** and its ask is nullable. Its absence says
+  there is no short, which is true in cash and in holding shares.
+- **`FX-RunIsByteIdentical` is rewritten**, driving three makers over the worked
+  example's chain with no contract supplied, and comparing the decision record.
+- **`WORKED_EXAMPLE` §6.1 and §6.2 are reproduced by makers**, and §6.3 as far as
+  its assignment.
+- `SellableRight` is total; `GateScenario.Gate` requires a book and gains a
+  `Shared` sibling that takes none.
+
+### Fixed
+- **A trial still open when a run's window ended was never appended**, so the
+  store held a `trials` row with no ledger under it. Found by the first fixture to
+  run the root.
+- **Three citation defects in decisions authored on this branch**: one-ness
+  attributed to D-W4, a ledger grain to D-W35, a named loss to D-W3. Every rule
+  survived; every attribution was wrong.
+- **`BookState`'s remark asserted two contradictory things**, because 4.4's
+  correction was appended above the sentence it corrects rather than through it.
+- Eleven further sentences a verification sweep found true when written and made
+  false by this branch.
+
+### Raised
+- **The session loop is written twice**, in `TrialRun` and `MakerRun`, each
+  stating the choice-then-advance order independently. Owed at Phase 5, where the
+  counterfactual scorer becomes the third walk over the same sessions.
+
 ## [1.47.0] — 2026-08-08
 
 **Checkpoint 4.4 signed off.** A maker acts on a trial it already holds. The

@@ -4,9 +4,10 @@ Appended to, never rewritten. The repository is the authority on build state.
 
 ## Current state
 
-**Phase 0 complete and reviewed. Phases 1, 2 and 3 complete. Phase 4 started.**
-Checkpoints 0.1 to 0.8, 1.1 to 1.5, 2.1 to 2.5, 3.1 to 3.5 and 4.1 to 4.4 built
-and signed off. 4.5 is not started. The documentation corpus is at v1.47.0.
+**Phase 0 complete and reviewed. Phases 1, 2, 3 and 4 complete.** Checkpoints 0.1
+to 0.8, 1.1 to 1.5, 2.1 to 2.5, 3.1 to 3.5 and 4.1 to 4.5 built and signed off.
+Phase 5 is not started and its detail is due. The documentation corpus is at
+v1.48.0.
 
 **This block carries no `Build state:` marker and the sweep keys on that string**,
 so it was outside the sweep's scope rather than passed by it. Read at every
@@ -2579,3 +2580,107 @@ checkpoint only when its detail exists and its work is next.
 
 My own ten was right about `main` and agreed with a wrong reading for a different
 reason, which is the least useful way for two figures to match.
+
+### 2026-08-09 — corpus v1.48.0
+
+**Checkpoint 4.5 signed off, and Phase 4 closes.** The gate split where its
+verdicts already split, a composition root that asks three makers every session, a
+run holding a sequence of trials, two registered fixtures and a determinism
+fixture rewritten. No obligation closed and one raised, so the table rises from
+ten rows to eleven. The suite went from 745 to 764 and the guards from 215 files
+to 219.
+
+**Larger than its scope, in three places, and each is worth naming.** Its detail
+described a composition; what it took was a change to a built component's surface,
+a rename of a type 4.4 shipped, and a rewrite of a fixture registered at 3.5.
+
+**The gate split was not in 4.5's detail and came from reading `IDecisionMaker`'s
+own remark against `GateFor`'s signature.** That remark said one call per symbol,
+session and right produces the set and all three makers are handed it; the method
+takes a book as a fourth argument, and [D-W11] makes a book per maker, so a single
+call had to pick a book that does not exist. The measurement that settled it is
+that the refusal guarding the stored set compares contract identities and not
+verdicts, so three separate evaluations pass it while the property fails. **A
+property enforced by a comparison that cannot see the difference is not enforced.**
+
+**The rename came from the build, not the plan.** 4.4's `OpenTrialContext` could
+not be constructed for two states a run reaches: a session quoting no ask for the
+short, and a trial holding shares, which has no short at all. Passing null in
+either case sent the maker down the opening path, where it would sell a second put
+against a position it already held. The type is `OpenShort` now, its ask is
+nullable, and the parameter's absence says there is no short, which is true in
+cash and in holding shares for different reasons and with one consequence.
+
+**The detail said `TrialRun` takes a maker, and the build did not.** A type
+holding a state machine is the shape [D-W53] forbids one level up, so the
+maker-driven loop could not be that type as constructed. The detail is corrected
+rather than the build reported as departing from it, on the rule that an unbuilt
+checkpoint's detail is live intent.
+
+**Two adversarial sweeps ran, and the second is the one worth recording.** The
+first read the plan before any code and refuted a defect of mine: I predicted
+recording a close would throw on a dictionary lookup, and two independent
+verifiers showed it cannot, because a close can only be produced on a session that
+quotes the short and such a session enumerates it into the offered set.
+
+The second read the branch against itself and found **fourteen sentences true when
+written and made false by this branch**, of which **three are citation defects in
+decisions this branch had just authored**. D-W52's amendment attributed one-ness to
+[D-W4], which asks for agreement and tests it by comparison, and which D-W52 itself
+says so seventeen lines below. D-W55 cited [D-W35] for a ledger grain it does not
+state and for a shape that decision exists to permit rather than prevent. D-W56
+said [D-W3] names the loss of a decision's link to its trial, where D-W3's loss is a
+decision that cannot be re-scored and a null trial identifier is still re-scorable.
+Every rule survived and every attribution was wrong, **which is why reading the
+rule back tells you nothing about the citation**. That is the ninth, tenth and
+eleventh recorded instances.
+
+**A correction I reported as landed at step 2 had not landed.** `BookState`'s
+remark asserted both that two states enumerate calls and that only one does,
+because the fix went in above the sentence it corrects instead of through it. The
+same paragraph named only cash as basis-less where a short put is too. This is the
+same failure as 4.3's archive block: the act was performed on the thing that was
+already there rather than on what the paragraph should say.
+
+**An axis that fails is not an axis that found nothing.** The second sweep's
+decisions axis, the one hunting the citation defect, died on an API error and
+returned nothing. Reported as written it would have read as clean, and it is the
+axis that found three of the fourteen. It was re-run to completion before anything
+was reported.
+
+**The first fixture to run the composition root found a defect in it.** A trial
+still open when the run's window ended was returned to the caller and never
+appended, so the store held a `trials` row with no entries under it and the rebuild
+stopped rather than resolving. The step that shipped the root said plainly that
+nothing exercised it yet; this is what that was worth.
+
+**Two of my expectations were wrong and the fixture was right.** Nine ledger rows
+rather than seven, since an expiry that pays nothing is still an entry [D-W48]. And
+the key named by the refusal for a store seeded after the run's dates moved from
+`Costs:` to `Policy:`, because a maker resolves its band before anything prices a
+fill. Which key comes first is not the property; that the run stops rather than
+differing quietly is.
+
+**`WORKED_EXAMPLE` §6.1 and §6.2 are reproduced by makers**, 29.35 and 54.35 out of
+ledgers a run wrote from trials the random and learner arms opened themselves. They
+had been the totals of the two trials no maker had opened. §6.3 reproduces as far
+as its assignment: its two covered calls are legs in its own table and never quotes
+in §2, so no enumeration offers them. Its 498.05 total is still reproduced, by the
+fixture that supplies them, which is the only way to reach a contract the document
+does not quote.
+
+**[`CLAUDE.md` §11]'s question, asked against every unspent prompt.** Four
+decisions were added or amended, so it was asked. **The answer is none, and the
+reason is that the set is empty**: detail is written one phase ahead, Phase 4's
+covered 4.1 to 4.5 and all five are now built, and Phase 5's is unwritten and
+becomes due at this sign-off. Recorded rather than omitted, because a question with
+an empty subject set and a question not asked leave the same trace. The four
+decisions must be read against Phase 5's detail when it is authored, which is the
+first moment the set stops being empty.
+
+**The three acts, performed.** The marker sweep read every `Build state:` line off
+disk: five moved, being Phase 4's in `BUILD_PLAN`, `SYSTEM_DESIGN` §3.5 and §3.8,
+`FIXTURES` and `WORKED_EXAMPLE`; sixteen did not. Both state blocks were
+re-measured, this log's read directly because it carries no marker and the sweep
+keys on that string, and the archive's with its fixture table regenerated from a
+run. §11's question was asked and its answer is above.

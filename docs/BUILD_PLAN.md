@@ -636,8 +636,9 @@ to differ. A count of this table is a count of rows. Rows sharing an Owed at
 value are separate obligations, and a count of distinct values is not a count of
 this table.
 
-**Ten rows stand, none at checkpoint granularity and ten at phase**, read off the
-table below at 4.4's sign-off. It stood at eleven, two and nine, at 4.3's; at ten,
+**Eleven rows stand, none at checkpoint granularity and eleven at phase**, read
+off the table below at 4.5's sign-off. It stood at ten, none and ten, at 4.4's; at
+eleven, two and nine, at 4.3's; at ten,
 two and eight, at 4.2's; at
 eight, two and six, at 4.1's; at
 eleven, five and six, when Phase 4's detail was authored; at eleven, none and
@@ -666,6 +667,11 @@ authored**, which is not the table emptying but its two checkpoint-granularity
 rows both closing at once. Every remaining row is owed at a phase whose detail is
 unwritten, so the next reading that moves rows without closing any will be Phase
 5's detail being authored.
+
+**4.5 closed none and raised one**, which is a checkpoint that inherited nothing:
+4.4 took both rows naming a checkpoint, and what 4.5 owed was the composition its
+own detail described. The row it raised is the second session loop, found by
+correcting a sentence that claimed there was one.
 
 **Between the two readings before this one nothing was closed or raised and five
 rows still moved**, which is this column's rule doing what it is for: it names a checkpoint
@@ -1648,16 +1654,14 @@ its reason is corrected.
 
 ## Phase 4 — Decision record and three makers in parallel
 
-Build state: **partly built**. 4.1 to 4.4 built and signed off: the grains
-settled with no code, the feasible set keyed on symbol, session and right, its
-gate reasons split by whether they are computed against a book, a trial's bounds
-fixed at its open, then the record itself, five tables with a writer and a reader
-that rebuilds a decision from them alone, then the three makers, and then what one
-does with a trial it already holds. 4.5 is not started, so nothing drives a maker
-across sessions: a maker rolls and closes now [D-W54], and what asks it to is a
-test. A loop
-steps a calendar from 3.5 and the choices it applies are supplied, so the rest of
-this phase is the thing that supplies them and the record of what it supplied.
+Build state: **complete**. 4.1 to 4.5 built and signed off: the grains settled
+with no code, the feasible set keyed on symbol, session and right, its gate
+reasons split by whether they are computed against a book, a trial's bounds fixed
+at its open, then the record itself, five tables with a writer and a reader that
+rebuilds a decision from them alone, then the three makers, then what one does
+with a short it already holds, and then the root that asks them. Three makers
+drive a chain now, each carrying its own sequence of trials, and one decision
+record holds every session any of them was asked.
 Delivers three makers acting
 every session on one feasible set with separate ledgers [D-W4], and the journal
 that makes each of their decisions re-scorable later [D-W3]. On synthetic chains;

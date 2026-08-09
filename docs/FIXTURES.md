@@ -4,9 +4,9 @@ The single registry of test fixtures and source guards. Prompts and checkpoints
 reference the entries registered against them here; they never enumerate names
 inline.
 
-Build state: **partly built**. The sixty-eight entries registered against 0.2 to
-4.4 are implemented, being sixty-five fixtures and three guards; the rest belong
-to checkpoints not yet reached. 1.2 and 2.1 registered none, which their details
+Build state: **partly built**. The seventy entries registered against 0.2 to 4.5
+are implemented, being sixty-seven fixtures and three guards; the rest belong to
+checkpoints not yet reached. 1.2 and 2.1 registered none, which their details
 state.
 
 3.3 is the first checkpoint to discharge the entry-to-artefact direction against

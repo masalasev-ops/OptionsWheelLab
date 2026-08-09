@@ -18,7 +18,7 @@ sign-off leaves nothing describing the present in between.
 
 # Current state
 
-Corpus v1.47.0.
+Corpus v1.48.0.
 
 | | |
 |---|---|
@@ -26,8 +26,8 @@ Corpus v1.47.0.
 | Phase 1 | complete, 1.1 to 1.5 built and signed off |
 | Phase 2 | complete, 2.1 to 2.5 built and signed off |
 | Phase 3 | complete, 3.1 to 3.5 built and signed off |
-| Phase 4 | 4.1 to 4.4 built and signed off, 4.5 not started |
-| CI | green, 745 tests, guards then restore then build then test, on push to `main` and every pull request |
+| Phase 4 | complete, 4.1 to 4.5 built and signed off |
+| CI | green, 764 tests, guards then restore then build then test, on push to `main` and every pull request |
 
 **The block this one inherits was stale for two checkpoints, which is why
 re-measuring it is an act rather than a habit.** In `phase-3.md` it read v1.39.0
@@ -40,10 +40,11 @@ rather than edited where it looked wrong.
 record: migration 9's five tables, a writer, a reader, two registered fixtures and
 a third whose coverage it repaired. The suite went from 672 to 691 and the guards
 from 191 files to 201. 4.3 built the three makers and took the suite to 727 and
-the guards to 212. 4.4 gave a maker something to do with a trial it already holds:
+the guards to 212. 4.4 gave a maker something to do with a short it already holds:
 the roll and close rule, a fourth choice the state machine honours, and the first
 call site `TrialBounds.ResolveFor` has ever had. 727 to 745, and 212 files to
-215.
+215. 4.5 split the gate where its verdicts already split and built the root that
+asks the makers, taking the suite to 764 and the guards to 219.
 
 Which branch the work sits on and which pull requests have merged are not recorded
 here. Git holds both exactly, and a fact kept in two places drifts.
@@ -446,13 +447,20 @@ FX-NoShareCountInOptionCash is what keeps it one.
 
 ## The decision record and the makers
 
-**Built across 4.2 to 4.4, and nothing drives it.** Five append-only tables, a
-writer, a reader that rebuilds a decision from the record alone, and three makers
-that choose from a set they are handed and act on a trial they already hold. What
-asks a maker for a decision today is a test.
+**Built across 4.2 to 4.5, and a run drives it.** Five append-only tables, a
+writer, a reader that rebuilds a decision from the record alone, three makers that
+choose from a set they are handed and act on a short they already hold, and a
+composition root that asks all three every session and records what each decided.
+What asks a maker for a decision is `MakerRun`, and what asks `MakerRun` is a
+test: no operator entry point runs anything.
 
-The feasible set is stored once per symbol, session and right and referenced by
-every decision made against it [D-W52]. The key comes from what the generator
+The feasible set is computed once per symbol, session and right and stored once,
+and every decision made against it references it [D-W52, as amended]. The
+contract-level half is one evaluation the arms sharing a right are all handed; each
+maker's caps are applied over it against its own book. Computing it three times and
+storing it once would have made the property a thing three evaluations agree
+about, and the refusal guarding the stored set compares contract identities rather
+than verdicts, so it could not have seen a disagreement. The key comes from what the generator
 reads: position state reaches enumeration only through the right it makes
 sellable, so at most two non-empty sets exist per name and session however many
 makers there are. That is what makes [D-W4]'s byte-identical property true by
@@ -480,19 +488,30 @@ one no channel could change. The random control differs in rule rather than in
 rows and builds its generator inside the call from a seed derived per session and
 name. A band admits its own bounds and admits no candidate whose delta is absent.
 
-A maker acts on an open trial at or inside seven days to expiry and only if the
-short is in the money [D-W54]. It closes if a bound has been reached, if its band
+A maker acts on an open short at or inside seven days to expiry and only if it is
+in the money [D-W54]. It closes if a bound has been reached, if its band
 admits nothing, or if the roll would pay a net debit, and otherwise rolls. A
 session with no chain has no feasible set, so a maker can neither roll nor close
 and the position runs to expiry, which is why `WORKED_EXAMPLE` §6.3 still reaches
 its assignment under a rule that would otherwise have acted on it.
 
-The trial arrives as a parameter and carries no `PremiumBanked`, `GrossBasis` or
+The short arrives as a parameter and carries no `PremiumBanked`, `GrossBasis` or
 `NetBasis`, so a rule that rolled to defer realising a loss cannot be written
-rather than being discouraged. The selection function is injected, so each arm
-rolls by the rule it opens with; D-W54's sentence naming the highest-credit rule
-reads two ways at the random control, and taking it literally would make that
-control roll by a rule it does not open with.
+rather than being discouraged. Its absence says there is no short, which is true in
+cash and in holding shares for different reasons and with one consequence: the
+maker opens, and the offered set says whether that is a put or a covered call. The
+selection function is injected, so each arm rolls by the rule it opens with;
+D-W54's sentence naming the highest-credit rule reads two ways at the random
+control, and taking it literally would make that control roll by a rule it does not
+open with.
+
+`MakerRun` is the root. It groups the arms on the right their state makes
+sellable, evaluates the shared half once per group, applies each maker's caps, asks
+each maker, mints a trial before recording the decision that opened it [D-W56], and
+turns the decision into the choice the machine applies. A machine is constructed
+where each trial opens rather than once per run, so a run cannot hold one [D-W53].
+Each arm carries a sequence of trials, opening again when one returns to cash
+[D-W55].
 
 ## Configuration
 
@@ -604,7 +623,7 @@ bands the list names.
 
 ## Tests
 
-745: 461 across sixty-five fixtures, and 284 across forty unregistered
+764: 477 across sixty-seven fixtures, and 287 across forty-one unregistered
 suites. The one 4.1 added pins that foreign keys are enforced on a connection this
 store opens, read through the real factory, because a probe written for the same
 question set the pragma before reading it and reported the value it had written. The three guards are checks rather than tests and are counted in neither.
@@ -632,11 +651,12 @@ number is visible from a green run.
 | FX-NoNondeterministicSql | 13 |
 | FX-UnmodelledActionStopsTheTrial | 12 |
 | FX-TickerDashForm | 12 |
+| FX-RollAtTheThreshold | 12 |
 | FX-ConfigStoreClassHonoured | 12 |
-| FX-RollAtTheThreshold | 11 |
+| FX-MakersDriveTheRun | 9 |
 | FX-RecordCarriesFeasibleSet | 8 |
+| FX-TrialBoundsFixedAtOpen | 7 |
 | FX-CeilingNotInsidePolicyBand | 7 |
-| FX-TrialBoundsFixedAtOpen | 6 |
 | FX-RunRefusesAChoiceTheStateCannotHonour | 6 |
 | FX-MigrateFromEmpty | 6 |
 | FX-EveryConfigSectionBinds | 6 |
@@ -656,9 +676,11 @@ number is visible from a green run.
 | FX-WorkedExampleGateVerdicts | 4 |
 | FX-WorkedExampleEnumerates | 4 |
 | FX-WorkedExampleChainLoads | 4 |
+| FX-RunIsByteIdentical | 4 |
 | FX-RollCapCloses | 4 |
 | FX-ProjectionRebuildsFromLedger | 4 |
 | FX-ProceedsUsableOnSettlement | 4 |
+| FX-OneSetThreeBooks | 4 |
 | FX-OffWatchlistRejected | 4 |
 | FX-NextSessionSkipsAClosedDate | 4 |
 | FX-MaxDteBelowTrialBound | 4 |
@@ -675,7 +697,6 @@ number is visible from a green run.
 | FX-WorkedExampleChainPersists | 3 |
 | FX-ThreeMakersSameFeasibleSet | 3 |
 | FX-SnapshotRestoresIdentically | 3 |
-| FX-RunIsByteIdentical | 3 |
 | FX-PitMembershipExcludesLaterJoiner | 3 |
 | FX-NoCurrentConfigReadOnSimulatedPath | 3 |
 | FX-EveryAppKeyBinds | 3 |
@@ -696,35 +717,35 @@ append-only triggers make the tables impossible to clean between cases.
 
 ## Not built
 
-**Nothing drives a maker.** Three makers choose from 4.3, they roll and close
-from 4.4, and a loop steps a calendar from 3.5, and the two are not joined:
-`TrialRun` still takes a supplied sequence, so what asks a maker for a decision
-today is a test and nothing turns a maker's roll into the choice the machine
-applies. The scorer that would re-score a decision is Phase
-5's. `TrialRun` is also handed a machine
-already constructed, so no composition root resolves bounds and builds one. The
-two `Trial:` configuration rows are verified regardless, by the rebuild rather
-than by a run.
+**Nothing outside a test drives a run.** `MakerRun` joins the makers to the loop
+from 4.5, so a maker's decision does reach the machine and a run does produce
+ledgers and a record. What is missing is a caller: no operator entry point runs
+anything, and the scorer that would re-score a decision is Phase 5's.
 
-`decisions` and `candidates` are Phase 4's, so nothing persists a candidate or its
-reasons and a roll's decision row has nowhere to go. The trial's `maker_id` is the
-one projection column the ledger cannot supply, which is why a rebuild preserves it
-rather than reconstructing it [D-W35, as amended].
+**No roll or close has ever been produced by a run.** The rule exists from 4.4 and
+the root can carry it, and every chain in the tree either quotes one snapshot or
+quotes a short the maker never needs to act on, so the path from a maker's roll to
+a ledger entry is exercised only by tests that hand the machine a choice directly.
+A chain that rolls is what would close this, and none exists.
 
-No `FeasibleSet` type, and that is a choice rather than a gap. `GateFor`
-returning every candidate with its reasons in identity order is assembly,
-ordering and the refusal record; a type justified only by a later consumer is
-speculation, and no maker exists until Phase 4. The set's grain is (symbol,
-date) and Phase 4's obligation carries it.
+`BookState` is computed from 4.5, and only from the arm's own trial. `positions`
+exists from 3.3, so the backward edge SYSTEM_DESIGN §3.3 names could be a read of
+the table and is not: the root assembles a book from the state it is already
+carrying, which is the same figure by a shorter route and would not survive a
+second symbol.
 
-`BookState` is still a parameter and nothing computes one. `positions` exists from
-3.3, so the backward edge SYSTEM_DESIGN §3.3 names as the only one in the daily
-path could now be a read, and is not: no caller assembles a book from the table.
+**A run is over one symbol.** `MakerRun.Walk` takes a `Ticker` and a chain, so the
+per-name and total caps read the same number and their difference is untested.
+Nothing in the corpus says a run is per name; this is what got built.
 
-Rolling has a rule from 4.4 [D-W54] and no run exercises it. A maker decides to
-roll and the machine applies one, and nothing between them turns the first into
-the second, so every case that rolls is a test handing the machine a choice a
-maker was not asked for.
+No `FeasibleSet` type, and that is a choice rather than a gap. The generator
+returning every candidate with its reasons in identity order is assembly, ordering
+and the refusal record, and from 4.5 the shared half and the per-maker half are
+separate calls, which is the split D-W52 states rather than a type.
+
+The trial's `maker_id` is the one projection column the ledger cannot supply,
+which is why a rebuild preserves it rather than reconstructing it [D-W35, as
+amended]. From 4.5 the root supplies it at the open.
 
 `corporate_actions` has a writer and no as-of read. 1.5 reaches a predecessor
 through `ContractLineage`, which is timeless, and the state machine takes the
@@ -732,11 +753,14 @@ actions on a session as a parameter rather than reading them, so nothing yet ask
 what was in force at a date.
 
 No operator entry point ingests a chain, and none runs a trial. `ChainWriter`,
-`TrialStore`, `FillModel` and `TrialRun` have tests as their only callers.
+`TrialStore`, `FillModel`, `TrialRun` and `MakerRun` have tests as their only
+callers, and `MakerRun` is the one that would need a verb first.
 
-**Determinism is asserted over a run's output from 3.5**, which is the form 0.5
-stated and restated as stored rows for want of a run to make. What is still not
-asserted is determinism over a run a maker drove, since the choices are supplied.
+**Determinism is asserted over a run a maker drove, from 4.5**, which is the form
+0.5 stated and 3.5 could only assert over supplied choices. The comparison covers
+the ledger, both projections and the decision record, and the random control's
+draw is inside it, so two invocations agreeing is evidence about the seeded
+generator rather than about a run with nothing to vary.
 
 ## Owed
 
@@ -746,7 +770,7 @@ copied here: two registers of one list is how an obligation comes to exist in th
 nobody reads.
 
 Entries stand against Phases 5, 6, 8, 9 and 11, and against no checkpoint, 4.4
-having closed both of the rows that named one.
+having closed both of the rows that named one and 4.5 having inherited nothing.
 The count is not restated here. **The column names a checkpoint once the owning
 phase's detail exists and a phase otherwise**, stated at the table because two
 readings of it disagreed: a count over phase names alone misses the rows that have
@@ -755,7 +779,7 @@ and `FIXTURES.md`'s Checkpoint column, and v1.43.0 moved one and not the other,
 which leaves every checkpoint's entry-to-artefact definition of done resolving to
 nothing. Corrected at 4.1 and the practice recorded where the trigger is.
 
-**3.1 to 3.5 and 4.1 to 4.4 owe nothing.** 3.1 closed four rows while raising three;
+**3.1 to 3.5 and 4.1 to 4.5 owe nothing.** 3.1 closed four rows while raising three;
 3.2 closed its own and raised three; 3.3 closed four and raised five; 3.4 closed
 three and raised one; 3.5 closed two and raised none; 4.1 closed three and raised
 none; 4.2 closed none and raised two and 4.3 closed none and raised one, both having
@@ -763,7 +787,7 @@ carried nothing to close because 4.1 took all three of the grains this phase
 owed. 4.4 closed two and raised one, and one of the two it closed was 4.5's: both
 rows named one missing call, which is a shape to watch for, since a reading that
 checks only the rows naming the checkpoint in hand would have left it standing
-against work already done. **Phase 2 owes nothing.** 2.1 discharged the reconciliation row raised at
+against work already done. 4.5 closed none, having inherited none, and raised one. **Phase 2 owes nothing.** 2.1 discharged the reconciliation row raised at
 v1.6.0, the table's oldest and open for twenty-three corpus versions, 2.3
 discharged the crossed-quote row while opening two of its own, and 2.4
 discharged the risk row while opening one of its own. All three discharged rows
@@ -1159,3 +1183,71 @@ literal every other caller shares with the run.
 - **Two closes of one position must cost the same.** They do not: a forced close
   writes no commission entry and a chosen one does. Raised rather than fixed,
   because the amounts are recorded and changing them is a decision.
+
+## 4.5 The maker drives the run
+
+Branch `phase-4/checkpoint-4.5` off `main`. The last checkpoint in Phase 4 and the
+first that composes rather than builds: every part existed and nothing joined them.
+
+### The detail named one type where the work needed two
+
+It said `TrialRun` takes a maker rather than a supplied sequence. A type holding a
+state machine is the shape [D-W53] forbids one level up, so the maker-driven loop
+could not be that type as constructed, and the machine left its constructor. What
+went in beside it is a root that holds a `TrialRun` and drives its session
+enumeration, its facts and its application, so the walk is written once. **The
+detail was corrected rather than the build reported as departing from it**, on the
+rule that an unbuilt checkpoint's detail is live intent.
+
+### A property enforced by a comparison that cannot see the difference
+
+`GateFor` took a book alongside the key one call per symbol, session and right was
+supposed to use, and there is no book to pick: a cap is a claim about the book a
+maker built [D-W11]. The refusal guarding the stored set compares contract
+identities and not verdicts, so three separate evaluations would have passed it
+while the property failed. The gate splits where the record already split its
+verdicts, and the one-ness is structural rather than checked.
+
+### Two adversarial sweeps, one before the build and one before the sign-off
+
+The first read the plan against the code and killed a defect of mine: I predicted
+recording a close would throw, and two verifiers showed it cannot, because a close
+can only be produced on a session that quotes the short and such a session
+enumerates it. The second read the branch against itself and found fourteen
+sentences true when written and falsified by this branch, three of them citation
+defects in decisions this branch had just authored.
+
+**An axis that fails is not an axis that found nothing.** The second sweep's
+decisions axis died on an API error and returned nothing, which would have read as
+clean. It was re-run before anything was reported.
+
+### Constraints
+
+- **A correction appended above the sentence it corrects leaves both.**
+  `BookState` asserted that two states enumerate calls and that only one does, for
+  a whole checkpoint, because the fix went in beside the defect rather than through
+  it. Read the paragraph back after correcting it, not the diff.
+- **Check the citation, not the rule.** Three decisions authored here cited a
+  decision for a property it does not state: one-ness to [D-W4], a ledger grain to
+  [D-W35], a named loss to [D-W3]. Every rule survived and every attribution was
+  wrong, which is why reading the rule back tells you nothing.
+- **A rename's blast radius is every sentence that used the old noun**, and the
+  compiler sees none of them. Renaming a parameter left five prose sites saying
+  trial where the decision says short.
+- **A doc comment that promises a return the code cannot produce is a defect the
+  build cannot see.** Two survived the split: an empty result for a state that
+  makes nothing sellable, and a null right.
+- **Let the compiler decide which callers move.** Making the book required broke
+  exactly the fixtures whose subject was a contract constraint, which is a
+  measurement where reading the call sites would have been a guess.
+- **A fixture that hands a maker its answer asserts nothing about choosing.** The
+  determinism fixture walked three named contracts and asserted the machine is
+  deterministic given the same choices, which is not the property its own
+  registration claims.
+- **An untested composition root is worth what it is tested at.** The first
+  fixture to run it found a trial whose ledger was never written, because the run
+  ended while it was open. Nothing else would have found it.
+- **What a document cannot quote, no maker can choose.** §6.3's covered calls are
+  legs in its own table and absent from its chain, so the trial reproduces to its
+  assignment and stops. Extending the chain would have made the document agree
+  with the build because the build wrote the part it was checked against.

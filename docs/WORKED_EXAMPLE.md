@@ -29,16 +29,27 @@ quotes in the oracle that the oracle does not claim, which would make this docum
 agree with the build because the build wrote the part it was checked against. A
 fixture reproduces what §2 supports and records where it stops.
 
-**4.4 left §6.3 reproduced under a rule that could have changed it.** A maker acts
-at seven days to expiry on a short in the money [D-W54], and §6.3's last recorded
-close before its first expiry is 45.80 against a 50.00 strike. It reproduces
-because acting requires a feasible set and this chain is a single snapshot at
-2026-03-02, so no session between opening and expiry offers anything to roll into.
-That is an argument rather than a measurement: nothing drives a maker, so no
-fixture walks this trial through one.
+**4.4 left §6.3 reproduced under a rule that could have changed it, and 4.5
+measured it.** A maker acts at seven days to expiry on a short in the money
+[D-W54], and §6.3's last recorded close before its first expiry is 45.80 against a
+50.00 strike. It reproduces because acting requires a feasible set and this chain
+is a single snapshot at 2026-03-02, so no session between opening and expiry
+offers anything to roll into. That was an argument until a run drove three makers
+over this chain; it is now a measurement.
 
-Not built: §6.1 and §6.2, which are the totals of the two trials no maker has
-opened, and §7 and §8's scores and regret. **§4's three decisions are reproduced
+**§6.1 and §6.2 are reproduced from 4.5**, by makers rather than by a supplied
+sequence: 29.35 and 54.35 out of ledgers a run wrote, from trials the random and
+learner arms opened themselves. They were the totals of the two trials no maker
+had opened, for as long as no maker existed to open them.
+
+**§6.3 is reproduced by a maker as far as its assignment, and no further.** Its
+two covered calls are stated as legs in §6.3's own table and never as quotes in
+§2, so no enumeration offers them and no maker can choose them. A maker-driven run
+holds the shares to the end of the window. Its 498.05 total is still reproduced,
+by the fixture that supplies the two calls, which is the only way to reach a
+contract this document does not quote.
+
+Not built: §7 and §8's scores and regret. **§4's three decisions are reproduced
 from 4.3**, which is the first checkpoint with makers and the first to read that
 section at all: it has been this corpus's statement of what a decision-maker does
 since v1.0.0 with nothing checking it. Nine of the twelve fixtures naming this
