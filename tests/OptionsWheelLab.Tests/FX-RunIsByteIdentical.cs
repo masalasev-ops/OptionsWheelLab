@@ -116,9 +116,10 @@ public sealed class FX_RunIsByteIdentical
         var firstCall = Written(connection, SecondExpiry, OptionRight.Call, 52.50m);
         var secondCall = Written(connection, ThirdExpiry, OptionRight.Call, 52.50m);
 
-        var run = new TrialRun(Machine(), new FillModel(new AsOfConfiguration(connection)), Calendar);
+        var run = new TrialRun(new FillModel(new AsOfConfiguration(connection)), Calendar);
 
         var result = run.Walk(
+            Machine(),
             Chain(),
             Opened,
             ThirdMonday,

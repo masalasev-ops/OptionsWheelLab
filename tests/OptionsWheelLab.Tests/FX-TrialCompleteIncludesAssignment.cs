@@ -192,9 +192,10 @@ public sealed class FX_TrialCompleteIncludesAssignment
 
         using (store)
         {
-            var run = new TrialRun(Machine(), model, Calendar);
+            var run = new TrialRun(model, Calendar);
 
             var result = run.Walk(
+                Machine(),
                 WorkedExampleChain(),
                 Opened,
                 ThirdMonday,

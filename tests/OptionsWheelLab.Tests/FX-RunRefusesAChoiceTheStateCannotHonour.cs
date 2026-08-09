@@ -152,10 +152,9 @@ public sealed class FX_RunRefusesAChoiceTheStateCannotHonour
         using var connection = store.Connections.Open(StoreAccess.Write);
         new ConfigWriter(connection).AppendAll(SeedValues.All, Seeded);
 
-        var run = new TrialRun(
-            Machine(), new FillModel(new AsOfConfiguration(connection)), Calendar);
+        var run = new TrialRun(new FillModel(new AsOfConfiguration(connection)), Calendar);
 
-        var walk = () => run.Walk(chain ?? Chain(), Opened, ThirdMonday, choices);
+        var walk = () => run.Walk(Machine(), chain ?? Chain(), Opened, ThirdMonday, choices);
 
         return rethrow
             ? Assert.Throws<InvalidOperationException>(() => walk())
