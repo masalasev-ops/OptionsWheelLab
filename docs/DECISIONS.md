@@ -1574,6 +1574,13 @@ the state, and
 > at most two non-empty enumerations exist per symbol and session, however many
 > makers there are.
 
+That mapping was measured at 4.1, when both short states enumerated nothing. From
+4.4 each short state enumerates the right it is short [D-W54], which leaves this
+key unchanged rather than widened: enumeration filters on the right alone, so two
+states sharing a right share a set, and `ContractConstraints.Evaluate` takes
+neither a state nor a book, so they share its verdicts too. Four states still map
+to two rights and the bound above still holds.
+
 The obligation this closes was raised at v1.17.0 and asked for one set per name and
 date. That wording describes a generator taking neither parameter, which is the
 generator that existed when it was written.

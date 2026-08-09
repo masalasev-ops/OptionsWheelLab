@@ -31,7 +31,7 @@ public sealed class FX_CrossedQuoteRejected
     [Fact]
     public void A_crossed_quote_is_rejected_and_an_uncrossed_one_is_not()
     {
-        var verdicts = GateScenario.Gate(
+        var verdicts = GateScenario.Shared(
         [
             GateScenario.Quote(Crossed, bid: 1.20m, ask: 1.10m),
             GateScenario.Quote(Ordinary, bid: 0.95m, ask: 1.01m),
@@ -47,7 +47,7 @@ public sealed class FX_CrossedQuoteRejected
     [Fact]
     public void The_reason_is_crossed_and_not_the_spread_cap()
     {
-        var verdicts = GateScenario.Gate([GateScenario.Quote(Crossed, bid: 1.20m, ask: 1.10m)]);
+        var verdicts = GateScenario.Shared([GateScenario.Quote(Crossed, bid: 1.20m, ask: 1.10m)]);
 
         Assert.Contains(GateReason.CrossedMarket, verdicts[Crossed]);
         Assert.DoesNotContain(GateReason.SpreadCap, verdicts[Crossed]);
@@ -80,7 +80,7 @@ public sealed class FX_CrossedQuoteRejected
     [Fact]
     public void A_locked_market_is_admitted()
     {
-        var verdicts = GateScenario.Gate([GateScenario.Quote(Ordinary, bid: 1.10m, ask: 1.10m)]);
+        var verdicts = GateScenario.Shared([GateScenario.Quote(Ordinary, bid: 1.10m, ask: 1.10m)]);
 
         Assert.Empty(verdicts[Ordinary]);
     }

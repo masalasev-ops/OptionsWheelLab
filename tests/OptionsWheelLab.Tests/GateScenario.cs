@@ -1,3 +1,4 @@
+using Microsoft.Data.Sqlite;
 using OptionsWheelLab.Core.Configuration;
 using OptionsWheelLab.Core.Generation;
 using OptionsWheelLab.Core.Identity;
@@ -59,15 +60,41 @@ internal static class GateScenario
     /// </remarks>
     internal static IReadOnlyDictionary<decimal, IReadOnlyList<GateReason>> Gate(
         IReadOnlyList<ContractQuote> quotes,
+        BookState book,
         IReadOnlyList<EarningsReport>? earnings = null,
-        BookState? book = null,
         PositionState state = PositionState.Cash,
         IReadOnlyList<ConfigEntry>? overrides = null) =>
-        EnumeratedAndGated(quotes, earnings, book, state, overrides)
-            .Gated
-            .ToDictionary(
-                candidate => candidate.Candidate.Quote.Contract.Strike,
-                candidate => candidate.Reasons);
+        ByStrike(EnumeratedAndGated(quotes, earnings, book, state, overrides).Gated);
+
+    /// <summary>
+    /// The contract-level verdicts alone, which no book can change [D-W52].
+    /// </summary>
+    /// <remarks>
+    /// <b>There is no book here rather than an empty one.</b> This helper took a
+    /// book defaulting to <see cref="BookState.Empty"/> until 4.5, and its own
+    /// remark said that was right for a contract fixture and wrong for a cap
+    /// fixture. The gate splitting at the same seam makes the distinction a
+    /// signature rather than a convention: a fixture whose subject is a contract
+    /// constraint calls this and cannot be handed a cap verdict it did not ask
+    /// for, and a fixture whose subject is a cap calls <see cref="Gate"/> and
+    /// must state the book it is about.
+    /// </remarks>
+    internal static IReadOnlyDictionary<decimal, IReadOnlyList<GateReason>> Shared(
+        IReadOnlyList<ContractQuote> quotes,
+        IReadOnlyList<EarningsReport>? earnings = null,
+        OptionRight right = OptionRight.Put,
+        IReadOnlyList<ConfigEntry>? overrides = null)
+    {
+        using var scenario = Store(quotes, earnings, overrides);
+
+        return ByStrike(scenario.Generator.SharedFor(Symbol, Simulated, right));
+    }
+
+    private static IReadOnlyDictionary<decimal, IReadOnlyList<GateReason>> ByStrike(
+        IReadOnlyList<GatedCandidate> gated) =>
+        gated.ToDictionary(
+            candidate => candidate.Candidate.Quote.Contract.Strike,
+            candidate => candidate.Reasons);
 
     /// <summary>
     /// What the generator enumerated and what the gate made of it, both in the
@@ -93,7 +120,20 @@ internal static class GateScenario
         PositionState state = PositionState.Cash,
         IReadOnlyList<ConfigEntry>? overrides = null)
     {
-        using var store = TempStore.Empty();
+        using var scenario = Store(quotes, earnings, overrides);
+
+        return (
+            scenario.Generator.EnumerateFor(Symbol, Simulated, state),
+            scenario.Generator.GateFor(Symbol, Simulated, state, book ?? BookState.Empty));
+    }
+
+    /// <summary>A store holding this chain, with a generator over it.</summary>
+    private static GateStore Store(
+        IReadOnlyList<ContractQuote> quotes,
+        IReadOnlyList<EarningsReport>? earnings,
+        IReadOnlyList<ConfigEntry>? overrides)
+    {
+        var store = TempStore.Empty();
         new MigrationRunner(store.Connections).Run(Seeded);
 
         using (var write = store.Connections.Open(StoreAccess.Write))
@@ -117,16 +157,33 @@ internal static class GateScenario
                 new SyntheticChain(Symbol, [], quotes, earnings ?? [], []), Recorded);
         }
 
-        using var connection = store.Connections.Open(StoreAccess.ReadOnly);
+        return new GateStore(store);
+    }
 
-        var generator = new CandidateGenerator(
-            new AsOfMembership(connection),
-            new AsOfMarketData(connection),
-            new AsOfConfiguration(connection));
+    /// <summary>A store and its generator, disposed together.</summary>
+    private sealed class GateStore : IDisposable
+    {
+        private readonly TempStore _store;
+        private readonly SqliteConnection _connection;
 
-        return (
-            generator.EnumerateFor(Symbol, Simulated, state),
-            generator.GateFor(Symbol, Simulated, state, book ?? BookState.Empty));
+        internal GateStore(TempStore store)
+        {
+            _store = store;
+            _connection = store.Connections.Open(StoreAccess.ReadOnly);
+
+            Generator = new CandidateGenerator(
+                new AsOfMembership(_connection),
+                new AsOfMarketData(_connection),
+                new AsOfConfiguration(_connection));
+        }
+
+        internal CandidateGenerator Generator { get; }
+
+        public void Dispose()
+        {
+            _connection.Dispose();
+            _store.Dispose();
+        }
     }
 
     /// <summary>

@@ -158,10 +158,15 @@ public static class PortfolioConstraints
     /// break-even strike for no stated reason.
     /// </para>
     /// <para>
-    /// <b>A call with no basis stops rather than resolving either way.</b> Only
-    /// <see cref="Positions.PositionState.HoldingShares"/> enumerates calls, so a
-    /// call reaching here with no basis is a caller that has lost the position it
-    /// is gating for. Admitting would drop D-W19 silently and rejecting would
+    /// <b>A call with no basis stops rather than resolving either way.</b>
+    /// <see cref="Positions.PositionState.HoldingShares"/> and
+    /// <see cref="Positions.PositionState.ShortCall"/> both enumerate calls from
+    /// 4.4 [D-W54], and both carry a gross basis, because a short call is
+    /// reachable only from held shares and the basis is carried forward with it.
+    /// So a call reaching here with no basis is a caller that has lost the
+    /// position it is gating for. This once said only holding shares enumerates
+    /// calls, which 4.4 made false; the conclusion survives and the reason given
+    /// for it did not. Admitting would drop D-W19 silently and rejecting would
     /// blame the strike, which is D-W37's argument arriving through book state
     /// rather than through configuration.
     /// </para>

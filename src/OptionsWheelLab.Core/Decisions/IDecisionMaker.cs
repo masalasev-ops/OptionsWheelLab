@@ -54,11 +54,20 @@ public sealed record MakerDecision(
 /// </summary>
 /// <remarks>
 /// <b>The offered set is a parameter, not something a maker fetches.</b> One
-/// <see cref="CandidateGenerator.GateFor"/> call per symbol, session and right
-/// produces the set and all three makers are handed it. Three makers each calling
-/// the generator would satisfy 4.3's test and fail its definition of done, which
-/// asks that the byte-identical property hold by construction rather than by three
-/// evaluations agreeing.
+/// <see cref="CandidateGenerator.SharedFor"/> call per symbol, session and right
+/// produces the contract-level half and every maker acting against that key is
+/// handed it; each maker's caps are applied over it by
+/// <see cref="CandidateGenerator.Against"/>, against its own book [D-W11, D-W52].
+/// Three makers each evaluating the shared half would satisfy 4.3's test and fail
+/// its definition of done, which asks that the byte-identical property hold by
+/// construction rather than by three evaluations agreeing.
+/// <para>
+/// This said one <c>GateFor</c> call per symbol, session and right until 4.5, and
+/// that method takes a book as a fourth argument, which [D-W11] makes per maker.
+/// So a single call per key had to pick one maker's book and there is none to
+/// pick. The split is what makes the sentence true rather than aspirational, and
+/// <c>GateFor</c> remains the composition of the two for a caller holding both.
+/// </para>
 /// <para>
 /// <b>No maker takes a store.</b> The caller records, because 4.5 needs a
 /// composition root that drives a run and decides what is written, and a maker

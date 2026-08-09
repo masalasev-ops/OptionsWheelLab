@@ -23,7 +23,7 @@ public sealed class FX_DteWindowRejects
     [Fact]
     public void Candidates_on_either_side_of_the_window_are_rejected()
     {
-        var verdicts = GateScenario.Gate(
+        var verdicts = GateScenario.Shared(
         [
             GateScenario.Quote(40.00m, expiry: GateScenario.Simulated.AddDays(3)),
             GateScenario.Quote(45.00m, expiry: GateScenario.Simulated.AddDays(46)),
@@ -47,7 +47,7 @@ public sealed class FX_DteWindowRejects
     [Fact]
     public void The_window_admits_its_own_bounds()
     {
-        var verdicts = GateScenario.Gate(
+        var verdicts = GateScenario.Shared(
         [
             GateScenario.Quote(40.00m, expiry: GateScenario.Simulated.AddDays(6)),
             GateScenario.Quote(45.00m, expiry: GateScenario.Simulated.AddDays(7)),

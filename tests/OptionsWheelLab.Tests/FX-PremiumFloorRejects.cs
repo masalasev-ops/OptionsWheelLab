@@ -22,7 +22,7 @@ public sealed class FX_PremiumFloorRejects
     [Fact]
     public void A_bid_below_the_floor_is_rejected_and_one_above_it_is_not()
     {
-        var verdicts = GateScenario.Gate(
+        var verdicts = GateScenario.Shared(
         [
             // §3's 40.00: bid 0.15 against a floor of 0.30, spread 6.45 percent
             // so the liquidity cap is not what rejects it.
@@ -40,7 +40,7 @@ public sealed class FX_PremiumFloorRejects
     [Fact]
     public void A_bid_exactly_on_the_floor_passes_and_a_cent_below_does_not()
     {
-        var verdicts = GateScenario.Gate(
+        var verdicts = GateScenario.Shared(
         [
             GateScenario.Quote(45.00m, bid: 0.30m, ask: 0.32m, delta: -0.10m),
             GateScenario.Quote(47.50m, bid: 0.29m, ask: 0.31m, delta: -0.10m),
