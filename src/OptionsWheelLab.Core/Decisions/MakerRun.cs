@@ -135,7 +135,7 @@ public sealed class MakerRun
 
         foreach (var arm in arms)
         {
-            arm.Finish();
+            arm.Finish(_trials);
         }
 
         return [.. arms.Select(arm => new MakerRunResult(arm.Maker.MakerId, arm.Completed))];
@@ -394,8 +394,7 @@ public sealed class MakerRun
         /// <summary>Writes the finished trial down and returns this arm to cash.</summary>
         internal void Close(TrialStore trials)
         {
-            trials.Append(TrialId!.Value, _entries);
-            _completed.Add(new DrivenTrial(TrialId.Value, State!, [.. _entries]));
+            Write(trials);
 
             _entries.Clear();
             State = null;
@@ -414,14 +413,30 @@ public sealed class MakerRun
         /// case: its covered calls are stated as legs and never as quotes, so no
         /// maker can write them and the trial ends the run holding shares.
         /// </remarks>
-        internal void Finish()
+        internal void Finish(TrialStore trials)
         {
             if (State is null)
             {
                 return;
             }
 
-            _completed.Add(new DrivenTrial(TrialId!.Value, State, [.. _entries]));
+            Write(trials);
+        }
+
+        /// <summary>
+        /// The trial's ledger, appended once.
+        /// </summary>
+        /// <remarks>
+        /// <b>Shared between closing and finishing, because it was not.</b> A
+        /// trial the window cut short was returned to the caller and never
+        /// written, so the store held a `trials` row with no entries under it and
+        /// a rebuild stopped rather than resolving. Found by the determinism
+        /// fixture, which rebuilds every trial the run produced.
+        /// </remarks>
+        private void Write(TrialStore trials)
+        {
+            trials.Append(TrialId!.Value, _entries);
+            _completed.Add(new DrivenTrial(TrialId.Value, State!, [.. _entries]));
         }
     }
 }
