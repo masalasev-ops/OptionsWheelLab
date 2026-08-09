@@ -9,7 +9,10 @@ is a pointer.
 
 Build state: stated per section, not for the document. A section carries
 a marker once part of what it describes is built, and the sections
-without one describe designs nothing has yet implemented. This document
+without one describe designs nothing has yet implemented. §3.7 was the
+exception for five checkpoints and is not one now: read this claim against
+the section list rather than against the markers, because a sweep over the
+markers cannot see a section that has none. This document
 said "not built" as a whole and promised per-section markers as phases
 landed; none was ever added, so the claim went stale at 1.1 and stayed
 stale for five checkpoints.
@@ -197,8 +200,9 @@ stored once per symbol, session and right and referenced by every maker acting
 against it [D-W52], and the gate reasons are split by whether they were computed
 against a book. From 4.5 a composition root fills it: every session every maker is
 asked writes a row, including the sessions a maker takes nothing, because taking
-nothing is a choice and is scored [D-W5]. What is not built is the scorer that
-re-scores one, which is Phase 5's, and any caller outside a test.
+nothing takes no candidate and is still a decision, recorded with the set exactly
+as it stood [D-W3]. What is not built is the scorer that re-scores one, which is
+Phase 5's, and any caller outside a test.
 
 The primary artefact of the system, and more important than the position ledger.
 Every decision is journaled with the feasible set exactly as it stood, the
@@ -226,7 +230,9 @@ that steps a session range and produces the ledger, byte-identical across two
 invocations; at 4.4 the close a maker chooses, beside the close a bound forces;
 and at 4.5 the root that turns a maker's decision into the choice this machine
 applies, over a sequence of trials rather than one [D-W55]. The supplied-sequence
-entry point stays, which is what a determinism walk and a refusal case need.
+entry point stays, which is what a refusal case and the trial reproducing
+`WORKED_EXAMPLE` §6.3 need: that trial's covered calls are legs in its own table
+and never quotes, so no maker can choose them.
 
 Four states modelled as a discriminated union: cash, short put, holding shares,
 short call. Daily events drive transitions, and they lie on two axes rather than
@@ -410,7 +416,8 @@ in force and the reason for each, and `CHANGELOG.md` at v1.15.0 records them
 landing. Provenance is three kinds: transcribed from a corpus statement, taken
 from a proposed value in a decision, or judged.
 
-Four rows-classed keys remain unset, and they are owed rather than open. The
-three risk fractions are the operator's [D-W11] and the assignment fee has no
-statement anywhere. Both are carried obligations against the phase that first
-consumes them.
+No `rows`-classed key is unset. `SeedValues` covers all twenty-eight and the
+`seed` verb writes them; the three risk fractions landed at 2.4 and the
+assignment fee at 3.4, each at the checkpoint that first consumed it. This said
+four remain unset and was contradicted by this section's own marker seventeen
+lines above, which 3.4 rewrote while leaving this paragraph standing.

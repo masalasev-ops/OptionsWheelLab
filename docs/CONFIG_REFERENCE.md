@@ -29,8 +29,9 @@ of the session the trial opened [D-W53], because a rebuild telling
 `closed_at_bound` from `closed_by_choice` has to ask which bounds the run was
 under and the ledger cannot say. That satisfies the standard below without
 loosening it: `TrialBounds.ResolveFor` is called from a component in `src/`, and
-that call is a rebuild rather than a run. The composition root at 4.5 will be a
-second consumer, not the first.
+that call is a rebuild rather than a run. The composition root at 4.5 is a second
+consumer and not the first: `MakerRun` resolves a trial's bounds where it opens
+and the costs beside them.
 
 **What verifying a row takes, measured at 3.4 rather than assumed.** A `rows` key
 is verified when a type in `src/` resolves it and a component in `src/` calls
@@ -146,8 +147,8 @@ Phase 0.8.
 
 | Key | Store | Meaning | Consumer | Notes |
 |---|---|---|---|---|
-| `Trial:MaxRolls` | rows | rolls permitted before forced close at market | `TrialStore.Rebuild` via `TrialBounds`, and the state machine it is compared against | 2, judged [D-W14]. Low enough to bind sometimes rather than be decorative: the day bound already caps most rolled chains |
-| `Trial:MaxTrialDays` | rows | total days before forced close at market | `TrialStore.Rebuild` via `TrialBounds`, and the state machine it is compared against | 120, judged [D-W14], and constrained twice. Must exceed `Gate:MaxDte` [D-W24], and must leave the worked example's own 109-day trial representable or its total becomes unreachable |
+| `Trial:MaxRolls` | rows | rolls permitted before forced close at market | `TrialStore.Rebuild` and `MakerRun` via `TrialBounds`, and the state machine both build | 2, judged [D-W14]. Low enough to bind sometimes rather than be decorative: the day bound already caps most rolled chains |
+| `Trial:MaxTrialDays` | rows | total days before forced close at market | `TrialStore.Rebuild` and `MakerRun` via `TrialBounds`, and the state machine both build | 120, judged [D-W14], and constrained twice. Must exceed `Gate:MaxDte` [D-W24], and must leave the worked example's own 109-day trial representable or its total becomes unreachable |
 
 ## Scoring
 

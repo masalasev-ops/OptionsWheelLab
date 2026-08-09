@@ -10,10 +10,13 @@ namespace OptionsWheelLab.Core.Configuration;
 /// taken from a proposed value in a decision, or judged. The third is the one
 /// worth arguing, and there are four of them.
 /// <para>
-/// All twenty-four `rows`-classed keys are here. Nineteen landed at 0.8; the
+/// All twenty-eight `rows`-classed keys are here. Twenty-three landed at 0.8; the
 /// four <c>Risk:</c> keys landed at 2.4, which is the checkpoint that first
-/// reads them; and <c>Costs:AssignmentFee</c> landed at 3.4, which is the
-/// checkpoint that first computes with it. It stayed a carried obligation
+/// reads them; <c>Costs:AssignmentFee</c> landed at 3.4, which is the
+/// checkpoint that first computes with it; and the four
+/// <c>Policy:Learner:</c> keys landed at 4.3, which is the checkpoint that first
+/// has a learner to read them. This said twenty-four and nineteen, which was true
+/// until 4.3. It stayed a carried obligation
 /// rather than a gap for four phases, because leaving a key unseeded and
 /// leaving it unscheduled are different things.
 /// </para>

@@ -185,7 +185,7 @@ type-level check having been declined [D-W33].
 
 ## The worked example
 
-`WORKED_EXAMPLE.md` is the oracle for three fixtures and, since 2.1, teaches
+`WORKED_EXAMPLE.md` is the oracle for five fixtures and, since 2.1, teaches
 the gate as well as the wheel. Its chain is seven strikes on one expiry: three
 feasible, one failing the spread cap alone at 37.84 percent of mid, one failing
 the premium floor alone at half of it, and two failing the delta ceiling and the
@@ -211,11 +211,12 @@ reconciliation small, and it is the property to check before revising the chain
 again.
 
 **§10 lists seven derived fixtures where the registry cites this document in
-nine rows, and that is not a defect.** Its sentence claims that everything in
+twelve rows, and that is not a defect.** Its sentence claims that everything in
 its table is registered, which is true of all seven; it makes no claim in the
 other direction, and `FIXTURES.md` rule 4 says adding a fixture is not a doc
-change requiring propagation. The two absent rows are the chain loader's, out
-since Phase 0, and the enumerator's.
+change requiring propagation. The five absent rows are the chain loader's, out
+since Phase 0, the persister's, the enumerator's, the gate verdicts' and the
+decisions', the last registered at 4.3.
 
 ## Membership
 
@@ -376,8 +377,8 @@ committed capital and still did not put it here, since it is a function of the
 identity the record already carries and the obligation is better served by one
 computing site than by one field.
 
-`PositionState` is the concept without its table, four tags rendered through a
-declared `StorePositionState`. It starts at one, because a `default` reading
+`PositionState` had no table until 3.3 and has one now, four tags rendered through
+a declared `StorePositionState` and written to `positions.state` under a `CHECK`. It starts at one, because a `default` reading
 as `cash` would enumerate puts against an account holding shares. Cash sells
 puts and shares sell calls [D-W16, D-W19], and from 4.4 each short leg enumerates
 the right it is short [D-W54]. Both enumerated nothing until then, because no
@@ -389,7 +390,7 @@ maker sharing one [D-W52].
 
 ## Trials, the ledger and the fill
 
-**Built across 3.3 to 3.5, and a loop drives it but nothing chooses.** The machine
+**Built across 3.3 to 3.5, and a maker drives it from 4.5.** The machine
 is a function from a state and a session's facts to a state and its entries; the
 bounds, the calendar and the costs arrive resolved, so it reads no configuration,
 no clock and no table.
@@ -525,8 +526,8 @@ unbound because `CONFIG_REFERENCE.md` classes them `rows` and a registered optio
 type is itself a current-value accessor.
 
 All 28 `rows`-classed keys hold a value at version 1, written by the `seed` verb.
-Eleven of them are the `Policy:` bands and windows the three makers read, added at
-4.3.
+Eleven of them are the `Policy:` bands and windows the three makers read: seven
+landed with the seed verb at 0.8 and the learner's four at 4.3.
 `Costs:AssignmentFee` was the last one owed and was set at 3.4, transcribed from a
 named broker's published schedule with a retrieval date [D-W50], which is a kind
 of provenance the seeder did not previously have: every other entry is transcribed
@@ -601,7 +602,10 @@ polymorphic by design.
 Eight vocabularies have a declared stored form and a `CHECK` that must agree with
 it, asserted in both directions and including that no `CHECK` admits a value the
 code cannot produce; it was six until 4.2 added `DecisionKind` and `GateReason`,
-the latter checked against both reason tables. `StoreFillPoint` has no `CHECK` to
+the latter checked against both reason tables. Two have none to compare against,
+`StoreFillPoint` and, from 4.2, `StoreEarningsSession`, whose column gained no
+constraint and whose gap is a carried obligation. `StoreFillPoint` has no `CHECK`
+to
 compare against, because `config_rows.value` carries every section's values and a
 constraint there would have to know which key a row belongs to. That exclusion is
 stated at the type, at the fixture and in the registry row, and a case fails if
@@ -620,7 +624,7 @@ scope matching no files throws.
 Four SQL detectors, all reading `src/` only: no decimal ordering, no rewrite of an
 append-only table, no alias of a table or a column, and from 3.5 no call to a
 function whose value varies between runs. The alias one is the convention
-that discharges the alias obligation, and it is what makes the other two sound
+that discharges the alias obligation, and it is what makes the others sound
 without either resolving aliases. Its source arm admits a parenthesised expression
 as of 1.2, so an aggregate acquiring a name is reported; a CTE header stays clean
 because the alias group requires an identifier and the token after `AS` there is
@@ -765,8 +769,9 @@ what was in force at a date.
 
 No operator entry point ingests a chain, and none runs a trial. `ChainWriter` and
 `MakerRun` have tests as their only callers, and `MakerRun` is the one that would
-need a verb first; `TrialRun`, `TrialStore` and `FillModel` gained a `src/` caller
-at 4.5, which is `MakerRun` itself.
+need a verb first. `TrialRun` and `TrialStore` gained a `src/` caller at 4.5,
+which is `MakerRun`; `FillModel` did not, since the root takes one and hands it
+straight to the run rather than pricing anything.
 
 **Determinism is asserted over a run a maker drove, from 4.5**, which is the form
 0.5 stated and 3.5 could only assert over supplied choices. The comparison covers

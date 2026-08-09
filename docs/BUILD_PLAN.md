@@ -1915,9 +1915,11 @@ does not reimplement the walk: it holds a `TrialRun` and drives its session
 enumeration, its facts and its application, so one type advances a trial and both
 loops step the same sessions through the same per-session mechanics. Each keeps
 its own loop, because one advances a single trial and the other advances three
-arms, and the choice-then-advance order is therefore stated twice. `TrialRun` keeps its supplied-sequence entry point, which
-is what a determinism walk and a refusal case need, and the machine is constructed
-per walk so neither caller can hold one [D-W53].
+arms, and the choice-then-advance order is therefore stated twice. `TrialRun`
+keeps its supplied-sequence entry point, which is what a refusal case and the
+trial reproducing `WORKED_EXAMPLE` §6.3 need, and the machine is constructed per
+walk so neither caller can hold one [D-W53]. It named a determinism walk too, and
+the same checkpoint moved that fixture onto the maker-driven root.
 - Splits the gate where the verdicts already split [D-W52, as amended]. The
   contract-level evaluation runs once per symbol, session and right and every
   maker acting against that key is handed it; each maker's caps are applied over

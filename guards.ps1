@@ -14,8 +14,11 @@
     only the NuGet error appears. This script runs before restore, so the
     property it actually has is that it reports when restore does not succeed.
 
-    Today it holds two: no floating point in the tree [CLAUDE.md 2, D-W29], and
-    no ambient clock call outside the clock implementation [CLAUDE.md 2, D-W30].
+    Today it holds three: no floating point in the tree [CLAUDE.md 2, D-W29],
+    no ambient clock call outside the clock implementation [CLAUDE.md 2, D-W30],
+    and from 3.3 no option cash priced from a share count [D-W17]. The count is
+    printed from $checks at the end, so a run reports the real number and this
+    said two for two phases after the third arrived.
 
     THE APPEND-ONLY CHECK IS NOT HERE, and this is structural rather than a
     choice. Remove-NonCode strips raw string literals, every SQL statement in

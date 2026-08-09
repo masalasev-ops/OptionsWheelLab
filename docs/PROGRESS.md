@@ -2684,7 +2684,16 @@ both were caught by a check run against the sign-off before it merged.
 
 **The marker sweep was reported as five moved and sixteen unchanged, and that was
 wrong.** A check run against the sign-off before it merged found five of the
-sixteen false at HEAD, so **ten moved and eleven did not**. What produced the
+sixteen false at HEAD. **The corrected figure was wrong too**: ten and eleven,
+where diffing each marker's block across the branch gives eleven and ten. A
+post-merge reader made it twelve and nine.
+
+**Three passes gave three numbers, and the reason is that a marker's end was
+never defined.** A marker is a `Build state:` line and some prose; whether the
+prose stops at the first blank line or at the next heading changes which markers
+count as moved, and `WORKED_EXAMPLE`'s falls either side. The count is eleven and
+ten reading a marker as the paragraph its line opens, and the definition is stated
+here because a figure whose subject is undefined is not a measurement. What produced the
 error is worth more than the number: the sweep read the marker *lines*, which is
 what a grep returns, and asked of each whether this checkpoint had changed it. The
 act is to read each marker's whole text and ask whether it is true. **The same
@@ -2724,4 +2733,66 @@ partial**, after 3.2 and 4.3, and the shape is identical every time: the block i
 re-read where the checkpoint touched it. What the rule asks is the opposite
 question, which is what the block now fails to describe, and only reading it
 against the repository answers that. The figures above were stale for between two
-and five checkpoints, so no sign-off since 4.1 has performed this act in full.
+and five checkpoints. The SQL-detector count was already wrong when 4.1's own
+sign-off wrote it, so **no sign-off has performed this act in full**, and the "five
+checkpoints" and the "since 4.1" in the first version of this sentence contradicted
+each other.
+
+### 2026-08-09 — the merge sweep for 4.5, which found the corrections wrong too
+
+Run against `main` at `ae5e08e` after 4.5 merged, on the practice that it runs
+again if the branch moved. Twenty-four sentences, and the interesting half is that
+**six of them were corrections this branch made hours earlier**.
+
+**A correction can be wrong, and four were.** The marker count was wrong in both
+directions. The claim that `TrialRun`, `TrialStore` and `FillModel` all gained a
+`src/` caller was wrong about `FillModel`, and the reason is a defect rather than a
+slip: `MakerRun` held a `FillModel` field that was assigned and never read, so the
+sentence described a coupling the code did not have. The field is gone and the
+model is handed straight to the run. "Eleven `Policy:` rows added at 4.3" was right
+about eleven and wrong about 4.3, seven having landed with the seed verb at 0.8.
+And "no sign-off since 4.1" was contradicted by the "five checkpoints" in its own
+sentence.
+
+**Three passes produced three marker counts, and none of them was wrong
+arithmetic.** A marker is a `Build state:` line and some prose, and nothing says
+where the prose ends. Read to the first blank line the branch moved eleven and left
+ten; read to the next heading it moved twelve. **A figure whose subject is
+undefined is not a measurement**, so the definition is now stated beside the count.
+
+**§3.7 has described a built component with no marker since 3.4, and no sweep
+could ever have seen it.** `SYSTEM_DESIGN`'s own header says the sections without a
+marker describe designs nothing has implemented, and `README` requires every
+section describing a component to carry one. The fill model has been built since
+3.4. A sweep defined as reading the lines matching the marker string cannot reach a
+section that has none, which is **the fourth act this phase found too narrowly
+defined to reach what it was for**, after the sweep that could not see
+`PROGRESS`'s block, the act that named one state block where there are two, and the
+act that asked what a checkpoint changed rather than what is now false. Each was
+performed as written every time.
+
+**A twelfth citation defect, introduced by this checkpoint.** `MakerRun` and
+`SYSTEM_DESIGN` §3.6 both said a decision is recorded on every session including
+the ones a maker takes nothing, "because taking nothing is a choice and is scored
+[D-W5]". D-W5 says the outcome of every candidate in a set is computed and the
+chosen one receives a rank and a regret. It does not say a decision taking no
+candidate is scored. The recording rests on [D-W3], which is what both sites cite
+now.
+
+**Five sentences were false for longer than this phase.** `SYSTEM_DESIGN` §8 said
+four `rows`-classed keys remain unset where none is, contradicted by its own
+section marker seventeen lines above which 3.4 rewrote while leaving it standing.
+`SeedValues` said twenty-four keys where there are twenty-eight, corrected in the
+archive on this branch and not in the file the count is a count of. `guards.ps1`
+said it holds two checks while printing three from its own array. `Migrations`
+enumerated to migration 8 with nine in the list. `ORIENTATION`'s diagram and prose
+stated D-W4's property unconditionally, which 4.1 made conditional.
+
+**What the corrections did not touch, they got wrong in the same shape.** The
+archive still said a loop drives the machine and nothing chooses, which
+`BUILD_PLAN`'s copy of the same sentence had been corrected for on this branch;
+`CONFIG_REFERENCE` still predicted the composition root "will be" a second
+consumer, in the future tense, and its `Trial:` and `Costs:` rows still named one
+resolution site where there are two. **A fact measured on a branch and carried into
+one document and not its twin is the shape to expect**, and it is the same shape as
+the marker sweep's: what gets corrected is what the diff touched.
