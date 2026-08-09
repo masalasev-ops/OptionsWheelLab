@@ -51,12 +51,29 @@ public sealed class RandomWithinBandMaker : IDecisionMaker
         DateOnly session,
         PositionState state,
         BookState book,
-        IReadOnlyList<GatedCandidate> offered)
+        IReadOnlyList<GatedCandidate> offered,
+        OpenTrialContext? openTrial = null)
     {
         ArgumentNullException.ThrowIfNull(symbol);
         ArgumentNullException.ThrowIfNull(offered);
 
         var policy = Policy.ForRandom(_configuration, session);
+
+        // The draw is built per call from a seed derived per session and name, so
+        // a roll and an open on one session draw the same index and a roll on the
+        // next draws its own [D-W51].
+        EnumeratedCandidate Draw(IReadOnlyList<EnumeratedCandidate> among)
+        {
+            var seed = ResolvedBound.RequiredInt(_configuration, ConfigKeys.RandomSeed, session);
+
+            return among[new Random(MakerSeed.For(seed, symbol, session)).Next(among.Count)];
+        }
+
+        if (openTrial is { } trial)
+        {
+            return MakerSelection.ForOpenTrial(policy, trial, session, offered, Draw);
+        }
+
         var admitted = MakerSelection.Admitted(policy, session, offered);
 
         if (admitted.Count == 0)
@@ -64,9 +81,6 @@ public sealed class RandomWithinBandMaker : IDecisionMaker
             return new MakerDecision(DecisionKind.None, null, null, policy.Version);
         }
 
-        var seed = ResolvedBound.RequiredInt(_configuration, ConfigKeys.RandomSeed, session);
-        var draw = new Random(MakerSeed.For(seed, symbol, session)).Next(admitted.Count);
-
-        return MakerSelection.Taking(admitted[draw], policy.Version);
+        return MakerSelection.Taking(Draw(admitted), policy.Version);
     }
 }

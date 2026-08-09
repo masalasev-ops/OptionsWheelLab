@@ -77,12 +77,19 @@ public interface IDecisionMaker
     string MakerId { get; }
 
     /// <summary>
-    /// The decision this maker makes on this session, given what it was offered.
+    /// The decision this maker makes on this session, given what it was offered
+    /// and what it already holds.
     /// </summary>
+    /// <param name="openTrial">
+    /// The trial this maker already has open in this name, or null when it holds
+    /// none. A maker with one decides what to do about it [D-W54] rather than
+    /// opening another.
+    /// </param>
     MakerDecision Decide(
         Ticker symbol,
         DateOnly session,
         PositionState state,
         BookState book,
-        IReadOnlyList<GatedCandidate> offered);
+        IReadOnlyList<GatedCandidate> offered,
+        OpenTrialContext? openTrial = null);
 }

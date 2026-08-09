@@ -73,11 +73,18 @@ public sealed class HighestCreditMaker : IDecisionMaker
         DateOnly session,
         PositionState state,
         BookState book,
-        IReadOnlyList<GatedCandidate> offered)
+        IReadOnlyList<GatedCandidate> offered,
+        OpenTrialContext? openTrial = null)
     {
         ArgumentNullException.ThrowIfNull(offered);
 
         var policy = _policy(_configuration, session);
+
+        if (openTrial is { } trial)
+        {
+            return MakerSelection.ForOpenTrial(policy, trial, session, offered, HighestCredit);
+        }
+
         var admitted = MakerSelection.Admitted(policy, session, offered);
 
         if (admitted.Count == 0)
@@ -85,10 +92,18 @@ public sealed class HighestCreditMaker : IDecisionMaker
             return new MakerDecision(DecisionKind.None, null, null, policy.Version);
         }
 
-        // MaxBy keeps the first of equal values, so a tie takes the order the
-        // maker was given rather than one this comparison invents.
-        var chosen = admitted.MaxBy(candidate => ContractTerms.CashFor(candidate.Quote.Bid))!;
-
-        return MakerSelection.Taking(chosen, policy.Version);
+        return MakerSelection.Taking(HighestCredit(admitted), policy.Version);
     }
+
+    /// <summary>
+    /// The highest credit among these, ties taking the order offered.
+    /// </summary>
+    /// <remarks>
+    /// <c>MaxBy</c> keeps the first of equal values, so a tie takes the order the
+    /// maker was given rather than one this comparison invents. Shared by the
+    /// opening path and the roll, because [D-W54] rolls by the rule the maker
+    /// opens with.
+    /// </remarks>
+    private static EnumeratedCandidate HighestCredit(IReadOnlyList<EnumeratedCandidate> among) =>
+        among.MaxBy(candidate => ContractTerms.CashFor(candidate.Quote.Bid))!;
 }
