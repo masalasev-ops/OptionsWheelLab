@@ -163,6 +163,24 @@ public sealed class TrialRun
             case RollInto roll:
                 throw Refuse(roll, state, "a roll buys back a short and this trial holds none");
 
+            case CloseTrial close
+                when state is { IsClosed: false, Contract: not null }
+                    && state.Contract == close.Short:
+                return _machine.CloseByChoice(
+                    state,
+                    FactsFor(chain, close.Session, state),
+                    _fills.Buy(close.Ask, close.Session));
+
+            case CloseTrial close when state is { IsClosed: false, Contract: not null }:
+                throw Refuse(
+                    close,
+                    state,
+                    $"the trial is short '{state.Contract}' and a close names the leg it buys "
+                    + "back");
+
+            case CloseTrial close:
+                throw Refuse(close, state, "a close buys back a short and this trial holds none");
+
             default:
                 throw new InvalidOperationException(
                     $"'{choice.GetType().Name}' is not a choice this run can apply. A choice "

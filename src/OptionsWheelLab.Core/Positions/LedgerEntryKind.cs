@@ -71,13 +71,23 @@ public enum LedgerEntryKind
 /// second value would state one fact twice.
 /// </para>
 /// <para>
-/// <b>Nothing writes <see cref="ClosedByChoice"/> before Phase 4 has a maker</b>,
-/// and it is recoverable from the day one does, being a
-/// <see cref="LedgerEntryKind.BoughtToClose"/> with no
-/// <see cref="LedgerEntryKind.PremiumReceived"/> following. Every value here has
-/// to be recoverable from the ledger, because <c>trials</c> is a projection
-/// [D-W35] and a value the rebuild cannot reconstruct fails the test that permits
-/// rewriting it at all.
+/// <b><see cref="ClosedByChoice"/> is written from 4.4 by
+/// <see cref="WheelStateMachine.CloseByChoice"/>, and was in this vocabulary from
+/// 3.3 before anything wrote it.</b>
+/// It is recovered by asking whether a bound had been reached when the close was
+/// written: a <see cref="LedgerEntryKind.BoughtToClose"/> that ends a trial is
+/// <see cref="ClosedAtBound"/> if the roll count or the elapsed days had reached
+/// their bounds and <see cref="ClosedByChoice"/> otherwise. The entry's own shape
+/// cannot say which, because a forced close writes the same
+/// <see cref="LedgerEntryKind.BoughtToClose"/> with nothing following that a
+/// chosen one does.
+/// <para>
+/// That is why a rebuild resolves the trial's bounds [D-W53] rather than reading
+/// the ledger alone, and it is the one place a projection needs a value from
+/// outside its source. Every value here still has to be recoverable, because
+/// <c>trials</c> is a projection [D-W35] and a value the rebuild cannot
+/// reconstruct fails the test that permits rewriting it at all.
+/// </para>
 /// </para>
 /// <para>
 /// An open trial has no close kind, and the column is nullable for that reason: a

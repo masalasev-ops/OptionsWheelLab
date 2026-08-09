@@ -96,28 +96,60 @@ public sealed class CandidateGeneratorTests
     }
 
     /// <summary>
-    /// A short leg enumerates nothing, because no document says what a roll
-    /// enumerates.
+    /// A short leg enumerates the right it is short, so a roll has something to
+    /// roll into.
     /// </summary>
     /// <remarks>
-    /// D-W14 permits rolling and bounds it; the bounds are Phase 3's and no
-    /// rule states which contracts a roll offers. <b>This test is expected to
-    /// fail the day that rule is written</b>, which is the right moment to be
-    /// told that 2.2 made an assumption Phase 3 has overtaken. It asserts the
-    /// searched-and-empty finding rather than leaving it in a report.
+    /// <b>This replaces a case written to fail the day rolling got a rule.</b>
+    /// That case asserted a short leg enumerates nothing, and its remark said the
+    /// failure would be "the right moment to be told that 2.2 made an assumption
+    /// Phase 3 has overtaken". Phase 3 did not overtake it; [D-W54] did at 4.4,
+    /// two phases later than predicted. It was watched failing and replaced
+    /// deliberately rather than discovered red, because a green suite after the
+    /// rule landed without this file being touched would mean the rule had not
+    /// reached enumeration.
+    /// <para>
+    /// A short put enumerates puts and a short call enumerates calls, which is the
+    /// state's own right rather than the one it would move to. A roll keeps the
+    /// right and changes the contract [D-W54].
+    /// </para>
     /// </remarks>
     [Theory]
-    [InlineData(PositionState.ShortPut)]
-    [InlineData(PositionState.ShortCall)]
-    public void A_short_leg_enumerates_nothing_until_rolling_has_a_rule(PositionState state)
+    [InlineData(PositionState.ShortPut, OptionRight.Put)]
+    [InlineData(PositionState.ShortCall, OptionRight.Call)]
+    public void A_short_leg_enumerates_the_right_it_is_short(
+        PositionState state,
+        OptionRight right)
     {
         using var store = IngestedStore();
         using var connection = store.Connections.Open(StoreAccess.ReadOnly);
 
-        // The same chain the two open states enumerate from, so this is a
-        // statement about the state and not about an empty store.
-        Assert.NotEmpty(Generator(connection).EnumerateFor(Symbol, SnapshotDate, PositionState.Cash));
-        Assert.Empty(Generator(connection).EnumerateFor(Symbol, SnapshotDate, state));
+        var enumerated = Generator(connection).EnumerateFor(Symbol, SnapshotDate, state);
+
+        Assert.NotEmpty(enumerated);
+        Assert.All(enumerated, candidate => Assert.Equal(right, candidate.Quote.Contract.Right));
+    }
+
+    /// <summary>
+    /// A short leg is offered exactly what the matching open state is offered.
+    /// </summary>
+    /// <remarks>
+    /// [D-W52]'s property in the one place it could break. The set is keyed on
+    /// symbol, session and right and not on state, so a maker holding a short put
+    /// and a maker holding cash must see one set or the key is wrong. Asserted
+    /// rather than reasoned, because the whole feasible-set grain rests on it.
+    /// </remarks>
+    [Fact]
+    public void A_short_put_is_offered_what_a_cash_state_is_offered()
+    {
+        using var store = IngestedStore();
+        using var connection = store.Connections.Open(StoreAccess.ReadOnly);
+
+        var generator = Generator(connection);
+
+        Assert.Equal(
+            generator.EnumerateFor(Symbol, SnapshotDate, PositionState.Cash),
+            generator.EnumerateFor(Symbol, SnapshotDate, PositionState.ShortPut));
     }
 
     [Fact]

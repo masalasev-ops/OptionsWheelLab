@@ -148,10 +148,12 @@ Cap values are structural and outside what the learner may propose [D-W11].
 
 ### 3.5 Decision-makers
 
-Build state: **built at 4.3**, on synthetic chains: three arms behind one
-interface, each handed the set one gate evaluation produced. What is not built is
-anything that drives them across sessions, so what asks a maker for a decision
-today is a test, and the roll and close decisions are 4.4's. The learning channel
+Build state: **built across 4.3 and 4.4**, on synthetic chains: three arms behind
+one interface, each handed the set one gate evaluation produced, and from 4.4 a
+maker acts on a trial it already holds, rolling or closing at seven days to expiry
+when the short is in the money [D-W54]. What is not built is anything that drives
+them across sessions, so what asks a maker for a decision today is a test. The
+learning channel
 that revises the learner's rows is Phase 7's, so the learner is a second policy
 rather than a learning one until then.
 
@@ -206,14 +208,15 @@ entirely by that one choice.
 
 ### 3.8 Wheel state machine and ledger
 
-Build state: **built across 3.3 to 3.5**, on synthetic scenarios: the four
-states, the transitions, `ledger_entries` and the two projections rebuilt from it
-at 3.3; at 3.4 the fill model that prices a quote into the cash those transitions
-carry; and at 3.5 the run that steps a session range and produces the ledger,
-byte-identical across two invocations. What is not built is anything that
-chooses. A loop steps the sessions now, but the choices it applies are supplied,
-so no maker decides to roll, and the roll's own decision row is Phase 4's
-alongside every other decision.
+Build state: **built across 3.3 to 3.5, with a fourth choice at 4.4**, on
+synthetic scenarios: the four states, the transitions, `ledger_entries` and the
+two projections rebuilt from it at 3.3; at 3.4 the fill model that prices a quote
+into the cash those transitions carry; at 3.5 the run that steps a session range
+and produces the ledger, byte-identical across two invocations; and at 4.4 the
+close a maker chooses, beside the close a bound forces. What is not built is
+anything that joins the two: a loop steps the sessions and the choices it applies
+are still supplied, so a maker's roll reaches the machine only when a test carries
+it there, and the decision row recording that roll is 4.5's.
 
 Four states modelled as a discriminated union: cash, short put, holding shares,
 short call. Daily events drive transitions, and they lie on two axes rather than

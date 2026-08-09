@@ -636,8 +636,9 @@ to differ. A count of this table is a count of rows. Rows sharing an Owed at
 value are separate obligations, and a count of distinct values is not a count of
 this table.
 
-**Eleven rows stand, two at checkpoint granularity and nine at phase**, read off
-the table below at 4.3's sign-off. It stood at ten, two and eight, at 4.2's; at
+**Ten rows stand, none at checkpoint granularity and ten at phase**, read off the
+table below at 4.4's sign-off. It stood at eleven, two and nine, at 4.3's; at ten,
+two and eight, at 4.2's; at
 eight, two and six, at 4.1's; at
 eleven, five and six, when Phase 4's detail was authored; at eleven, none and
 eleven, at 3.5's sign-off; at thirteen, two and eleven, at 3.4's; at fifteen,
@@ -649,8 +650,25 @@ its own three and raised none; 4.2 closed none and raised two.
 rests on them. 4.2 raised two rows and 4.3 raised one, all three found by building
 rather than by planning.
 
-**Between the last two readings nothing was closed or raised and five rows still
-moved**, which is this column's rule doing what it is for: it names a checkpoint
+**4.4 closed two and raised one, and one of the two was not its own.** Its own row
+asked the rebuild to resolve configuration as of the date the run used, which
+D-W53 narrowed to the trial's open. Discharging it meant `TrialBounds.ResolveFor`
+acquiring its first call site anywhere in the tree, which is exactly what 4.5's
+row asked for and asked for from a composition root: the two rows named one
+missing call. **An obligation owed at a later checkpoint can be discharged early
+by the checkpoint that happens to need it**, and the reading that would miss this
+is the one that checks only the rows naming the checkpoint in hand. The row raised
+in exchange is a cost asymmetry between a close a bound forces and a close a maker
+chooses, found by building the second beside the first.
+
+**No row names a checkpoint for the first time since Phase 4's detail was
+authored**, which is not the table emptying but its two checkpoint-granularity
+rows both closing at once. Every remaining row is owed at a phase whose detail is
+unwritten, so the next reading that moves rows without closing any will be Phase
+5's detail being authored.
+
+**Between the two readings before this one nothing was closed or raised and five
+rows still moved**, which is this column's rule doing what it is for: it names a checkpoint
 once the owning phase's detail exists and a phase otherwise, so authoring Phase
 4's detail moved every Phase 4 row without changing what any of them owes. Three
 went to 4.1, which is where the grains are settled, one to 4.4 and one to 4.5. A
@@ -667,8 +685,7 @@ three that went to 4.1 are the three it has now closed.
 | Phase 8 | Constrain `earnings_calendar.session`, which has carried a stored vocabulary and no `CHECK` since migration 3. `StoreEarningsSession` declares three values and `ChainWriter` has written the column since Phase 1, so the code is its only enforcer where every other enforced vocabulary has two. FX-StoredVocabulariesMatchTheirChecks names it as unenforced from 4.2 rather than skipping it, which makes the gap visible without closing it. Adding the constraint means rebuilding a live table, and Phase 8 is where a second producer of earnings data arrives and that table is touched for its own reasons. Raised at 4.2 by the coverage case that found it. | v1.45.0 |
 | Phase 8 | Refuse a candidate whose delta is absent, at the gate rather than at each band. `ContractQuote.Delta` is nullable and the delta ceiling only fires when a value is present, so a quote with no delta passes the gate and reaches every maker as feasible. A band cannot admit it, because a band is a claim about delta and an absent one cannot satisfy it, so all three makers refuse it identically from 4.3 and the candidate stays in the feasible set recorded feasible with no reason. **The consequence is Phase 5's and is why this is worth doing.** The scorer computes an outcome for every candidate in that day's feasible set [D-W5], so it scores one no maker could have taken, and the opportunity set regret is measured against gains a member that was never an opportunity. Refusing it at the gate removes it from the set once rather than from each maker separately, and gives the audit trail a reason where today there is none. That means a new gate reason, its `CHECK` and the decision authorising both, which is why it is not 4.3's. Owed at Phase 8, where vendor data arrives and a quote with missing greeks stops being hypothetical. **No synthetic chain omits a delta today**: every quote in the only chain carries one, and the sole deltaless quote in the tree is the unit case asserting the gate does not treat one as a breach, so a green suite is not evidence against this. Raised at 4.3. | v1.46.0 |
 | Phase 6 | Record distance to earnings as a candidate feature. It is one of the six `SYSTEM_DESIGN.md` §3.11 names and the only one of them a candidate could carry and does not: it needs the report dates the gate read, which `CandidateGenerator` holds for the whole chain and a `GatedCandidate` does not carry out. The other two absentees are absent for a different reason, implied volatility rank needing a history window and term structure slope needing the rest of the chain, so neither is a candidate feature at all. Owed at Phase 6, which is where the feature grader arrives and the first consumer of any of them. Raised at 4.2 by computing the features. | v1.45.0 |
-| 4.4 | Resolve configuration in the projection rebuild as of the simulated date the run used, never as-now [D-W26]. Telling `closed_at_bound` from `closed_by_choice` means asking whether a bound had been reached, which reads `Trial:MaxRolls` and `Trial:MaxTrialDays`, and a rebuild reading current bounds would disagree with the run it is rebuilding while presenting the disagreement as a ledger defect. Not live at 3.3, where nothing writes `closed_by_choice` because no maker exists. Raised at 3.3 by building the rebuild. | v1.40.0 |
-| 4.5 | Verify the consumers of `Trial:MaxRolls` and `Trial:MaxTrialDays`, which 3.3 could not. `TrialBounds` reads both as of the simulated date and nothing in `src/` constructs it: the state machine is handed resolved bounds. **The reason this row gave was that the component resolving them is the run loop, which it called Phase 4's, and 3.5 landed the run loop without closing it.** `TrialRun` is handed a machine already constructed, so what is missing is not the loop but a composition root that resolves bounds and builds the machine from them, which arrives with the maker that drives a run. `CONFIG_REFERENCE.md` calls a consumer that cannot be verified once its checkpoint has landed a defect rather than a documentation gap, and 3.3 was that checkpoint, so both rows stay **Unverified** with the reason recorded rather than the column loosened to admit a type with no component behind it. Raised at 3.3, and its reason corrected at 3.5 by the run loop arriving early. | v1.40.0 |
+| Phase 5 | Decide whether a forced close pays a commission. `WheelStateMachine.Bound` writes its `bought_to_close` as the debit alone and adjusts `PremiumBanked` by the debit alone, where `CloseByChoice` goes through `PremiumEntries` and writes the commission entry beside it. So two closes of the same position differ by `Costs:CommissionPerContract`, 0.65 at the seeded rate, and the difference is which trigger fired rather than anything about the trade. [D-W50] requires each cost recorded explicitly and [D-W12] fixes which side of the spread the account is on, and neither exempts a close nobody chose. **The error has a sign**: it flatters exactly the trials the bound exists to terminate, which are the losing ones, which is the same argument [D-W49] makes for the ask over intrinsic value one line away in the same method. Owed at Phase 5 rather than 4.4, because changing it changes recorded amounts and so needs a decision rather than an edit, and because Phase 5 is where a trial's cash first becomes a score and the asymmetry first has a consequence. Raised at 4.4 by building the close a maker chooses beside the one it does not. | v1.47.0 |
 | Phase 5 | Decide what `ResolvedBound`'s refusal calls the thing it could not resolve. It reads "a gate bound", which has covered `Risk:` caps since 2.4 and covers a trial bound and a cost from 3.4. That type's own remarks anticipated this and call changing what the message carries a decision rather than an edit, because what [D-W37]'s refusal says is the reason the type exists. Owed at Phase 5 rather than sooner, because that is where scores arrive as values that are neither a bound nor a cost. The prediction that the fifth record would be the one a reader could not place turned out wrong: `Policy` is the fifth, it arrived at 4.3, and its keys sit under one prefix so the family still reads from the key. The wording is wrong for every record but the first and gets more wrong as records are added, which is why the count is not stated here. Raised at 3.4. | v1.41.0 |
 
 ---
@@ -1629,13 +1646,14 @@ its reason is corrected.
 
 ## Phase 4 — Decision record and three makers in parallel
 
-Build state: **partly built**. 4.1 to 4.3 built and signed off: the grains
+Build state: **partly built**. 4.1 to 4.4 built and signed off: the grains
 settled with no code, the feasible set keyed on symbol, session and right, its
 gate reasons split by whether they are computed against a book, a trial's bounds
 fixed at its open, then the record itself, five tables with a writer and a reader
-that rebuilds a decision from them alone, and then the three makers. 4.4 and 4.5
-not started, so nothing drives a maker across sessions and no maker rolls or
-closes: what asks for a decision today is a test. A loop
+that rebuilds a decision from them alone, then the three makers, and then what one
+does with a trial it already holds. 4.5 is not started, so nothing drives a maker
+across sessions: a maker rolls and closes now [D-W54], and what asks it to is a
+test. A loop
 steps a calendar from 3.5 and the choices it applies are supplied, so the rest of
 this phase is the thing that supplies them and the record of what it supplied.
 Delivers three makers acting
@@ -1883,10 +1901,13 @@ specified.
 The composition root, which is the piece 3.5 turned out not to be. `TrialRun`
 takes a maker rather than a supplied sequence, and a maker produces one decision
 per session, which is the supplied sequence with the choosing already done.
-- Resolves `TrialBounds` and builds the state machine from them, which is what
-  verifies the two configuration rows carried unverified since 3.3. Those rows
-  have been a defect rather than a gap for two checkpoints, on the standard that
-  a consumer which cannot be verified once its checkpoint has landed is a defect.
+- Resolves `TrialBounds` and builds the state machine from them. ~~This is what
+  verifies the two configuration rows carried unverified since 3.3.~~ **4.4
+  verified them first**: the projection rebuild resolves the same two keys as of
+  the trial's open [D-W53], which meets the standard `CONFIG_REFERENCE.md` states,
+  so this checkpoint is their second consumer rather than their first. The rows
+  were a defect rather than a gap for three checkpoints, on the standard that a
+  consumer which cannot be verified once its checkpoint has landed is a defect.
 - Determinism is re-asserted over a run a maker drove, since 3.5 asserted it over
   a run whose choices were supplied and a seeded maker is the part that was
   missing.

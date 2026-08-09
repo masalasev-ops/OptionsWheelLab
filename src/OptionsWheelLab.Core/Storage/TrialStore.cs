@@ -1,4 +1,5 @@
 using Microsoft.Data.Sqlite;
+using OptionsWheelLab.Core.Configuration;
 using OptionsWheelLab.Core.Identity;
 using OptionsWheelLab.Core.Positions;
 
@@ -162,11 +163,54 @@ public sealed class TrialStore
     /// else. From Phase 4 the source is <c>decisions</c>, which is a record like
     /// the ledger, and the preservation becomes a read.
     /// </remarks>
+    public void Rebuild(long trialId, AsOfConfiguration configuration)
+    {
+        ArgumentNullException.ThrowIfNull(configuration);
+
+        var entries = EntriesFor(trialId);
+
+        Rebuild(trialId, entries, TrialBounds.ResolveFor(configuration, OpenedOn(entries)));
+    }
+
+    /// <summary>
+    /// The session the trial opened, read from the ledger [D-W53].
+    /// </summary>
+    /// <remarks>
+    /// <b>Not <c>trials.opened_on</c>, and the difference is the point.</b> That
+    /// column is in a projection this method is about to discard and rewrite
+    /// [D-W35], so resolving the bounds from it would make the rebuild depend on
+    /// its own previous output. The ledger is append-only, and its first entry is
+    /// the sale that opens a trial [<see cref="TrialProjection.Replay"/>], which
+    /// is the same date the replay will arrive at independently.
+    /// </remarks>
+    private static DateOnly OpenedOn(IReadOnlyList<LedgerEntry> entries) =>
+        entries.Count > 0
+            ? entries[0].EntryDate
+            : throw new InvalidOperationException(
+                "A trial with no ledger entries has no open to resolve its bounds as of. A "
+                + "trial runs from first open through to return to cash [D-W14], and the open "
+                + "is a sale that writes an entry.");
+
+    /// <summary>
+    /// Reconstructs the projections against bounds the caller has resolved.
+    /// </summary>
+    /// <remarks>
+    /// <b>A caller supplying bounds is asserting which ones the run used</b>, and
+    /// a caller that supplies the same literal the run was built from proves
+    /// nothing about the resolution [D-W53]. The overload taking configuration
+    /// resolves them from the store, and it is the one a rebuild off a real run
+    /// takes.
+    /// </remarks>
     public void Rebuild(long trialId, TrialBounds bounds)
     {
         ArgumentNullException.ThrowIfNull(bounds);
 
-        var projected = TrialProjection.Rebuild(EntriesFor(trialId), bounds);
+        Rebuild(trialId, EntriesFor(trialId), bounds);
+    }
+
+    private void Rebuild(long trialId, IReadOnlyList<LedgerEntry> entries, TrialBounds bounds)
+    {
+        var projected = TrialProjection.Rebuild(entries, bounds);
         var makerId = MakerOf(trialId);
 
         using var transaction = _connection.BeginTransaction(deferred: false);

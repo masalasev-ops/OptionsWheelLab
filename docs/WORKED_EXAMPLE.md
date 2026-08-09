@@ -22,6 +22,14 @@ its three choices and its six sessions, where the figures were previously reache
 by a test stepping the machine itself, so the document is reproduced end to end by
 the thing the lab will run rather than by the thing that tests it.
 
+**4.4 left §6.3 reproduced under a rule that could have changed it.** A maker acts
+at seven days to expiry on a short in the money [D-W54], and §6.3's last recorded
+close before its first expiry is 45.80 against a 50.00 strike. It reproduces
+because acting requires a feasible set and this chain is a single snapshot at
+2026-03-02, so no session between opening and expiry offers anything to roll into.
+That is an argument rather than a measurement: nothing drives a maker, so no
+fixture walks this trial through one.
+
 Not built: §6.1 and §6.2, which are the totals of the two trials no maker has
 opened, and §7 and §8's scores and regret. **§4's three decisions are reproduced
 from 4.3**, which is the first checkpoint with makers and the first to read that

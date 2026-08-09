@@ -23,6 +23,15 @@ Writing the type onto an unverified row would make this column mean one thing on
 verified rows and another on unverified ones, which is the failure the column's
 own definition names. Carried as an obligation at Phase 4, on a corrected reason.
 
+**Both rows are verified at 4.4, one checkpoint before the composition root the
+paragraph above expected to do it.** `TrialStore.Rebuild` resolves the bounds as
+of the session the trial opened [D-W53], because a rebuild telling
+`closed_at_bound` from `closed_by_choice` has to ask which bounds the run was
+under and the ledger cannot say. That satisfies the standard below without
+loosening it: `TrialBounds.ResolveFor` is called from a component in `src/`, and
+that call is a rebuild rather than a run. The composition root at 4.5 will be a
+second consumer, not the first.
+
 **What verifying a row takes, measured at 3.4 rather than assumed.** A `rows` key
 is verified when a type in `src/` resolves it and a component in `src/` calls
 that type. It is not whether anything outside a test constructs the component:
@@ -32,7 +41,9 @@ since 2.4. Measured across the four bound records, `GateBounds` and
 `FillModel.cs`, while `TrialBounds.ResolveFor` appears in no `src/` file at all.
 That is the whole of the difference, and it is the difference between a defect and
 a gap: the two `Trial:` rows are the only unverified rows whose checkpoint has
-landed. The `Scoring:` rows beneath them are specified-only, their checkpoint
+landed. Measured again at 4.4: `TrialBounds.ResolveFor` is called from
+`TrialStore.cs`, so the four bound records now differ in nothing and no
+unverified row has a landed checkpoint behind it. The `Scoring:` rows beneath them are specified-only, their checkpoint
 being Phase 5's, which is the ordinary state this column describes rather than
 anything owed.
 
@@ -135,8 +146,8 @@ Phase 0.8.
 
 | Key | Store | Meaning | Consumer | Notes |
 |---|---|---|---|---|
-| `Trial:MaxRolls` | rows | rolls permitted before forced close at market | State machine **Unverified** | 2, judged [D-W14]. Low enough to bind sometimes rather than be decorative: the day bound already caps most rolled chains |
-| `Trial:MaxTrialDays` | rows | total days before forced close at market | State machine **Unverified** | 120, judged [D-W14], and constrained twice. Must exceed `Gate:MaxDte` [D-W24], and must leave the worked example's own 109-day trial representable or its total becomes unreachable |
+| `Trial:MaxRolls` | rows | rolls permitted before forced close at market | `TrialStore.Rebuild` via `TrialBounds`, and the state machine it is compared against | 2, judged [D-W14]. Low enough to bind sometimes rather than be decorative: the day bound already caps most rolled chains |
+| `Trial:MaxTrialDays` | rows | total days before forced close at market | `TrialStore.Rebuild` via `TrialBounds`, and the state machine it is compared against | 120, judged [D-W14], and constrained twice. Must exceed `Gate:MaxDte` [D-W24], and must leave the worked example's own 109-day trial representable or its total becomes unreachable |
 
 ## Scoring
 

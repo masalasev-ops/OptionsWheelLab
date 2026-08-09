@@ -55,3 +55,25 @@ public sealed record RollInto(
 {
     public override string Describe() => $"roll into '{Into}'";
 }
+
+/// <summary>
+/// Ending the trial by buying the short back, rather than rolling it [D-W54].
+/// </summary>
+/// <remarks>
+/// <b>Distinguished from a bound close by what triggered it and by nothing
+/// else.</b> Both write a <see cref="LedgerEntryKind.BoughtToClose"/> and both
+/// return the trial to cash, which is why <c>trials.close_kind</c> carries the two
+/// as separate values and why a rebuild has to resolve the bounds to tell them
+/// apart [D-W53, <see cref="LedgerEntryKind"/>].
+/// <para>
+/// The short is named although the state already holds it. A supplied sequence
+/// describing a different contract than the trial carries is a run described
+/// wrongly, and naming it is what lets the run say so rather than close whatever
+/// happens to be open.
+/// </para>
+/// </remarks>
+public sealed record CloseTrial(DateOnly Session, ContractIdentity Short, decimal Ask)
+    : TrialChoice(Session)
+{
+    public override string Describe() => $"close the trial by buying '{Short}' back";
+}

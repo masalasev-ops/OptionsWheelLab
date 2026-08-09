@@ -14,7 +14,7 @@ predates this file and cannot be relied on.
 
 ## Topical index
 
-**Purpose and measurement**: D-W2, D-W3, D-W5, D-W17, D-W18, D-W20, D-W21, D-W49
+**Purpose and measurement**: D-W2, D-W3, D-W5, D-W17, D-W18, D-W20, D-W21, D-W49, D-W54
 **Isolation and controls**: D-W1, D-W4, D-W6, D-W13, D-W41, D-W45, D-W52
 **Data and identity**: D-W7, D-W8, D-W9, D-W15, D-W26, D-W27, D-W28, D-W29, D-W30, D-W31, D-W32, D-W34, D-W35, D-W36, D-W39, D-W44, D-W46, D-W47, D-W48, D-W52, D-W53
 **Risk**: D-W10, D-W11, D-W14, D-W19, D-W23, D-W25, D-W37, D-W43, D-W53
@@ -1668,3 +1668,68 @@ is the wrong place to look.
 Test FX-TrialBoundsFixedAtOpen: a trial spanning a configuration change is bound
 by the values in force when it opened, and a trial opened after the change is
 bound by the new ones.
+
+---
+
+### D-W54 When a maker rolls, and when it closes
+`active` · 2026-08-06, amended 2026-08-06 (moneyness, and the debit condition)
+
+A maker with an open short at or inside seven days to expiry acts on it only if
+the position is in the money by the exercise-by-exception threshold [D-W38]. A
+position that would expire worthless is left to expire, because the wheel's
+ordinary outcome is a short expiring and a maker that bought back every position
+would never be assigned and never hold shares.
+
+Acting, the maker closes the trial if a bound has been reached [D-W14], and
+otherwise rolls to the candidate its own policy selects from that session's
+feasible set [D-W52], by the same highest-credit-in-band rule it uses to open. It
+closes rather than rolls if its band admits nothing, or if the roll would pay a
+net debit: a roll exists to defer assignment while collecting premium, and one
+that costs more than it collects has stopped doing that, so the position is closed
+and the trial ends.
+
+Acting requires a feasible set for that session [D-W52]. A session with no chain
+has none, so a maker cannot roll and does not close: the position is left as it
+stands and runs to expiry if nothing intervenes. That is why `WORKED_EXAMPLE`
+§6.3 reproduces under this rule despite its short being deep in the money at the
+threshold. Its chain is a single snapshot at 2026-03-02, so no session between
+opening and expiry offers anything to roll into, and the trial reaches the
+assignment the document records.
+
+This is a property of the rule and not of that fixture. A forward run with a chain
+every session would act at the threshold on the same position, so §6.3
+demonstrates the rule's conditionality rather than its trigger, and a reader
+taking it as evidence the trigger fires would have it backwards.
+
+**Chosen, not transcribed.** No authority states any of this. The glossary's
+sentence about rolling is standard terminology and that file says so; the corpus
+states what a roll costs [D-W48], what bounds it [D-W14] and what it commits
+[D-W43], and nothing states what triggers one. D-W43 is the precedent for a
+decision with no external source, and this is the second.
+
+Why a threshold rather than every session. A maker that reconsidered daily would
+roll on the first session a higher credit appeared, making the trial a sequence of
+one-day positions and the roll bound meaningless. Seven days is chosen inside
+`Gate:MinDte`'s own floor: the gate will not open a position closer than seven
+days out, so a position inside that window has passed beyond what this lab would
+newly enter.
+
+Why one algorithm. The three makers differ in their bands and not their rules
+[D-W4, §4], and a roll that selected differently from an open would make the
+learner's channel unable to change how it rolls, since the channel writes rows and
+not code [D-W6].
+
+What this does not settle. Whether a maker should close a profitable position
+early rather than roll it is a strategy question this lab does not answer, and it
+is deliberately outside the rule: the makers differ in selection, and adding an
+early-close condition would make them differ in kind.
+
+The threshold alone would break the wheel. A maker acting on every position at
+seven days would never hold one to expiry, so it would never be assigned, never
+write a covered call, and never reach the states this lab exists to measure.
+`WORKED_EXAMPLE` §6.3's trial is the case: its last recorded close before expiry
+is 45.80 against a 50.00 strike, and a rule without the moneyness condition buys
+that position back rather than taking the assignment the document records.
+
+Test FX-RollAtTheThreshold: a maker acts at seven days and not at eight, rolls
+when a bound has not been reached, and closes when one has.

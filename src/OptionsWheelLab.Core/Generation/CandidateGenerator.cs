@@ -241,13 +241,24 @@ public sealed class CandidateGenerator
     /// an exit to be avoided [D-W16]. The call side is the one D-W19 presupposes
     /// when it binds a covered call strike against gross basis.
     /// <para>
-    /// <b>A short leg enumerates nothing, and that is a gap rather than a
-    /// rule.</b> Rolling is permitted and bounded [D-W14], but no document states
-    /// which contracts a roll enumerates; the bounds are Phase 3's and Phase 2's
-    /// detail names no roll. Enumerating a guess here would put an unrecorded
-    /// rule into the decision path, so this returns nothing until the rule is
-    /// written. The test asserting that is expected to fail the day Phase 3
-    /// writes it, which is the right moment to be told.
+    /// <b>A short leg enumerates the right it is short, from 4.4.</b> It returned
+    /// nothing until then, because rolling was permitted and bounded [D-W14] with
+    /// no document stating which contracts a roll enumerates, and enumerating a
+    /// guess would have put an unrecorded rule into the decision path. [D-W54]
+    /// wrote the rule, so a roll now draws from the ordinary gated set for the
+    /// right the trial is short and needs no enumeration of its own.
+    /// <para>
+    /// The remark this replaces said the gap would close at Phase 3, and the test
+    /// beside it was written to fail then. Phase 3 did not write the rule; 4.4
+    /// did, two phases later than predicted, which is why that test was replaced
+    /// deliberately rather than discovered red.
+    /// </para>
+    /// <para>
+    /// [D-W52]'s stated property survives, and it was checked rather than assumed:
+    /// <see cref="ContractConstraints.Evaluate"/> takes neither a state nor a
+    /// book, so two makers in different states on one right are offered identical
+    /// contracts carrying identical contract-level verdicts.
+    /// </para>
     /// </para>
     /// <para>
     /// Nothing about basis or moneyness happens here. D-W19's constraint on a
@@ -259,7 +270,8 @@ public sealed class CandidateGenerator
     {
         PositionState.Cash => OptionRight.Put,
         PositionState.HoldingShares => OptionRight.Call,
-        PositionState.ShortPut or PositionState.ShortCall => null,
+        PositionState.ShortPut => OptionRight.Put,
+        PositionState.ShortCall => OptionRight.Call,
         _ => throw new ArgumentOutOfRangeException(
             nameof(state),
             state,
