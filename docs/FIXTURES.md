@@ -143,6 +143,8 @@ to carry the wrong cell.
 | FX-WorkedExampleDecisions | fixture | 4.3 | the three makers reproduce §4's choices from §3's feasible set, and the random maker's draw is reproducible from its seed alone | WORKED_EXAMPLE §4 |
 | FX-RollAtTheThreshold | fixture | 4.4 | a maker acts at seven days and not at eight, rolls when a bound has not been reached, and closes when one has [D-W54] | authored |
 | FX-TrialBoundsFixedAtOpen | fixture | 4.4 | a trial spanning a configuration change is bound by the values in force when it opened, a trial opened after the change is bound by the new ones, and a rebuild reaches the same verdict as the run | authored |
+| FX-MakersDriveTheRun | fixture | 4.5 | three makers driving one chain produce three trials, three ledgers and one decision record, with no contract supplied by the test [D-W55, D-W56] | authored |
+| FX-OneSetThreeBooks | fixture | 4.5 | two makers with different books receive the same candidate identities with the same contract-level reasons and different portfolio reasons, from one shared evaluation [D-W52] | authored |
 | FX-ExcursionRecordedOnWin | fixture | 5 | a positive outcome still carries its adverse excursion | WORKED_EXAMPLE §6.2 |
 | FX-NoAnnualizeInObjective | fixture | 5 | equal returns over unequal durations store identically | authored |
 | FX-FastSlowDivergenceFires | fixture | 5 | inverted fast and slow rankings raise the monitor | WORKED_EXAMPLE §7 |

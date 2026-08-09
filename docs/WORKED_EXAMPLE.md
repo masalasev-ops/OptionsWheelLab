@@ -22,6 +22,13 @@ its three choices and its six sessions, where the figures were previously reache
 by a test stepping the machine itself, so the document is reproduced end to end by
 the thing the lab will run rather than by the thing that tests it.
 
+**§2 is this document's statement of what was quoted, and nothing is added to
+it.** §6.3's leg table names two 52.50 calls that §2 does not carry, so no
+enumeration can offer them and no maker can choose them. Adding them would put
+quotes in the oracle that the oracle does not claim, which would make this document
+agree with the build because the build wrote the part it was checked against. A
+fixture reproduces what §2 supports and records where it stops.
+
 **4.4 left §6.3 reproduced under a rule that could have changed it.** A maker acts
 at seven days to expiry on a short in the money [D-W54], and §6.3's last recorded
 close before its first expiry is 45.80 against a 50.00 strike. It reproduces

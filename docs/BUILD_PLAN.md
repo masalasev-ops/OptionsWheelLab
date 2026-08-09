@@ -1903,21 +1903,36 @@ specified.
 The composition root, which is the piece 3.5 turned out not to be. `TrialRun`
 takes a maker rather than a supplied sequence, and a maker produces one decision
 per session, which is the supplied sequence with the choosing already done.
-- Resolves `TrialBounds` and builds the state machine from them. ~~This is what
+- Splits the gate where the verdicts already split [D-W52, as amended]. The
+  contract-level evaluation runs once per symbol, session and right and every
+  maker acting against that key is handed it; each maker's caps are applied over
+  it against its own book. The entry point taking both stays as their composition,
+  so nothing calling it changes.
+- Assembles what a maker is told: the book from that maker's own state, and the
+  open trial it already holds, which is the parameter D-W54 gave a maker and
+  nothing yet supplies. Writes the adapter from a decision to a choice, which
+  `MakerDecision` has named as this checkpoint's since 4.2.
+- Builds the state machine where each trial opens rather than where the run starts
+  [D-W53, as amended], from bounds resolved as of that trial's open. ~~This is what
   verifies the two configuration rows carried unverified since 3.3.~~ **4.4
   verified them first**: the projection rebuild resolves the same two keys as of
-  the trial's open [D-W53], which meets the standard `CONFIG_REFERENCE.md` states,
-  so this checkpoint is their second consumer rather than their first. The rows
-  were a defect rather than a gap for three checkpoints, on the standard that a
-  consumer which cannot be verified once its checkpoint has landed is a defect.
+  the trial's open, which meets the standard `CONFIG_REFERENCE.md` states, so this
+  checkpoint is their second consumer rather than their first. The rows were a
+  defect rather than a gap for three checkpoints, on the standard that a consumer
+  which cannot be verified once its checkpoint has landed is a defect.
+- Drives a sequence of trials per maker rather than one [D-W55], minting each
+  trial before recording the decision that opened it [D-W56].
 - Determinism is re-asserted over a run a maker drove, since 3.5 asserted it over
   a run whose choices were supplied and a seeded maker is the part that was
-  missing.
+  missing. The comparison now covers the decision record, which did not exist when
+  3.5 wrote the rendering.
 - **Test**: a run driven by all three makers produces byte-identical output
   across two invocations, compared as produced artefacts and never as a database
-  file [D-W28].
+  file [D-W28]. The registered fixtures are in `FIXTURES.md`.
 - **DoD**: `CONFIG_REFERENCE.md` carries a verified consumer for every `Policy:`
   and `Trial:` row, or names the row that still cannot be verified and why, which
-  is the standard 3.3 and 3.4 set rather than a new one.
+  is the standard 3.3 and 3.4 set rather than a new one. And no fixture supplies a
+  contract a maker is meant to choose, since a test that hands a maker its answer
+  asserts nothing about choosing.
 
 Detail for Phase 5 is authored when Phase 4 signs off.

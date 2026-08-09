@@ -1557,7 +1557,7 @@ every name on the list is asserted to exist in the bundled binary.
 ---
 
 ### D-W52 The feasible set is keyed on what the generator reads
-`active` · 2026-08-04
+`active` · 2026-08-04, amended 2026-08-09 (the split governs the evaluation too)
 
 A feasible set is stored once per symbol, session date and option right, and is
 referenced by every decision made against it. The six contract-level gate verdicts
@@ -1584,6 +1584,22 @@ crossed market, the delta ceiling, the expiry window and earnings clearance, fro
 the candidate, the bounds and the report dates. `PortfolioConstraints` raises the
 per-name cap, the total cap, assignment stress and gross basis, every one against
 a book. A verdict computed from a book belongs to the maker whose book it is.
+
+**The split governs the evaluation and not only the storage, and they are one
+boundary rather than two.** The contract-level verdicts are computed once per
+symbol, session and right and every maker acting against that key is handed the
+same evaluation; the portfolio-level verdicts are computed per maker, against that
+maker's own book. Storing them apart while computing them together would make the
+shared half a thing three evaluations agree about rather than a thing there is one
+of, which is what [D-W4] asks for and what a comparison cannot deliver: the
+refusal that guards a shared set compares contract identities and not verdicts, so
+three separate evaluations pass it while the property fails. **A property enforced
+by a comparison that cannot see the difference is not enforced.**
+
+This was stated for storage alone until 4.5, where the composition root needed the
+other half and found the surface contradicting it: one entry point took a book
+alongside the key, so a single call per key had to pick one maker's book and there
+is none to pick.
 
 **What this does for storage, measured rather than argued.** The obligation framed
 the saving as division by three, the number of makers. The shared part is bounded
@@ -1629,7 +1645,7 @@ portfolio verdicts differ where their books do.
 ---
 
 ### D-W53 A trial's bounds are fixed at its open
-`active` · 2026-08-04
+`active` · 2026-08-04, amended 2026-08-09 (where the machine is constructed)
 
 `Trial:MaxRolls` and `Trial:MaxTrialDays` are resolved once, as of the session a
 trial opens, and hold for that trial's life. A later version of either binds the
@@ -1658,6 +1674,14 @@ here. This decision holds under either answer: if Phase 9 pins a run's
 configuration, every trial in that run opens under the pinned values and the rule
 below is satisfied trivially; if it does not, the rule is what keeps a mid-run
 revision off the trials already open.
+
+Consequence for the run, added at 4.5. The state machine carries its bounds from
+construction, so the component that constructs it decides which trial's bounds it
+holds. It is constructed where a trial opens and not where a run starts. A run
+holding one machine across the trials it drives would apply the bounds of whichever
+trial happened to open first to every trial after it, which is this decision's own
+defect one level up, and the rebuild's test would not see it: that test asks
+whether a projection agrees with a run, and both halves would be wrong together.
 
 Consequence for the rebuild. A projection asking whether a bound had been reached
 must read the values that trial opened under, not current ones and not the ones in
@@ -1733,3 +1757,59 @@ that position back rather than taking the assignment the document records.
 
 Test FX-RollAtTheThreshold: a maker acts at seven days and not at eight, rolls
 when a bound has not been reached, and closes when one has.
+
+---
+
+### D-W55 A run holds a sequence of trials, one open at a time
+`active` · 2026-08-09
+
+A maker driving a run opens a trial, carries it to cash, and opens another. A run
+is therefore a sequence of trials per maker and per symbol, and a second open
+while one is open is refused by name.
+
+Rationale. A trial runs from first open through to return to cash [D-W14], and
+the wheel is that cycle repeated. A run that held one trial would stop at the
+first close and measure a single cycle, and the improvement curve this lab exists
+to compute is over many. The refusal that made a run one trial was correct for a
+loop applying a supplied sequence, where a second open is a sequence written
+wrongly; it is wrong for a loop asking a maker, where a second open is what a
+maker in cash decides.
+
+**The refusal moves rather than goes**, and this is the operative half. One trial
+is open per maker per symbol at a time, so an open arriving while one is open is
+still a run described wrongly and still stops the walk naming the session and the
+state [D-W48's argument, one level up]. What changes is which condition is the
+error: it was any second open and it is now a second concurrent one.
+
+Consequence for what a run returns. A run's result is a sequence of trials, each
+with its own entries, and not a state beside one list. The ledger is written per
+trial [D-W35], so a flat list would have to be partitioned by inferring where one
+trial ended, which is reconstructing what the loop already knew and is the shape
+that decision exists to prevent.
+
+Test FX-MakersDriveTheRun: three makers driving one chain produce three trials,
+three ledgers and one decision record, with no contract supplied by the test.
+
+---
+
+### D-W56 A trial is opened before the decision that opened it is recorded
+`active` · 2026-08-09
+
+The composition root mints the trial identifier first and records the decision
+naming it. An opening decision carries the trial it opened.
+
+Rationale. `decisions` is append-only and its trigger refuses an update [D-W3], so
+a null written at the moment of the open is permanent in the strong sense: there
+is no later write that could fill it. A record unable to answer which trial a
+decision opened is a record missing the link between the two things this lab
+measures, and D-W3 names that loss as the one unrecoverable one in the design.
+The ordering is the whole fix and it costs nothing: the strike and the session an
+open needs are both in the decision before it is recorded.
+
+**A decision that names no trial is not a decision missing one.** A maker taking
+nothing has no trial to name, and the column stays nullable for that case rather
+than for the open's. The two are told apart by the decision's own kind, which the
+record already carries.
+
+Test: covered by FX-MakersDriveTheRun, whose decision record is read back and
+whose opening decisions name their trials.
