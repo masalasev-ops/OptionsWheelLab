@@ -1,5 +1,61 @@
 # CHANGELOG
 
+## [1.50.0] — 2026-08-10
+
+**Phase 5's detail is authored.** Eight checkpoints, and a phase whose oracle
+states figures its own machinery cannot reach.
+
+### Added
+- **`BUILD_PLAN.md` Phase 5**, 5.1 to 5.8: the grains settled with no production
+  code, the score tables, the outcome metric and the adverse excursion, the
+  counterfactual walk, the two scores and their ranks, the divergence monitor,
+  regret and what Phase 6 reads, and the slow loop over the trials the fast loop
+  closed.
+- **A definition of done for the phase**, which only Phase 0 has carried, on this
+  document's own statement that a phase definition of done is read before work.
+- **`FX-EveryProjectionHasARebuild`**, registered at 5.1, which is why a
+  checkpoint writing no production code registers an entry where 2.1, 3.1 and 4.1
+  registered none.
+
+### Changed
+- **Four obligation rows move from Phase 5 to 5.1**, every one of them beginning
+  by asking for a decision. Three imply an edit as well, and each edit lands at
+  the checkpoint whose work depends on it: 5.3, 5.4 and 5.6.
+- **Five fixture rows move and two are added.** Four move from Phase 5 to their
+  checkpoints, and `FX-NoLearnerOutputInJudgingPath` from Phase 6 to 5.8, because
+  the scorer is the second of [D-W6]'s five judging components to be built, after
+  the risk caps at 2.4, and a firewall checked one phase later is checked nowhere
+  in between. `FX-BothScoresRankOneSet` is registered at 5.5.
+- `DATA_AND_SCHEMA.md` §4 corrected in two places: the scores are §4.4 and the
+  pre-registration is §4.6, where two sentences put both inside §4.3.
+- `README.md`'s corpus version, which is the fourth place that figure is stated
+  and the one a sign-off has missed before.
+
+### Fixed
+- **`ProjectionTables` describes a mechanism that does not run.** It states that
+  the rebuild fixture enumerates its list, and names the failure a hand-written
+  rebuild test would cause. That fixture is hand-written and names its tables
+  inline. Registered as 5.1's first act, because the record-or-projection question
+  that checkpoint answers would otherwise be decided against it.
+- **The cash-earns obligation named a phase for a reason the phase map does not
+  carry**, saying Phase 5 is where the controls' returns are computed where §7
+  names no control for this phase. Struck and replaced; what Phase 5 owns is the
+  rate, and where the controls land is not something that row can state.
+
+### Raised
+- **Which phase builds the two controls** [D-W13]. Striking the clause above
+  removed the only sentence in this corpus that placed buy-and-hold and the
+  hold-cash floor in any phase, and the map places them nowhere. Owed at Phase 6.
+- **`WORKED_EXAMPLE.md` §7's two orderings are not a reversal** and its prose says
+  they are exactly inverted. Corrected at 5.5, and the wording swept for wherever
+  it is repeated, which includes a registry cell.
+- **After a run, every trial row carries no close kind**, because a run mints
+  trials and appends their entries and never rebuilds them. 5.8 has to establish
+  which trials closed before it can score them.
+- **`market_sessions` has been in the schema since 3.3 with nothing writing it and
+  nothing reading it.** 5.1 decides whether the scoring path reads the store or a
+  chain, which is the question that table's status turns on.
+
 ## [1.49.0] — 2026-08-09
 
 **Two decisions before Phase 5's detail.** Both bound what a result may claim

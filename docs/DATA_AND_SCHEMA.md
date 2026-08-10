@@ -9,8 +9,10 @@ triggers and indexes. §4.2 is implemented at 1.3, its shape settled by D-W35 as
 transitions; §2's corporate-action paragraph is implemented at 1.5, its
 identity paragraph corrected and implemented there too [D-W36]. The rest is
 specification, and §4.3 splits across two phases rather than falling to one:
-`trials`, `positions` and `ledger_entries` at 3.3, the decision record at 4.2,
-scores Phase 5, pre-registration Phase 9. `ledger_entries` gained
+`trials`, `positions` and `ledger_entries` at 3.3 and the decision record at 4.2.
+~~scores Phase 5, pre-registration Phase 9~~ **The scores of §4.4 are checkpoint
+5.2's and the pre-registration of §4.6 is Phase 9's**, neither of them inside the
+§4.3 this sentence is about. `ledger_entries` gained
 `known_on` at 3.1 while still specification, deduced from [D-W35] rather than
 built. §4.1 grew at 3.3, which added `market_sessions` and rebuilt
 `corporate_actions` for its `CHECK`; §4.3's `trials`, `positions` and
@@ -21,8 +23,13 @@ existed, and migration 9 built all five at 4.2.** [D-W52] keyed the feasible set
 on what the generator reads and split the gate reasons by whether they are
 computed against a book, so `decisions` and `candidates` became `feasible_sets`,
 `candidates`, `candidate_gate_reasons`, `decisions` and `decision_gate_reasons`.
-What remains of §4.3 as specification is the scores of Phase 5 and the
-pre-registration of Phase 9.
+~~What remains of §4.3 as specification is the scores of Phase 5 and the
+pre-registration of Phase 9.~~ **What remains as specification is §4.4's scores,
+now checkpoint 5.2's, and §4.6's pre-registration, which is Phase 9's.** Both
+sentences put those two inside §4.3, and neither is there. The error survived
+because §4.3 is the long section and the two beneath it are short, so a reader
+tracking what is unbuilt reads down from the heading it started at. Corrected
+when Phase 5's detail was authored and this section was read against it.
 
 ## 1. Sources
 
