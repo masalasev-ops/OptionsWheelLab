@@ -6,8 +6,9 @@ Appended to, never rewritten. The repository is the authority on build state.
 
 **Phase 0 complete and reviewed. Phases 1, 2, 3 and 4 complete.** Checkpoints 0.1
 to 0.8, 1.1 to 1.5, 2.1 to 2.5, 3.1 to 3.5 and 4.1 to 4.5 built and signed off.
-Phase 5 is not started and its detail is due, now under two decisions that
-constrain it. The documentation corpus is at v1.49.0.
+Phase 5 is not started and its detail is authored, 5.1 to 5.8, under the two
+decisions that were written to constrain it. The documentation corpus is at
+v1.50.0.
 
 **This block carries no `Build state:` marker and the sweep keys on that string**,
 so it was outside the sweep's scope rather than passed by it. Read at every
@@ -2836,3 +2837,135 @@ Phase 5's detail specifically**, naming three things that phase must emit, and
 D-W58 bounds what its scorer's output may be read to claim. Both have to be read
 against that detail as it is authored, which is the first prompt either could
 change and the next document due.
+
+### 2026-08-10 — corpus v1.50.0
+
+**Phase 5's detail is authored, in eight checkpoints.** 5.1 settles the grains and
+the phase's four decisions with no production code, 5.2 builds the score tables,
+5.3 the outcome metric and the adverse excursion, 5.4 the counterfactual walk,
+5.5 the two scores and their ranks, 5.6 the divergence monitor, 5.7 regret and
+what Phase 6 reads, and 5.8 the slow loop over the trials the fast loop closed.
+Eight rather than five, because three tables, four obligations and the first
+statistic in this repository do not divide into five pieces that each finish
+something.
+
+**The phase's oracle states figures its own machinery cannot reach, and this is
+the constraint that shaped the split.** `WORKED_EXAMPLE.md` §8's regret rests on
+the 50.00 put's 9.961%, which rests on two covered calls §6.3 states as legs and
+§2 does not quote. That document already refuses to have them added, because
+adding them would make it agree with the build by having the build write the part
+it is checked against. So those figures are reached the way 3.4 reached §6.3's
+total, by supplying the legs, and each checkpoint says which of its numbers came
+from a walk and which from a fixture. **Stated in the detail rather than
+discovered at 5.7**, which is where it would otherwise have surfaced, one
+checkpoint from the end.
+
+**5.1 cannot do what 4.1 did and the detail says so.** 4.1 settled a grain by
+reading the built generator's parameters, so its key came from a component rather
+than from an argument [D-W52]. Phase 5's equivalent component is the
+counterfactual walk and it does not exist, so 5.1 constrains the walk instead. A
+grain taken off a component nobody has written is an assumption, and the
+difference is worth naming because 4.1's success is the reason this ordering is
+used at all.
+
+**`ProjectionTables` describes a mechanism that does not run, found by reading the
+fixture after reading the claim.** That type states its list "is what
+FX-ProjectionRebuildsFromLedger enumerates, which is what stops a projection being
+added and left uncovered", and names the failure exactly: "A hand-written rebuild
+test naming its tables inline would pass on the day a third projection landed."
+The fixture is hand-written and names `trials` and `positions` inline. **Neither
+document alone finds this**, because the type reads as covered and the fixture
+reads as complete, which is the shape `CLAUDE.md` §1 describes for a citation
+verified by what rests on it. It is registered as 5.1's first act rather than
+5.2's, because 5.1 decides whether the score tables are projections and the
+cheaper answer is cheaper only through the hole.
+
+**One change touches the decision path and the rule about bundling does not
+reach it.** [`CLAUDE.md` §7] defines that path as the gate, the candidate
+generator, the fill model or the state machine, and scopes its whole section to a
+run in flight. The forced close's commission is a state-machine change and lands
+at 5.3; the session loop changes the two run types, which are none of the four,
+and lands at 5.4. **The first draft of this detail called both decision-path
+changes and recorded setting §7 aside**, which counted one change too many and
+recorded a departure from a rule that does not apply while nothing is running.
+Corrected by reading §7's own enumeration rather than the phrase.
+
+**The first statistic arrives at Phase 5 and `guards.ps1` says Phase 6, and only
+half of that is a correction.** The script names Phase 6 for the collision between
+a rank correlation and the floating-point ban, where the divergence monitor is
+D-W20's and so Phase 5's. But what the script conditions on is a floating-point
+value rather than a statistic, and none arrives: measured rather than argued, a
+count of discordant pairs over a count of pairs is an integer over an integer, and
+untied Spearman over §7's three candidates is exactly -0.5. **So the decision the
+script asks for is not owed at 5.1 and stays where a square root is**, at a tie
+correction and at Phase 6's clustered standard error. The first draft said 5.1
+owed it, which contradicted this paragraph in the same change; 5.1 now records
+that the question was reached and answered without a carve-out, so the script's
+sentence is not left looking unread.
+
+**§7's two orderings are not a reversal and its prose says they are exactly
+inverted.** Fast ranks are 2, 1 and 3 and slow ranks are 3, 2 and 1, so the
+differences are -1, -1 and 2 and the summed squares are 6, where a reversal gives
+8. A fixture inheriting the word would assert -1 and fail. Corrected at 5.5 rather
+than here, with the wording swept for wherever it is repeated, because the
+correction belongs with the checkpoint that computes the figure.
+
+**Both registers moved in the commit that authored the detail**, which
+`BUILD_PLAN.md` requires and v1.43.0 did not do. Four obligation rows to 5.1, all
+four beginning by asking for a decision, with three naming the later checkpoint
+their edit lands at. Five fixture rows moved and two were added: four moved from Phase 5 to their
+checkpoints and FX-NoLearnerOutputInJudgingPath from Phase 6 to 5.8, since the
+scorer is the second of D-W6's five judging components to be built, the risk caps
+having stood since 2.4, and a firewall checked one phase after its subject is
+built is checked nowhere in between. **The first draft called the scorer the
+first**, which is what D-W6's own enumeration denies and which, taken at its word,
+would have moved the registration back to 2.4 rather than forward.
+
+**One obligation was wrong about the phase it named.** The cash row said Phase 5
+is where the controls' returns are computed; `SYSTEM_DESIGN.md` §7 names the
+scorer, the metric and the excursion for this phase and no control, and that map
+is design and is stable. The row is struck and replaced rather than re-scoped
+quietly, and it keeps what Phase 5 does own, which is the rate, because a
+cash-secured put's committed capital sits in cash while the put is open: all of a
+trial that expires worthless, and the first 46 of §6.3's 109 days, after which
+assignment turns the 5,000.00 into shares. **A rate above zero falsifies the
+oracle**: §6, §7 and §8 are computed with cash earning nothing, so an answer other
+than no supersedes figures registered checks reproduce, and 5.1 now carries what
+that answer would cost, including the configuration key a tunable rate has to be.
+
+**Striking the clause left the two controls with no home, so a row was raised
+rather than a silence left.** That clause was the only sentence in this corpus
+placing buy-and-hold and the hold-cash floor in any phase, and the map places them
+nowhere and §3.14 carries no marker. A clause found wrong is not a question found
+answered, so the register gained a twelfth row owed at Phase 6, which is where the
+instrument and the drift check arrive and the controls are what the secondary
+question is reported against. **The first draft struck the clause and raised
+nothing**, which would have made a correction into a deletion.
+
+**`DATA_AND_SCHEMA.md` §4 was corrected in two places**, both saying the scores
+and the pre-registration are what remains of §4.3, where they are §4.4 and §4.6.
+A section number is measured rather than argued, so it was corrected here rather
+than reported. The error survived because §4.3 is the long section and the two
+beneath it are short.
+
+**Both v1.49.0 decisions were read against the detail, and they did not land
+alike.** D-W57 shaped 5.7's columns and its definition of done, and it is why the
+cluster and the path are settled at 5.1 rather than left to a section that does
+not carry them. **D-W58 left no mark on the first draft at all**, which the
+v1.49.0 entry had named as work this detail owed. Read properly it belongs on the
+figure rather than on the report: 5.7 now carries what a regret figure may be
+claimed to mean, since the learner's mutable policy is a band and a window, so a
+fall is evidence about band placement. A decision recorded as read and then not
+visible in what it constrains has been asserted rather than applied.
+
+**Eight checkpoints and no verification of them, which is the state this entry
+records.** The detail is live intent and nothing below 5.1 has been built. An
+adversarial pass over the authored text before this entry found the corrections
+above and eleven others, every one of them in prose written the same day, which is
+the argument for running that pass on documents and not only on code.
+
+**[`CLAUDE.md` §11]'s question, asked.** No decision was added, so nothing
+propagates; what was authored is the detail the two decisions at v1.49.0 were
+written to constrain, and the set of prompts this could change is still empty
+because none is written. `prompts/spent/phase-5.md` does not exist and does not
+yet: a prompt is written immediately before it is spent.

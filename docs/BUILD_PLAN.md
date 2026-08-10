@@ -636,8 +636,9 @@ to differ. A count of this table is a count of rows. Rows sharing an Owed at
 value are separate obligations, and a count of distinct values is not a count of
 this table.
 
-**Eleven rows stand, none at checkpoint granularity and eleven at phase**, read
-off the table below at 4.5's sign-off. It stood at ten, none and ten, at 4.4's; at
+**Twelve rows stand, four at checkpoint granularity and eight at phase**, read
+off the table below when Phase 5's detail was authored. It stood at eleven, none
+and eleven, at 4.5's sign-off; at ten, none and ten, at 4.4's; at
 eleven, two and nine, at 4.3's; at ten,
 two and eight, at 4.2's; at
 eight, two and six, at 4.1's; at
@@ -668,6 +669,26 @@ rows both closing at once. Every remaining row is owed at a phase whose detail i
 unwritten, so the next reading that moves rows without closing any will be Phase
 5's detail being authored.
 
+**That reading is this one. It moved four rows, closed none and raised one**,
+where the prediction anticipated only the moving. All four moved rows go to 5.1, because
+all four begin by asking for a decision and 5.1 is where this phase's decisions
+are taken. Three of them imply an edit as well, and each edit lands at the
+checkpoint whose work depends on it rather than beside the decision, which is the
+same shape as an obligation discharged early by the checkpoint that needed it and
+is stated in each row rather than left to the detail.
+
+**One of the four was wrong about the phase it named, and the correction is
+recorded rather than applied silently.** The cash row characterised Phase 5 as
+where the controls' returns are computed. `SYSTEM_DESIGN.md` §7 names the
+counterfactual scorer, the outcome metric and the adverse excursion for this
+phase and no control, and that map is design and is stable, so the row described
+a phase the map does not. What Phase 5 owns is the rate, because the outcome
+metric needs it; where the controls land is not something this row can state.
+**Striking that clause removed the only sentence in this corpus that put the two
+controls in any phase**, so the raised row is what stops the correction leaving
+them with no home rather than the wrong one. A clause found wrong is not the same
+as a question found answered [`CLAUDE.md` §10].
+
 **4.5 closed none and raised one**, which is a checkpoint that inherited nothing:
 4.4 took both rows naming a checkpoint, and what 4.5 owed was the composition its
 own detail described. The row it raised is the second session loop, found by
@@ -687,13 +708,14 @@ three that went to 4.1 are the three it has now closed.
 | Phase 8 | Extract the market rules out of `SyntheticChainReader`, so one definition serves the synthetic reader and the vendor ingest. Refusing a negative bid, a negative ask and a crossed market are statements about what a market can be, not JSON concerns, and they sit as private statics on the reader, so a second producer of quotes can only duplicate them. Phase 8 is where that second producer arrives. **The crossed-quote coupling is discharged at 2.3**: the gate handles a crossed quote [D-W22, as amended], so that rule moved to the gate and left the loader, and what remains to extract is the two negative-price refusals. Not extracted at 0.8 because there is one caller and the second does not exist. | PR #9 |
 | Phase 9 | Decide how configuration resolves for a simulated date that precedes the value being written. `SeedCommand` stamps `set_at` from the wall clock, so every gate bound resolves null for any simulated date before the seed ran, which is every date in a walk-forward over real history. [D-W26] requires resolution as of the simulated date and [D-W37] stops the evaluation rather than guessing, so the collision surfaces loudly at the first walk-forward rather than silently. The options include backdating the seed, which costs the audit trail its truthfulness, and resolving a registered run's configuration as of its pre-registration instant [D-W15], which keeps both rules intact. Raised at 2.3 while answering what an unresolvable bound does. | v1.32.0 |
 | Phase 8 | Decide how a deliverable that is shares plus cash is recorded. The adjustment method in force gives a 4-for-3 split of an $80 option a deliverable "adjusted to 133 shares plus the cash value of the eliminated fractional share", strike unchanged; `contracts.deliverable_shares` is an integer and one of the five components of contract identity [1.5], and nothing in this corpus or its sources names cash in lieu. Owed at Phase 8 rather than 3.3 because no synthetic chain can express a corporate action at all, so the first deliverable of this shape arrives with vendor data, and the change is to a built structure with a migration cost that is no cheaper now. 3.3 must not assume a deliverable is wholly shares. Raised at 3.2. | v1.38.0 |
-| Phase 5 | Decide whether cash earns, and at what rate. Nothing in this corpus names interest as a financial concept. The absence biases two of the three comparisons in opposite directions: the wheel holds cash securing its puts and the hold-cash floor holds cash outright, so both are understated by roughly the same amount and their comparison survives, while buy-and-hold holds no cash and is not understated at all, so the comparison the lab exists to make is biased against the wheel by whatever the rate is. A rate is an external source and choosing one is a modelling choice with its own argument. Owed at Phase 5, where the outcome metric and the controls' returns are computed. A control gap of the same kind as the dividend gap and in the same decision [D-W13]. Raised at 3.2. | v1.38.0 |
+| 5.1 | Decide whether cash earns, and at what rate. Nothing in this corpus names interest as a financial concept. The absence biases two of the three comparisons in opposite directions: the wheel holds cash securing its puts and the hold-cash floor holds cash outright, so both are understated by roughly the same amount and their comparison survives, while buy-and-hold holds no cash and is not understated at all, so the comparison the lab exists to make is biased against the wheel by whatever the rate is. A rate is an external source and choosing one is a modelling choice with its own argument. ~~Owed at Phase 5, where the outcome metric and the controls' returns are computed.~~ **Owed at 5.1, where the outcome metric's inputs are settled**: `SYSTEM_DESIGN.md` §7 names no control for Phase 5, so this row described a phase the map does not, and where the controls land is not something it can state. The rate reaches the metric directly and not only the controls, because a cash-secured put's committed capital sits in cash while the put is open: the whole of a trial that expires worthless, and the first 46 of the 109 days in `WORKED_EXAMPLE.md` §6.3, where assignment turns the 5,000.00 into shares for the rest. **A rate above zero falsifies the oracle**: §6.1, §6.2 and §6.3's returns, and §7 and §8 with them, are computed with cash earning nothing, so an answer other than no supersedes figures registered checks reproduce, and each of those is a strike-and-replace with its own re-measurement rather than an edit. Where the controls land is a separate row. A control gap of the same kind as the dividend gap and in the same decision [D-W13]. Raised at 3.2. | v1.38.0 |
 | Phase 8 | Constrain `earnings_calendar.session`, which has carried a stored vocabulary and no `CHECK` since migration 3. `StoreEarningsSession` declares three values and `ChainWriter` has written the column since Phase 1, so the code is its only enforcer where every other enforced vocabulary has two. FX-StoredVocabulariesMatchTheirChecks names it as unenforced from 4.2 rather than skipping it, which makes the gap visible without closing it. Adding the constraint means rebuilding a live table, and Phase 8 is where a second producer of earnings data arrives and that table is touched for its own reasons. Raised at 4.2 by the coverage case that found it. | v1.45.0 |
 | Phase 8 | Refuse a candidate whose delta is absent, at the gate rather than at each band. `ContractQuote.Delta` is nullable and the delta ceiling only fires when a value is present, so a quote with no delta passes the gate and reaches every maker as feasible. A band cannot admit it, because a band is a claim about delta and an absent one cannot satisfy it, so all three makers refuse it identically from 4.3 and the candidate stays in the feasible set recorded feasible with no reason. **The consequence is Phase 5's and is why this is worth doing.** The scorer computes an outcome for every candidate in that day's feasible set [D-W5], so it scores one no maker could have taken, and the opportunity set regret is measured against gains a member that was never an opportunity. Refusing it at the gate removes it from the set once rather than from each maker separately, and gives the audit trail a reason where today there is none. That means a new gate reason, its `CHECK` and the decision authorising both, which is why it is not 4.3's. Owed at Phase 8, where vendor data arrives and a quote with missing greeks stops being hypothetical. **No synthetic chain omits a delta today**: every quote in the only chain carries one, and the sole deltaless quote in the tree is the unit case asserting the gate does not treat one as a breach, so a green suite is not evidence against this. Raised at 4.3. | v1.46.0 |
 | Phase 6 | Record distance to earnings as a candidate feature. It is one of the six `SYSTEM_DESIGN.md` §3.11 names and the only one of them a candidate could carry and does not: it needs the report dates the gate read, which `CandidateGenerator` holds for the whole chain and a `GatedCandidate` does not carry out. The other two absentees are absent for a different reason, implied volatility rank needing a history window and term structure slope needing the rest of the chain, so neither is a candidate feature at all. Owed at Phase 6, which is where the feature grader arrives and the first consumer of any of them. Raised at 4.2 by computing the features. | v1.45.0 |
-| Phase 5 | Decide whether a forced close pays a commission. `WheelStateMachine.Bound` writes its `bought_to_close` as the debit alone and adjusts `PremiumBanked` by the debit alone, where `CloseByChoice` goes through `PremiumEntries` and writes the commission entry beside it. So two closes of the same position differ by `Costs:CommissionPerContract`, 0.65 at the seeded rate, and the difference is which trigger fired rather than anything about the trade. [D-W50] requires each cost recorded explicitly and [D-W12] fixes which side of the spread the account is on, and neither exempts a close nobody chose. **The error has a sign**: it flatters exactly the trials the bound exists to terminate, which are the losing ones, which is the same argument [D-W49] makes for the ask over intrinsic value one line away in the same method. Owed at Phase 5 rather than 4.4, because changing it changes recorded amounts and so needs a decision rather than an edit, and because Phase 5 is where a trial's cash first becomes a score and the asymmetry first has a consequence. Raised at 4.4 by building the close a maker chooses beside the one it does not. | v1.47.0 |
-| Phase 5 | Decide whether the session loop is parameterised over what it advances. `TrialRun.Walk` and `MakerRun.Walk` step the same sessions through the same per-session mechanics, sharing `SessionsIn`, `FactsFor` and `Apply`, and each keeps its own `foreach` because one advances a single trial and the other advances three arms. **What is duplicated is the ordering rule**, choice then advance, which each loop states independently, so a change to it has to be made in two places and a change made in one would diverge silently: both loops would still produce a ledger. Not a defect today, since both orders agree and each is stated with its reason. Owed at Phase 5 because the counterfactual scorer walks every candidate in a set forward to expiry or to trial completion [SYSTEM_DESIGN §3.9, D-W5], which makes it the third loop over the same sessions, and three is where a shared abstraction stops being speculation. Collapsing them means a loop parameterised over what it advances, which is larger than the edit that raised it. Raised at 4.5 by correcting a sentence that claimed there was one loop. | v1.48.0 |
-| Phase 5 | Decide what `ResolvedBound`'s refusal calls the thing it could not resolve. It reads "a gate bound", which has covered `Risk:` caps since 2.4 and covers a trial bound and a cost from 3.4. That type's own remarks anticipated this and call changing what the message carries a decision rather than an edit, because what [D-W37]'s refusal says is the reason the type exists. Owed at Phase 5 rather than sooner, because that is where scores arrive as values that are neither a bound nor a cost. The prediction that the fifth record would be the one a reader could not place turned out wrong: `Policy` is the fifth, it arrived at 4.3, and its keys sit under one prefix so the family still reads from the key. The wording is wrong for every record but the first and gets more wrong as records are added, which is why the count is not stated here. Raised at 3.4. | v1.41.0 |
+| 5.1 | Decide whether a forced close pays a commission. `WheelStateMachine.Bound` writes its `bought_to_close` as the debit alone and adjusts `PremiumBanked` by the debit alone, where `CloseByChoice` goes through `PremiumEntries` and writes the commission entry beside it. So two closes of the same position differ by `Costs:CommissionPerContract`, 0.65 at the seeded rate, and the difference is which trigger fired rather than anything about the trade. [D-W50] requires each cost recorded explicitly and [D-W12] fixes which side of the spread the account is on, and neither exempts a close nobody chose. **The error has a sign**: it flatters exactly the trials the bound exists to terminate, which are the losing ones, which is the same argument [D-W49] makes for the ask over intrinsic value one line away in the same method. Owed at Phase 5 rather than 4.4, because changing it changes recorded amounts and so needs a decision rather than an edit, and because Phase 5 is where a trial's cash first becomes a score and the asymmetry first has a consequence. **Decided at 5.1 and the amounts change at 5.3**, which is where a trial's cash first becomes a score and so where the asymmetry first has one. Raised at 4.4 by building the close a maker chooses beside the one it does not. | v1.47.0 |
+| 5.1 | Decide whether the session loop is parameterised over what it advances. `TrialRun.Walk` and `MakerRun.Walk` step the same sessions through the same per-session mechanics, sharing `SessionsIn`, `FactsFor` and `Apply`, and each keeps its own `foreach` because one advances a single trial and the other advances three arms. **What is duplicated is the ordering rule**, choice then advance, which each loop states independently, so a change to it has to be made in two places and a change made in one would diverge silently: both loops would still produce a ledger. Not a defect today, since both orders agree and each is stated with its reason. Owed at Phase 5 because the counterfactual scorer walks every candidate in a set forward to expiry or to trial completion [SYSTEM_DESIGN §3.9, D-W5], which makes it the third loop over the same sessions, and three is where a shared abstraction stops being speculation. Collapsing them means a loop parameterised over what it advances, which is larger than the edit that raised it. **Decided at 5.1 and built at 5.4**, where the third caller arrives, and 5.4's detail states what that caller needs beyond what this row names: a loop whose side effects are a parameter, since a counterfactual must react to an assignment it did not foresee and write nothing down. Raised at 4.5 by correcting a sentence that claimed there was one loop. | v1.48.0 |
+| Phase 6 | Decide which phase builds the two controls beyond the control makers, being buy-and-hold on the same underlyings with the same capital over the same window, and the hold-cash floor [D-W13]. `SYSTEM_DESIGN.md` §7's map names no control in any Delivers cell and §3.14 carries no build-state marker, so until Phase 5's detail was authored the only sentence in this corpus placing them anywhere was the cash row's clause saying Phase 5 computes their returns, and the map does not carry that. Striking it left them with no home rather than the wrong one, which is why this row exists instead of silence. Owed at Phase 6 because that is where the improvement instrument and the drift check arrive and the controls are what the secondary question is reported against, and because a control with no phase is one no definition of done can reach. Not merged with the cash row: one asks what a rate is and this asks where two components are built, and answering either leaves the other open. Raised when Phase 5's detail was authored, by applying the map to a clause that contradicted it. | v1.50.0 |
+| 5.1 | Decide what `ResolvedBound`'s refusal calls the thing it could not resolve. It reads "a gate bound", which has covered `Risk:` caps since 2.4 and covers a trial bound and a cost from 3.4. That type's own remarks anticipated this and call changing what the message carries a decision rather than an edit, because what [D-W37]'s refusal says is the reason the type exists. Owed at Phase 5 rather than sooner, because that is where scores arrive as values that are neither a bound nor a cost. The prediction that the fifth record would be the one a reader could not place turned out wrong: `Policy` is the fifth, it arrived at 4.3, and its keys sit under one prefix so the family still reads from the key. The wording is wrong for every record but the first and gets more wrong as records are added, which is why the count is not stated here. **Decided at 5.1 and edited at 5.6**, which is where the first `Scoring:` bound record arrives and so where the reason this row names Phase 5 is actually met. Raised at 3.4. | v1.41.0 |
 
 ---
 
@@ -1954,4 +1976,381 @@ the same checkpoint moved that fixture onto the maker-driven root.
   contract a maker is meant to choose, since a test that hands a maker its answer
   asserts nothing about choosing.
 
-Detail for Phase 5 is authored when Phase 4 signs off.
+---
+
+## Phase 5 — Counterfactual scorer, outcome metric, adverse excursion
+
+Build state: **not started**. 5.1 to 5.8 authored and none built, so every
+checkpoint below is live intent and is corrected whenever something that lands
+changes what it should build.
+Delivers the outcome of every candidate that was in a feasible set and not only
+the one chosen, with the chosen one's rank and its regret inside that set
+[D-W5], the trial-complete metric and the adverse excursion beside it, and the
+standing comparison between the two scores [D-W20]. On synthetic chains; no
+vendor data until Phase 8.
+
+Definition of done for the phase: `WORKED_EXAMPLE.md` §6, §7 and §8 reproduce to
+the figures those sections state, and every checkpoint reproducing one says in its
+own definition of done which numbers the scorer computed and which a fixture
+supplied; every read the scoring path makes is inside the set 5.1 settles, named
+with the reason each exclusion is barred, which is 4.2's standard rather than a
+list fixed here, because what a scorer may read follows from the
+record-or-projection answer and that answer is 5.1's; both `Scoring:` rows carry a
+verified consumer; the two `SYSTEM_DESIGN.md` sections this phase builds carry
+build-state markers; and no value is carved out of the floating-point ban.
+
+**That last clause names no permitted list, deliberately.** `FX-NoFloatingPoint`
+declares no permitted file and `guards.ps1` states it has no exemption mechanism,
+so carving a value out of that ban means editing the script, which is changing the
+rule rather than taking a hatch it offers.
+
+**This phase's oracle states figures its own machinery cannot reach, and that is
+a property of the document rather than a gap in the build.** §8's regret rests on
+the 50.00 put's 9.961%, which rests on two covered calls §6.3 states as legs and
+§2 does not quote. Adding them to §2 would make the document agree with the build
+because the build wrote the part it is checked against, which that document
+already refuses. So those figures are reached the way 3.4 reached §6.3's total,
+by supplying the legs, and a checkpoint reproducing one says which of its numbers
+came from a walk and which from a fixture.
+
+**Several of this phase's questions decide what the tables are rather than
+sitting inside them, and 5.1 settles them before any row is written**, on the
+ordering Phases 2, 3 and 4 all used: a precondition answered late is a schema
+built twice. **5.1 cannot do what 4.1 did, and says so.** 4.1 settled a grain by
+reading the built generator's parameters, so the key came from a component rather
+than from an argument [D-W52]. Phase 5's equivalent component is the
+counterfactual walk and it does not exist yet, so 5.1 constrains the walk rather
+than reading it, and a grain taken off a component nobody has written is an
+assumption rather than a measurement.
+
+**This phase carries four obligations and one of them changes recorded amounts.**
+Phase 4 raised two, at 4.4 and 4.5, and Phase 3 the other two at 3.2 and 3.4. The
+forced close's commission is the only one touching the decision path as
+[`CLAUDE.md` §7] defines it, that being the gate, the candidate generator, the
+fill model or the state machine, and it lands at 5.3 because that is where a
+trial's cash first becomes a score. The session loop is not on that list, since it
+changes the two run types rather than any of the four, and it lands at 5.4 because
+that is where its third caller arrives. **§7's rule to bundle decision-path
+changes is scoped to a run in flight, and none is**, so nothing here departs from
+it. If one starts, the commission stops being a checkpoint's work and becomes a
+change to file.
+
+**The first statistic in this repository arrives here rather than at Phase 6.**
+`guards.ps1` anticipates the collision between a rank correlation and the
+floating-point ban and names Phase 6 for it, where the divergence monitor is
+D-W20's and therefore this phase's. **What that script conditions on is a
+floating-point value and not a statistic**, and 5.1 settles the rank statistic as
+a count over a count, so no such value arrives and the decision the script asks
+for is not owed here. It stays where a square root is, which is a tie correction
+and Phase 6's clustered standard error. 5.1 records that the question was reached
+and answered without one, because a script whose anticipation is passed over in
+silence reads as a script nobody consulted.
+
+### 5.1 The grains and the corrections, settled before the tables
+Not code, with one exception this checkpoint states rather than smuggles. Each
+answer becomes a decision citing its source, and each source is either a document
+already in this corpus or a property the build can measure.
+- Repairs the coverage one of its own answers rests on, which is why this
+  checkpoint writes a test where 2.1, 3.1 and 4.1 wrote none. `ProjectionTables`
+  states that the rebuild fixture enumerates its list and that this is what stops
+  a projection being added and left uncovered, and it names the failure a
+  hand-written rebuild test would cause. That fixture is hand-written and names
+  its tables inline. So the record-or-projection question below would otherwise be
+  decided against a mechanism that does not run, and the cheaper answer would be
+  cheaper only through a hole.
+- Settles whether a counterfactual is walked under a maker-independent policy,
+  which is what a counterfactual outcome can be keyed on. A roll goes to the
+  candidate the acting maker's own policy selects [D-W54], so a counterfactual
+  that rolls belongs to a maker and one that does not belongs to the set.
+- Settles where a rank lives, and it moves either way. A rank is a position inside
+  a feasible set, and the portfolio constraints refuse one maker and not another
+  because a cap is evaluated against the book that maker built [D-W11], so the set
+  a rank is taken within is per decision and a rank stored per candidate would put
+  a per-maker fact on a shared row. That is the split [D-W52] already made for
+  gate reasons, arriving one section later in the same schema.
+- Settles which decisions are scored. Every session a maker is asked writes a row,
+  including the sessions it takes nothing [D-W3], and a decision that took nothing
+  committed no capital, so the metric's denominator is zero for most rows in that
+  table. The instrument is stated per decision and any statistic is computed over
+  one observation per trial [`VALIDITY.md` §2, §4], which is the same question
+  from the other side.
+- Settles the fast score's horizon. A horizon common to a chain and a mark at each
+  candidate's own expiry are different rules [§3.9], and the worked example cannot
+  tell them apart because its set carries one expiry.
+- Settles what closes a counterfactual trial no maker was driving, including what
+  happens where the bound binds on a session carrying no ask. A forced close pays
+  the ask [D-W49] and a value that cannot be resolved stops the evaluation
+  [D-W37], so the two rules meet on a walk nobody asked for.
+- Settles whether the scoring path reads the store or a chain held in memory,
+  which decides how much of 5.2 and 5.8 exist. `market_sessions` has been in the
+  schema since 3.3 with nothing writing it and nothing reading it, and both
+  existing walks take a chain, so this is a choice between two shapes for the
+  phase rather than a detail inside one.
+- Settles the unit of the stored return and of regret, and the order of rounding.
+  A computed value rounds explicitly because division is non-terminating in
+  general [D-W29], so the scale and whether the subtraction precedes the rounding
+  are choices, and both of the worked example's first two ratios are
+  non-terminating.
+- Settles the adverse excursion's field, its denominator and its floor. Daily
+  bars are the source [D-W21] and the only chain in this corpus carries closes
+  alone, deliberately, so a rule reading a low would have nothing to read.
+- Settles whether the score tables are records or projections [D-W35]. A
+  projection whose source is itself rewritable is not one, and `trials` and
+  `positions` are projections, so a projection answer bars the scoring path from
+  reading them.
+- Settles the rank statistic, what happens on a tie, and what
+  `Scoring:DivergenceThreshold` is a floor on. A count of discordant pairs over a
+  count of pairs is an integer over an integer and needs no floating point, where
+  a tie-corrected form takes a square root and does. The decision records that
+  `guards.ps1`'s standing request was reached and answered without a
+  floating-point value, so a later reader finds why nothing was written rather
+  than an absence.
+- Settles what a date cluster is and what identifies the underlying path a trial
+  resolved against. Both are things [D-W57] requires this phase to emit and
+  `DATA_AND_SCHEMA.md` §4.4 does not carry, so neither is a grain that section
+  leaves open and the definition of done below names them separately for that
+  reason. Standard errors cluster by date [`VALIDITY.md` §4], which fixes the
+  grain and not the key; the path is what makes two trials share a market draw.
+- Settles what a roll is scored against. That counterfactual is accepting
+  assignment [D-W14], which is not a member of any feasible set, so a roll carries
+  two counterfactuals where `DATA_AND_SCHEMA.md` §4.4 gives it one row.
+- Settles the four obligations this phase carries. Each is decided here and the
+  edit it implies lands at the checkpoint whose work depends on it, which is why
+  three of the four name a later checkpoint below. **The fourth names none, and
+  an answer other than no gives it one.** A rate is a value that could plausibly
+  be tuned, so a non-zero one is a configuration key with an entry in
+  `CONFIG_REFERENCE.md` and not a literal [`CLAUDE.md` §3], its consumer is the
+  metric at 5.3, and the worked-example figures it moves are struck and replaced
+  there. The phase definition of done requires those figures reproduced, so
+  answering yes without carrying that through makes the phase unsatisfiable.
+- **Test**: the coverage case above, and nothing else. This checkpoint registers
+  one entry rather than none, which is what stops the no-code precedent
+  discharging FIXTURES rule 2 on an empty set.
+- **DoD**: every obligation this phase carries is closed by a decision or moved
+  with its reason; every grain `DATA_AND_SCHEMA.md` §4.4 leaves open is settled,
+  and so are the cluster and the path that [D-W57] requires and that section does
+  not carry; and no decision here is justified by a number that does not yet exist
+  [D-W15].
+  Where a decision contradicts §4.4, that section is struck and replaced on the
+  decision's authority rather than the decision softened.
+
+### 5.2 The score tables
+Migration 10 at whatever grains 5.1 settled, with a writer and a reader.
+- `DATA_AND_SCHEMA.md` §4.4 was specified before the record was keyed on what the
+  generator reads [D-W52], so which of its three keys survive is 5.1's answer
+  rather than this checkpoint's assumption. A column that moves moves in that
+  section too.
+- Each table joins the append-only vocabulary or the projection one, the two stay
+  disjoint over the declarations, and every name appears in a schema block of
+  `DATA_AND_SCHEMA.md` §4. A projection carries a discard-and-rebuild test, which
+  is the condition on rewriting one at all [D-W35], reaching the source it derives
+  from rather than the ledger.
+- A record may reference a record and may not reference a projection [D-W35]. An
+  outcome names a trial, which is a projection, so it carries no foreign key and
+  the absence is a statement rather than an omission, on the rule §4.3 already
+  gives for a decision naming its trial.
+- Every new decimal is declared where decimal columns are declared, which is what
+  puts each under the check that no SQL orders, ranges over or aggregates one
+  [D-W29]. Ranks are integers computed in code.
+- Nothing is stated twice. The chosen candidate's slow score is its trial's
+  outcome, so carrying it in both places is the arrangement [D-W50] rejected on
+  the premium entry.
+- **Test**: the tables round-trip at the stored scale, including a ratio whose
+  exact value does not terminate. **This checkpoint registers no entry in
+  `FIXTURES.md`** and the test lands as an unregistered suite, which is said here
+  because a definition of done that resolves to nothing is unexercised rather than
+  discharged.
+- **DoD**: the writer's answer to a second score for a subject that already has
+  one follows 5.1's record-or-projection decision and refuses or appends by name.
+  `DATA_AND_SCHEMA.md` §4.4's build state moves, and its columns are checked
+  against the migration by reading the migration.
+
+### 5.3 The outcome metric and the adverse excursion
+The first figure this system computes about a decision, over a trial that closed.
+- Carries the forced close's commission, because a bound-closed trial's cash has
+  to be right before it becomes a score, which is the reason that obligation names
+  this phase. A close nobody chose writes its debit without the commission entry a
+  close a maker chose writes beside it, and each cost is recorded explicitly
+  [D-W50]. **The error has a sign**: it flatters exactly the trials the bound
+  exists to terminate, which is the argument [D-W49] makes for the ask over
+  intrinsic value one line away in the same method.
+- Return on capital committed at the strike, being strike times the contract
+  multiplier times contracts, from trial open to return to cash, with assigned
+  shares marked into the same number [D-W17].
+- Not annualized, with duration carried separately [D-W18]. That decision's test
+  line names two properties and the registry carries the first, and this phase has
+  no report surface for the second, so this checkpoint says whether it builds one
+  or the registration is corrected to what it asserts.
+- Maximum adverse excursion recorded beside every outcome and never part of an
+  objective [D-W21], under 5.1's field, denominator and floor.
+- The metric is defined from open through to return to cash, and not every trial
+  gets there. A trial the run's window cut short has not returned and is a real
+  position, already written down as it stands. A trial stopped by an action the
+  lab does not model is valued at the close rather than left open [D-W49]. A trial
+  closed at a bound does return and is ordinary. A trial with no outcome row is
+  one the scorer cannot reach, so which of the three gets one is a decision either
+  way rather than a case to leave silent.
+- **Test**: the registered fixtures are in `FIXTURES.md`.
+- **DoD**: §6.1, §6.2 and §6.3's returns, durations and excursions reproduce to
+  the figures those sections state, with this checkpoint saying which of them the
+  scorer computed and which a fixture supplied, since §6.3's total is reachable
+  only the second way. Every ledger figure the commission moves is
+  named before the change and re-measured after it, and a `WORKED_EXAMPLE.md`
+  figure that moves is struck and replaced rather than overwritten.
+
+### 5.4 The counterfactual walk
+A trial walked for a candidate nobody opened, which is the property that makes
+this environment measurable at all [§2, D-W5].
+- Carries the session loop, because this is its third caller and that obligation's
+  argument is that three is where a shared abstraction stops being speculation.
+  **What the walk needs is stronger than the row states.** The row names a
+  duplicated ordering rule. The walk needs a loop whose side effects are a
+  parameter, because one existing loop takes its whole choice sequence up front
+  and cannot react to an assignment it did not foresee, and the other reacts but
+  mints trials, records decisions and appends ledgers.
+- A counterfactual trial is written nowhere. A trial row requires a maker, a run
+  refuses a second open while one is open [D-W55], and an assignment rate computed
+  over trials nobody took answers a different question [`VALIDITY.md` §3].
+- The opportunity set is the set as it stood [D-W3]. The walk reads the record
+  rather than live state, resolves configuration as of the simulated date and
+  never as-now [D-W26], and fixes bounds at the counterfactual's own open
+  [D-W53]. A walk reading current bounds would disagree with the run it is
+  re-scoring and present the disagreement as a scoring defect, which is 4.4's
+  finding arriving on the read side.
+- A candidate the gate admitted that no maker could have taken is still scored,
+  so regret is measured against a gain that was never an opportunity. The refusal
+  is Phase 8's and the consequence is this checkpoint's, stated here rather than
+  rediscovered there. No synthetic chain omits a delta today, so a green suite is
+  not evidence against it.
+- **Test**: two candidates out of one recorded set, one that expires worthless and
+  one that assigns, walk to their own outcomes from the record alone, and neither
+  walk leaves a row behind it. **This checkpoint registers no entry in
+  `FIXTURES.md`** and the test lands as an unregistered suite, which is said here
+  for the reason 5.2 says it.
+- **DoD**: the walk reads only inside the set 5.1 settled, and what is outside it
+  is named with the reason each exclusion is barred rather than the permitted set
+  listed, which is 4.2's standard arriving on the read side. A synthetic chain this
+  checkpoint needs is written by hand [D-W31] and lives in `synthetic/` at the
+  repository root, where 0.6 put them, which is a location and not a register:
+  `FIXTURES.md` registers checks and holds no data.
+
+### 5.5 The two scores and their ranks
+One component producing two figures [§3.9], so they land together.
+- The fast score is a mark and a division and needs no walk. The slow score is
+  what 5.4 produces, and the learner's objective is the slow one [D-W20].
+- Ranks are computed in code over parsed values and stored where 5.1 put them,
+  because no query orders a decimal column [D-W29].
+- The two scores can rank a set differently and `WORKED_EXAMPLE.md` §7 is the
+  case, but its two orderings are not a reversal and its prose says they are
+  exactly inverted. A test inheriting that word would assert a figure the
+  arithmetic does not give, so the sentence is corrected here. **The sweep for
+  where that word is repeated has a stated scope, because a sweep whose subject
+  set is undefined is not one**: the copies are that section's heading and its
+  bolded claim, a fixture's registry cell, `SYSTEM_DESIGN.md` §3.9 and
+  `VALIDITY.md` §7. The first three follow the arithmetic and are corrected; the
+  last two are narrative whose rewording is a judgement, so they are reported
+  [`CLAUDE.md` §10]. An amended line whose copies are left standing is 4.1's
+  finding.
+- **Test**: the registered fixtures are in `FIXTURES.md`, and the two scores rank
+  one set in the orders §7.1 and §7.2 state, from scores computed rather than
+  supplied, with a set whose two orders agree ranking the same way twice.
+- **DoD**: §7.1 and §7.2 reproduce to the figure, with this checkpoint saying which
+  of those numbers the scorer computed and which a fixture supplied, and the
+  assertion is on the score column rather than the rank alone, since a rank can
+  be right while the policy that produced it is wrong, which is 4.3's finding on
+  the choosing side.
+
+### 5.6 The divergence monitor
+The standing comparison between the two scores [D-W20], and the first statistic
+in this repository.
+- Exactly rational and decimal throughout, so no value is carved out of the
+  floating-point ban, which is the only act available: that check names no
+  permitted file and `guards.ps1` states it has no exemption mechanism. That no
+  floating point was needed is load-bearing here, so the checkpoint states it
+  rather than leaving it as the absence of a failure.
+- The configured window is ninety days and the case that must fire is one decision
+  day with three candidates, so a monitor defined only over an aggregate could not
+  fire on the document it is checked against.
+- Carries what `ResolvedBound`'s refusal calls the thing it could not resolve,
+  under 5.1's decision. That obligation names this phase because it is where a
+  value arrives that is neither a bound nor a cost, and the first such value is
+  this checkpoint's.
+- **Test**: the registered fixtures are in `FIXTURES.md`.
+- **DoD**: `CONFIG_REFERENCE.md` carries a verified consumer for both `Scoring:`
+  rows, naming the component and the type each binds through, which is the
+  standard 3.3 and 3.4 set rather than a new one.
+
+### 5.7 Regret, and what Phase 6 reads
+The figure the whole lab is built to move, and the row the next phase reads it
+off. Regret is what a decision cost against the best the same day offered, and
+Phase 6's instrument is that figure over time [D-W2].
+- Regret is the best available outcome less the outcome achieved, both under the
+  trial-complete score [`VALIDITY.md` §2].
+- Regret aggregates to one observation per trial before any statistic, and
+  candidate counts are never a sample size [`VALIDITY.md` §4]. A trial spans an
+  open, its rolls and its close, so that aggregation is a row of its own rather
+  than a rename of a per-decision one: an outcome is about what the trial did and
+  this is about what its decisions cost, and one row carrying both would move for
+  two unrelated reasons.
+- Emits regret per trial, its date cluster and the underlying path it resolved
+  against [D-W57]. Regret's definition is authored and so is clustering by date
+  [`VALIDITY.md` §2, §4]. What neither authors is the aggregation across a trial's
+  decisions, the date the cluster keys on, or what identifies a path, so those
+  three are settled at 5.1 and all of it is stored here.
+- Sufficiency is demonstrated once and no estimator ships. A test computes a
+  clustered variance from those columns and nothing else and asserts it returns a
+  number rather than which number, so what is under test is reachability. A
+  computation reaching for something those columns do not carry is the finding,
+  and the columns are then insufficient.
+- A cluster spanning two names cannot be exercised, because a run is over one
+  symbol. The column is populated and the property is untested until a multi-name
+  run exists, which this checkpoint states rather than leaving to Phase 6.
+- **Test**: the registered fixtures are in `FIXTURES.md`, and the sufficiency
+  computation, which reads one table.
+- **What a regret figure may be read to claim is bounded here** [D-W58]. The
+  learner's mutable policy is a delta band and an expiry window, so a fall in its
+  regret is evidence about band placement and not about deciding in general, and
+  the column carries that bound with it rather than leaving Phase 6's report to
+  supply it.
+- **DoD**: §8's three regret figures reproduce, with this checkpoint saying which
+  the scorer computed and which a fixture supplied. What Phase 6 still owns is
+  stated: the estimate, the clustering method, and the minimum detectable slope
+  difference that decision makes a precondition on the instrument [D-W57].
+
+### 5.8 The slow loop, over the trials the fast loop closed
+The composition, and not a scorer that drives a run. The fast loop is mechanical
+and never adapts itself; the slow loop runs per expiry cycle and is evaluative,
+and keeping the two apart in the code is what stops the daily path becoming
+self-modifying [§5].
+- Only closed trials are scored, which is this design's leakage trap: a learning
+  boundary admits decisions whose trials closed before it and not decisions that
+  opened before it [§6]. The standing fixture for the learner's side of that is
+  Phase 7's; the property is built here.
+- Something has to say which trials closed. A run mints trials and appends their
+  entries and never rebuilds them, so every trial row a run leaves carries no
+  close kind, and if 5.1 made the score tables projections then reading that table
+  is barred and the ledger is the only route.
+- No output of the learning channel reaches the path that judges it [D-W6]. The
+  scorer is the second of that decision's five judging components to be built, the
+  risk caps having stood since 2.4, and the standing check moves to this checkpoint
+  because one registered against Phase 6 leaves both unchecked through the phase
+  that builds the second.
+- No new verb. The Worker's verbs are operator setup and nothing outside a test
+  starts a run, so a verb that scores a run before a verb that produces one would
+  be the wrong one first.
+- Byte-identical across two invocations, compared as produced artefacts and never
+  as a database file [D-W28], with the computation's instant supplied rather than
+  read.
+- **Test**: the registered fixtures are in `FIXTURES.md`, and a run scored twice
+  produces one set of artefacts, compared as produced rather than as a file.
+- **DoD**: a run three makers drove scores end to end, and scoring it twice gives
+  one answer. The scoring path reads no learner output, shown by naming the barred
+  tables with the reason each is barred. **`SYSTEM_DESIGN.md` §3.9 and §3.10 gain
+  build-state markers**, which they have never carried, and §3.6's and
+  `WORKED_EXAMPLE.md`'s are corrected where this phase falsifies them. A sweep over
+  markers cannot see a section that has none, which is why these are named here
+  rather than left to it, and 2.5 is the precedent for a checkpoint carrying a
+  design section's marker as scope. Phase 5's build state moves to complete with
+  what is not built stated beside it, and Phase 6's detail becomes due.
+
+Detail for Phase 6 is authored when Phase 5 signs off.

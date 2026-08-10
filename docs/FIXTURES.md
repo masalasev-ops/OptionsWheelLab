@@ -19,6 +19,24 @@ first time this registry has grown from a review rather than from a build.
 3.4 registered nothing and implemented the one row already standing against it.
 That row has been in this registry since v1.0.0, waiting for the ledger it reads.
 
+Authoring Phase 5's detail moved five rows and added two, which is rule 2's second
+direction being served rather than the registry growing. Four moved from Phase 5
+to their checkpoints; the fifth moved from Phase 6 to 5.8, because the scorer is
+the second of [D-W6]'s five judging components to be built, the risk caps having
+stood since 2.4, and a firewall registered against the phase after the one that
+builds its subject is checked nowhere in between. One added row is 5.1's, and it
+is why a checkpoint that writes no production code registers an entry here where
+2.1, 3.1 and 4.1 registered none. The other is 5.5's, whose definition of done
+names an assertion on a score column and so names a check this registry has to
+carry.
+
+**5.2 and 5.4 register nothing and say so in their own detail**, which is what
+rule 2 asks for in place of a definition of done resolving to nothing. The
+build-state marker above names 1.2 and 2.1 as the checkpoints that registered
+none; 3.1, 3.2 and 4.1 also registered none, and 3.2's detail does not say so.
+That is reported here rather than corrected above, because which of them the
+marker meant to enumerate is a judgement about that sentence.
+
 ## Why this file exists
 
 In a sibling project a build prompt listed its fixtures by name. Two fixtures
@@ -145,12 +163,14 @@ to carry the wrong cell.
 | FX-TrialBoundsFixedAtOpen | fixture | 4.4 | a trial spanning a configuration change is bound by the values in force when it opened, a trial opened after the change is bound by the new ones, and a rebuild reaches the same verdict as the run | authored |
 | FX-MakersDriveTheRun | fixture | 4.5 | three makers driving one chain produce three trials, three ledgers and one decision record, with no contract supplied by the test [D-W55, D-W56] | authored |
 | FX-OneSetThreeBooks | fixture | 4.5 | two makers with different books receive the same candidate identities with the same contract-level reasons and different portfolio reasons, from one shared evaluation [D-W52] | authored |
-| FX-ExcursionRecordedOnWin | fixture | 5 | a positive outcome still carries its adverse excursion | WORKED_EXAMPLE §6.2 |
-| FX-NoAnnualizeInObjective | fixture | 5 | equal returns over unequal durations store identically | authored |
-| FX-FastSlowDivergenceFires | fixture | 5 | inverted fast and slow rankings raise the monitor | WORKED_EXAMPLE §7 |
-| FX-RegretUsesSlowScore | fixture | 5 | regret is computed from the trial-complete score | WORKED_EXAMPLE §8 |
+| FX-EveryProjectionHasARebuild | fixture | 5.1 | every table declared a projection is discarded and rebuilt from its own source by some fixture, enumerated from the declarations rather than named inline [D-W35] | authored |
+| FX-ExcursionRecordedOnWin | fixture | 5.3 | a positive outcome still carries its adverse excursion | WORKED_EXAMPLE §6.2 |
+| FX-NoAnnualizeInObjective | fixture | 5.3 | equal returns over unequal durations store identically | authored |
+| FX-BothScoresRankOneSet | fixture | 5.5 | one feasible set ranks in the orders §7.1 and §7.2 state, asserted on the score column rather than the rank alone, from scores computed rather than supplied | WORKED_EXAMPLE §7 |
+| FX-FastSlowDivergenceFires | fixture | 5.6 | inverted fast and slow rankings raise the monitor | WORKED_EXAMPLE §7 |
+| FX-RegretUsesSlowScore | fixture | 5.7 | regret is computed from the trial-complete score | WORKED_EXAMPLE §8 |
+| FX-NoLearnerOutputInJudgingPath | fixture | 5.8 | no judging component reads anything the learner produced | authored |
 | FX-InstrumentStatesItsDetectableEffect | fixture | 6 | the improvement instrument reports the minimum slope difference it could detect alongside every verdict it gives [D-W57] | authored |
-| FX-NoLearnerOutputInJudgingPath | fixture | 6 | no judging component reads anything the learner produced | authored |
 | FX-RiskDriftFiresOnBorrowedTail | fixture | 6 | falling regret with widening excursion raises the check | authored |
 | FX-LearningBoundaryLagRespected | fixture | 7 | the learner sees only trials closed before the boundary | authored |
 | FX-PreRegRequired | fixture | 9 | the forward run refuses to start without a committed pre-registration | authored |
