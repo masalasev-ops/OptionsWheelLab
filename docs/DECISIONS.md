@@ -14,7 +14,7 @@ predates this file and cannot be relied on.
 
 ## Topical index
 
-**Purpose and measurement**: D-W2, D-W3, D-W5, D-W17, D-W18, D-W20, D-W21, D-W49, D-W54
+**Purpose and measurement**: D-W2, D-W3, D-W5, D-W17, D-W18, D-W20, D-W21, D-W49, D-W54, D-W57, D-W58
 **Isolation and controls**: D-W1, D-W4, D-W6, D-W13, D-W41, D-W45, D-W52
 **Data and identity**: D-W7, D-W8, D-W9, D-W15, D-W26, D-W27, D-W28, D-W29, D-W30, D-W31, D-W32, D-W34, D-W35, D-W36, D-W39, D-W44, D-W46, D-W47, D-W48, D-W52, D-W53
 **Risk**: D-W10, D-W11, D-W14, D-W19, D-W23, D-W25, D-W37, D-W43, D-W53
@@ -1842,3 +1842,63 @@ record already carries.
 
 Test: covered by FX-MakersDriveTheRun, whose decision record is read back and
 whose opening decisions name their trials.
+
+---
+
+### D-W57 The measurement error is estimated before the instrument is built
+`active` · 2026-08-09
+
+Phase 5 emits what `VALIDITY.md` §4 needs to estimate the error: regret per
+trial, its date cluster, and the underlying path it resolved against. Phase 6
+does not build the improvement instrument until that estimate exists and the
+minimum detectable slope difference has been computed from it.
+
+Rationale. §2 states the verdict as a slope difference tested against the
+error from §4, and §4 states a procedure rather than a magnitude. An
+instrument built before the magnitude is known cannot say what effect it
+could detect, so a flat curve would be unreadable: it would mean either that
+the learner did not improve or that the instrument could never have shown it.
+Those are opposite conclusions and the lab exists to distinguish them [D-W2].
+
+This is not a refinement of the instrument, it is a precondition on it. The
+estimate also fixes the evaluation window: at roughly two hundred and forty
+trials a year clustered by date, whether a detectable difference needs one
+year or ten is arithmetic that only the observed variance answers, and Phase
+10 commits to a window in advance [D-W15].
+
+What it does not settle. Whether the answer is acceptable. If the minimum
+detectable difference turns out to require a decade, that is a finding about
+this design and is reported as one rather than resolved by widening the
+window until something fits.
+
+Test FX-InstrumentStatesItsDetectableEffect: the instrument reports the
+minimum slope difference it could detect alongside every verdict it gives.
+
+---
+
+### D-W58 The learner's policy is four rows, and the verdict is about them
+`active` · 2026-08-09
+
+The learner's entire mutable policy is `Policy:Learner:DeltaMin`, `DeltaMax`,
+`DteMin` and `DteMax`. The learning channel writes those and nothing else
+[D-W6], so improvement means finding a better band and a better window, and
+the verdict is a verdict about band placement rather than about decision-making
+in general.
+
+Stated because it bounds the claim rather than because it is a limitation to
+fix. A narrow space is a legitimate experiment and a well-posed one: band
+placement genuinely moves regret, and a small space makes the search
+tractable and the result interpretable. What it is not is a claim about
+whether a maker can learn to decide, and reporting it as one would overstate
+what was measured [D-W2].
+
+The asymmetry with the feature grader is deliberate and worth naming. §3.11
+grades six contract properties and the learner can act on two of them. A
+grader finding that implied volatility rank predicts outcomes gives the
+learner nothing to change, and that is by design: the grader is descriptive
+and never an input [§3.11]. Widening the policy space is a decision for a
+later phase and would have to argue that the channel writing more keys does
+not make the learner harder to distinguish from a fitted curve.
+
+Test: none. This is a statement about what the corpus claims, and
+`VALIDITY.md` §5's list of what the lab cannot test gains the general claim.

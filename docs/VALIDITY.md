@@ -98,6 +98,14 @@ modelled by rule, principally at expiry and around ex-dividend for short calls
 regime, any conclusion is conditional on that regime. The lab cannot claim a
 learner that improved in 2025 and 2026 would improve in a different environment.
 
+**Whether a maker can learn to decide.** The learner's entire mutable policy is
+four configuration rows, a delta band and an expiry window [D-W58], because the
+learning channel writes rows and nothing else [D-W6]. So a verdict here is a
+verdict about band placement, which is a well-posed experiment and a narrow one.
+The lab cannot say whether a maker given a wider space would improve, and a
+result reported as decision-making in general would overstate what was
+measured.
+
 ## 6. Pre-registration
 
 Before the forward run begins, a pre-registration file is committed containing

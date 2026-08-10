@@ -6,8 +6,8 @@ Appended to, never rewritten. The repository is the authority on build state.
 
 **Phase 0 complete and reviewed. Phases 1, 2, 3 and 4 complete.** Checkpoints 0.1
 to 0.8, 1.1 to 1.5, 2.1 to 2.5, 3.1 to 3.5 and 4.1 to 4.5 built and signed off.
-Phase 5 is not started and its detail is due. The documentation corpus is at
-v1.48.0.
+Phase 5 is not started and its detail is due, now under two decisions that
+constrain it. The documentation corpus is at v1.49.0.
 
 **This block carries no `Build state:` marker and the sweep keys on that string**,
 so it was outside the sweep's scope rather than passed by it. Read at every
@@ -2796,3 +2796,43 @@ consumer, in the future tense, and its `Trial:` and `Costs:` rows still named on
 resolution site where there are two. **A fact measured on a branch and carried into
 one document and not its twin is the shape to expect**, and it is the same shape as
 the marker sweep's: what gets corrected is what the diff touched.
+
+### 2026-08-09 — corpus v1.49.0
+
+**Two decisions land before Phase 5's detail is written, and both bound what a
+result may claim rather than how anything is built.**
+
+**D-W57 makes the measurement error a precondition on the instrument.** Phase 5
+emits regret per trial with its date cluster and the path it resolved against;
+Phase 6 does not build the improvement instrument until the minimum detectable
+slope difference has been computed from that. The argument is that `VALIDITY.md`
+§4 states a procedure and not a magnitude, so an instrument built first cannot say
+what it could have detected, and **a flat curve would then carry two opposite
+readings**: the learner did not improve, or the instrument could never have shown
+it. It also fixes the evaluation window, which at roughly two hundred and forty
+trials a year is arithmetic only the observed variance answers. It explicitly does
+not settle whether the answer is acceptable, and says a decade-long requirement is
+a finding to report rather than a window to widen until something fits.
+
+FX-InstrumentStatesItsDetectableEffect is registered at Phase 6.
+
+**D-W58 states the size of the learner's policy so the verdict is read at that
+size.** Four rows, a delta band and an expiry window, because the channel writes
+rows and nothing else [D-W6]. So improvement means better band placement, which is
+a well-posed experiment and a narrow one, and the decision says plainly that
+reporting it as decision-making in general would overstate what was measured. It
+names the asymmetry with the feature grader as deliberate: six properties graded,
+two the learner can act on, and a grader is descriptive by design.
+
+`VALIDITY.md` §5 gains the general claim as a fifth entry, which is where a reader
+looking for what the lab cannot test will find it, and both decisions join the
+topical index's Purpose and measurement line.
+
+**[`CLAUDE.md` §11]'s question, asked.** Two decisions were added, so it was asked.
+**The answer is none, and the set is still empty**: Phase 4's detail covered all
+five of its checkpoints and every one is built, and Phase 5's is unwritten. But the
+answer is none for a reason that expires immediately. **D-W57 is a constraint on
+Phase 5's detail specifically**, naming three things that phase must emit, and
+D-W58 bounds what its scorer's output may be read to claim. Both have to be read
+against that detail as it is authored, which is the first prompt either could
+change and the next document due.
