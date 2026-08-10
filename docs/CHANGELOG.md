@@ -1,5 +1,25 @@
 # CHANGELOG
 
+## [1.49.0] — 2026-08-09
+
+**Two decisions before Phase 5's detail.** Both bound what a result may claim
+rather than how anything is built.
+
+### Added
+- **D-W57**, the measurement error is estimated before the instrument is built.
+  Phase 6 does not build the improvement instrument until the minimum detectable
+  slope difference is known, because a flat curve read against an unknown error
+  carries two opposite meanings.
+- **D-W58**, the learner's policy is four rows and the verdict is about them.
+  Improvement means better band placement, and reporting it as decision-making in
+  general would overstate what was measured.
+- **`FX-InstrumentStatesItsDetectableEffect`**, registered at Phase 6.
+
+### Changed
+- `VALIDITY.md` §5 gains a fifth entry: whether a maker can learn to decide is
+  outside what this lab tests.
+- Both decisions join the topical index's Purpose and measurement line.
+
 ## [1.48.0] — 2026-08-09
 
 **Checkpoint 4.5 signed off, and Phase 4 closes.** A maker drives the run. The

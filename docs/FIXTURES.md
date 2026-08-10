@@ -149,6 +149,7 @@ to carry the wrong cell.
 | FX-NoAnnualizeInObjective | fixture | 5 | equal returns over unequal durations store identically | authored |
 | FX-FastSlowDivergenceFires | fixture | 5 | inverted fast and slow rankings raise the monitor | WORKED_EXAMPLE §7 |
 | FX-RegretUsesSlowScore | fixture | 5 | regret is computed from the trial-complete score | WORKED_EXAMPLE §8 |
+| FX-InstrumentStatesItsDetectableEffect | fixture | 6 | the improvement instrument reports the minimum slope difference it could detect alongside every verdict it gives [D-W57] | authored |
 | FX-NoLearnerOutputInJudgingPath | fixture | 6 | no judging component reads anything the learner produced | authored |
 | FX-RiskDriftFiresOnBorrowedTail | fixture | 6 | falling regret with widening excursion raises the check | authored |
 | FX-LearningBoundaryLagRespected | fixture | 7 | the learner sees only trials closed before the boundary | authored |
